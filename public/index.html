@@ -228,8 +228,8 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
   <p>Gestiona y conecta con tus amigos en EpicBloxs.</p>
   
   <div class="friends-actions">
-    <input id="addFriendInput" placeholder="Añadir amigo por nombre de usuario...">
-    <button class="section-button" onclick="addFriendFromInput()">+ Agregar Amigo</button>
+    <input id="addFriendInput" placeholder="Buscar por nombre de usuario o ID..." onkeydown="if(event.key==='Enter')addFriendFromInput()">
+    <button class="section-button" onclick="addFriendFromInput()">+ Enviar solicitud</button>
   </div>
 
   <div id="friendsListGrid" class="friends-list-grid"></div>
@@ -2121,7 +2121,7 @@ function register(e){
   if(password!==confirm)return msg(regMsg,"Las contraseñas no coinciden.","error");
   const users=getUsers(),key=username.toLowerCase();
   if(users[key])return msg(regMsg,"Ese usuario ya existe.","error");
-  users[key]={username,passwordHash:hashPassword(password),sunnys:500,bio:"Insert Bio.",avatar:{accessories:["Classic Smile","Blue Shirt","Classic Jeans"],colors:{head:"#f5c928",arms:"#f5c928",torso:"#1477b9",legs:"#8cae45"}},inventory:["Classic Smile","Blue Shirt","Classic Jeans"],friends:[],lastDailyLogin:"",createdAt:new Date().toISOString()};
+  users[key]={username,passwordHash:hashPassword(password),sunnys:500,bio:"Insert Bio.",avatar:{accessories:["Classic Smile","Blue Shirt","Classic Jeans"],colors:{head:"#f5c928",arms:"#f5c928",torso:"#1477b9",legs:"#8cae45"}},inventory:["Classic Smile","Blue Shirt","Classic Jeans"],friends:[],friendRequests:[],outgoingRequests:[],lastDailyLogin:"",createdAt:new Date().toISOString()};
   saveUsers(users);localStorage.setItem(SESSION_KEY,key);msg(regMsg,"¡Account created!","success");setTimeout(loadCurrentUser,400);
 }
 
@@ -2147,10 +2147,11 @@ function loadCurrentUser(){
     c.user.avatar.accessories = ["Classic Smile"];
   }
 
-  if(!c.user.friends){
-    c.user.friends = [];
-    const u = getUsers(); u[c.key] = c.user; saveUsers(u);
-  }
+  let needsSave = false;
+  if(!c.user.friends){ c.user.friends = []; needsSave = true; }
+  if(!c.user.friendRequests){ c.user.friendRequests = []; needsSave = true; }
+  if(!c.user.outgoingRequests){ c.user.outgoingRequests = []; needsSave = true; }
+  if(needsSave){ const u = getUsers(); u[c.key] = c.user; saveUsers(u); }
 
   const todayStr = new Date().toDateString();
   if(c.user.lastDailyLogin !== todayStr) {
@@ -2186,15 +2187,89 @@ function updateUI(u){
   renderFriends();
 }
 
+
+// ===== Retrato 3D del avatar (mirando al frente) =====
+let _portraitRenderer = null;
+let _portraitScene = null;
+let _portraitCamera = null;
+const _portraitCache = {};
+
+function getAvatarPortraitDataURL(userData, size) {
+  size = size || 128;
+  const cacheKey = JSON.stringify({
+    a: (userData && userData.avatar) || {},
+    s: size
+  });
+  if (_portraitCache[cacheKey]) return _portraitCache[cacheKey];
+
+  try {
+    if (!_portraitRenderer) {
+      _portraitRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+      _portraitRenderer.setClearColor(0x000000, 0);
+      _portraitScene = new THREE.Scene();
+      _portraitCamera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+      _portraitCamera.position.set(0, 0.55, 3.2);
+      _portraitCamera.lookAt(0, 0.45, 0);
+      const amb = new THREE.AmbientLight(0xffffff, 0.75);
+      const dir = new THREE.DirectionalLight(0xffffff, 0.7);
+      dir.position.set(2, 5, 4);
+      _portraitScene.add(amb, dir);
+    }
+
+    _portraitRenderer.setSize(size, size);
+    // limpiar avatares previos
+    const old = _portraitScene.getObjectByName('portraitAvatar');
+    if (old) _portraitScene.remove(old);
+
+    const group = buildAvatar3DModel(userData);
+    group.name = 'portraitAvatar';
+    group.rotation.y = 0; // mirando al frente (hacia +Z / cámara)
+    group.position.set(0, -0.55, 0);
+    _portraitScene.add(group);
+
+    _portraitRenderer.render(_portraitScene, _portraitCamera);
+    const url = _portraitRenderer.domElement.toDataURL('image/png');
+    _portraitScene.remove(group);
+
+    // limitar cache
+    const keys = Object.keys(_portraitCache);
+    if (keys.length > 40) delete _portraitCache[keys[0]];
+    _portraitCache[cacheKey] = url;
+    return url;
+  } catch (e) {
+    return null;
+  }
+}
+
+function avatarPortraitHTML(userData, size, extraStyle) {
+  size = size || 128;
+  const url = getAvatarPortraitDataURL(userData, size);
+  const bg = 'linear-gradient(180deg,#bde7ff 0%,#bde7ff 65%,#7bb957 65%)';
+  if (url) {
+    return `<img src="${url}" alt="avatar" style="width:100%;height:100%;object-fit:contain;background:${bg};display:block;${extraStyle||''}">`;
+  }
+  // fallback 2D
+  const head = (userData && userData.avatar && userData.avatar.colors && userData.avatar.colors.head) || '#f5c928';
+  const torso = (userData && userData.avatar && userData.avatar.colors && userData.avatar.colors.torso) || '#1477b9';
+  return `<div style="width:100%;height:100%;background:${bg};display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px">
+    <div style="width:28%;height:28%;background:${head};border-radius:4px"></div>
+    <div style="width:40%;height:36%;background:${torso};border-radius:3px"></div>
+  </div>`;
+}
+
 function renderTopAvatarMini(u) {
   const topAv = document.getElementById('topAvatar');
   const homeAv = document.getElementById('homeAvatar');
   const profAv = document.getElementById('profileAvatar');
-  
-  const miniHTML = `<div style="width:100%;height:100%;background:${u?.avatar?.colors?.torso || '#1477b9'};display:flex;align-items:center;justify-content:center"><div style="width:8px;height:8px;background:${u?.avatar?.colors?.head || '#f5c928'};border-radius:50%"></div></div>`;
-  if(topAv) topAv.innerHTML = miniHTML;
-  if(homeAv) homeAv.innerHTML = miniHTML;
-  if(profAv) profAv.innerHTML = miniHTML;
+  const userData = { avatar: (u && u.avatar) || {} };
+
+  if (topAv) topAv.innerHTML = avatarPortraitHTML(userData, 64);
+  if (homeAv) homeAv.innerHTML = avatarPortraitHTML(userData, 150);
+  if (profAv) {
+    profAv.style.width = '150px';
+    profAv.style.height = '150px';
+    profAv.innerHTML = avatarPortraitHTML(userData, 150);
+  }
 }
 
 function getMyFriends(){
@@ -2204,9 +2279,53 @@ function getMyFriends(){
   const friendsKeys = c.user.friends || [];
   let friendList = [];
   friendsKeys.forEach(key => {
-    if(users[key]) friendList.push(users[key]);
+    if(users[key]) friendList.push({ ...users[key], _key: key });
   });
   return friendList;
+}
+
+function findUserByNameOrId(query) {
+  const q = String(query || '').trim();
+  if (!q) return null;
+  const users = getUsers();
+  const qLower = q.toLowerCase();
+
+  // 1) Coincidencia exacta de ID/key
+  if (users[qLower]) return { key: qLower, user: users[qLower] };
+
+  // 2) Coincidencia exacta de username (case-insensitive)
+  const exact = [];
+  for (const [key, user] of Object.entries(users)) {
+    if ((user.username || '').toLowerCase() === qLower) {
+      exact.push({ key, user });
+    }
+  }
+  if (exact.length === 1) return exact[0];
+  if (exact.length > 1) return exact[0];
+
+  // 3) Coincidencia parcial de username
+  const partial = [];
+  for (const [key, user] of Object.entries(users)) {
+    const uname = (user.username || '').toLowerCase();
+    if (uname.includes(qLower) || key.includes(qLower)) {
+      partial.push({ key, user });
+    }
+  }
+  if (partial.length === 1) return partial[0];
+  if (partial.length > 1) {
+    // preferir el que empieza igual
+    const starts = partial.filter(p => (p.user.username || '').toLowerCase().startsWith(qLower));
+    if (starts.length === 1) return starts[0];
+    return { multiple: partial };
+  }
+  return null;
+}
+
+function ensureFriendFields(user) {
+  if (!user.friends) user.friends = [];
+  if (!user.friendRequests) user.friendRequests = []; // solicitudes recibidas (keys)
+  if (!user.outgoingRequests) user.outgoingRequests = []; // solicitudes enviadas (keys)
+  return user;
 }
 
 function renderFriends(){
@@ -2224,7 +2343,7 @@ function renderFriends(){
 
   friendsBox.innerHTML = list.map(f => `
     <div class="friend" onclick="viewFriendProfile('${escapeHTML(f.username)}')">
-      <div class="friend-avatar" style="background:${f?.avatar?.colors?.torso || '#1477b9'}"></div>
+      <div class="friend-avatar">${avatarPortraitHTML(f, 82)}</div>
       <div class="friend-name" style="font-size:12px;font-weight:bold;margin-top:4px">${escapeHTML(f.username)}</div>
     </div>
   `).join('');
@@ -2233,58 +2352,166 @@ function renderFriends(){
 function renderFriendsPage(){
   const grid = document.getElementById('friendsListGrid');
   if(!grid) return;
+  const c = current();
   const list = getMyFriends();
+  const users = getUsers();
 
-  if(list.length === 0){
-    grid.innerHTML = "<p style='color:#777;'>Tu lista está vacía.</p>";
+  let html = '';
+
+  // Solicitudes recibidas
+  if (c) {
+    ensureFriendFields(c.user);
+    const incoming = (c.user.friendRequests || []).filter(k => users[k]);
+    if (incoming.length) {
+      html += `<div style="grid-column:1/-1;margin-bottom:8px"><h3 style="margin:0 0 10px;font-size:16px;color:#555">Solicitudes recibidas (${incoming.length})</h3></div>`;
+      incoming.forEach(k => {
+        const u = users[k];
+        html += `<div class="friend-card" style="border-color:#1684e8">
+          <div class="friend-card-avatar">${avatarPortraitHTML(u, 110)}</div>
+          <div class="friend-name" style="font-size:15px;font-weight:bold;margin-top:8px">${escapeHTML(u.username)}</div>
+          <div style="display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap">
+            <button class="section-button" style="background:#188038;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPropagation();acceptFriendRequest('${escapeHTML(k)}')">Aceptar</button>
+            <button class="section-button" style="background:#d93025;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPropagation();rejectFriendRequest('${escapeHTML(k)}')">Rechazar</button>
+          </div>
+        </div>`;
+      });
+    }
+  }
+
+  if(list.length === 0 && !html){
+    grid.innerHTML = "<p style='color:#777;'>Tu lista está vacía. Busca un usuario arriba para enviar una solicitud.</p>";
     return;
   }
 
-  grid.innerHTML = list.map(f => `
-    <div class="friend-card" onclick="viewFriendProfile('${escapeHTML(f.username)}')">
-      <div class="friend-card-avatar" style="background:${f?.avatar?.colors?.torso || '#1477b9'}"></div>
-      <div class="friend-name" style="font-size:15px;font-weight:bold;margin-top:8px">${escapeHTML(f.username)}</div>
-      <div style="font-size:11px;color:#777;margin-top:4px">Jugador en línea</div>
-    </div>
-  `).join('');
+  if (list.length) {
+    html += `<div style="grid-column:1/-1;margin:12px 0 8px"><h3 style="margin:0;font-size:16px;color:#555">Amigos (${list.length})</h3></div>`;
+    html += list.map(f => `
+      <div class="friend-card" onclick="viewFriendProfile('${escapeHTML(f.username)}')">
+        <div class="friend-card-avatar">${avatarPortraitHTML(f, 110)}</div>
+        <div class="friend-name" style="font-size:15px;font-weight:bold;margin-top:8px">${escapeHTML(f.username)}</div>
+        <div style="font-size:11px;color:#777;margin-top:4px">Amigo</div>
+      </div>
+    `).join('');
+  }
+
+  grid.innerHTML = html;
 }
 
 function addFriendFromInput(){
   const input = document.getElementById('addFriendInput');
   const name = input ? input.value.trim() : "";
-  if(!name) return alert("Escribe un nombre de usuario.");
+  if(!name) return alert("Escribe un nombre de usuario o ID.");
 
   const c = current();
   if(!c) return alert("Debes iniciar sesión.");
 
-  const targetKey = name.toLowerCase();
+  ensureFriendFields(c.user);
   const users = getUsers();
+  const found = findUserByNameOrId(name);
 
-  if(targetKey === c.key) return alert("No puedes agregarte a ti mismo.");
-  if(!users[targetKey]) return alert(`El usuario "${name}" no existe en la base de datos.`);
-  if(c.user.friends.includes(targetKey)) return alert(`¡Ya eres amigo de ${users[targetKey].username}!`);
+  if (!found) {
+    // Mostrar ayuda: listar algunos usuarios registrados
+    const names = Object.values(users).map(u => u.username).filter(Boolean).slice(0, 8);
+    const hint = names.length ? `\n\nUsuarios registrados: ${names.join(', ')}` : '';
+    return alert(`No se encontró ningún usuario con "${name}".${hint}`);
+  }
 
-  c.user.friends.push(targetKey);
+  if (found.multiple) {
+    const opts = found.multiple.map(p => p.user.username).join(', ');
+    return alert(`Varios usuarios coinciden. Sé más específico:\n${opts}`);
+  }
+
+  const { key: targetKey, user: targetUser } = found;
+  if (targetKey === c.key) return alert("No puedes agregarte a ti mismo.");
+
+  ensureFriendFields(targetUser);
+
+  if ((c.user.friends || []).includes(targetKey)) {
+    return alert(`¡Ya eres amigo de ${targetUser.username}!`);
+  }
+
+  // Si el otro ya me envió solicitud → aceptar automáticamente
+  if ((c.user.friendRequests || []).includes(targetKey)) {
+    acceptFriendRequest(targetKey);
+    if (input) input.value = "";
+    return;
+  }
+
+  // Si ya le envié solicitud
+  if ((c.user.outgoingRequests || []).includes(targetKey)) {
+    return alert(`Ya enviaste una solicitud a ${targetUser.username}. Espera a que la acepte.`);
+  }
+
+  // Enviar solicitud
+  if (!targetUser.friendRequests.includes(c.key)) {
+    targetUser.friendRequests.push(c.key);
+  }
+  if (!c.user.outgoingRequests.includes(targetKey)) {
+    c.user.outgoingRequests.push(targetKey);
+  }
+
   users[c.key] = c.user;
+  users[targetKey] = targetUser;
   saveUsers(users);
 
-  input.value = "";
+  if (input) input.value = "";
   renderFriends();
   renderFriendsPage();
-  alert(`✅ Has agregado a ${users[targetKey].username} a tus amigos.`);
+  alert(`📨 Solicitud de amistad enviada a ${targetUser.username}.`);
+}
+
+function acceptFriendRequest(fromKey) {
+  const c = current();
+  if (!c) return;
+  const users = getUsers();
+  if (!users[fromKey]) return alert("Ese usuario ya no existe.");
+
+  ensureFriendFields(c.user);
+  ensureFriendFields(users[fromKey]);
+
+  // Quitar de solicitudes
+  c.user.friendRequests = (c.user.friendRequests || []).filter(k => k !== fromKey);
+  users[fromKey].outgoingRequests = (users[fromKey].outgoingRequests || []).filter(k => k !== c.key);
+
+  // Añadir como amigos mutuamente
+  if (!c.user.friends.includes(fromKey)) c.user.friends.push(fromKey);
+  if (!users[fromKey].friends.includes(c.key)) users[fromKey].friends.push(c.key);
+
+  users[c.key] = c.user;
+  saveUsers(users);
+  renderFriends();
+  renderFriendsPage();
+  alert(`✅ Ahora eres amigo de ${users[fromKey].username}.`);
+}
+
+function rejectFriendRequest(fromKey) {
+  const c = current();
+  if (!c) return;
+  const users = getUsers();
+  ensureFriendFields(c.user);
+  c.user.friendRequests = (c.user.friendRequests || []).filter(k => k !== fromKey);
+  if (users[fromKey]) {
+    ensureFriendFields(users[fromKey]);
+    users[fromKey].outgoingRequests = (users[fromKey].outgoingRequests || []).filter(k => k !== c.key);
+  }
+  users[c.key] = c.user;
+  saveUsers(users);
+  renderFriendsPage();
 }
 
 function viewFriendProfile(username){
-  const users = getUsers();
-  const friendKey = username.toLowerCase();
-  const friend = users[friendKey];
-  
-  if(!friend) return;
+  const found = findUserByNameOrId(username);
+  if (!found || found.multiple) return;
 
+  const friend = found.user;
   document.getElementById('friendProfileName').textContent = friend.username + " ✓";
   document.getElementById('friendProfileUsername').textContent = "@" + friend.username;
   document.getElementById('friendProfileBio').textContent = friend.bio || "Sin descripción disponible.";
-  document.getElementById('friendProfileAvatar').style.background = friend?.avatar?.colors?.torso || '#1477b9';
+  const avEl = document.getElementById('friendProfileAvatar');
+  if (avEl) {
+    avEl.style.background = 'transparent';
+    avEl.innerHTML = avatarPortraitHTML(friend, 260);
+  }
 
   showPage('friendProfile');
 }
@@ -2460,6 +2687,7 @@ function setBodyColor(part,color){
   c.user.avatar.colors = c.user.avatar.colors || {};
   c.user.avatar.colors[part]=color;
   const u=getUsers();u[c.key]=c.user;saveUsers(u);
+  try{ Object.keys(_portraitCache).forEach(k=>delete _portraitCache[k]); }catch(e){}
   updateUI(c.user);
   updatePreviewAvatar3D();
   sendAvatarUpdateToMultiplayer();
@@ -2494,6 +2722,7 @@ function toggleAccessory(a){
   }
 
   const u=getUsers();u[c.key]=c.user;saveUsers(u);
+  try{ Object.keys(_portraitCache).forEach(k=>delete _portraitCache[k]); }catch(e){}
   updateUI(c.user);
   updatePreviewAvatar3D();
   sendAvatarUpdateToMultiplayer();
