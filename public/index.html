@@ -1,1 +1,1796 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>EpicBloxs 3D Real - 2D Roblox Clothing & Categories</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#e5e5e5;color:#222}
+.topbar{height:44px;background:#252525;color:#fff;display:flex;align-items:center;gap:20px;padding:0 10px;position:fixed;inset:0 0 auto;z-index:100}
+.brand{font-size:23px;font-weight:900;width:45px;text-align:center}.brand span{color:#25a9ff}.top-link{color:#fff;cursor:pointer;font-size:14px;padding:14px 7px}.top-link:hover{background:#333}
+.search-container{position:relative;flex:1;max-width:430px}.search{height:28px;width:100%;padding:5px 35px 5px 12px;border-radius:3px;border:none}.search-icon{position:absolute;right:10px;top:5px;color:#222}.top-user{margin-left:auto;font-size:12px}.top-avatar{width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#333;border-radius:4px}
+.sidebar{position:fixed;top:44px;bottom:0;left:0;width:180px;background:#fff;border-right:1px solid #ccc;overflow:auto;z-index:50}.sidebar-user{padding:10px 14px;border-bottom:1px solid #ddd}.side-item{display:flex;align-items:center;gap:8px;padding:9px 14px;cursor:pointer;font-size:14px}.side-item:hover{background:#eee}.side-icon{width:22px;font-size:20px;text-align:center}.upgrade{margin:10px;padding:11px;background:linear-gradient(135deg,#ffcc00,#ff8800);color:#fff;text-align:center;font-weight:bold;cursor:pointer;border-radius:4px;box-shadow:0 2px 5px rgba(0,0,0,0.2)}.events{border-top:1px solid #ddd;padding:10px 14px}.events-title{font-weight:bold}.events p{font-size:11px;color:#777}
+.main{margin-left:180px;padding-top:44px;min-height:100vh}.page{display:none;padding:25px}.page.active{display:block}.profile-header{height:175px;background:linear-gradient(135deg,#cfd9df,#e2ebf0);position:relative;padding:35px 35px 20px 195px;border-radius:6px;border:1px solid #ccc}.profile-avatar{position:absolute;left:8px;top:8px;width:150px;height:150px;display:flex;align-items:center;justify-content:center;background:#ddd;border-radius:6px;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,0.1)}.profile-title{font-size:36px;margin-top:20px}.check{color:#1684e8}
+.content{padding:0 6px 50px}.section{margin-top:15px}.section-header{display:flex;justify-content:space-between;align-items:center}.section-header h2{font-size:20px;font-weight:normal;color:#555}.section-button{background:#292929;color:#fff;border:0;padding:8px 18px;font-weight:bold;border-radius:3px;cursor:pointer;margin-right:4px;margin-bottom:4px;transition:background 0.2s}.section-button:hover{background:#444}
 
+.friends-box{background:#fff;border:1px solid #ddd;min-height:140px;display:flex;align-items:center;gap:17px;padding:12px;overflow-x:auto;border-radius:6px}.friend{text-align:center;min-width:90px;cursor:pointer;padding:6px;border-radius:4px;transition:background 0.2s}.friend:hover{background:#e8f4ff}
+.friend-avatar{width:82px;height:82px;margin:auto;display:flex;align-items:center;justify-content:center;background:#e9ecef;border-radius:6px;position:relative;box-shadow:inset 0 2px 4px rgba(0,0,0,0.05)}
+.friends-actions{display:flex;gap:10px;margin-bottom:20px;background:#fff;padding:15px;border:1px solid #ccc;border-radius:6px}.friends-actions input{flex:1;padding:8px 12px;border:1px solid #ccc;border-radius:3px;font-size:14px}
+.friends-list-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px;margin-top:15px}
+.friend-card{background:#fff;border:1px solid #ccc;padding:15px;border-radius:6px;text-align:center;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s}.friend-card:hover{transform:translateY(-3px);box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+.friend-card-avatar{width:110px;height:110px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f8f9fa,#e9ecef);border-radius:6px;position:relative;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
+.profile-avatar-large{width:260px;height:340px;margin:0 auto 15px;background:linear-gradient(#bde7ff 0 72%,#7bb957 72%);border:2px solid #999;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 6px 15px rgba(0,0,0,0.15)}
+
+.bio-box{margin-top:15px;padding:15px;background:#f9f9f9;border:1px solid #ddd;border-radius:6px;text-align:left}.bio-box h3{margin-top:0;font-size:16px;color:#444}
+.games{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.game{background:#fff;border:1px solid #ddd;cursor:pointer;border-radius:6px;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s}.game:hover{transform:translateY(-3px);box-shadow:0 4px 12px rgba(0,0,0,0.15)}.game-image{height:140px;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(135deg,#1f2937,#111827);color:#ffcc00;font-weight:bold;text-shadow:0 2px 4px rgba(0,0,0,0.3)}.game-info{padding:10px}.game-name{font-size:13px;font-weight:bold}.game-players{color:#777;font-size:11px;margin-top:4px}.play-button{margin-top:8px;width:100%;border:0;background:#1684e8;color:#fff;padding:7px;cursor:pointer;border-radius:4px;font-weight:bold;transition:background 0.2s}.play-button:hover{background:#0d6efd}
+
+.catalog-categories{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.cat-tab{background:#ddd;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-weight:bold;font-size:13px}
+.cat-tab.active{background:#1684e8;color:#fff}
+
+.catalog-grid,.inventory-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:15px}
+.catalog-item,.inventory-item,.profile-card,.settings-card{background:#fff;border:1px solid #ccc;padding:15px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:transform 0.2s,box-shadow 0.2s}
+.catalog-item:hover,.inventory-item:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,0.1)}
+.catalog-item{text-align:center}
+.catalog-image{height:160px;background:radial-gradient(circle,#ffffff 0%,#f0f2f5 100%);display:flex;align-items:center;justify-content:center;position:relative;border-radius:4px;border:1px solid #e1e4e8;margin-bottom:12px;overflow:hidden}
+.buy{width:100%;background:linear-gradient(135deg,#1684e8,#0d5aa7);color:#fff;border:0;padding:9px;cursor:pointer;border-radius:4px;font-weight:bold;box-shadow:0 2px 5px rgba(22,132,232,0.3);transition:filter 0.2s}
+.buy:hover{filter:brightness(1.1)}
+.download-box{background:#fff;padding:30px;border:1px solid #ccc;max-width:650px;border-radius:6px}
+
+.chat{position:fixed;right:30px;bottom:0;width:240px;height:40px;background:#292929;color:#fff;border-radius:7px 7px 0 0;padding:12px 18px;cursor:pointer;z-index:200;font-weight:bold;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}.chat-window{display:none;position:fixed;right:30px;bottom:40px;width:300px;height:350px;background:#fff;border:1px solid #bbb;z-index:200;border-radius:6px 6px 0 0;box-shadow:0 5px 25px rgba(0,0,0,0.2)}.chat-header{background:#292929;color:#fff;padding:12px;font-weight:bold}.chat-body{padding:15px;color:#777}
+
+.client-container { width: 100%; max-width: 950px; height: 550px; background: #000; margin: 0 auto; border: 4px solid #333; position: relative; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.client-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; background: #111; position: absolute; z-index: 10; }
+.client-bar-bg { width: 250px; height: 12px; background: #444; margin-top: 15px; border-radius: 6px; overflow: hidden; border: 1px solid #666; }
+.client-bar-fill { width: 0%; height: 100%; background: #ffcc00; transition: width 1s ease-in-out; }
+.client-gameplay { display: none; width: 100%; height: 100%; position: relative; overflow: hidden; }
+.client-ui { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 5px; font-family: monospace; font-size: 14px; z-index: 6; border: 1px solid rgba(255,255,255,0.2); }
+.client-title { position: absolute; top: 15px; left: 15px; color: #fff; text-shadow: 2px 2px 0 #333; margin: 0; font-size: 20px; z-index: 6; }
+.client-controls-hint { position: absolute; bottom: 10px; left: 15px; background: rgba(0,0,0,0.7); padding: 8px 14px; border-radius: 4px; font-size: 12px; z-index: 6; border: 1px solid rgba(255,255,255,0.2); }
+#webGLContainer { width: 100%; height: 100%; display: block; position: absolute; top: 0; left: 0; }
+
+#authScreen{position:fixed;inset:0;background:#252525;z-index:9999;display:flex;align-items:center;justify-content:center}.auth-box{width:400px;max-width:92%;background:#fff;padding:32px;border-radius:6px;box-shadow:0 5px 25px rgba(0,0,0,0.3)}.auth-logo{text-align:center;font-size:38px;font-weight:900}.auth-logo span{color:#25a9ff}.auth-sub{text-align:center;color:#777;margin:5px 0 22px}.auth-tabs{display:flex;border-radius:4px;overflow:hidden;border:1px solid #ddd}.auth-tab{width:50%;padding:11px;border:0;background:#eee;font-weight:bold;cursor:pointer}.auth-tab.active{background:#1684e8;color:#fff}.auth-form{display:none}.auth-form.active{display:block}.auth-form label{display:block;margin:12px 0 5px;font-size:13px;font-weight:bold}.auth-form input{width:100%;padding:11px;border:1px solid #bbb;border-radius:4px}.auth-button{width:100%;margin-top:20px;padding:12px;border:0;background:#1684e8;color:#fff;font-weight:bold;cursor:pointer;border-radius:4px}.auth-message{text-align:center;min-height:18px;margin-top:12px;font-size:13px}.error{color:#d93025}.success{color:#188038}.auth-info{margin-top:18px;padding:10px;background:#f3f3f3;color:#777;font-size:11px;border-radius:4px}
+
+.avatar-wrap{display:flex;gap:35px;align-items:flex-start;flex-wrap:wrap}.avatar-panel{background:#fff;border:1px solid #ccc;padding:20px;min-width:330px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.avatar-stage{width:300px;height:390px;margin:auto;background:linear-gradient(#bde7ff 0 72%,#7bb957 72%);border:1px solid #aaa;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-radius:6px;box-shadow:inset 0 4px 10px rgba(0,0,0,0.1)}
+#previewCanvasContainer{width:100%;height:100%;position:absolute;top:0;left:0;}
+
+.color-section{margin-top:20px}.color-buttons{display:flex;flex-wrap:wrap;gap:7px}.color-button{width:34px;height:34px;border:2px solid #888;cursor:pointer;border-radius:50%;transition:transform 0.15s}.color-button:hover{transform:scale(1.1);border-color:#111}.setting-row{padding:12px 0;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center}
+
+@media(max-width:1000px){.games{grid-template-columns:repeat(4,1fr)}.catalog-grid,.inventory-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.sidebar{width:60px}.sidebar-user,.side-item span,.upgrade,.events{display:none}.side-item{justify-content:center}.main{margin-left:60px}.profile-header{padding-left:120px}.profile-avatar{width:105px;height:105px}.games{grid-template-columns:repeat(2,1fr)}.catalog-grid,.inventory-grid{grid-template-columns:repeat(2,1fr)}.top-link{display:none}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+<div id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">Epic<span>Bloxs</span></div>
+    <div class="auth-sub">Welcome to EpicBloxs 3D Real</div>
+    <div class="auth-tabs">
+      <button id="loginTab" class="auth-tab active" onclick="switchAuth('login')">Login</button>
+      <button id="registerTab" class="auth-tab" onclick="switchAuth('register')">Create Account</button>
+    </div>
+    <form id="loginForm" class="auth-form active" onsubmit="login(event)">
+      <label>Username</label><input id="loginUsername" required>
+      <label>Password</label><input id="loginPassword" type="password" required>
+      <button class="auth-button">Login</button>
+      <div id="loginMessage" class="auth-message"></div>
+    </form>
+    <form id="registerForm" class="auth-form" onsubmit="register(event)">
+      <label>Username</label><input id="registerUsername" minlength="3" maxlength="20" required>
+      <label>Password</label><input id="registerPassword" type="password" minlength="6" required>
+      <label>Confirm Password</label><input id="registerConfirmPassword" type="password" minlength="6" required>
+      <button class="auth-button">Create Account</button>
+      <div id="registerMessage" class="auth-message"></div>
+    </form>
+    <div class="auth-info">Modo local de prueba. Las cuentas se guardan en este navegador.</div>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="brand">E<span>B</span></div>
+  <div class="top-link" onclick="showPage('home')">Games</div>
+  <div class="top-link" onclick="showPage('catalog')">Catalog</div>
+  <div class="top-link" onclick="showPage('friends')">Friends</div>
+  <div class="top-link" onclick="showPage('create')">Create</div>
+  <div class="top-link" onclick="showPage('download')">Download</div>
+  <div class="search-container"><input id="searchInput" class="search" placeholder="Search" oninput="searchGames(this.value)"><span class="search-icon">⌕</span></div>
+  <div id="topUser" class="top-user">Player</div>
+  <div id="topAvatar" class="top-avatar" onclick="showPage('avatar')"></div>
+  <div id="moneyDisplay">☀️ 500</div>
+  <div class="top-icon" onclick="showPage('settings')" title="Configuración" style="cursor:pointer">⚙️</div>
+  <div class="top-icon" onclick="logout()" title="Logout" style="cursor:pointer">🚪</div>
+</header>
+
+<aside class="sidebar">
+  <div class="sidebar-user"><strong id="sideUsername">Player</strong> <span class="check">✓</span></div>
+  <div class="side-item" onclick="showPage('home')"><div class="side-icon">⌂</div><span>Home</span></div>
+  <div class="side-item" onclick="showPage('profile')"><div class="side-icon">♙</div><span>Profile</span></div>
+  <div class="side-item" onclick="showPage('avatar')"><div class="side-icon">👕</div><span>Avatar</span></div>
+  <div class="side-item" onclick="showPage('inventory')"><div class="side-icon">🎒</div><span>Inventory</span></div>
+  <div class="side-item" onclick="showPage('catalog')"><div class="side-icon">🛒</div><span>Catalog</span></div>
+  <div class="side-item" onclick="showPage('friends')"><div class="side-icon">👥</div><span>Friends</span></div>
+  <div class="side-item" onclick="showPage('settings')"><div class="side-icon">⚙️</div><span>Settings</span></div>
+  <div class="side-item" onclick="alert('Messages próximamente')"><div class="side-icon">▤</div><span>Messages</span></div>
+  <div class="side-item" onclick="alert('Trade próximamente')"><div class="side-icon">⇄</div><span>Trade</span></div>
+  <div class="side-item" onclick="alert('Groups próximamente')"><div class="side-icon">♧</div><span>Groups</span></div>
+  <div class="upgrade" onclick="alert('EpicBloxs Premium próximamente')">Upgrade Now</div>
+  <div class="events"><div class="events-title">Events</div><p>No ongoing events. Come back later.</p></div>
+</aside>
+
+<main class="main">
+
+<section id="home" class="page active">
+  <div class="profile-header">
+    <div id="homeAvatar" class="profile-avatar"></div>
+    <div id="welcomeTitle" class="profile-title">Hello, Player! <span class="check">✓</span></div>
+  </div>
+  <div class="content">
+    <section class="section">
+      <div class="section-header"><h2 id="friendsTitle">Friends (0)</h2><button class="section-button" onclick="showPage('friends')">See All</button></div>
+      <div id="friendsBox" class="friends-box"></div>
+    </section>
+    <section class="section"><div class="section-header"><h2>Recently Played</h2><button class="section-button" onclick="showPage('games')">Show More</button></div><div id="recentGames" class="games"></div></section>
+  </div>
+</section>
+
+<section id="webClient" class="page">
+  <button class="section-button" onclick="exitWebClient()" style="margin-bottom:15px;">← Salir del Juego 3D</button>
+  <h1 id="clientGameTitle" style="margin-top:0;">Jugando en el Cliente 3D...</h1>
+  
+  <div class="client-container">
+    <div id="clientLoading" class="client-loading">
+      <h2 style="color:#ffcc00; margin:0;">Cargando Motor 3D Real...</h2>
+      <p style="color:#aaa; font-size:13px;">Generando mundo poligonal y texturas...</p>
+      <div class="client-bar-bg">
+        <div id="clientBarFill" class="client-bar-fill"></div>
+      </div>
+    </div>
+    
+    <div id="clientGameplay" class="client-gameplay">
+      <h2 class="client-title" id="activeGameHeader">Mundo 3D</h2>
+      <div class="client-ui">Monedas recolectadas: <span id="clientEarnings">0</span> ☀️ | Estado: <span style="color:#2ecc71;">🟢 En línea</span></div>
+      <div class="client-controls-hint">Usa <b>W A S D</b> / <b>Flechas</b> para moverte, <b>ESPACIO</b> para saltar, y <b>Click Derecho + Arrastrar</b> para rotar la cámara.</div>
+<div style="position:absolute;bottom:10px;right:15px;background:rgba(0,0,0,.7);padding:8px 12px;border-radius:4px;font-size:12px;z-index:6;">
+👥 Los jugadores conectados aparecerán en el mundo.
+</div>
+      
+      <div id="webGLContainer"></div>
+    </div>
+  </div>
+</section>
+
+<section id="friends" class="page">
+  <h1>Friends</h1>
+  <p>Gestiona y conecta con tus amigos en EpicBloxs.</p>
+  
+  <div class="friends-actions">
+    <input id="addFriendInput" placeholder="Añadir amigo por nombre de usuario...">
+    <button class="section-button" onclick="addFriendFromInput()">+ Agregar Amigo</button>
+  </div>
+
+  <div id="friendsListGrid" class="friends-list-grid"></div>
+</section>
+
+<section id="friendProfile" class="page">
+  <button class="section-button" onclick="showPage('friends')" style="margin-bottom:15px">← Volver a Amigos</button>
+  <div class="profile-card" style="max-width:580px;margin:auto">
+    <div id="friendProfileAvatar" class="profile-avatar-large"></div>
+    <h2 id="friendProfileName" style="text-align:center;margin:5px 0">Player ✓</h2>
+    <p id="friendProfileUsername" style="text-align:center;color:#777;margin:0 0 10px">@Player</p>
+    <div style="text-align:center;margin-bottom:15px">
+      <span style="background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">🟢 En línea</span>
+    </div>
+    <div class="bio-box">
+      <h3>Biografía / Sobre mí</h3>
+      <p id="friendProfileBio">Sin descripción disponible.</p>
+    </div>
+    <div style="margin-top:20px;display:flex;gap:10px">
+      <button class="buy" style="flex:1" onclick="launchWebClient('Servidor de Amigo')">Unirse al Juego 3D</button>
+      <button class="section-button" style="flex:1;margin:0" onclick="alert('💬 Mensajería directa en desarrollo.')">Enviar Mensaje</button>
+    </div>
+  </div>
+</section>
+
+<section id="games" class="page"><h1>Games</h1><p>Descubre juegos únicos en 3D creados por la comunidad.</p><div id="gamesGrid" class="games"></div></section>
+
+<section id="catalog" class="page">
+  <h1>Catalog</h1>
+  <p>Personaliza tu avatar con accesorios, ropa 2D y caras exclusivas.</p>
+  
+  <div class="catalog-categories">
+    <button class="cat-tab active" onclick="filterCatalog('all', this)">Todos</button>
+    <button class="cat-tab" onclick="filterCatalog('hats', this)">Sombreros</button>
+    <button class="cat-tab" onclick="filterCatalog('shirts', this)">Camisas (2D)</button>
+    <button class="cat-tab" onclick="filterCatalog('pants', this)">Pantalones (2D)</button>
+    <button class="cat-tab" onclick="filterCatalog('faces', this)">Caras</button>
+    <button class="cat-tab" onclick="filterCatalog('gear', this)">Accesorios / Gear</button>
+  </div>
+
+  <div class="catalog-grid" id="catalogGridContainer">
+    <!-- Items will be dynamically populated with category filtering -->
+  </div>
+</section>
+
+<section id="profile" class="page"><h1>Profile</h1><div class="profile-card" style="max-width:500px;margin:auto;"><div id="profileAvatar" class="profile-avatar" style="position:relative;left:auto;top:auto;margin:0 auto 15px;"></div><h2 id="profileName" style="text-align:center;">Player ✓</h2><p id="profileUsername" style="text-align:center;color:#777;">@Player</p><p style="text-align:center;">Welcome to EpicBloxs 3D Real!</p><hr><p>Sunnys: <strong id="profileMoney">500</strong> ☀️</p><button class="section-button" onclick="logout()" style="width:100%;margin-top:10px;">Logout</button></div></section>
+
+<section id="create" class="page"><h1>Create</h1><div class="profile-card"><h2>🛠️ EpicBloxs Studio 3D</h2><p>Crea mundos tridimensionales con físicas reales.</p><button class="section-button" onclick="alert('EpicBloxs Studio 3D estará disponible próximamente.')">Open Studio</button></div></section>
+
+<section id="download" class="page"><h1>Download</h1><div class="download-box"><h2>🖥️ EpicBloxs 3D Client</h2><p>Inicia el cliente 3D con gráficos WebGL para explorar mundos y recolectar monedas jugando.</p><button class="section-button" onclick="launchWebClient('EpicBloxs Universe')">Launch 3D Client</button></div></section>
+
+<section id="avatar" class="page">
+  <h1>Avatar</h1>
+  <div class="avatar-wrap">
+    <div class="avatar-panel">
+      <h2>Tu personaje 3D en tiempo real</h2>
+      <div class="avatar-stage">
+        <div id="previewCanvasContainer"></div>
+      </div>
+      <p style="text-align:center;font-size:12px;color:#666;margin-top:10px;">Rotación automática y accesorios 3D optimizados.</p>
+    </div>
+
+    <div class="avatar-panel" style="flex:1">
+      <h2>Personalización (Capas 2D & Accesorios)</h2>
+      <p style="font-size:13px;color:#666;">Equipa o desequipa tus objetos adquiridos:</p>
+      <div id="accessoryButtons" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;">
+        <button class="section-button" onclick="toggleAccessory('normal')">Ninguno</button>
+      </div>
+
+      <div class="color-section"><h3>Head Color</h3><div id="headColors" class="color-buttons"></div></div>
+      <div class="color-section"><h3>Arms Color</h3><div id="armColors" class="color-buttons"></div></div>
+      <div class="color-section"><h3>Torso Color</h3><div id="torsoColors" class="color-buttons"></div></div>
+      <div class="color-section"><h3>Legs Color</h3><div id="legsColors" class="color-buttons"></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="inventory" class="page"><h1>Inventory</h1><div id="inventoryGrid" class="inventory-grid"></div></section>
+
+<section id="settings" class="page">
+  <h1>Configuración</h1>
+  <div class="settings-card" style="max-width:500px;">
+    <div class="setting-row"><span>Account</span><strong id="settingsUser">Player</strong></div>
+    <div class="setting-row"><span>Sunnys</span><strong id="settingsMoney">500</strong> ☀️</div>
+    <div class="setting-row"><span>Avatar</span><button class="section-button" onclick="showPage('avatar')" style="margin:0;">Editar</button></div>
+    <div class="setting-row"><span>Reset local data</span><button class="section-button" onclick="resetLocalData()" style="margin:0;background:#d93025;">Reset</button></div>
+  </div>
+</section>
+
+</main>
+
+<div id="chatWindow" class="chat-window"><div class="chat-header">EpicBloxs Chat</div><div class="chat-body">No messages yet.<br><br>Chat conectado con soporte en línea.</div></div>
+<div class="chat" onclick="toggleChat()">Chat</div>
+
+<script>
+let previewRenderer = null, previewScene = null, previewCamera = null, previewAnimId = null;
+let gameRenderer = null, gameScene = null, gameCamera = null, gameAnimId = null;
+let keysPressed = {};
+let playerMeshGroup = null;
+let gameSessionEarnings = 0;
+let currentGameType = "Epic Obby 3D";
+let collectibleCoins = [];
+let activePlatforms = [];
+
+let isRightMouseDown = false;
+let mouseXOnMouseDown = 0;
+let mouseYOnMouseDown = 0;
+let cameraAngleX = 0;
+let cameraAngleY = 0.4;
+let cameraDistance = 4;
+
+let audioCtx = null;
+let musicInterval = null;
+
+// Catalog database with categories and prices
+const catalogDatabase = [
+  { id: 'Epic Cap', name: 'Epic Cap', category: 'hats', price: 50, desc: 'Sombrero clásico azul' },
+  { id: 'Golden Crown', name: 'Golden Crown', category: 'hats', price: 250, desc: 'Corona dorada real' },
+  { id: 'Blue Shirt', name: 'Blue Shirt', category: 'shirts', price: 75, desc: 'Camisa 2D estilo Roblox clásica' },
+  { id: 'Green Hoodie', name: 'Green Hoodie', category: 'shirts', price: 120, desc: 'Sudadera con capucha verde 2D' },
+  { id: 'Classic Jeans', name: 'Classic Jeans', category: 'pants', price: 80, desc: 'Pantalones de mezclilla 2D' },
+  { id: 'Dark Cargo Pants', name: 'Dark Cargo Pants', category: 'pants', price: 110, desc: 'Pantalones oscuros con bolsillos 2D' },
+  { id: 'Classic Smile', name: 'Classic Smile', category: 'faces', price: 40, desc: 'Cara feliz clásica' },
+  { id: 'Cool Wink', name: 'Cool Wink', category: 'faces', price: 90, desc: 'Cara guiñando el ojo' },
+  { id: 'Classic Shades', name: 'Classic Shades', category: 'gear', price: 100, desc: 'Gafas de sol estilizadas' },
+  { id: 'Cool Backpack', name: 'Cool Backpack', category: 'gear', price: 180, desc: 'Mochila marrón de aventurero' }
+];
+
+function startAmbientMusic(gameName) {
+  stopAmbientMusic();
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let scale = [220, 247, 277, 329, 370, 440];
+    let waveType = 'sine';
+    let tempo = 450;
+
+    if(gameName.includes("City")) {
+      scale = [130, 164, 196, 220, 261, 329];
+      waveType = 'triangle';
+      tempo = 600;
+    } else if(gameName.includes("Battle")) {
+      scale = [110, 130, 146, 164, 196, 220];
+      waveType = 'sawtooth';
+      tempo = 350;
+    } else if(gameName.includes("Race")) {
+      scale = [293, 329, 370, 440, 493, 587];
+      waveType = 'square';
+      tempo = 300;
+    }
+
+    musicInterval = setInterval(() => {
+      if(!audioCtx || audioCtx.state === 'closed') return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = waveType;
+      const freq = scale[Math.floor(Math.random() * scale.length)];
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 1.5);
+    }, tempo);
+  } catch(e) {
+    console.log("Audio no soportado o bloqueado por navegador", e);
+  }
+}
+
+function stopAmbientMusic() {
+  if(musicInterval) clearInterval(musicInterval);
+  if(audioCtx && audioCtx.state !== 'closed') {
+    audioCtx.close();
+  }
+  audioCtx = null;
+}
+
+function addSunnys(amount) {
+  const c = current();
+  if(!c) return;
+  c.user.sunnys = (c.user.sunnys || 500) + amount;
+  const u = getUsers();
+  u[c.key] = c.user;
+  saveUsers(u);
+  updateUI(c.user);
+}
+
+// Generación de cara 2D sobre la cabeza (Opaca para evitar invisibilidad)
+function createFaceTexture(headColor, faceName) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  
+  ctx.fillStyle = headColor || '#f5c928';
+  ctx.fillRect(0, 0, 256, 256);
+  
+  if (faceName === 'Cool Wink') {
+    // Ojo izquierdo abierto
+    ctx.fillStyle = '#111111';
+    ctx.beginPath();
+    ctx.arc(80, 85, 16, 0, Math.PI * 2);
+    ctx.fill();
+    // Ojo derecho guiño (línea curva)
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = '#111111';
+    ctx.beginPath();
+    ctx.arc(176, 85, 14, Math.PI, 0, false);
+    ctx.stroke();
+    // Sonrisa chula
+    ctx.lineWidth = 12;
+    ctx.beginPath();
+    ctx.arc(128, 125, 40, 0.1 * Math.PI, 0.9 * Math.PI);
+    ctx.stroke();
+  } else {
+    // Classic Smile (Default)
+    ctx.fillStyle = '#111111';
+    ctx.beginPath();
+    ctx.arc(80, 85, 18, 0, Math.PI * 2);
+    ctx.arc(176, 85, 18, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(86, 78, 6, 0, Math.PI * 2);
+    ctx.arc(182, 78, 6, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.lineWidth = 14;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#111111';
+    ctx.beginPath();
+    ctx.arc(128, 120, 45, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.stroke();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+// Textura 2D de camisa estilo Roblox para el Torso
+function createShirtTexture(torsoColor, shirtName) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = torsoColor || '#1477b9';
+  ctx.fillRect(0, 0, 256, 256);
+
+  if(shirtName === 'Blue Shirt') {
+    ctx.fillStyle = '#1e90ff';
+    ctx.fillRect(0, 0, 256, 256);
+    // Cuello blanco
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(96, 0, 64, 40);
+    // Rayas o diseño central
+    ctx.fillStyle = '#0d5aa7';
+    ctx.fillRect(40, 80, 176, 120);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 36px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('EB', 128, 150);
+  } else if(shirtName === 'Green Hoodie') {
+    ctx.fillStyle = '#2e7d32';
+    ctx.fillRect(0, 0, 256, 256);
+    ctx.fillStyle = '#1b5e20';
+    ctx.fillRect(80, 0, 96, 256); // Capucha central
+    ctx.fillStyle = '#ffcc00';
+    ctx.fillRect(122, 100, 12, 100); // Cierre
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+// Textura 2D de pantalones estilo Roblox para las Piernas
+function createPantsTexture(legsColor, pantsName) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = legsColor || '#8cae45';
+  ctx.fillRect(0, 0, 256, 256);
+
+  if(pantsName === 'Classic Jeans') {
+    ctx.fillStyle = '#2c3e50';
+    ctx.fillRect(0, 0, 256, 256);
+    ctx.fillStyle = '#1a252f';
+    ctx.fillRect(116, 0, 24, 256); // División de piernas
+  } else if(pantsName === 'Dark Cargo Pants') {
+    ctx.fillStyle = '#34495e';
+    ctx.fillRect(0, 0, 256, 256);
+    ctx.fillStyle = '#7f8c8d';
+    // Bolsillos laterales simulados
+    ctx.fillRect(20, 100, 30, 50);
+    ctx.fillRect(206, 100, 30, 50);
+    ctx.fillStyle = '#2c3e50';
+    ctx.fillRect(116, 0, 24, 256);
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+// Creación de accesorios 3D
+function createAccessoryMesh(accessoryName) {
+  const group = new THREE.Group();
+  if(accessoryName === "Epic Cap") {
+    const capMat = new THREE.MeshLambertMaterial({color: 0x1684e8});
+    const capTop = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.35, 0.86), capMat);
+    capTop.position.set(0, 2.42, 0);
+    const visorMat = new THREE.MeshLambertMaterial({color: 0x0d5aa7});
+    const visor = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.08, 0.5), visorMat);
+    visor.position.set(0, 2.27, 0.48);
+    const button = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.06, 0.12), new THREE.MeshLambertMaterial({color: 0xffffff}));
+    button.position.set(0, 2.61, 0);
+    group.add(capTop, visor, button);
+  } else if(accessoryName === "Classic Shades") {
+    const frameMat = new THREE.MeshLambertMaterial({color: 0x111111});
+    const lensMat = new THREE.MeshLambertMaterial({color: 0x1a1a1a, roughness: 0.1});
+    const bridgeMat = new THREE.MeshLambertMaterial({color: 0x444444});
+
+    const lensL = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.22, 0.1), lensMat);
+    lensL.position.set(-0.22, 2.0, 0.42);
+    const lensR = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.22, 0.1), lensMat);
+    lensR.position.set(0.22, 2.0, 0.42);
+
+    const frameL = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.26, 0.12), frameMat);
+    frameL.position.set(-0.22, 2.0, 0.41);
+    const frameR = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.26, 0.12), frameMat);
+    frameR.position.set(0.22, 2.0, 0.41);
+
+    const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 0.1), bridgeMat);
+    bridge.position.set(0, 2.05, 0.41);
+
+    const armL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.5), frameMat);
+    armL.position.set(-0.4, 2.0, 0.15);
+    const armR = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.5), frameMat);
+    armR.position.set(0.4, 2.0, 0.15);
+
+    group.add(frameL, frameR, lensL, lensR, bridge, armL, armR);
+  } else if(accessoryName === "Golden Crown") {
+    const crownMat = new THREE.MeshLambertMaterial({color: 0xffcc00, emissive: 0x332200});
+    const gemMat = new THREE.MeshLambertMaterial({color: 0xff0055});
+    const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.44, 0.45, 5), crownMat);
+    crown.position.set(0, 2.45, 0);
+    const gem = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), gemMat);
+    gem.position.set(0, 2.48, 0.45);
+    group.add(crown, gem);
+  } else if(accessoryName === "Cool Backpack") {
+    const packMat = new THREE.MeshLambertMaterial({color: 0x8b4513});
+    const pocketMat = new THREE.MeshLambertMaterial({color: 0xa0522d});
+    const pack = new THREE.Mesh(new THREE.BoxGeometry(0.96, 1.16, 0.5), packMat);
+    pack.position.set(0, 1.05, -0.46);
+    const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.58, 0.16), pocketMat);
+    pocket.position.set(0, 0.85, -0.73);
+    group.add(pack, pocket);
+  }
+  return group;
+}
+
+// Constructor del Avatar con soporte de ropa 2D y accesorios múltiples
+function buildAvatar3DModel(userData) {
+  const avatarGroup = new THREE.Group();
+  const avatarData = (userData && userData.avatar) || {};
+  const colors = avatarData.colors || {};
+  const accessories = avatarData.accessories || [];
+
+  const headCol = colors.head || "#f5c928";
+  const torsoCol = colors.torso || "#1477b9";
+  const armCol = colors.arms || "#f5c928";
+  const legCol = colors.legs || "#8cae45";
+
+  // Buscar cara y ropa equipada en los accesorios / inventario
+  let activeFace = "Classic Smile";
+  let activeShirt = null;
+  let activePants = null;
+
+  accessories.forEach(acc => {
+    if(acc === "Classic Smile" || acc === "Cool Wink") activeFace = acc;
+    if(acc === "Blue Shirt" || acc === "Green Hoodie") activeShirt = acc;
+    if(acc === "Classic Jeans" || acc === "Dark Cargo Pants") activePants = acc;
+  });
+
+  // Materiales con texturas 2D estilo Roblox
+  const torsoTexture = createShirtTexture(torsoCol, activeShirt);
+  const torsoMat = new THREE.MeshLambertMaterial({map: torsoTexture});
+
+  const legsTexture = createPantsTexture(legCol, activePants);
+  const legMat = new THREE.MeshLambertMaterial({map: legsTexture});
+
+  const armMat = new THREE.MeshLambertMaterial({color: armCol});
+
+  const sideHeadMat = new THREE.MeshLambertMaterial({color: headCol});
+  const faceTexture = createFaceTexture(headCol, activeFace);
+  const frontFaceMat = new THREE.MeshLambertMaterial({map: faceTexture, color: headCol});
+  const headMaterials = [sideHeadMat, sideHeadMat, sideHeadMat, sideHeadMat, frontFaceMat, sideHeadMat];
+  
+  const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), headMaterials);
+  headMesh.position.set(0, 2.0, 0);
+  headMesh.name = "head";
+
+  const torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 0.6), torsoMat);
+  torsoMesh.position.set(0, 1.05, 0);
+  torsoMesh.name = "torso";
+
+  const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.45, 1.4, 0.5), armMat);
+  leftArm.position.set(-0.9, 1.05, 0);
+  leftArm.name = "leftArm";
+
+  const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.45, 1.4, 0.5), armMat);
+  rightArm.position.set(0.9, 1.05, 0);
+  rightArm.name = "rightArm";
+
+  const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.3, 0.55), legMat);
+  leftLeg.position.set(-0.32, -0.15, 0);
+  leftLeg.name = "leftLeg";
+
+  const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.3, 0.55), legMat);
+  rightLeg.position.set(0.32, -0.15, 0);
+  rightLeg.name = "rightLeg";
+
+  avatarGroup.add(headMesh, torsoMesh, leftArm, rightArm, leftLeg, rightLeg);
+
+  // Agregar accesorios 3D equipados
+  if(Array.isArray(accessories)) {
+    accessories.forEach(accName => {
+      if(accName !== "Classic Smile" && accName !== "Cool Wink" && accName !== "Blue Shirt" && accName !== "Green Hoodie" && accName !== "Classic Jeans" && accName !== "Dark Cargo Pants") {
+        const accMesh = createAccessoryMesh(accName);
+        avatarGroup.add(accMesh);
+      }
+    });
+  }
+
+  avatarGroup.scale.set(0.5, 0.5, 0.5);
+  return avatarGroup;
+}
+
+function initPreviewRenderer() {
+  const container = document.getElementById('previewCanvasContainer');
+  if(!container) return;
+  container.innerHTML = "";
+
+  const width = container.clientWidth || 300;
+  const height = container.clientHeight || 390;
+
+  previewScene = new THREE.Scene();
+  previewCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+  previewCamera.position.set(0, 1.0, 3);
+
+  previewRenderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
+  previewRenderer.setSize(width, height);
+  container.appendChild(previewRenderer.domElement);
+
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+  previewScene.add(ambientLight);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+  dirLight.position.set(5, 10, 7);
+  previewScene.add(dirLight);
+
+  updatePreviewAvatar3D();
+  startPreviewAnimation();
+}
+
+function updatePreviewAvatar3D() {
+  if(!previewScene) return;
+  const oldAvatar = previewScene.getObjectByName("playerAvatar3D");
+  if(oldAvatar) previewScene.remove(oldAvatar);
+
+  const c = current();
+  const avatarGroup = buildAvatar3DModel(c ? c.user : null);
+  avatarGroup.name = "playerAvatar3D";
+  avatarGroup.position.set(0, -0.3, 0);
+  previewScene.add(avatarGroup);
+}
+
+function startPreviewAnimation() {
+  if(previewAnimId) cancelAnimationFrame(previewAnimId);
+  function animate() {
+    previewAnimId = requestAnimationFrame(animate);
+    const avatar = previewScene?.getObjectByName("playerAvatar3D");
+    if(avatar) {
+      avatar.rotation.y += 0.012;
+    }
+    if(previewRenderer && previewScene && previewCamera) {
+      previewRenderer.render(previewScene, previewCamera);
+    }
+  }
+  animate();
+}
+
+function launchWebClient(gameName) {
+  currentGameType = gameName;
+  showPage('webClient');
+  document.getElementById('clientGameTitle').textContent = `Jugando: ${gameName}`;
+  document.getElementById('activeGameHeader').textContent = gameName;
+  document.getElementById('clientLoading').style.display = 'flex';
+  document.getElementById('clientGameplay').style.display = 'none';
+  document.getElementById('clientBarFill').style.width = '0%';
+  
+  gameSessionEarnings = 0;
+  const earnLbl = document.getElementById('clientEarnings');
+  if(earnLbl) earnLbl.textContent = gameSessionEarnings;
+  
+  startAmbientMusic(gameName);
+
+  setTimeout(() => { document.getElementById('clientBarFill').style.width = '100%'; }, 100);
+  setTimeout(() => {
+    document.getElementById('clientLoading').style.display = 'none';
+    document.getElementById('clientGameplay').style.display = 'block';
+    epicGameId = getGameId(gameName);
+    epicServerId = null;
+    epicPlayerId = null;
+    updateIdPanel();
+    initGameWebGL(gameName);
+    connectMultiplayer(gameName);
+    startGameLoop();
+  }, 1200);
+}
+
+function exitWebClient() {
+  disconnectMultiplayer();
+  epicGameId = null;
+  epicServerId = null;
+  epicPlayerId = null;
+  if(gameAnimId) cancelAnimationFrame(gameAnimId);
+  Object.keys(keysPressed).forEach(key => keysPressed[key] = false);
+  isRightMouseDown = false;
+  stopAmbientMusic();
+  showPage('home');
+}
+
+window.addEventListener('keydown', (e) => {
+  if(document.getElementById('webClient').classList.contains('active')) {
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD','Space'].includes(e.code)) {
+      e.preventDefault();
+    }
+    keysPressed[e.code] = true;
+  }
+});
+
+window.addEventListener('keyup', (e) => {
+  if(document.getElementById('webClient').classList.contains('active')) {
+    keysPressed[e.code] = false;
+  }
+});
+
+window.addEventListener('blur', () => {
+  Object.keys(keysPressed).forEach(key => keysPressed[key] = false);
+  isRightMouseDown = false;
+});
+
+function initGameWebGL(gameName) {
+  const container = document.getElementById('webGLContainer');
+  if(!container) return;
+  container.innerHTML = "";
+
+  const width = container.clientWidth || 950;
+  const height = container.clientHeight || 550;
+
+  gameScene = new THREE.Scene();
+  gameScene.background = new THREE.Color(gameName.includes("City") ? 0x111b2b : (gameName.includes("Battle") ? 0x2b1111 : 0x87ceeb));
+
+  gameCamera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+  
+  gameRenderer = new THREE.WebGLRenderer({antialias: true});
+  gameRenderer.setSize(width, height);
+  container.appendChild(gameRenderer.domElement);
+
+  container.addEventListener('contextmenu', e => e.preventDefault());
+  container.addEventListener('mousedown', (e) => {
+    if (e.button === 2) {
+      isRightMouseDown = true;
+      mouseXOnMouseDown = e.clientX;
+      mouseYOnMouseDown = e.clientY;
+    }
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (isRightMouseDown) {
+      const deltaX = e.clientX - mouseXOnMouseDown;
+      const deltaY = e.clientY - mouseYOnMouseDown;
+      mouseXOnMouseDown = e.clientX;
+      mouseYOnMouseDown = e.clientY;
+      cameraAngleX -= deltaX * 0.005;
+      cameraAngleY += deltaY * 0.005;
+      if (cameraAngleY > 1.4) cameraAngleY = 1.4;
+      if (cameraAngleY < -0.2) cameraAngleY = -0.2;
+    }
+  });
+
+  window.addEventListener('mouseup', (e) => {
+    if (e.button === 2) {
+      isRightMouseDown = false;
+    }
+  });
+
+  const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+  gameScene.add(ambient);
+  const sun = new THREE.DirectionalLight(0xffffff, 0.8);
+  sun.position.set(10, 20, 10);
+  gameScene.add(sun);
+
+  buildUniqueGameWorld(gameName);
+
+  const c = current();
+  playerMeshGroup = buildAvatar3DModel(c ? c.user : null);
+  playerMeshGroup.position.set(0, 0, 0);
+  gameScene.add(playerMeshGroup);
+}
+
+function buildUniqueGameWorld(gameName) {
+  collectibleCoins = [];
+  activePlatforms = [];
+
+  const floorGeo = new THREE.BoxGeometry(100, 1, 100);
+  let floorMat = new THREE.MeshLambertMaterial({color: 0x4caf50});
+  
+  if(gameName.includes("City")) floorMat = new THREE.MeshLambertMaterial({color: 0x333333});
+  if(gameName.includes("Battle")) floorMat = new THREE.MeshLambertMaterial({color: 0x553333});
+  if(gameName.includes("Race")) floorMat = new THREE.MeshLambertMaterial({color: 0x222222});
+
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.position.set(0, -0.5, 0);
+  gameScene.add(floor);
+
+  if(gameName.includes("Obby")) {
+    for(let i = 1; i <= 10; i++) {
+      const platMat = new THREE.MeshLambertMaterial({color: i % 2 === 0 ? 0xff5555 : 0x5555ff});
+      const platX = (i % 2 === 0 ? 3 : -3);
+      const platY = i * 1.2;
+      const platZ = -i * 5;
+      const plat = new THREE.Mesh(new THREE.BoxGeometry(4, 0.6, 4), platMat);
+      plat.position.set(platX, platY, platZ);
+      gameScene.add(plat);
+      activePlatforms.push({ x: platX, y: platY, z: platZ, width: 4, height: 0.6, depth: 4 });
+    }
+  } else if(gameName.includes("City")) {
+    for(let i = -3; i <= 3; i += 2) {
+      const bMat = new THREE.MeshLambertMaterial({color: 0x6688aa});
+      const bHeight = 6 + Math.abs(i) * 3;
+      const b = new THREE.Mesh(new THREE.BoxGeometry(3, bHeight, 3), bMat);
+      b.position.set(i * 5, bHeight / 2 - 0.5, -12);
+      gameScene.add(b);
+    }
+  }
+
+  for(let i = 0; i < 15; i++) {
+    const coinGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.2, 16);
+    const coinMat = new THREE.MeshLambertMaterial({color: 0xffcc00, emissive: 0x443300});
+    const coin = new THREE.Mesh(coinGeo, coinMat);
+    coin.rotation.x = Math.PI / 2;
+    coin.position.set((Math.random() - 0.5) * 40, 0.4, (Math.random() - 0.5) * 40);
+    gameScene.add(coin);
+    collectibleCoins.push(coin);
+  }
+}
+
+function startGameLoop() {
+  if(gameAnimId) cancelAnimationFrame(gameAnimId);
+
+  let playerPos = { x: 0, y: 0, z: 0 };
+  let velocityY = 0;
+  const gravity = 20;
+  const jumpForce = 8;
+  const moveSpeed = 6;
+  let isGrounded = true;
+  let lastTime = performance.now();
+
+  function animateGame(now) {
+    gameAnimId = requestAnimationFrame(animateGame);
+    const dt = Math.min((now - lastTime) / 1000, 0.05);
+    lastTime = now;
+
+    let inputX = 0, inputZ = 0;
+    if(keysPressed['ArrowLeft'] || keysPressed['KeyA']) inputX -= 1;
+    if(keysPressed['ArrowRight'] || keysPressed['KeyD']) inputX += 1;
+    if(keysPressed['ArrowUp'] || keysPressed['KeyW']) inputZ -= 1;
+    if(keysPressed['ArrowDown'] || keysPressed['KeyS']) inputZ += 1;
+
+    if(keysPressed['Space'] && isGrounded) {
+      velocityY = jumpForce;
+      isGrounded = false;
+    }
+
+    velocityY -= gravity * dt;
+    playerPos.y += velocityY * dt;
+
+    let landingY = 0;
+    let foundGround = false;
+    if(playerPos.y <= 0) {
+      landingY = 0;
+      foundGround = true;
+    }
+
+    if(currentGameType.includes("Obby")) {
+      activePlatforms.forEach(p => {
+        const halfW = p.width / 2;
+        const halfD = p.depth / 2;
+        const topY = p.y + p.height / 2;
+        if(playerPos.x >= p.x - halfW && playerPos.x <= p.x + halfW &&
+           playerPos.z >= p.z - halfD && playerPos.z <= p.z + halfD &&
+           playerPos.y <= topY && playerPos.y >= topY - 0.6 && velocityY <= 0 && topY >= landingY) {
+          landingY = topY;
+          foundGround = true;
+        }
+      });
+    }
+
+    if(foundGround && playerPos.y <= landingY + 0.15 && velocityY <= 0) {
+      playerPos.y = landingY;
+      velocityY = 0;
+      isGrounded = true;
+    } else {
+      isGrounded = false;
+      if(playerPos.y < -10) {
+        playerPos.x = 0;
+        playerPos.y = 0;
+        playerPos.z = 0;
+        velocityY = 0;
+        isGrounded = true;
+      }
+    }
+
+    if(inputX !== 0 || inputZ !== 0) {
+      const inputLength = Math.hypot(inputX, inputZ);
+      inputX /= inputLength;
+      inputZ /= inputLength;
+
+      // Movimiento relativo a la cámara: W siempre avanza hacia donde mira la cámara.
+      const forwardX = -Math.sin(cameraAngleX);
+      const forwardZ = -Math.cos(cameraAngleX);
+      const rightX = Math.cos(cameraAngleX);
+      const rightZ = -Math.sin(cameraAngleX);
+      const moveX = (rightX * inputX) + (forwardX * -inputZ);
+      const moveZ = (rightZ * inputX) + (forwardZ * -inputZ);
+      const moveLength = Math.hypot(moveX, moveZ) || 1;
+      const normalizedX = moveX / moveLength;
+      const normalizedZ = moveZ / moveLength;
+
+      playerPos.x += normalizedX * moveSpeed * dt;
+      playerPos.z += normalizedZ * moveSpeed * dt;
+      playerPos.x = Math.max(-48, Math.min(48, playerPos.x));
+      playerPos.z = Math.max(-48, Math.min(48, playerPos.z));
+
+      const targetAngle = Math.atan2(normalizedX, normalizedZ);
+      let diff = targetAngle - playerMeshGroup.rotation.y;
+      while(diff < -Math.PI) diff += Math.PI * 2;
+      while(diff > Math.PI) diff -= Math.PI * 2;
+      playerMeshGroup.rotation.y += diff * Math.min(1, 12 * dt);
+
+      if(isGrounded) {
+        const time = now * 0.012;
+        const leftArm = playerMeshGroup.getObjectByName("leftArm");
+        const rightArm = playerMeshGroup.getObjectByName("rightArm");
+        const leftLeg = playerMeshGroup.getObjectByName("leftLeg");
+        const rightLeg = playerMeshGroup.getObjectByName("rightLeg");
+        if(leftArm && rightArm && leftLeg && rightLeg) {
+          leftArm.rotation.x = Math.sin(time) * 0.8;
+          rightArm.rotation.x = -Math.sin(time) * 0.8;
+          leftLeg.rotation.x = -Math.sin(time) * 0.8;
+          rightLeg.rotation.x = Math.sin(time) * 0.8;
+        }
+      }
+    } else {
+      const leftArm = playerMeshGroup.getObjectByName("leftArm");
+      const rightArm = playerMeshGroup.getObjectByName("rightArm");
+      const leftLeg = playerMeshGroup.getObjectByName("leftLeg");
+      const rightLeg = playerMeshGroup.getObjectByName("rightLeg");
+      const damp = Math.pow(0.02, dt);
+      if(leftArm) leftArm.rotation.x *= damp;
+      if(rightArm) rightArm.rotation.x *= damp;
+      if(leftLeg) leftLeg.rotation.x *= damp;
+      if(rightLeg) rightLeg.rotation.x *= damp;
+    }
+
+    if(!isGrounded) {
+      const leftArm = playerMeshGroup.getObjectByName("leftArm");
+      const rightArm = playerMeshGroup.getObjectByName("rightArm");
+      if(leftArm) leftArm.rotation.x = -1.5;
+      if(rightArm) rightArm.rotation.x = -1.5;
+    }
+
+    if(playerMeshGroup) playerMeshGroup.position.set(playerPos.x, playerPos.y + 0.4, playerPos.z);
+
+    sendMultiplayerPosition(playerPos);
+    updateRemotePlayers(dt);
+
+    collectibleCoins.forEach((coin) => {
+      if(coin.visible) {
+        coin.rotation.z += 2.4 * dt;
+        const dx = playerPos.x - coin.position.x;
+        const dy = (playerPos.y + 0.5) - coin.position.y;
+        const dz = playerPos.z - coin.position.z;
+        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if(dist < 1.2) {
+          coin.visible = false;
+          gameSessionEarnings += 1;
+          addSunnys(1);
+          const earnLbl = document.getElementById('clientEarnings');
+          if(earnLbl) earnLbl.textContent = gameSessionEarnings;
+        }
+      }
+    });
+
+    if(gameCamera && playerMeshGroup) {
+      const cx = playerMeshGroup.position.x + cameraDistance * Math.sin(cameraAngleX) * Math.cos(cameraAngleY);
+      const cy = playerMeshGroup.position.y + 0.8 + cameraDistance * Math.sin(cameraAngleY);
+      const cz = playerMeshGroup.position.z + cameraDistance * Math.cos(cameraAngleX) * Math.cos(cameraAngleY);
+      gameCamera.position.set(cx, cy, cz);
+      gameCamera.lookAt(playerMeshGroup.position.x, playerMeshGroup.position.y + 0.5, playerMeshGroup.position.z);
+    }
+
+    if(gameRenderer && gameScene && gameCamera) gameRenderer.render(gameScene, gameCamera);
+  }
+  animateGame(performance.now());
+}
+
+
+
+// ==================== EPICBLOXS IDS ====================
+let epicGameId = null;
+let epicServerId = null;
+let epicPlayerId = null;
+
+function makeLocalId(prefix) {
+  const bytes = new Uint8Array(8);
+  if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(bytes);
+  else for (let i=0;i<bytes.length;i++) bytes[i] = Math.floor(Math.random()*256);
+  return prefix + "-" + [...bytes].map(x => x.toString(16).padStart(2,"0")).join("").toUpperCase();
+}
+
+function getGameId(gameName) {
+  const known = {
+    "Bloxs City 3D":"CITY-7F42",
+    "Epic Obby 3D":"OBBY-91AC",
+    "Bloxs Racing 3D":"RACE-33D8",
+    "Bloxs Survival":"SURV-8201",
+    "Bloxs Tycoon":"TYCN-52A7",
+    "Bloxs Simulator":"SIM-44C1",
+    "Bloxs Adventure":"ADV-19E4",
+    "Bloxs PvP Arena":"PVP-73B2",
+    "Bloxs Mystery":"MYST-68D0"
+  };
+  if (known[gameName]) return known[gameName];
+  return "GAME-" + btoa(unescape(encodeURIComponent(gameName)))
+    .replace(/[^A-Z0-9]/gi,"").slice(0,8).toUpperCase();
+}
+
+function ensureIdPanel() {
+  const ui = document.querySelector("#webClient .client-ui");
+  if (!ui || document.getElementById("epicIdsPanel")) return;
+
+  const panel = document.createElement("div");
+  panel.id = "epicIdsPanel";
+  panel.style.cssText =
+    "position:absolute;top:52px;right:15px;z-index:8;" +
+    "background:rgba(10,15,25,.88);color:#fff;padding:9px 12px;" +
+    "border:1px solid rgba(255,255,255,.15);border-radius:8px;" +
+    "font:12px Arial;line-height:1.55;min-width:190px;pointer-events:none;";
+  panel.innerHTML = `
+    <div><b>🎮 Game ID:</b> <span id="epicGameIdText">...</span></div>
+    <div><b>🖥️ Server ID:</b> <span id="epicServerIdText">...</span></div>
+    <div><b>👤 Player ID:</b> <span id="epicPlayerIdText">...</span></div>
+  `;
+  ui.appendChild(panel);
+}
+
+function updateIdPanel() {
+  ensureIdPanel();
+  const a = document.getElementById("epicGameIdText");
+  const b = document.getElementById("epicServerIdText");
+  const c = document.getElementById("epicPlayerIdText");
+  if (a) a.textContent = epicGameId || "...";
+  if (b) b.textContent = epicServerId || "...";
+  if (c) c.textContent = epicPlayerId || "...";
+}
+// ================= END EPICBLOXS IDS ====================
+
+// ==================== EPICBLOXS MULTIPLAYER ====================
+let multiplayerSocket = null;
+let multiplayerRoom = null;
+let multiplayerId = null;
+let remotePlayers = {};
+let multiplayerReady = false;
+let multiplayerSendTimer = 0;
+let lastSentPosition = null;
+
+function getMultiplayerServerURL() {
+  // En Internet, el cliente y el WebSocket usan el mismo dominio.
+  // HTTPS -> WSS, HTTP/file -> WS.
+  if (window.EPICBLOXS_SERVER_URL) return window.EPICBLOXS_SERVER_URL;
+  if (location.protocol === "https:") return "wss://" + location.host;
+  if (location.protocol === "http:") return "ws://" + location.host;
+  return "ws://localhost:8080";
+}
+
+function getAvatarSnapshot() {
+  const c = current();
+  if (!c) return null;
+  const a = c.user.avatar || {};
+  return {
+    colors: a.colors || {
+      head:"#f5c928", arms:"#f5c928", torso:"#1477b9", legs:"#8cae45"
+    },
+    accessories: a.accessories || []
+  };
+}
+
+function ensureMultiplayerUI() {
+  const ui = document.querySelector("#webClient .client-ui");
+  if (!ui || document.getElementById("multiplayerStatus")) return;
+  const span = document.createElement("span");
+  span.id = "multiplayerStatus";
+  span.style.marginLeft = "12px";
+  span.style.color = "#7dd3fc";
+  span.textContent = "👥 Conectando...";
+  ui.appendChild(span);
+}
+
+function setMultiplayerStatus(text, color="#7dd3fc") {
+  const el = document.getElementById("multiplayerStatus");
+  if (el) {
+    el.textContent = text;
+    el.style.color = color;
+  }
+}
+
+let multiplayerReconnectTimer = null;
+let multiplayerReconnectAttempts = 0;
+let multiplayerIntentionalClose = false;
+
+function connectMultiplayer(gameName) {
+  disconnectMultiplayer(true);
+  ensureMultiplayerUI();
+
+  const c = current();
+  if (!c) return;
+
+  multiplayerRoom = gameName;
+  multiplayerIntentionalClose = false;
+  multiplayerReconnectAttempts = 0;
+  lastSentPosition = null;
+  openMultiplayerSocket();
+}
+
+function openMultiplayerSocket() {
+  const c = current();
+  if (!c || multiplayerIntentionalClose || !multiplayerRoom) return;
+
+  try {
+    multiplayerSocket = new WebSocket(getMultiplayerServerURL());
+
+    multiplayerSocket.addEventListener("open", () => {
+      multiplayerReady = true;
+      multiplayerReconnectAttempts = 0;
+      setMultiplayerStatus("👥 Conectando...", "#7dd3fc");
+
+      multiplayerSocket.send(JSON.stringify({
+        type:"join",
+        room: multiplayerRoom,
+        gameId: epicGameId,
+        username: c.user.username,
+        avatar: getAvatarSnapshot()
+      }));
+    });
+
+    multiplayerSocket.addEventListener("message", (event) => {
+      let data;
+      try { data = JSON.parse(event.data); } catch(e) { return; }
+
+      if (data.type === "welcome") {
+        multiplayerId = data.playerId || data.id;
+        epicPlayerId = data.playerId || data.id;
+        epicServerId = data.serverId || "SRV-UNKNOWN";
+        epicGameId = data.gameId || epicGameId;
+        updateIdPanel();
+        setMultiplayerStatus(`👥 ${data.count} jugador(es)`, "#86efac");
+        (data.players || []).forEach(p => addOrUpdateRemotePlayer(p));
+        return;
+      }
+
+      if (data.type === "playerJoined") {
+        addOrUpdateRemotePlayer(data.player);
+        updateMultiplayerCount(data.count);
+        return;
+      }
+
+      if (data.type === "playerMoved") {
+        addOrUpdateRemotePlayer(data.player);
+        return;
+      }
+
+      if (data.type === "playerLeft") {
+        removeRemotePlayer(data.id);
+        updateMultiplayerCount(data.count);
+        return;
+      }
+
+      if (data.type === "roomInfo") {
+        updateMultiplayerCount(data.count);
+      }
+    });
+
+    multiplayerSocket.addEventListener("close", () => {
+      multiplayerReady = false;
+      multiplayerId = null;
+      if (!multiplayerIntentionalClose) {
+        setMultiplayerStatus("👥 Reconectando...", "#facc15");
+        scheduleMultiplayerReconnect();
+      } else {
+        setMultiplayerStatus("👥 Desconectado", "#fca5a5");
+      }
+    });
+
+    multiplayerSocket.addEventListener("error", () => {
+      multiplayerReady = false;
+      setMultiplayerStatus("👥 Servidor no disponible", "#fca5a5");
+    });
+  } catch(e) {
+    multiplayerReady = false;
+    setMultiplayerStatus("👥 Servidor no disponible", "#fca5a5");
+    scheduleMultiplayerReconnect();
+  }
+}
+
+function scheduleMultiplayerReconnect() {
+  if (multiplayerIntentionalClose || multiplayerReconnectTimer) return;
+  multiplayerReconnectAttempts++;
+  const delay = Math.min(15000, 1000 * Math.pow(2, Math.min(4, multiplayerReconnectAttempts - 1)));
+  multiplayerReconnectTimer = setTimeout(() => {
+    multiplayerReconnectTimer = null;
+    openMultiplayerSocket();
+  }, delay);
+}
+function updateMultiplayerCount(count) {
+  setMultiplayerStatus(`👥 ${count} jugador(es)`, "#86efac");
+}
+
+function disconnectMultiplayer(keepRoom=false) {
+  multiplayerIntentionalClose = true;
+  if (multiplayerReconnectTimer) {
+    clearTimeout(multiplayerReconnectTimer);
+    multiplayerReconnectTimer = null;
+  }
+  if (multiplayerSocket) {
+    try { multiplayerSocket.close(); } catch(e) {}
+  }
+  multiplayerSocket = null;
+  multiplayerReady = false;
+  multiplayerId = null;
+  if (!keepRoom) multiplayerRoom = null;
+
+  Object.keys(remotePlayers).forEach(removeRemotePlayer);
+  remotePlayers = {};
+}
+
+function addOrUpdateRemotePlayer(p) {
+  if (!p || !p.id || p.id === multiplayerId || !gameScene) return;
+
+  let group = remotePlayers[p.id];
+
+  if (!group) {
+    group = buildAvatar3DModel({
+      avatar: p.avatar || {
+        colors:{head:"#f5c928",arms:"#f5c928",torso:"#1477b9",legs:"#8cae45"},
+        accessories:[]
+      }
+    });
+    group.name = "remotePlayer_" + p.id;
+    gameScene.add(group);
+    remotePlayers[p.id] = group;
+  }
+
+  if (p.avatar) {
+    // Si cambió el avatar, reconstruimos solamente ese jugador.
+    const oldAvatar = group.userData.avatarJSON;
+    const newAvatar = JSON.stringify(p.avatar);
+    if (oldAvatar !== newAvatar) {
+      const pos = group.position.clone();
+      const rot = group.rotation.y;
+      gameScene.remove(group);
+      group = buildAvatar3DModel({avatar:p.avatar});
+      group.name = "remotePlayer_" + p.id;
+      group.position.copy(pos);
+      group.rotation.y = rot;
+      gameScene.add(group);
+      remotePlayers[p.id] = group;
+    }
+    group.userData.avatarJSON = newAvatar;
+  }
+
+  if (typeof p.x === "number") group.userData.targetX = p.x;
+  if (typeof p.y === "number") group.userData.targetY = p.y + 0.4;
+  if (typeof p.z === "number") group.userData.targetZ = p.z;
+  if (typeof p.rotation === "number") group.userData.targetRotation = p.rotation;
+  group.userData.username = p.username || "Player";
+}
+
+function removeRemotePlayer(id) {
+  const group = remotePlayers[id];
+  if (group && gameScene) gameScene.remove(group);
+  delete remotePlayers[id];
+}
+
+function sendMultiplayerPosition(playerPos) {
+  if (!multiplayerReady || !multiplayerSocket ||
+      multiplayerSocket.readyState !== WebSocket.OPEN) return;
+
+  multiplayerSendTimer += 1;
+  // 20 actualizaciones por segundo: suficiente para movimiento fluido.
+  if (multiplayerSendTimer % 3 !== 0) return;
+
+  const payload = {
+    type:"move",
+    room: multiplayerRoom,
+    x: Number(playerPos.x.toFixed(3)),
+    y: Number(playerPos.y.toFixed(3)),
+    z: Number(playerPos.z.toFixed(3)),
+    rotation: playerMeshGroup ? Number(playerMeshGroup.rotation.y.toFixed(3)) : 0
+  };
+
+  if (lastSentPosition &&
+      Math.abs(payload.x-lastSentPosition.x)<0.001 &&
+      Math.abs(payload.y-lastSentPosition.y)<0.001 &&
+      Math.abs(payload.z-lastSentPosition.z)<0.001 &&
+      Math.abs(payload.rotation-lastSentPosition.rotation)<0.001) return;
+
+  lastSentPosition = payload;
+  multiplayerSocket.send(JSON.stringify(payload));
+}
+
+function updateRemotePlayers(dt) {
+  Object.values(remotePlayers).forEach(group => {
+    if (!group) return;
+
+    const tx = group.userData.targetX;
+    const ty = group.userData.targetY;
+    const tz = group.userData.targetZ;
+    const tr = group.userData.targetRotation;
+
+    if (typeof tx === "number") group.position.x += (tx-group.position.x) * Math.min(1, dt*14);
+    if (typeof ty === "number") group.position.y += (ty-group.position.y) * Math.min(1, dt*14);
+    if (typeof tz === "number") group.position.z += (tz-group.position.z) * Math.min(1, dt*14);
+
+    if (typeof tr === "number") {
+      let diff = tr - group.rotation.y;
+      while(diff < -Math.PI) diff += Math.PI*2;
+      while(diff > Math.PI) diff -= Math.PI*2;
+      group.rotation.y += diff * Math.min(1, dt*14);
+    }
+  });
+}
+
+function sendAvatarUpdateToMultiplayer() {
+  if (!multiplayerReady || !multiplayerSocket ||
+      multiplayerSocket.readyState !== WebSocket.OPEN) return;
+
+  multiplayerSocket.send(JSON.stringify({
+    type:"avatar",
+    room: multiplayerRoom,
+    avatar: getAvatarSnapshot()
+  }));
+}
+// ================= END EPICBLOXS MULTIPLAYER ====================
+
+const USERS_KEY="epicbloxs_users_3d", SESSION_KEY="epicbloxs_current_user_3d";
+
+function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY)||"{}")}catch(e){return{}}}
+function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u))}
+
+function seedTestUsers() {
+  const users = getUsers();
+  let changed = false;
+  
+  const addTestUser = (username, bio, headColor, accs) => {
+    const key = username.toLowerCase();
+    if(!users[key]){
+      users[key] = {
+        username: username,
+        passwordHash: "h_fake",
+        sunnys: 1000,
+        bio: bio,
+        avatar: { accessories: accs, colors: { head: headColor, arms: "#f5c928", torso: "#1477b9", legs: "#8cae45" } },
+        inventory: ["Epic Cap", "Classic Shades", "Blue Shirt", "Classic Jeans", "Classic Smile", "Golden Crown", "Cool Backpack"],
+        friends: [],
+        lastDailyLogin: "",
+        createdAt: new Date().toISOString()
+      };
+      changed = true;
+    }
+  };
+
+  addTestUser("Ale", "Jugando con ropa 2D y accesorios múltiples en 3D.", "#f5c928", ["Epic Cap", "Classic Shades", "Blue Shirt", "Classic Jeans", "Classic Smile"]);
+  addTestUser("Victor", "Fanático de los mundos 3D y videojuegos.", "#ffffff", ["Golden Crown", "Green Hoodie", "Dark Cargo Pants", "Cool Wink"]);
+
+  if(changed) saveUsers(users);
+}
+
+function switchAuth(type){
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const loginTab = document.getElementById('loginTab');
+  const registerTab = document.getElementById('registerTab');
+  
+  loginForm.classList.toggle("active",type==="login"); registerForm.classList.toggle("active",type==="register");
+  loginTab.classList.toggle("active",type==="login"); registerTab.classList.toggle("active",type==="register");
+  document.getElementById('loginMessage').textContent="";
+  document.getElementById('registerMessage').textContent="";
+}
+
+function hashPassword(p){
+  let hash = 0;
+  for (let i = 0; i < p.length; i++) {
+    const char = p.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return "h_" + Math.abs(hash).toString(16) + "_" + btoa(p);
+}
+
+function register(e){
+  e.preventDefault();
+  const username=document.getElementById('registerUsername').value.trim();
+  const password=document.getElementById('registerPassword').value;
+  const confirm=document.getElementById('registerConfirmPassword').value;
+  const regMsg = document.getElementById('registerMessage');
+  
+  regMsg.className="auth-message";
+  if(username.length<3)return msg(regMsg,"El usuario debe tener al menos 3 caracteres.","error");
+  if(password.length<6)return msg(regMsg,"La contraseña debe tener al menos 6 caracteres.","error");
+  if(password!==confirm)return msg(regMsg,"Las contraseñas no coinciden.","error");
+  const users=getUsers(),key=username.toLowerCase();
+  if(users[key])return msg(regMsg,"Ese usuario ya existe.","error");
+  users[key]={username,passwordHash:hashPassword(password),sunnys:500,bio:"¡Hola! Explorando EpicBloxs 3D Real.",avatar:{accessories:["Classic Smile","Blue Shirt","Classic Jeans"],colors:{head:"#f5c928",arms:"#f5c928",torso:"#1477b9",legs:"#8cae45"}},inventory:["Classic Smile","Blue Shirt","Classic Jeans"],friends:[],lastDailyLogin:"",createdAt:new Date().toISOString()};
+  saveUsers(users);localStorage.setItem(SESSION_KEY,key);msg(regMsg,"¡Cuenta creada!","success");setTimeout(loadCurrentUser,400);
+}
+
+function login(e){
+  e.preventDefault();
+  const key=document.getElementById('loginUsername').value.trim().toLowerCase();
+  const pass=document.getElementById('loginPassword').value;
+  const logMsg=document.getElementById('loginMessage');
+  const u=getUsers()[key];
+  if(!u)return msg(logMsg,"El usuario o la contraseña son incorrectos.","error");
+  if(hashPassword(pass)!==u.passwordHash)return msg(logMsg,"El usuario o la contraseña son incorrectos.","error");
+  localStorage.setItem(SESSION_KEY,key);loadCurrentUser();
+}
+
+function msg(el,text,type){el.className="auth-message "+type;el.textContent=text}
+function current(){const k=localStorage.getItem(SESSION_KEY),u=getUsers()[k];return u?{key:k,user:u}:null}
+
+function loadCurrentUser(){
+  const c=current(); const authScreen = document.getElementById('authScreen');
+  if(!c){authScreen.style.display="flex";return}
+
+  if(!c.user.avatar.accessories) {
+    c.user.avatar.accessories = ["Classic Smile"];
+  }
+
+  if(!c.user.friends){
+    c.user.friends = [];
+    const u = getUsers(); u[c.key] = c.user; saveUsers(u);
+  }
+
+  const todayStr = new Date().toDateString();
+  if(c.user.lastDailyLogin !== todayStr) {
+    c.user.sunnys = (c.user.sunnys || 500) + 100;
+    c.user.lastDailyLogin = todayStr;
+    const u = getUsers(); u[c.key] = c.user; saveUsers(u);
+    setTimeout(() => alert("☀️ ¡Recompensa diaria! Has ganado 100 Sunnys por entrar hoy."), 500);
+  }
+
+  authScreen.style.display="none"; 
+  updateUI(c.user);
+  loadGames();
+  loadInventory();
+  renderCatalog('all');
+  initPreviewRenderer();
+}
+
+function updateUI(u){
+  document.getElementById('topUser').textContent=u.username;
+  document.getElementById('sideUsername').textContent=u.username;
+  document.getElementById('welcomeTitle').innerHTML=`Hello, ${escapeHTML(u.username)}! <span class="check">✓</span>`;
+  document.getElementById('profileName').textContent=u.username+" ✓";
+  document.getElementById('profileUsername').textContent="@"+u.username;
+  document.getElementById('profileMoney').textContent=u.sunnys || 0;
+  document.getElementById('moneyDisplay').textContent="☀️ "+(u.sunnys || 0);
+  document.getElementById('settingsUser').textContent=u.username;
+  document.getElementById('settingsMoney').textContent=u.sunnys || 0;
+  
+  updateCatalogButtons(u);
+  updateAccessoryButtons(u);
+  updatePreviewAvatar3D();
+  renderTopAvatarMini(u);
+  renderFriends();
+}
+
+function renderTopAvatarMini(u) {
+  const topAv = document.getElementById('topAvatar');
+  const homeAv = document.getElementById('homeAvatar');
+  const profAv = document.getElementById('profileAvatar');
+  
+  const miniHTML = `<div style="width:100%;height:100%;background:${u?.avatar?.colors?.torso || '#1477b9'};display:flex;align-items:center;justify-content:center"><div style="width:8px;height:8px;background:${u?.avatar?.colors?.head || '#f5c928'};border-radius:50%"></div></div>`;
+  if(topAv) topAv.innerHTML = miniHTML;
+  if(homeAv) homeAv.innerHTML = miniHTML;
+  if(profAv) profAv.innerHTML = miniHTML;
+}
+
+function getMyFriends(){
+  const c = current();
+  if(!c) return [];
+  const users = getUsers();
+  const friendsKeys = c.user.friends || [];
+  let friendList = [];
+  friendsKeys.forEach(key => {
+    if(users[key]) friendList.push(users[key]);
+  });
+  return friendList;
+}
+
+function renderFriends(){
+  const friendsBox = document.getElementById('friendsBox');
+  const friendsTitle = document.getElementById('friendsTitle');
+  if(!friendsBox) return;
+
+  const list = getMyFriends();
+  if(friendsTitle) friendsTitle.textContent = `Friends (${list.length})`;
+
+  if(list.length === 0){
+    friendsBox.innerHTML = "<p style='color:#777;font-size:13px;padding-left:10px'>Aún no tienes amigos. Ve a la pestaña Friends para buscar usuarios.</p>";
+    return;
+  }
+
+  friendsBox.innerHTML = list.map(f => `
+    <div class="friend" onclick="viewFriendProfile('${escapeHTML(f.username)}')">
+      <div class="friend-avatar" style="background:${f?.avatar?.colors?.torso || '#1477b9'}"></div>
+      <div class="friend-name" style="font-size:12px;font-weight:bold;margin-top:4px">${escapeHTML(f.username)}</div>
+    </div>
+  `).join('');
+}
+
+function renderFriendsPage(){
+  const grid = document.getElementById('friendsListGrid');
+  if(!grid) return;
+  const list = getMyFriends();
+
+  if(list.length === 0){
+    grid.innerHTML = "<p style='color:#777;'>Tu lista está vacía.</p>";
+    return;
+  }
+
+  grid.innerHTML = list.map(f => `
+    <div class="friend-card" onclick="viewFriendProfile('${escapeHTML(f.username)}')">
+      <div class="friend-card-avatar" style="background:${f?.avatar?.colors?.torso || '#1477b9'}"></div>
+      <div class="friend-name" style="font-size:15px;font-weight:bold;margin-top:8px">${escapeHTML(f.username)}</div>
+      <div style="font-size:11px;color:#777;margin-top:4px">Jugador en línea</div>
+    </div>
+  `).join('');
+}
+
+function addFriendFromInput(){
+  const input = document.getElementById('addFriendInput');
+  const name = input ? input.value.trim() : "";
+  if(!name) return alert("Escribe un nombre de usuario.");
+
+  const c = current();
+  if(!c) return alert("Debes iniciar sesión.");
+
+  const targetKey = name.toLowerCase();
+  const users = getUsers();
+
+  if(targetKey === c.key) return alert("No puedes agregarte a ti mismo.");
+  if(!users[targetKey]) return alert(`El usuario "${name}" no existe en la base de datos.`);
+  if(c.user.friends.includes(targetKey)) return alert(`¡Ya eres amigo de ${users[targetKey].username}!`);
+
+  c.user.friends.push(targetKey);
+  users[c.key] = c.user;
+  saveUsers(users);
+
+  input.value = "";
+  renderFriends();
+  renderFriendsPage();
+  alert(`✅ Has agregado a ${users[targetKey].username} a tus amigos.`);
+}
+
+function viewFriendProfile(username){
+  const users = getUsers();
+  const friendKey = username.toLowerCase();
+  const friend = users[friendKey];
+  
+  if(!friend) return;
+
+  document.getElementById('friendProfileName').textContent = friend.username + " ✓";
+  document.getElementById('friendProfileUsername').textContent = "@" + friend.username;
+  document.getElementById('friendProfileBio').textContent = friend.bio || "Sin descripción disponible.";
+  document.getElementById('friendProfileAvatar').style.background = friend?.avatar?.colors?.torso || '#1477b9';
+
+  showPage('friendProfile');
+}
+
+function escapeHTML(s){if(!s)return"";const d=document.createElement("div");d.textContent=s;return d.innerHTML}
+function logout(){
+  disconnectMultiplayer();
+  if(gameAnimId) cancelAnimationFrame(gameAnimId);
+  stopAmbientMusic();
+  localStorage.removeItem(SESSION_KEY);
+  document.getElementById('authScreen').style.display="flex";
+  switchAuth("login");
+}
+
+function showPage(p){
+  if(p !== 'webClient') {
+    if(gameAnimId) cancelAnimationFrame(gameAnimId);
+    stopAmbientMusic();
+  }
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  const target = document.getElementById(p);
+  if(target){
+    target.classList.add("active");
+  }
+  if(p==="inventory") loadInventory();
+  if(p==="games") loadGames();
+  if(p==="friends") renderFriendsPage();
+  if(p==="catalog") {
+    renderCatalog('all');
+  }
+  if(p==="avatar") {
+    setTimeout(() => initPreviewRenderer(), 100);
+  }
+  window.scrollTo(0,0);
+}
+
+const games=[
+  ["Epic Obby 3D","🏃 Salta plataformas flotantes y recolecta monedas"],
+  ["Bloxs City 3D","🏙️ Explora rascacielos y zonas urbanas en 3D"],
+  ["Speed Race 3D","🏎️ Compite en pistas con velocidad extrema"],
+  ["Battle Arena 3D","⚔️ Combate y sobrevive en la arena tridimensional"],
+  ["Sky Islands 3D","☁️ Aventura en islas flotantes sobre el cielo"],
+  ["Pet World 3D","🐾 Adopta y cuida mascotas en mundos 3D"]
+];
+
+function loadGames(list=games){
+  const render=(arr)=>arr.map(g=>`<div class="game" onclick="launchWebClient('${g[0]}')"><div class="game-image">3D</div><div class="game-info"><div class="game-name">${g[0]}</div><div class="game-players">${g[1]}</div><button class="play-button">▶ Jugar en 3D</button></div></div>`).join("");
+  document.getElementById('gamesGrid').innerHTML=render(list);
+  document.getElementById('recentGames').innerHTML=render(list.slice(0,6));
+}
+
+function searchGames(t){
+  const gamesPage = document.getElementById('games');
+  if(!gamesPage.classList.contains('active')) showPage("games");
+  const term = t.trim().toLowerCase();
+  loadGames(term ? games.filter(g=>g[0].toLowerCase().includes(term)) : games);
+}
+
+function filterCatalog(category, btnElement) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  if(btnElement) btnElement.classList.add('active');
+  renderCatalog(category);
+}
+
+function catalogIconSVG(item) {
+  const common = 'width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg"';
+  if(item.category === 'hats' && item.id === 'Epic Cap') return `<svg ${common}><path d="M18 49C24 25 72 25 78 49" fill="#1976D2" stroke="#123A63" stroke-width="4"/><path d="M16 48H80C77 61 65 67 48 67C31 67 19 61 16 48Z" fill="#2196F3" stroke="#123A63" stroke-width="4"/><path d="M25 50C38 54 58 54 71 50" stroke="#90CAF9" stroke-width="4" stroke-linecap="round"/></svg>`;
+  if(item.category === 'hats' && item.id === 'Golden Crown') return `<svg ${common}><path d="M17 30L29 44L40 22L48 43L60 22L69 44L80 30L75 66H21L17 30Z" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><rect x="20" y="60" width="56" height="13" rx="4" fill="#FFC107" stroke="#9A6B00" stroke-width="4"/><circle cx="29" cy="43" r="4" fill="#E53935"/><circle cx="60" cy="42" r="4" fill="#1E88E5"/></svg>`;
+  if(item.category === 'shirts' && item.id === 'Blue Shirt') return `<svg ${common}><path d="M25 20L39 14H57L71 20L84 34L70 45L64 36V78H32V36L26 45L12 34L25 20Z" fill="#1976D2" stroke="#123A63" stroke-width="4"/><path d="M39 15C40 28 56 28 57 15" stroke="#90CAF9" stroke-width="4"/></svg>`;
+  if(item.category === 'shirts' && item.id === 'Green Hoodie') return `<svg ${common}><path d="M28 24L39 17H57L68 24L81 38L69 49L64 42V78H32V42L27 49L15 38L28 24Z" fill="#43A047" stroke="#1B5E20" stroke-width="4"/><path d="M38 18C38 32 58 32 58 18" stroke="#A5D6A7" stroke-width="5"/><path d="M43 30H53V52H43Z" fill="#2E7D32"/></svg>`;
+  if(item.category === 'pants' && item.id === 'Classic Jeans') return `<svg ${common}><path d="M27 17H69L75 79H52L48 51L44 79H21L27 17Z" fill="#356AA0" stroke="#173B5E" stroke-width="4"/><path d="M48 20V50" stroke="#8FB6D9" stroke-width="3"/></svg>`;
+  if(item.category === 'pants' && item.id === 'Dark Cargo Pants') return `<svg ${common}><path d="M27 17H69L75 79H52L48 51L44 79H21L27 17Z" fill="#37474F" stroke="#172126" stroke-width="4"/><rect x="24" y="43" width="17" height="13" rx="2" fill="#607D8B"/><rect x="55" y="43" width="17" height="13" rx="2" fill="#607D8B"/></svg>`;
+  if(item.category === 'faces' && item.id === 'Classic Smile') return `<svg ${common}><circle cx="48" cy="48" r="34" fill="#F5C928" stroke="#9A7B00" stroke-width="4"/><circle cx="36" cy="40" r="4" fill="#222"/><circle cx="60" cy="40" r="4" fill="#222"/><path d="M33 54C39 65 57 65 63 54" stroke="#222" stroke-width="4" stroke-linecap="round"/></svg>`;
+  if(item.category === 'faces' && item.id === 'Cool Wink') return `<svg ${common}><circle cx="48" cy="48" r="34" fill="#F5C928" stroke="#9A7B00" stroke-width="4"/><circle cx="35" cy="41" r="4" fill="#222"/><path d="M57 40C63 35 68 40 63 44" stroke="#222" stroke-width="4" stroke-linecap="round"/><path d="M35 56C42 62 53 62 60 55" stroke="#222" stroke-width="4" stroke-linecap="round"/></svg>`;
+  if(item.category === 'gear' && item.id === 'Classic Shades') return `<svg ${common}><path d="M14 43C20 37 32 36 45 42V55C31 60 20 58 14 52V43Z" fill="#222" stroke="#111" stroke-width="4"/><path d="M82 43C76 37 64 36 51 42V55C65 60 76 58 82 52V43Z" fill="#222" stroke="#111" stroke-width="4"/><path d="M45 44H51" stroke="#111" stroke-width="5"/></svg>`;
+  if(item.category === 'gear' && item.id === 'Cool Backpack') return `<svg ${common}><rect x="25" y="23" width="46" height="55" rx="10" fill="#8D5A32" stroke="#4E2F1A" stroke-width="4"/><path d="M35 24C35 10 61 10 61 24" stroke="#4E2F1A" stroke-width="7" fill="none"/><rect x="31" y="46" width="34" height="17" rx="5" fill="#B77A45" stroke="#4E2F1A" stroke-width="3"/><circle cx="48" cy="54" r="3" fill="#4E2F1A"/></svg>`;
+  return `<svg ${common}><rect x="18" y="18" width="60" height="60" rx="12" fill="#E9EEF3" stroke="#9AA7B2" stroke-width="4"/><path d="M30 50H66" stroke="#1684E8" stroke-width="6" stroke-linecap="round"/></svg>`;
+}
+
+function renderCatalog(category) {
+  const container = document.getElementById('catalogGridContainer');
+  if(!container) return;
+  const filtered = category === 'all' ? catalogDatabase : catalogDatabase.filter(item => item.category === category);
+  container.innerHTML = filtered.map(item => `
+    <div class="catalog-item">
+      <div class="catalog-image">${catalogIconSVG(item)}</div>
+      <h3 style="margin:5px 0">${item.name}</h3>
+      <p style="color:#666;font-size:12px;margin:3px 0">${item.desc}</p>
+      <p style="color:#666;font-size:13px;margin:5px 0">☀️ ${item.price} Sunnys</p>
+      <button class="buy" id="cat-btn-${item.id}" onclick="buy('${item.id}', ${item.price})">Buy</button>
+    </div>
+  `).join('');
+  const c = current();
+  if(c) updateCatalogButtons(c.user);
+}
+
+function buy(item,price){
+  const c=current();if(!c)return alert("Debes iniciar sesión.");
+  c.user.inventory = c.user.inventory || [];
+  if(c.user.inventory.includes(item))return alert("Ya tienes este artículo.");
+  if((c.user.sunnys || 0) < price)return alert("❌ No tienes suficientes Sunnys.");
+  c.user.sunnys -= price;
+  c.user.inventory.push(item);
+  const u=getUsers();u[c.key]=c.user;saveUsers(u);
+  updateUI(c.user);loadInventory();renderCatalog(document.querySelector('.cat-tab.active')?.textContent.includes('Sombreros') ? 'hats' : 'all');alert("✅ Compraste "+item+"!");
+}
+
+function updateCatalogButtons(u){
+  const inv = (u && u.inventory) || [];
+  catalogDatabase.forEach(item => {
+    const btn = document.getElementById(`cat-btn-${item.id}`);
+    if(btn){
+      if(inv.includes(item.id)){
+        btn.textContent = "Comprado";
+        btn.disabled = true;
+        btn.style.background = "#888";
+        btn.style.boxShadow = "none";
+        btn.style.cursor = "default";
+      } else {
+        btn.textContent = "Buy";
+        btn.disabled = false;
+        btn.style.background = "linear-gradient(135deg,#1684e8,#0d5aa7)";
+        btn.style.boxShadow = "0 2px 5px rgba(22,132,232,0.3)";
+        btn.style.cursor = "pointer";
+      }
+    }
+  });
+}
+
+function updateAccessoryButtons(u){
+  const accContainer = document.getElementById('accessoryButtons');
+  if(!accContainer) return;
+  const inv = (u && u.inventory) || [];
+  const equipped = (u && u.avatar && u.avatar.accessories) || [];
+  
+  let html = `<p style="font-size:12px;color:#555;margin:0 0 8px;">Haz clic para equipar o desequipar múltiples ítems y ropa 2D:</p>`;
+  html += `<button class="section-button" style="background:#d93025;margin-right:6px;margin-bottom:6px;" onclick="toggleAccessory('normal')">Quitar Todo</button>`;
+  
+  let hasAny = false;
+  
+  catalogDatabase.forEach(item => {
+    if(inv.includes(item.id)) {
+      hasAny = true;
+      const isEquipped = equipped.includes(item.id);
+      html += `<button class="section-button" style="background:${isEquipped ? '#188038' : '#292929'};margin-right:6px;margin-bottom:6px;" onclick="toggleAccessory('${item.id}')">${isEquipped ? '✓ Quitar ' : '+ Poner '} ${item.name}</button>`;
+    }
+  });
+  
+  if(!hasAny) {
+    html += `<p style="font-size:12px;color:#777;">No tienes accesorios comprados. Visita el Catálogo.</p>`;
+  }
+  accContainer.innerHTML = html;
+}
+
+function loadInventory(){
+  const c=current();const inventoryGrid = document.getElementById('inventoryGrid');
+  if(!c){inventoryGrid.innerHTML="";return}
+  const inv = c.user.inventory || [];
+  inventoryGrid.innerHTML=inv.length?inv.map(i=>`<div class="inventory-item"><div class="catalog-image" style="background:radial-gradient(circle,#ffffff 0%,#f0f2f5 100%);display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px;color:#333">${i}</div><h3 style="margin:5px 0 0 0;font-size:15px;text-align:center;">${i}</h3></div>`).join(""):"<p>Tu inventario está vacío. Ve al Catálogo para obtener accesorios.</p>";
+}
+
+const colors=["#f5c928","#ff0000","#00aaff","#00cc66","#ffffff","#222222","#ff8c42","#9b59b6","#ff69b4"];
+function makeColorButtons(id,part){document.getElementById(id).innerHTML=colors.map(c=>`<button class="color-button" style="background:${c}" onclick="setBodyColor('${part}','${c}')"></button>`).join("")}
+
+function setBodyColor(part,color){
+  const c=current();if(!c)return;
+  c.user.avatar = c.user.avatar || {accessories:[],colors:{}};
+  c.user.avatar.colors = c.user.avatar.colors || {};
+  c.user.avatar.colors[part]=color;
+  const u=getUsers();u[c.key]=c.user;saveUsers(u);
+  updateUI(c.user);
+  updatePreviewAvatar3D();
+  sendAvatarUpdateToMultiplayer();
+}
+
+function toggleAccessory(a){
+  const c=current();if(!c)return;
+  c.user.avatar = c.user.avatar || {colors:{}, accessories:[]};
+  c.user.avatar.accessories = c.user.avatar.accessories || [];
+  
+  if(a === 'normal') {
+    c.user.avatar.accessories = [];
+  } else {
+    // Si es cara, camisa o pantalón, reemplazar el de la misma categoría para evitar conflictos
+    const itemData = catalogDatabase.find(item => item.id === a);
+    if(itemData) {
+      if(itemData.category === 'faces') {
+        c.user.avatar.accessories = c.user.avatar.accessories.filter(acc => !["Classic Smile", "Cool Wink"].includes(acc));
+      } else if(itemData.category === 'shirts') {
+        c.user.avatar.accessories = c.user.avatar.accessories.filter(acc => !["Blue Shirt", "Green Hoodie"].includes(acc));
+      } else if(itemData.category === 'pants') {
+        c.user.avatar.accessories = c.user.avatar.accessories.filter(acc => !["Classic Jeans", "Dark Cargo Pants"].includes(acc));
+      }
+    }
+
+    const idx = c.user.avatar.accessories.indexOf(a);
+    if(idx > -1) {
+      c.user.avatar.accessories.splice(idx, 1);
+    } else {
+      c.user.avatar.accessories.push(a);
+    }
+  }
+
+  const u=getUsers();u[c.key]=c.user;saveUsers(u);
+  updateUI(c.user);
+  updatePreviewAvatar3D();
+  sendAvatarUpdateToMultiplayer();
+}
+
+function toggleChat(){const chatWindow = document.getElementById('chatWindow'); chatWindow.style.display=chatWindow.style.display==="block"?"none":"block"}
+function resetLocalData(){if(confirm("¿Borrar todas las cuentas locales de este navegador?")){localStorage.removeItem(USERS_KEY);localStorage.removeItem(SESSION_KEY);location.reload()}}
+
+function init(){
+  seedTestUsers();
+  makeColorButtons("headColors","head");makeColorButtons("armColors","arms");makeColorButtons("torsoColors","torso");makeColorButtons("legsColors","legs");
+  const c=current();if(c)loadCurrentUser();else document.getElementById('authScreen').style.display="flex";
+  loadGames();
+}
+init();
+</script>
+</body>
+</html>
