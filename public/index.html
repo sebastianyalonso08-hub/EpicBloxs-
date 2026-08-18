@@ -410,36 +410,153 @@ function createFaceTexture(headColor, faceName) {
   return texture;
 }
 
-// Textura 2D de camisa estilo Roblox para el Torso
+// Textura 2D de camisa estilo Roblox para el Torso (mejorada)
+// Helper: rounded rectangle compatible con más navegadores
+function roundRectPath(ctx, x, y, w, h, r) {
+  if (ctx.roundRect) { ctx.roundRect(x, y, w, h, r); return; }
+  r = Math.min(r, w/2, h/2);
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
 function createShirtTexture(torsoColor, shirtName) {
   const canvas = document.createElement('canvas');
   canvas.width = 256;
   canvas.height = 256;
   const ctx = canvas.getContext('2d');
 
+  // Fondo base (color del torso si no hay camisa)
   ctx.fillStyle = torsoColor || '#1477b9';
   ctx.fillRect(0, 0, 256, 256);
 
   if(shirtName === 'Blue Shirt') {
-    ctx.fillStyle = '#1e90ff';
+    // Base azul con degradado
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0, '#42a5f5');
+    grad.addColorStop(0.4, '#1e88e5');
+    grad.addColorStop(1, '#1565c0');
+    ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 256, 256);
-    // Cuello blanco
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(96, 0, 64, 40);
-    // Rayas o diseño central
-    ctx.fillStyle = '#0d5aa7';
-    ctx.fillRect(40, 80, 176, 120);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 36px Arial';
+
+    // Sombra lateral suave
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.fillRect(0, 0, 40, 256);
+    ctx.fillRect(216, 0, 40, 256);
+
+    // Cuello en V blanco
+    ctx.fillStyle = '#f5f5f5';
+    ctx.beginPath();
+    ctx.moveTo(78, 0);
+    ctx.lineTo(128, 52);
+    ctx.lineTo(178, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#cfd8dc';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(78, 0);
+    ctx.lineTo(128, 52);
+    ctx.lineTo(178, 0);
+    ctx.stroke();
+
+    // Panel central más oscuro
+    ctx.fillStyle = '#0d47a1';
+    ctx.fillRect(48, 70, 160, 150);
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.fillRect(48, 70, 160, 20);
+
+    // Costuras verticales
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(70, 70); ctx.lineTo(70, 220);
+    ctx.moveTo(186, 70); ctx.lineTo(186, 220);
+    ctx.stroke();
+
+    // Logo EB con sombra
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.font = 'bold 42px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('EB', 128, 150);
+    ctx.fillText('EB', 130, 158);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('EB', 128, 155);
+
+    // Botones
+    ctx.fillStyle = '#eceff1';
+    for(let y of [90, 120, 150, 180]) {
+      ctx.beginPath();
+      ctx.arc(128, y, 5, 0, Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = '#90a4ae';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
   } else if(shirtName === 'Green Hoodie') {
-    ctx.fillStyle = '#2e7d32';
+    // Base verde con degradado
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0, '#66bb6a');
+    grad.addColorStop(0.5, '#43a047');
+    grad.addColorStop(1, '#2e7d32');
+    ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 256, 256);
+
+    // Capucha central más oscura
     ctx.fillStyle = '#1b5e20';
-    ctx.fillRect(80, 0, 96, 256); // Capucha central
-    ctx.fillStyle = '#ffcc00';
-    ctx.fillRect(122, 100, 12, 100); // Cierre
+    ctx.fillRect(72, 0, 112, 256);
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.fillRect(80, 0, 20, 256);
+
+    // Cuello de capucha
+    ctx.fillStyle = '#0d3b12';
+    ctx.beginPath();
+    ctx.ellipse(128, 18, 55, 28, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#2e7d32';
+    ctx.beginPath();
+    ctx.ellipse(128, 22, 42, 18, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // Cierre dorado con detalle
+    ctx.fillStyle = '#ffc107';
+    ctx.fillRect(120, 70, 16, 140);
+    ctx.fillStyle = '#ff8f00';
+    ctx.fillRect(122, 72, 12, 136);
+    ctx.fillStyle = '#ffe082';
+    for(let y = 80; y < 200; y += 10) {
+      ctx.fillRect(122, y, 12, 3);
+    }
+
+    // Cordones de la capucha
+    ctx.strokeStyle = '#c8e6c9';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(100, 40); ctx.lineTo(95, 95);
+    ctx.moveTo(156, 40); ctx.lineTo(161, 95);
+    ctx.stroke();
+    ctx.fillStyle = '#a5d6a7';
+    ctx.beginPath(); ctx.arc(95, 98, 6, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(161, 98, 6, 0, Math.PI*2); ctx.fill();
+
+    // Bolsillo canguro
+    ctx.fillStyle = '#1b5e20';
+    ctx.beginPath();
+    roundRectPath(ctx, 70, 150, 116, 55, 8);
+    ctx.fill();
+    ctx.strokeStyle = '#0d3b12';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    roundRectPath(ctx, 70, 150, 116, 55, 8);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.moveTo(85, 165); ctx.lineTo(171, 165);
+    ctx.stroke();
   }
 
   const texture = new THREE.CanvasTexture(canvas);
@@ -447,7 +564,7 @@ function createShirtTexture(torsoColor, shirtName) {
   return texture;
 }
 
-// Textura 2D de pantalones estilo Roblox para las Piernas
+// Textura 2D de pantalones estilo Roblox para las Piernas (mejorada)
 function createPantsTexture(legsColor, pantsName) {
   const canvas = document.createElement('canvas');
   canvas.width = 256;
@@ -458,19 +575,131 @@ function createPantsTexture(legsColor, pantsName) {
   ctx.fillRect(0, 0, 256, 256);
 
   if(pantsName === 'Classic Jeans') {
-    ctx.fillStyle = '#2c3e50';
+    // Base denim
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0, '#5c6bc0');
+    grad.addColorStop(0.3, '#3949ab');
+    grad.addColorStop(1, '#283593');
+    ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 256, 256);
-    ctx.fillStyle = '#1a252f';
-    ctx.fillRect(116, 0, 24, 256); // División de piernas
+
+    // Textura sutil de denim
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    for(let i = -256; i < 512; i += 8) {
+      ctx.beginPath();
+      ctx.moveTo(i, 0); ctx.lineTo(i + 256, 256);
+      ctx.stroke();
+    }
+
+    // Pretina / cinturón
+    ctx.fillStyle = '#1a237e';
+    ctx.fillRect(0, 0, 256, 28);
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.fillRect(0, 0, 256, 6);
+    // Hebilla
+    ctx.fillStyle = '#c0c0c0';
+    ctx.fillRect(112, 6, 32, 16);
+    ctx.fillStyle = '#1a237e';
+    ctx.fillRect(118, 10, 20, 8);
+
+    // Costura central (entrepierna)
+    ctx.strokeStyle = '#e8eaf6';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(128, 28); ctx.lineTo(128, 256);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(232,234,246,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(122, 28); ctx.lineTo(122, 256);
+    ctx.moveTo(134, 28); ctx.lineTo(134, 256);
+    ctx.stroke();
+
+    // Bolsillos delanteros
+    ctx.strokeStyle = '#e8eaf6';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(20, 40); ctx.lineTo(20, 95); ctx.lineTo(70, 95); ctx.lineTo(70, 55);
+    ctx.quadraticCurveTo(70, 40, 50, 40); ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(236, 40); ctx.lineTo(236, 95); ctx.lineTo(186, 95); ctx.lineTo(186, 55);
+    ctx.quadraticCurveTo(186, 40, 206, 40); ctx.closePath();
+    ctx.stroke();
+
+    // Costuras laterales
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(8, 28); ctx.lineTo(8, 256);
+    ctx.moveTo(248, 28); ctx.lineTo(248, 256);
+    ctx.stroke();
+
   } else if(pantsName === 'Dark Cargo Pants') {
-    ctx.fillStyle = '#34495e';
+    // Base oscura
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0, '#546e7a');
+    grad.addColorStop(0.4, '#37474f');
+    grad.addColorStop(1, '#263238');
+    ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 256, 256);
-    ctx.fillStyle = '#7f8c8d';
-    // Bolsillos laterales simulados
-    ctx.fillRect(20, 100, 30, 50);
-    ctx.fillRect(206, 100, 30, 50);
-    ctx.fillStyle = '#2c3e50';
-    ctx.fillRect(116, 0, 24, 256);
+
+    // Pretina
+    ctx.fillStyle = '#1c2529';
+    ctx.fillRect(0, 0, 256, 26);
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.fillRect(0, 0, 256, 5);
+    // Botones de pretina
+    ctx.fillStyle = '#90a4ae';
+    for(let x of [40, 80, 176, 216]) {
+      ctx.beginPath(); ctx.arc(x, 13, 4, 0, Math.PI*2); ctx.fill();
+    }
+
+    // Costura central
+    ctx.strokeStyle = '#78909c';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(128, 26); ctx.lineTo(128, 256);
+    ctx.stroke();
+
+    // Bolsillos cargo
+    function drawCargoPocket(x, y, w, h) {
+      ctx.fillStyle = '#455a64';
+      ctx.beginPath();
+      roundRectPath(ctx, x, y, w, h, 4);
+      ctx.fill();
+      ctx.strokeStyle = '#1c2529';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      roundRectPath(ctx, x, y, w, h, 4);
+      ctx.stroke();
+      // Solapa
+      ctx.fillStyle = '#37474f';
+      ctx.beginPath();
+      roundRectPath(ctx, x, y, w, 14, 3);
+      ctx.fill();
+      ctx.beginPath();
+      roundRectPath(ctx, x, y, w, 14, 3);
+      ctx.stroke();
+      // Botón
+      ctx.fillStyle = '#90a4ae';
+      ctx.beginPath();
+      ctx.arc(x + w/2, y + 7, 3.5, 0, Math.PI*2);
+      ctx.fill();
+    }
+    drawCargoPocket(12, 70, 48, 70);
+    drawCargoPocket(196, 70, 48, 70);
+    drawCargoPocket(12, 160, 48, 55);
+    drawCargoPocket(196, 160, 48, 55);
+
+    // Costuras laterales
+    ctx.strokeStyle = 'rgba(144,164,174,0.35)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(6, 26); ctx.lineTo(6, 256);
+    ctx.moveTo(250, 26); ctx.lineTo(250, 256);
+    ctx.stroke();
   }
 
   const texture = new THREE.CanvasTexture(canvas);
@@ -575,26 +804,38 @@ function buildAvatar3DModel(userData) {
   const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), headMaterials);
   headMesh.position.set(0, 2.0, 0);
   headMesh.name = "head";
+  headMesh.castShadow = true;
+  headMesh.receiveShadow = true;
 
   const torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 0.6), torsoMat);
   torsoMesh.position.set(0, 1.05, 0);
   torsoMesh.name = "torso";
+  torsoMesh.castShadow = true;
+  torsoMesh.receiveShadow = true;
 
   const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.45, 1.4, 0.5), armMat);
   leftArm.position.set(-0.9, 1.05, 0);
   leftArm.name = "leftArm";
+  leftArm.castShadow = true;
+  leftArm.receiveShadow = true;
 
   const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.45, 1.4, 0.5), armMat);
   rightArm.position.set(0.9, 1.05, 0);
   rightArm.name = "rightArm";
+  rightArm.castShadow = true;
+  rightArm.receiveShadow = true;
 
   const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.3, 0.55), legMat);
   leftLeg.position.set(-0.32, -0.15, 0);
   leftLeg.name = "leftLeg";
+  leftLeg.castShadow = true;
+  leftLeg.receiveShadow = true;
 
   const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.3, 0.55), legMat);
   rightLeg.position.set(0.32, -0.15, 0);
   rightLeg.name = "rightLeg";
+  rightLeg.castShadow = true;
+  rightLeg.receiveShadow = true;
 
   avatarGroup.add(headMesh, torsoMesh, leftArm, rightArm, leftLeg, rightLeg);
 
@@ -603,6 +844,12 @@ function buildAvatar3DModel(userData) {
     accessories.forEach(accName => {
       if(accName !== "Classic Smile" && accName !== "Cool Wink" && accName !== "Blue Shirt" && accName !== "Green Hoodie" && accName !== "Classic Jeans" && accName !== "Dark Cargo Pants") {
         const accMesh = createAccessoryMesh(accName);
+        accMesh.traverse(child => {
+          if(child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
         avatarGroup.add(accMesh);
       }
     });
@@ -626,13 +873,57 @@ function initPreviewRenderer() {
 
   previewRenderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
   previewRenderer.setSize(width, height);
+  // Sombras dinámicas
+  previewRenderer.shadowMap.enabled = true;
+  previewRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
   container.appendChild(previewRenderer.domElement);
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
   previewScene.add(ambientLight);
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
-  dirLight.position.set(5, 10, 7);
+
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
+  dirLight.position.set(4, 10, 6);
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.width = 1024;
+  dirLight.shadow.mapSize.height = 1024;
+  dirLight.shadow.camera.near = 0.5;
+  dirLight.shadow.camera.far = 30;
+  dirLight.shadow.camera.left = -4;
+  dirLight.shadow.camera.right = 4;
+  dirLight.shadow.camera.top = 4;
+  dirLight.shadow.camera.bottom = -4;
+  dirLight.shadow.bias = -0.002;
+  dirLight.shadow.radius = 3;
   previewScene.add(dirLight);
+
+  // Luz de relleno suave (sin sombras)
+  const fillLight = new THREE.DirectionalLight(0xb3e5fc, 0.25);
+  fillLight.position.set(-4, 4, -3);
+  previewScene.add(fillLight);
+
+  // Suelo que recibe sombras del avatar (pies ~ y=-0.38)
+  const groundGeo = new THREE.CircleGeometry(1.8, 48);
+  const groundMat = new THREE.MeshLambertMaterial({
+    color: 0x7bb957,
+    transparent: true,
+    opacity: 0.95
+  });
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -0.42;
+  ground.receiveShadow = true;
+  ground.name = "previewGround";
+  previewScene.add(ground);
+
+  // Disco de sombra de contacto sutil
+  const shadowDisc = new THREE.Mesh(
+    new THREE.CircleGeometry(0.5, 32),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.15 })
+  );
+  shadowDisc.rotation.x = -Math.PI / 2;
+  shadowDisc.position.y = -0.41;
+  shadowDisc.name = "previewShadowDisc";
+  previewScene.add(shadowDisc);
 
   updatePreviewAvatar3D();
   startPreviewAnimation();
@@ -741,6 +1032,9 @@ function initGameWebGL(gameName) {
   
   gameRenderer = new THREE.WebGLRenderer({antialias: true});
   gameRenderer.setSize(width, height);
+  // Sombras dinámicas en el cliente de juego
+  gameRenderer.shadowMap.enabled = true;
+  gameRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
   container.appendChild(gameRenderer.domElement);
 
   container.addEventListener('contextmenu', e => e.preventDefault());
@@ -771,11 +1065,28 @@ function initGameWebGL(gameName) {
     }
   });
 
-  const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+  const ambient = new THREE.AmbientLight(0xffffff, 0.45);
   gameScene.add(ambient);
-  const sun = new THREE.DirectionalLight(0xffffff, 0.8);
-  sun.position.set(10, 20, 10);
+
+  const sun = new THREE.DirectionalLight(0xfff5e6, 1.0);
+  sun.position.set(12, 25, 10);
+  sun.castShadow = true;
+  sun.shadow.mapSize.width = 2048;
+  sun.shadow.mapSize.height = 2048;
+  sun.shadow.camera.near = 1;
+  sun.shadow.camera.far = 80;
+  sun.shadow.camera.left = -30;
+  sun.shadow.camera.right = 30;
+  sun.shadow.camera.top = 30;
+  sun.shadow.camera.bottom = -30;
+  sun.shadow.bias = -0.0015;
+  sun.shadow.radius = 2.5;
   gameScene.add(sun);
+
+  // Luz de relleno (sin sombras) para suavizar
+  const fill = new THREE.DirectionalLight(0xa0d8ff, 0.3);
+  fill.position.set(-8, 10, -6);
+  gameScene.add(fill);
 
   buildUniqueGameWorld(gameName);
 
@@ -798,6 +1109,7 @@ function buildUniqueGameWorld(gameName) {
 
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.position.set(0, -0.5, 0);
+  floor.receiveShadow = true;
   gameScene.add(floor);
 
   if(gameName.includes("Obby")) {
@@ -808,6 +1120,8 @@ function buildUniqueGameWorld(gameName) {
       const platZ = -i * 5;
       const plat = new THREE.Mesh(new THREE.BoxGeometry(4, 0.6, 4), platMat);
       plat.position.set(platX, platY, platZ);
+      plat.castShadow = true;
+      plat.receiveShadow = true;
       gameScene.add(plat);
       activePlatforms.push({ x: platX, y: platY, z: platZ, width: 4, height: 0.6, depth: 4 });
     }
@@ -817,6 +1131,8 @@ function buildUniqueGameWorld(gameName) {
       const bHeight = 6 + Math.abs(i) * 3;
       const b = new THREE.Mesh(new THREE.BoxGeometry(3, bHeight, 3), bMat);
       b.position.set(i * 5, bHeight / 2 - 0.5, -12);
+      b.castShadow = true;
+      b.receiveShadow = true;
       gameScene.add(b);
     }
   }
@@ -827,6 +1143,7 @@ function buildUniqueGameWorld(gameName) {
     const coin = new THREE.Mesh(coinGeo, coinMat);
     coin.rotation.x = Math.PI / 2;
     coin.position.set((Math.random() - 0.5) * 40, 0.4, (Math.random() - 0.5) * 40);
+    coin.castShadow = true;
     gameScene.add(coin);
     collectibleCoins.push(coin);
   }
@@ -1634,10 +1951,10 @@ function catalogIconSVG(item) {
   const common = 'width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg"';
   if(item.category === 'hats' && item.id === 'Epic Cap') return `<svg ${common}><path d="M18 49C24 25 72 25 78 49" fill="#1976D2" stroke="#123A63" stroke-width="4"/><path d="M16 48H80C77 61 65 67 48 67C31 67 19 61 16 48Z" fill="#2196F3" stroke="#123A63" stroke-width="4"/><path d="M25 50C38 54 58 54 71 50" stroke="#90CAF9" stroke-width="4" stroke-linecap="round"/></svg>`;
   if(item.category === 'hats' && item.id === 'Golden Crown') return `<svg ${common}><path d="M17 30L29 44L40 22L48 43L60 22L69 44L80 30L75 66H21L17 30Z" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><rect x="20" y="60" width="56" height="13" rx="4" fill="#FFC107" stroke="#9A6B00" stroke-width="4"/><circle cx="29" cy="43" r="4" fill="#E53935"/><circle cx="60" cy="42" r="4" fill="#1E88E5"/></svg>`;
-  if(item.category === 'shirts' && item.id === 'Blue Shirt') return `<svg ${common}><path d="M25 20L39 14H57L71 20L84 34L70 45L64 36V78H32V36L26 45L12 34L25 20Z" fill="#1976D2" stroke="#123A63" stroke-width="4"/><path d="M39 15C40 28 56 28 57 15" stroke="#90CAF9" stroke-width="4"/></svg>`;
-  if(item.category === 'shirts' && item.id === 'Green Hoodie') return `<svg ${common}><path d="M28 24L39 17H57L68 24L81 38L69 49L64 42V78H32V42L27 49L15 38L28 24Z" fill="#43A047" stroke="#1B5E20" stroke-width="4"/><path d="M38 18C38 32 58 32 58 18" stroke="#A5D6A7" stroke-width="5"/><path d="M43 30H53V52H43Z" fill="#2E7D32"/></svg>`;
-  if(item.category === 'pants' && item.id === 'Classic Jeans') return `<svg ${common}><path d="M27 17H69L75 79H52L48 51L44 79H21L27 17Z" fill="#356AA0" stroke="#173B5E" stroke-width="4"/><path d="M48 20V50" stroke="#8FB6D9" stroke-width="3"/></svg>`;
-  if(item.category === 'pants' && item.id === 'Dark Cargo Pants') return `<svg ${common}><path d="M27 17H69L75 79H52L48 51L44 79H21L27 17Z" fill="#37474F" stroke="#172126" stroke-width="4"/><rect x="24" y="43" width="17" height="13" rx="2" fill="#607D8B"/><rect x="55" y="43" width="17" height="13" rx="2" fill="#607D8B"/></svg>`;
+  if(item.category === 'shirts' && item.id === 'Blue Shirt') return `<svg ${common}><defs><linearGradient id="bsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#42A5F5"/><stop offset="100%" stop-color="#1565C0"/></linearGradient></defs><path d="M25 20L39 14H57L71 20L84 34L70 45L64 36V78H32V36L26 45L12 34L25 20Z" fill="url(#bsg)" stroke="#0D47A1" stroke-width="3.5"/><path d="M39 14L48 42L57 14" fill="#F5F5F5" stroke="#CFD8DC" stroke-width="2"/><rect x="36" y="48" width="24" height="26" rx="2" fill="#0D47A1"/><text x="48" y="66" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="Arial">EB</text><circle cx="48" cy="52" r="2" fill="#ECEFF1"/><circle cx="48" cy="60" r="2" fill="#ECEFF1"/><circle cx="48" cy="68" r="2" fill="#ECEFF1"/></svg>`;
+  if(item.category === 'shirts' && item.id === 'Green Hoodie') return `<svg ${common}><defs><linearGradient id="ghg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#66BB6A"/><stop offset="100%" stop-color="#2E7D32"/></linearGradient></defs><path d="M28 24L39 17H57L68 24L81 38L69 49L64 42V78H32V42L27 49L15 38L28 24Z" fill="url(#ghg)" stroke="#1B5E20" stroke-width="3.5"/><path d="M38 18C38 34 58 34 58 18" stroke="#A5D6A7" stroke-width="5" fill="none"/><rect x="45" y="32" width="6" height="36" rx="1" fill="#FFC107"/><path d="M42 28L40 48M54 28L56 48" stroke="#C8E6C9" stroke-width="2.5" stroke-linecap="round"/><rect x="34" y="55" width="28" height="14" rx="3" fill="#1B5E20" stroke="#0D3B12" stroke-width="1.5"/></svg>`;
+  if(item.category === 'pants' && item.id === 'Classic Jeans') return `<svg ${common}><defs><linearGradient id="cjg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5C6BC0"/><stop offset="100%" stop-color="#283593"/></linearGradient></defs><path d="M27 17H69L75 79H52L48 51L44 79H21L27 17Z" fill="url(#cjg)" stroke="#1A237E" stroke-width="3.5"/><rect x="27" y="17" width="42" height="8" fill="#1A237E"/><rect x="42" y="19" width="12" height="5" rx="1" fill="#C0C0C0"/><path d="M48 25V78" stroke="#E8EAF6" stroke-width="2.5"/><path d="M32 30L32 48L42 48" stroke="#E8EAF6" stroke-width="1.8" fill="none"/><path d="M64 30L64 48L54 48" stroke="#E8EAF6" stroke-width="1.8" fill="none"/></svg>`;
+  if(item.category === 'pants' && item.id === 'Dark Cargo Pants') return `<svg ${common}><defs><linearGradient id="dcg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#546E7A"/><stop offset="100%" stop-color="#263238"/></linearGradient></defs><path d="M27 17H69L75 79H52L48 51L44 79H21L27 17Z" fill="url(#dcg)" stroke="#1C2529" stroke-width="3.5"/><rect x="27" y="17" width="42" height="7" fill="#1C2529"/><path d="M48 24V78" stroke="#78909C" stroke-width="2"/><rect x="24" y="38" width="14" height="18" rx="2" fill="#455A64" stroke="#1C2529" stroke-width="1.5"/><rect x="24" y="38" width="14" height="5" rx="1" fill="#37474F"/><rect x="58" y="38" width="14" height="18" rx="2" fill="#455A64" stroke="#1C2529" stroke-width="1.5"/><rect x="58" y="38" width="14" height="5" rx="1" fill="#37474F"/><rect x="24" y="60" width="14" height="14" rx="2" fill="#455A64" stroke="#1C2529" stroke-width="1.5"/><rect x="58" y="60" width="14" height="14" rx="2" fill="#455A64" stroke="#1C2529" stroke-width="1.5"/></svg>`;
   if(item.category === 'faces' && item.id === 'Classic Smile') return `<svg ${common}><circle cx="48" cy="48" r="34" fill="#F5C928" stroke="#9A7B00" stroke-width="4"/><circle cx="36" cy="40" r="4" fill="#222"/><circle cx="60" cy="40" r="4" fill="#222"/><path d="M33 54C39 65 57 65 63 54" stroke="#222" stroke-width="4" stroke-linecap="round"/></svg>`;
   if(item.category === 'faces' && item.id === 'Cool Wink') return `<svg ${common}><circle cx="48" cy="48" r="34" fill="#F5C928" stroke="#9A7B00" stroke-width="4"/><circle cx="35" cy="41" r="4" fill="#222"/><path d="M57 40C63 35 68 40 63 44" stroke="#222" stroke-width="4" stroke-linecap="round"/><path d="M35 56C42 62 53 62 60 55" stroke="#222" stroke-width="4" stroke-linecap="round"/></svg>`;
   if(item.category === 'gear' && item.id === 'Classic Shades') return `<svg ${common}><path d="M14 43C20 37 32 36 45 42V55C31 60 20 58 14 52V43Z" fill="#222" stroke="#111" stroke-width="4"/><path d="M82 43C76 37 64 36 51 42V55C65 60 76 58 82 52V43Z" fill="#222" stroke="#111" stroke-width="4"/><path d="M45 44H51" stroke="#111" stroke-width="5"/></svg>`;
@@ -1724,7 +2041,11 @@ function loadInventory(){
   const c=current();const inventoryGrid = document.getElementById('inventoryGrid');
   if(!c){inventoryGrid.innerHTML="";return}
   const inv = c.user.inventory || [];
-  inventoryGrid.innerHTML=inv.length?inv.map(i=>`<div class="inventory-item"><div class="catalog-image" style="background:radial-gradient(circle,#ffffff 0%,#f0f2f5 100%);display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px;color:#333">${i}</div><h3 style="margin:5px 0 0 0;font-size:15px;text-align:center;">${i}</h3></div>`).join(""):"<p>Tu inventario está vacío. Ve al Catálogo para obtener accesorios.</p>";
+  inventoryGrid.innerHTML=inv.length?inv.map(i=>{
+    const item = catalogDatabase.find(it => it.id === i);
+    const icon = item ? catalogIconSVG(item) : `<span style="font-weight:bold;font-size:13px;color:#333">${i}</span>`;
+    return `<div class="inventory-item"><div class="catalog-image">${icon}</div><h3 style="margin:5px 0 0 0;font-size:15px;text-align:center;">${i}</h3></div>`;
+  }).join(""):"<p>Tu inventario está vacío. Ve al Catálogo para obtener accesorios.</p>";
 }
 
 const colors=["#f5c928","#ff0000","#00aaff","#00cc66","#ffffff","#222222","#ff8c42","#9b59b6","#ff69b4"];
