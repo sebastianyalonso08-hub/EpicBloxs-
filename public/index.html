@@ -1636,20 +1636,24 @@ function makeLocalId(prefix) {
 }
 
 function getGameId(gameName) {
+  // IDs estables por nombre de juego (misma sala para todos los que juegan el mismo mapa)
   const known = {
     "Bloxs City ":"CITY-7F42",
     "Epic Obby ":"OBBY-91AC",
-    "Bloxs Racing ":"RACE-33D8",
-    "Bloxs Survival":"SURV-8201",
-    "Bloxs Tycoon":"TYCN-52A7",
-    "Bloxs Simulator":"SIM-44C1",
-    "Bloxs Adventure":"ADV-19E4",
-    "Bloxs PvP Arena":"PVP-73B2",
-    "Bloxs Mystery":"MYST-68D0"
+    "Speed Race ":"RACE-33D8",
+    "Battle Arena ":"PVP-73B2",
+    "Sky Islands ":"SKY-19E4",
+    "Pet World ":"PET-44C1"
   };
-  if (known[gameName]) return known[gameName];
-  return "GAME-" + btoa(unescape(encodeURIComponent(gameName)))
-    .replace(/[^A-Z0-9]/gi,"").slice(0,8).toUpperCase();
+  const trimmed = String(gameName || "").trim();
+  for (const [k, v] of Object.entries(known)) {
+    if (k.trim() === trimmed || gameName === k) return v;
+  }
+  // Fallback determinista: mismo nombre → mismo ID
+  let hash = 0;
+  const s = trimmed.toLowerCase();
+  for (let i = 0; i < s.length; i++) hash = ((hash << 5) - hash + s.charCodeAt(i)) | 0;
+  return "GAME-" + Math.abs(hash).toString(16).toUpperCase().padStart(8, "0").slice(0, 8);
 }
 
 function ensureIdPanel() {
@@ -1692,15 +1696,20 @@ let multiplayerSendTimer = 0;
 let lastSentPosition = null;
 
 function getMultiplayerServerURL() {
-  // Usa el mismo host si se sirve desde el server Node; fallback a Render
-  const host = window.location.hostname;
-  if (host && host !== 'localhost' && host !== '127.0.0.1' && !host.startsWith('192.168.')) {
-    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const host = window.location.hostname || '';
+  const port = window.location.port;
+  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+
+  // Servido por el mismo Node/Render (mismo host)
+  if (host && host !== '' && window.location.protocol !== 'file:') {
+    // localhost / LAN: usar mismo host y puerto de la página
+    if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.')) {
+      return `${proto}//${host}:${port || 10000}`;
+    }
+    // Producción (Render u otro): mismo origen
     return `${proto}//${window.location.host}`;
   }
-  if (host === 'localhost' || host === '127.0.0.1') {
-    return `ws://${host}:${window.location.port || 10000}`;
-  }
+  // file:// o sin host → Render público
   return "wss://epicbloxserversito.onrender.com";
 }
 function getAvatarSnapshot() {
@@ -1792,6 +1801,10 @@ function openMultiplayerSocket() {
         setMultiplayerStatus(`👥 ${data.count} jugador(es)`, "#86efac");
         setChatConnStatus(true);
         (data.players || []).forEach(p => addOrUpdateRemotePlayer(p));
+        // Chat de la sala
+        const body = document.getElementById('chatBody');
+        if (body) body.innerHTML = '';
+        appendChatMessage('Sistema', 'Conectado a la sala. ¡Chat en tiempo real activo!', true);
         return;
       }
 
@@ -1818,7 +1831,7 @@ function openMultiplayerSocket() {
       }
 
       if (data.type === "chat") {
-        appendChatMessage(data.username || "Player", data.message || "", !!data.system);
+        appendChatMessage(data.username || "Player", data.message || "", !!data.system, data.ts);
         return;
       }
     });
@@ -1941,13 +1954,14 @@ function removeRemotePlayer(id) {
   delete remotePlayers[id];
 }
 
+let lastMoveSendTime = 0;
 function sendMultiplayerPosition(playerPos) {
   if (!multiplayerReady || !multiplayerSocket ||
       multiplayerSocket.readyState !== WebSocket.OPEN) return;
 
-  multiplayerSendTimer += 1;
-  // ~30 actualizaciones/seg para movimiento fluido en tiempo real
-  if (multiplayerSendTimer % 2 !== 0) return;
+  const now = performance.now();
+  // Tiempo real: hasta ~30 paquetes/segundo
+  if (now - lastMoveSendTime < 33) return;
 
   const payload = {
     type:"move",
@@ -1958,14 +1972,21 @@ function sendMultiplayerPosition(playerPos) {
     rotation: playerMeshGroup ? Number(playerMeshGroup.rotation.y.toFixed(3)) : 0
   };
 
+  // Enviar siempre si se movió o rotó (umbral muy bajo)
   if (lastSentPosition &&
-      Math.abs(payload.x-lastSentPosition.x)<0.0005 &&
-      Math.abs(payload.y-lastSentPosition.y)<0.0005 &&
-      Math.abs(payload.z-lastSentPosition.z)<0.0005 &&
-      Math.abs(payload.rotation-lastSentPosition.rotation)<0.001) return;
+      Math.abs(payload.x-lastSentPosition.x)<0.0001 &&
+      Math.abs(payload.y-lastSentPosition.y)<0.0001 &&
+      Math.abs(payload.z-lastSentPosition.z)<0.0001 &&
+      Math.abs(payload.rotation-lastSentPosition.rotation)<0.0005) {
+    // Keepalive cada 500ms aunque esté quieto (otros ven presencia)
+    if (now - lastMoveSendTime < 500) return;
+  }
 
+  lastMoveSendTime = now;
   lastSentPosition = payload;
-  multiplayerSocket.send(JSON.stringify(payload));
+  try {
+    multiplayerSocket.send(JSON.stringify(payload));
+  } catch (e) {}
 }
 
 function createNameTag(username) {
@@ -2004,15 +2025,16 @@ function updateRemotePlayers(dt) {
     const prevX = group.position.x;
     const prevZ = group.position.z;
 
-    if (typeof tx === "number") group.position.x += (tx-group.position.x) * Math.min(1, dt*18);
-    if (typeof ty === "number") group.position.y += (ty-group.position.y) * Math.min(1, dt*18);
-    if (typeof tz === "number") group.position.z += (tz-group.position.z) * Math.min(1, dt*18);
+    const lerp = Math.min(1, dt * 22);
+    if (typeof tx === "number") group.position.x += (tx-group.position.x) * lerp;
+    if (typeof ty === "number") group.position.y += (ty-group.position.y) * lerp;
+    if (typeof tz === "number") group.position.z += (tz-group.position.z) * lerp;
 
     if (typeof tr === "number") {
       let diff = tr - group.rotation.y;
       while(diff < -Math.PI) diff += Math.PI*2;
       while(diff > Math.PI) diff -= Math.PI*2;
-      group.rotation.y += diff * Math.min(1, dt*16);
+      group.rotation.y += diff * Math.min(1, dt*20);
     }
 
     // Animación de caminar en jugadores remotos
@@ -2057,34 +2079,6 @@ const USERS_KEY="epicbloxs_users_3d", SESSION_KEY="epicbloxs_current_user_3d";
 
 function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY)||"{}")}catch(e){return{}}}
 function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u))}
-
-function seedTestUsers() {
-  const users = getUsers();
-  let changed = false;
-  
-  const addTestUser = (username, bio, headColor, accs) => {
-    const key = username.toLowerCase();
-    if(!users[key]){
-      users[key] = {
-        username: username,
-        passwordHash: "h_fake",
-        sunnys: 1000,
-        bio: bio,
-        avatar: { accessories: accs, colors: { head: headColor, arms: "#f5c928", torso: "#1477b9", legs: "#8cae45" } },
-        inventory: ["Epic Cap", "Classic Shades", "Blue Shirt", "Classic Jeans", "Classic Smile", "Golden Crown", "Cool Backpack"],
-        friends: [],
-        lastDailyLogin: "",
-        createdAt: new Date().toISOString()
-      };
-      changed = true;
-    }
-  };
-
-  addTestUser("BuilderGuyLol", "Hey Welcome to EpicBlox and AI ROBLOX Remake made by Seb and ESPARTAN!.", "#f5c928", ["Epic Cap", "Classic Shades", "Blue Shirt", "Classic Jeans", "Classic Smile"]);
-  addTestUser("Template", "Hi im template aka as a TestAccount!.", "#ffffff", ["Golden Crown", "Green Hoodie", "Dark Cargo Pants", "Cool Wink"]);
-
-  if(changed) saveUsers(users);
-}
 
 function switchAuth(type){
   const loginForm = document.getElementById('loginForm');
@@ -2775,11 +2769,17 @@ function setChatConnStatus(online) {
   }
 }
 
-function appendChatMessage(username, message, isSystem) {
+let _lastChatKey = '';
+function appendChatMessage(username, message, isSystem, ts) {
   const body = document.getElementById('chatBody');
   if(!body) return;
 
-  const time = new Date();
+  // Evitar duplicados
+  const key = (ts || '') + '|' + username + '|' + message;
+  if (key === _lastChatKey && !isSystem) return;
+  _lastChatKey = key;
+
+  const time = ts ? new Date(ts) : new Date();
   const hh = String(time.getHours()).padStart(2,'0');
   const mm = String(time.getMinutes()).padStart(2,'0');
 
@@ -2787,6 +2787,8 @@ function appendChatMessage(username, message, isSystem) {
   div.className = 'chat-msg' + (isSystem ? ' system' : '');
   div.innerHTML = `<span class="chat-time">${hh}:${mm}</span><span class="chat-user">${escapeHtml(username)}:</span> ${escapeHtml(message)}`;
   body.appendChild(div);
+  // Limitar historial
+  while (body.children.length > 80) body.removeChild(body.firstChild);
   body.scrollTop = body.scrollHeight;
 
   // In-game overlay (only while playing)
@@ -2819,24 +2821,26 @@ function sendChatMessage() {
   if(!input) return;
   const text = input.value.trim();
   if(!text) return;
+  input.value = '';
 
   if(!multiplayerReady || !multiplayerSocket || multiplayerSocket.readyState !== WebSocket.OPEN) {
-    appendChatMessage('Sistema', 'No estás conectado a una partida. Entra a un juego para chatear.', true);
-    input.value = '';
+    appendChatMessage('Sistema', 'No estás conectado. Entra a un juego 3D para chatear en tiempo real.', true);
     return;
   }
 
-  multiplayerSocket.send(JSON.stringify({
-    type: 'chat',
-    message: text.slice(0, 200)
-  }));
-  input.value = '';
+  try {
+    multiplayerSocket.send(JSON.stringify({
+      type: 'chat',
+      message: text.slice(0, 200)
+    }));
+  } catch (e) {
+    appendChatMessage('Sistema', 'Error al enviar el mensaje. Reintentando conexión...', true);
+  }
 }
 
 function resetLocalData(){if(confirm("¿Borrar todas las cuentas locales de este navegador?")){localStorage.removeItem(USERS_KEY);localStorage.removeItem(SESSION_KEY);location.reload()}}
 
 function init(){
-  seedTestUsers();
   makeColorButtons("headColors","head");makeColorButtons("armColors","arms");makeColorButtons("torsoColors","torso");makeColorButtons("legsColors","legs");
   const c=current();if(c)loadCurrentUser();else document.getElementById('authScreen').style.display="flex";
   loadGames();
