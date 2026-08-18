@@ -1063,14 +1063,8 @@ let multiplayerSendTimer = 0;
 let lastSentPosition = null;
 
 function getMultiplayerServerURL() {
-  // En Internet, el cliente y el WebSocket usan el mismo dominio.
-  // HTTPS -> WSS, HTTP/file -> WS.
-  if (window.EPICBLOXS_SERVER_URL) return window.EPICBLOXS_SERVER_URL;
-  if (location.protocol === "https:") return "wss://" + location.host;
-  if (location.protocol === "http:") return "ws://" + location.host;
-  return "ws://localhost:8080";
+  return "wss://epicbloxserversito.onrender.com";
 }
-
 function getAvatarSnapshot() {
   const c = current();
   if (!c) return null;
@@ -1367,8 +1361,8 @@ function seedTestUsers() {
     }
   };
 
-  addTestUser("Ale", "Jugando con ropa 2D y accesorios múltiples en 3D.", "#f5c928", ["Epic Cap", "Classic Shades", "Blue Shirt", "Classic Jeans", "Classic Smile"]);
-  addTestUser("Victor", "Fanático de los mundos 3D y videojuegos.", "#ffffff", ["Golden Crown", "Green Hoodie", "Dark Cargo Pants", "Cool Wink"]);
+  addTestUser("BuilderGuy", "Hey Welcome to EpicBlox and AI ROBLOX Remake made by Seb and ESPARTAN!.", "#f5c928", ["Epic Cap", "Classic Shades", "Blue Shirt", "Classic Jeans", "Classic Smile"]);
+  addTestUser("Template", "Hi im template aka as a TestAccount!.", "#ffffff", ["Golden Crown", "Green Hoodie", "Dark Cargo Pants", "Cool Wink"]);
 
   if(changed) saveUsers(users);
 }
