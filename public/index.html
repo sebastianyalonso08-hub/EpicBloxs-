@@ -67,7 +67,7 @@
 <div id="authScreen">
   <div class="auth-box">
     <div class="auth-logo">Epic<span>Bloxs</span></div>
-    <div class="auth-sub">Welcome to EpicBloxs 3D Real</div>
+    <div class="auth-sub">Welcome to EpicBloxs An AI Roblox Remake Still in a huge Work in Progress!</div>
     <div class="auth-tabs">
       <button id="loginTab" class="auth-tab active" onclick="switchAuth('login')">Login</button>
       <button id="registerTab" class="auth-tab" onclick="switchAuth('register')">Create Account</button>
@@ -142,15 +142,15 @@
   
   <div class="client-container">
     <div id="clientLoading" class="client-loading">
-      <h2 style="color:#ffcc00; margin:0;">Cargando Motor 3D Real...</h2>
-      <p style="color:#aaa; font-size:13px;">Generando mundo poligonal y texturas...</p>
+      <h2 style="color:#ffcc00; margin:0;">Loading Launcher...</h2>
+      <p style="color:#aaa; font-size:13px;">Loading Textures amd Character...</p>
       <div class="client-bar-bg">
         <div id="clientBarFill" class="client-bar-fill"></div>
       </div>
     </div>
     
     <div id="clientGameplay" class="client-gameplay">
-      <h2 class="client-title" id="activeGameHeader">Mundo 3D</h2>
+      <h2 class="client-title" id="activeGameHeader">World</h2>
       <div class="client-ui">Monedas recolectadas: <span id="clientEarnings">0</span> ☀️ | Estado: <span style="color:#2ecc71;">🟢 En línea</span></div>
       <div class="client-controls-hint">Usa <b>W A S D</b> / <b>Flechas</b> para moverte, <b>ESPACIO</b> para saltar, y <b>Click Derecho + Arrastrar</b> para rotar la cámara.</div>
 <div style="position:absolute;bottom:10px;right:15px;background:rgba(0,0,0,.7);padding:8px 12px;border-radius:4px;font-size:12px;z-index:6;">
@@ -194,7 +194,7 @@
   </div>
 </section>
 
-<section id="games" class="page"><h1>Games</h1><p>Descubre juegos únicos en 3D creados por la comunidad.</p><div id="gamesGrid" class="games"></div></section>
+<section id="games" class="page"><h1>Games</h1><p>Descubre juegos únicos creados por la comunidad.</p><div id="gamesGrid" class="games"></div></section>
 
 <section id="catalog" class="page">
   <h1>Catalog</h1>
@@ -216,7 +216,7 @@
 
 <section id="profile" class="page"><h1>Profile</h1><div class="profile-card" style="max-width:500px;margin:auto;"><div id="profileAvatar" class="profile-avatar" style="position:relative;left:auto;top:auto;margin:0 auto 15px;"></div><h2 id="profileName" style="text-align:center;">Player ✓</h2><p id="profileUsername" style="text-align:center;color:#777;">@Player</p><p style="text-align:center;">Welcome to EpicBloxs 3D Real!</p><hr><p>Sunnys: <strong id="profileMoney">500</strong> ☀️</p><button class="section-button" onclick="logout()" style="width:100%;margin-top:10px;">Logout</button></div></section>
 
-<section id="create" class="page"><h1>Create</h1><div class="profile-card"><h2>🛠️ EpicBloxs Studio 3D</h2><p>Crea mundos tridimensionales con físicas reales.</p><button class="section-button" onclick="alert('EpicBloxs Studio 3D estará disponible próximamente.')">Open Studio</button></div></section>
+<section id="create" class="page"><h1>Create</h1><div class="profile-card"><h2>🛠️ EpicBloxs Studio </h2><p>Make your games!.</p><button class="section-button" onclick="alert('Soon!.')">Open Studio</button></div></section>
 
 <section id="download" class="page"><h1>Download</h1><div class="download-box"><h2>🖥️ EpicBloxs  Client</h2><p>Fucking ChatGPT dosen't want to make a real download client so is just a web client [comming soon download client].</p><button class="section-button" onclick="launchWebClient('EpicBloxs Universe')">Launch 3D Client</button></div></section>
 
@@ -224,16 +224,16 @@
   <h1>Avatar</h1>
   <div class="avatar-wrap">
     <div class="avatar-panel">
-      <h2>Tu personaje 3D en tiempo real</h2>
+      <h2>Your avatar</h2>
       <div class="avatar-stage">
         <div id="previewCanvasContainer"></div>
       </div>
-      <p style="text-align:center;font-size:12px;color:#666;margin-top:10px;">Rotación automática y accesorios 3D optimizados.</p>
+      <p style="text-align:center;font-size:12px;color:#666;margin-top:10px;">Avatar Prewiew.</p>
     </div>
 
     <div class="avatar-panel" style="flex:1">
-      <h2>Personalización (Capas 2D & Accesorios)</h2>
-      <p style="font-size:13px;color:#666;">Equipa o desequipa tus objetos adquiridos:</p>
+      <h2>Personalización Accesories and Clothing</h2>
+      <p style="font-size:13px;color:#666;">Equip or unequip accesories that you own! [W.I.P]:</p>
       <div id="accessoryButtons" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;">
         <button class="section-button" onclick="toggleAccessory('normal')">Ninguno</button>
       </div>
@@ -269,7 +269,7 @@ let gameRenderer = null, gameScene = null, gameCamera = null, gameAnimId = null;
 let keysPressed = {};
 let playerMeshGroup = null;
 let gameSessionEarnings = 0;
-let currentGameType = "Epic Obby 3D";
+let currentGameType = "Epic Obby";
 let collectibleCoins = [];
 let activePlatforms = [];
 
@@ -1008,9 +1008,9 @@ function makeLocalId(prefix) {
 
 function getGameId(gameName) {
   const known = {
-    "Bloxs City 3D":"CITY-7F42",
-    "Epic Obby 3D":"OBBY-91AC",
-    "Bloxs Racing 3D":"RACE-33D8",
+    "Bloxs City ":"CITY-7F42",
+    "Epic Obby ":"OBBY-91AC",
+    "Bloxs Racing ":"RACE-33D8",
     "Bloxs Survival":"SURV-8201",
     "Bloxs Tycoon":"TYCN-52A7",
     "Bloxs Simulator":"SIM-44C1",
@@ -1402,8 +1402,8 @@ function register(e){
   if(password!==confirm)return msg(regMsg,"Las contraseñas no coinciden.","error");
   const users=getUsers(),key=username.toLowerCase();
   if(users[key])return msg(regMsg,"Ese usuario ya existe.","error");
-  users[key]={username,passwordHash:hashPassword(password),sunnys:500,bio:"¡Hola! Explorando EpicBloxs 3D Real.",avatar:{accessories:["Classic Smile","Blue Shirt","Classic Jeans"],colors:{head:"#f5c928",arms:"#f5c928",torso:"#1477b9",legs:"#8cae45"}},inventory:["Classic Smile","Blue Shirt","Classic Jeans"],friends:[],lastDailyLogin:"",createdAt:new Date().toISOString()};
-  saveUsers(users);localStorage.setItem(SESSION_KEY,key);msg(regMsg,"¡Cuenta creada!","success");setTimeout(loadCurrentUser,400);
+  users[key]={username,passwordHash:hashPassword(password),sunnys:500,bio:"Insert Bio.",avatar:{accessories:["Classic Smile","Blue Shirt","Classic Jeans"],colors:{head:"#f5c928",arms:"#f5c928",torso:"#1477b9",legs:"#8cae45"}},inventory:["Classic Smile","Blue Shirt","Classic Jeans"],friends:[],lastDailyLogin:"",createdAt:new Date().toISOString()};
+  saveUsers(users);localStorage.setItem(SESSION_KEY,key);msg(regMsg,"¡Account created!","success");setTimeout(loadCurrentUser,400);
 }
 
 function login(e){
@@ -1452,7 +1452,7 @@ function loadCurrentUser(){
 function updateUI(u){
   document.getElementById('topUser').textContent=u.username;
   document.getElementById('sideUsername').textContent=u.username;
-  document.getElementById('welcomeTitle').innerHTML=`Hello, ${escapeHTML(u.username)}! <span class="check">✓</span>`;
+  document.getElementById('welcomeTitle').innerHTML=`Hello Epic, ${escapeHTML(u.username)}! <span class="check">✓</span>`;
   document.getElementById('profileName').textContent=u.username+" ✓";
   document.getElementById('profileUsername').textContent="@"+u.username;
   document.getElementById('profileMoney').textContent=u.sunnys || 0;
@@ -1603,12 +1603,12 @@ function showPage(p){
 }
 
 const games=[
-  ["Epic Obby 3D","🏃 Salta plataformas flotantes y recolecta monedas"],
-  ["Bloxs City 3D","🏙️ Explora rascacielos y zonas urbanas en 3D"],
-  ["Speed Race 3D","🏎️ Compite en pistas con velocidad extrema"],
-  ["Battle Arena 3D","⚔️ Combate y sobrevive en la arena tridimensional"],
-  ["Sky Islands 3D","☁️ Aventura en islas flotantes sobre el cielo"],
-  ["Pet World 3D","🐾 Adopta y cuida mascotas en mundos 3D"]
+  ["Epic Obby ","🏃 Salta plataformas flotantes y recolecta monedas"],
+  ["Bloxs City ","🏙️ Explora rascacielos y zonas urbanas en "],
+  ["Speed Race ","🏎️ Compite en pistas con velocidad extrema"],
+  ["Battle Arena ","⚔️ Combate y sobrevive en la arena tridimensional"],
+  ["Sky Islands ","☁️ Aventura en islas flotantes sobre el cielo"],
+  ["Pet World ","🐾 Adopta y cuida mascotas en mundos "]
 ];
 
 function loadGames(list=games){
