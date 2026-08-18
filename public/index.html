@@ -37,17 +37,54 @@
 .buy:hover{filter:brightness(1.1)}
 .download-box{background:#fff;padding:30px;border:1px solid #ccc;max-width:650px;border-radius:6px}
 
-.chat{position:fixed;right:30px;bottom:0;width:240px;height:40px;background:#292929;color:#fff;border-radius:7px 7px 0 0;padding:12px 18px;cursor:pointer;z-index:200;font-weight:bold;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}.chat-window{display:none;position:fixed;right:30px;bottom:40px;width:300px;height:350px;background:#fff;border:1px solid #bbb;z-index:200;border-radius:6px 6px 0 0;box-shadow:0 5px 25px rgba(0,0,0,0.2)}.chat-header{background:#292929;color:#fff;padding:12px;font-weight:bold}.chat-body{padding:15px;color:#777}
+.chat{position:fixed;right:30px;bottom:0;width:240px;height:40px;background:#292929;color:#fff;border-radius:7px 7px 0 0;padding:12px 18px;cursor:pointer;z-index:200;font-weight:bold;box-shadow:0 -2px 10px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:space-between}.chat .chat-badge{background:#e53935;color:#fff;font-size:11px;border-radius:10px;padding:1px 7px;margin-left:8px;display:none}.chat-window{display:none;position:fixed;right:30px;bottom:40px;width:340px;height:420px;background:#fff;border:1px solid #bbb;z-index:200;border-radius:8px 8px 0 0;box-shadow:0 5px 25px rgba(0,0,0,0.25);flex-direction:column;overflow:hidden}.chat-window.open{display:flex}.chat-header{background:#292929;color:#fff;padding:12px 14px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}.chat-header .chat-status{font-size:11px;font-weight:normal;color:#86efac}.chat-body{flex:1;overflow-y:auto;padding:12px;color:#333;background:#f7f8fa;display:flex;flex-direction:column;gap:8px}.chat-msg{font-size:13px;line-height:1.35;padding:8px 10px;border-radius:8px;background:#fff;border:1px solid #e5e7eb;word-break:break-word}.chat-msg.system{background:#eef2ff;border-color:#c7d2fe;color:#4338ca;font-style:italic}.chat-msg .chat-user{font-weight:bold;color:#1684e8;margin-right:4px}.chat-msg.system .chat-user{color:#4338ca}.chat-msg .chat-time{float:right;font-size:10px;color:#9ca3af;margin-left:8px}.chat-input-row{display:flex;gap:6px;padding:10px;border-top:1px solid #ddd;background:#fff;flex-shrink:0}.chat-input-row input{flex:1;padding:9px 12px;border:1px solid #ccc;border-radius:6px;font-size:13px;outline:none}.chat-input-row input:focus{border-color:#1684e8}.chat-input-row button{padding:9px 14px;background:#1684e8;color:#fff;border:0;border-radius:6px;font-weight:bold;cursor:pointer}.chat-input-row button:hover{background:#0d5aa7}.ingame-chat{position:absolute;left:12px;bottom:50px;width:min(360px,90%);max-height:180px;overflow-y:auto;pointer-events:none;z-index:50;display:flex;flex-direction:column;gap:4px}.ingame-chat .ig-msg{background:rgba(0,0,0,0.55);color:#fff;padding:5px 10px;border-radius:6px;font-size:12px;backdrop-filter:blur(4px)}.ingame-chat .ig-msg .ig-user{font-weight:bold;color:#7dd3fc;margin-right:4px}.ingame-chat .ig-msg.system{color:#c4b5fd}
 
-.client-container { width: 100%; max-width: 950px; height: 550px; background: #000; margin: 0 auto; border: 4px solid #333; position: relative; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-.client-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; background: #111; position: absolute; z-index: 10; }
-.client-bar-bg { width: 250px; height: 12px; background: #444; margin-top: 15px; border-radius: 6px; overflow: hidden; border: 1px solid #666; }
-.client-bar-fill { width: 0%; height: 100%; background: #ffcc00; transition: width 1s ease-in-out; }
+/* ===== Cliente 3D pantalla completa ===== */
+body.in-game .topbar, body.in-game .sidebar, body.in-game .main > .page:not(#webClient), body.in-game > .chat { display: none !important; }
+body.in-game .main { margin-left: 0 !important; padding-top: 0 !important; }
+body.in-game #webClient.page.active { display: block !important; padding: 0 !important; position: fixed; inset: 0; z-index: 500; background: #000; overflow: hidden; }
+body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display: none !important; }
+
+.client-container { width: 100%; height: 100%; max-width: none; background: #000; margin: 0; border: none; border-radius: 0; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; color: #fff; }
+.client-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(180deg,#0a1628,#1a1a2e); position: absolute; z-index: 10; }
+.client-bar-bg { width: min(280px,80vw); height: 12px; background: #444; margin-top: 15px; border-radius: 6px; overflow: hidden; border: 1px solid #666; }
+.client-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg,#ffcc00,#ff8800); transition: width 1s ease-in-out; }
 .client-gameplay { display: none; width: 100%; height: 100%; position: relative; overflow: hidden; }
-.client-ui { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 5px; font-family: monospace; font-size: 14px; z-index: 6; border: 1px solid rgba(255,255,255,0.2); }
-.client-title { position: absolute; top: 15px; left: 15px; color: #fff; text-shadow: 2px 2px 0 #333; margin: 0; font-size: 20px; z-index: 6; }
-.client-controls-hint { position: absolute; bottom: 10px; left: 15px; background: rgba(0,0,0,0.7); padding: 8px 14px; border-radius: 4px; font-size: 12px; z-index: 6; border: 1px solid rgba(255,255,255,0.2); }
-#webGLContainer { width: 100%; height: 100%; display: block; position: absolute; top: 0; left: 0; }
+.client-ui { position: absolute; top: max(12px, env(safe-area-inset-top)); left: 12px; right: auto; background: rgba(0,0,0,0.65); padding: 8px 12px; border-radius: 8px; font-family: monospace; font-size: 13px; z-index: 20; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(6px); max-width: 60vw; }
+.client-title { position: absolute; top: max(12px, env(safe-area-inset-top)); left: 12px; margin-top: 42px; color: #fff; text-shadow: 2px 2px 0 #333; margin-left: 0; font-size: clamp(14px,4vw,20px); z-index: 20; }
+.client-controls-hint { position: absolute; bottom: max(12px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.65); padding: 8px 14px; border-radius: 8px; font-size: 11px; z-index: 20; border: 1px solid rgba(255,255,255,0.15); text-align: center; max-width: 90vw; pointer-events: none; }
+#webGLContainer { width: 100%; height: 100%; display: block; position: absolute; top: 0; left: 0; touch-action: none; }
+
+.game-fab-bar { position: absolute; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); display: flex; flex-direction: column; gap: 10px; z-index: 30; }
+.game-fab { position: relative; width: 48px; height: 48px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); background: rgba(0,0,0,0.7); color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(0,0,0,0.4); transition: transform 0.15s, background 0.15s; -webkit-tap-highlight-color: transparent; user-select: none; }
+.game-fab:active, .game-fab:hover { transform: scale(1.08); background: rgba(22,132,232,0.85); }
+.game-fab .fab-badge { position: absolute; top: -2px; right: -2px; background: #e53935; color: #fff; font-size: 10px; border-radius: 10px; padding: 1px 5px; display: none; font-weight: bold; min-width: 16px; text-align: center; }
+
+.game-menu-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.72); z-index: 40; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.game-menu-overlay.open { display: flex; }
+.game-menu-box { background: #1e1e2e; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 28px 32px; min-width: min(300px,90vw); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+.game-menu-box h2 { margin: 0 0 8px; color: #fff; font-size: 22px; }
+.game-menu-box p { color: #aaa; font-size: 13px; margin: 0 0 20px; }
+.game-menu-btn { display: block; width: 100%; padding: 14px; margin: 8px 0; border: 0; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; transition: transform 0.12s, background 0.12s; }
+.game-menu-btn:active { transform: scale(0.97); }
+.game-menu-btn.primary { background: #1684e8; color: #fff; }
+.game-menu-btn.secondary { background: #333; color: #fff; }
+.game-menu-btn.danger { background: #c62828; color: #fff; }
+
+.mobile-controls { display: none; position: absolute; inset: 0; pointer-events: none; z-index: 25; }
+.joystick-base { position: absolute; bottom: max(24px, env(safe-area-inset-bottom)); left: max(16px, env(safe-area-inset-left)); width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.25); pointer-events: auto; touch-action: none; }
+.joystick-knob { position: absolute; width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.45); border: 2px solid rgba(255,255,255,0.6); left: 35px; top: 35px; pointer-events: none; transition: none; }
+.jump-btn { position: absolute; bottom: max(36px, env(safe-area-inset-bottom)); right: max(20px, env(safe-area-inset-right)); width: 72px; height: 72px; border-radius: 50%; background: rgba(22,132,232,0.55); border: 2px solid rgba(255,255,255,0.35); color: #fff; font-weight: bold; font-size: 13px; pointer-events: auto; touch-action: none; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; user-select: none; }
+.look-zone { position: absolute; top: 0; right: 0; width: 55%; height: 70%; pointer-events: auto; touch-action: none; }
+
+@media (pointer: coarse), (max-width: 768px) {
+  .mobile-controls { display: block; }
+  .client-controls-hint { display: none; }
+  .client-ui { font-size: 11px; padding: 6px 8px; }
+  .game-fab { width: 44px; height: 44px; font-size: 18px; }
+  .chat-window { right: 8px !important; left: 8px !important; width: auto !important; bottom: 0 !important; height: min(55vh,420px) !important; border-radius: 12px 12px 0 0 !important; z-index: 600 !important; }
+  .chat { display: none !important; }
+}
 
 #authScreen{position:fixed;inset:0;background:#252525;z-index:9999;display:flex;align-items:center;justify-content:center}.auth-box{width:400px;max-width:92%;background:#fff;padding:32px;border-radius:6px;box-shadow:0 5px 25px rgba(0,0,0,0.3)}.auth-logo{text-align:center;font-size:38px;font-weight:900}.auth-logo span{color:#25a9ff}.auth-sub{text-align:center;color:#777;margin:5px 0 22px}.auth-tabs{display:flex;border-radius:4px;overflow:hidden;border:1px solid #ddd}.auth-tab{width:50%;padding:11px;border:0;background:#eee;font-weight:bold;cursor:pointer}.auth-tab.active{background:#1684e8;color:#fff}.auth-form{display:none}.auth-form.active{display:block}.auth-form label{display:block;margin:12px 0 5px;font-size:13px;font-weight:bold}.auth-form input{width:100%;padding:11px;border:1px solid #bbb;border-radius:4px}.auth-button{width:100%;margin-top:20px;padding:12px;border:0;background:#1684e8;color:#fff;font-weight:bold;cursor:pointer;border-radius:4px}.auth-message{text-align:center;min-height:18px;margin-top:12px;font-size:13px}.error{color:#d93025}.success{color:#188038}.auth-info{margin-top:18px;padding:10px;background:#f3f3f3;color:#777;font-size:11px;border-radius:4px}
 
@@ -137,27 +174,51 @@
 </section>
 
 <section id="webClient" class="page">
-  <button class="section-button" onclick="exitWebClient()" style="margin-bottom:15px;">← Salir del Juego 3D</button>
-  <h1 id="clientGameTitle" style="margin-top:0;">Jugando en el Cliente 3D...</h1>
+  <div class="client-exit-bar" style="padding:15px 25px 0;">
+    <button class="section-button" onclick="exitWebClient()">← Salir del Juego 3D</button>
+    <h1 id="clientGameTitle" style="margin:10px 0 0;">Jugando en el Cliente 3D...</h1>
+  </div>
   
   <div class="client-container">
     <div id="clientLoading" class="client-loading">
       <h2 style="color:#ffcc00; margin:0;">Loading Launcher...</h2>
-      <p style="color:#aaa; font-size:13px;">Loading Textures amd Character...</p>
+      <p style="color:#aaa; font-size:13px;">Cargando texturas y personaje...</p>
       <div class="client-bar-bg">
         <div id="clientBarFill" class="client-bar-fill"></div>
       </div>
     </div>
     
     <div id="clientGameplay" class="client-gameplay">
-      <h2 class="client-title" id="activeGameHeader">World</h2>
-      <div class="client-ui">Monedas recolectadas: <span id="clientEarnings">0</span> ☀️ | Estado: <span style="color:#2ecc71;">🟢 En línea</span></div>
-      <div class="client-controls-hint">Usa <b>W A S D</b> / <b>Flechas</b> para moverte, <b>ESPACIO</b> para saltar, y <b>Click Derecho + Arrastrar</b> para rotar la cámara.</div>
-<div style="position:absolute;bottom:10px;right:15px;background:rgba(0,0,0,.7);padding:8px 12px;border-radius:4px;font-size:12px;z-index:6;">
-👥 Los jugadores conectados aparecerán en el mundo.
-</div>
-      
       <div id="webGLContainer"></div>
+
+      <h2 class="client-title" id="activeGameHeader">World</h2>
+      <div class="client-ui">☀️ <span id="clientEarnings">0</span> &nbsp;|&nbsp; <span id="multiplayerStatusInline">👥 ...</span></div>
+      <div class="client-controls-hint">WASD / Flechas mover · ESPACIO saltar · Click derecho + arrastrar cámara · T chat</div>
+
+      <div class="game-fab-bar">
+        <button class="game-fab" id="fabChatBtn" onclick="toggleChat()" title="Chat">💬<span class="fab-badge" id="fabChatBadge">0</span></button>
+        <button class="game-fab" id="fabMenuBtn" onclick="toggleGameMenu()" title="Menú">☰</button>
+      </div>
+
+      <div id="ingameChat" class="ingame-chat"></div>
+
+      <div class="mobile-controls" id="mobileControls">
+        <div class="look-zone" id="lookZone"></div>
+        <div class="joystick-base" id="joystickBase">
+          <div class="joystick-knob" id="joystickKnob"></div>
+        </div>
+        <div class="jump-btn" id="jumpBtn">SALTO</div>
+      </div>
+
+      <div class="game-menu-overlay" id="gameMenuOverlay">
+        <div class="game-menu-box">
+          <h2>Menú</h2>
+          <p id="gameMenuSubtitle">EpicBloxs</p>
+          <button class="game-menu-btn primary" onclick="toggleGameMenu()">▶ Continuar</button>
+          <button class="game-menu-btn secondary" onclick="toggleGameMenu(); toggleChat();">💬 Chat</button>
+          <button class="game-menu-btn danger" onclick="exitWebClient()">🚪 Salir del juego</button>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -260,8 +321,20 @@
 
 </main>
 
-<div id="chatWindow" class="chat-window"><div class="chat-header">EpicBloxs Chat</div><div class="chat-body">No messages yet.<br><br>Chat conectado con soporte en línea.</div></div>
-<div class="chat" onclick="toggleChat()">Chat</div>
+<div id="chatWindow" class="chat-window">
+  <div class="chat-header">
+    <span>EpicBloxs Chat</span>
+    <span class="chat-status" id="chatConnStatus">● Offline</span>
+  </div>
+  <div class="chat-body" id="chatBody">
+    <div class="chat-msg system"><span class="chat-user">Sistema:</span> Entra a un juego para chatear en tiempo real con otros jugadores.</div>
+  </div>
+  <div class="chat-input-row">
+    <input id="chatInput" type="text" maxlength="200" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendChatMessage()">
+    <button onclick="sendChatMessage()">Enviar</button>
+  </div>
+</div>
+<div class="chat" onclick="toggleChat()">Chat <span class="chat-badge" id="chatBadge">0</span></div>
 
 <script>
 let previewRenderer = null, previewScene = null, previewCamera = null, previewAnimId = null;
@@ -713,12 +786,12 @@ function createAccessoryMesh(accessoryName) {
   if(accessoryName === "Epic Cap") {
     const capMat = new THREE.MeshLambertMaterial({color: 0x1684e8});
     const capTop = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.35, 0.86), capMat);
-    capTop.position.set(0, 2.42, 0);
+    capTop.position.set(0, 2.62, 0);
     const visorMat = new THREE.MeshLambertMaterial({color: 0x0d5aa7});
     const visor = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.08, 0.5), visorMat);
-    visor.position.set(0, 2.27, 0.48);
+    visor.position.set(0, 2.47, 0.48);
     const button = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.06, 0.12), new THREE.MeshLambertMaterial({color: 0xffffff}));
-    button.position.set(0, 2.61, 0);
+    button.position.set(0, 2.81, 0);
     group.add(capTop, visor, button);
   } else if(accessoryName === "Classic Shades") {
     const frameMat = new THREE.MeshLambertMaterial({color: 0x111111});
@@ -726,31 +799,31 @@ function createAccessoryMesh(accessoryName) {
     const bridgeMat = new THREE.MeshLambertMaterial({color: 0x444444});
 
     const lensL = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.22, 0.1), lensMat);
-    lensL.position.set(-0.22, 2.0, 0.42);
+    lensL.position.set(-0.22, 2.22, 0.42);
     const lensR = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.22, 0.1), lensMat);
-    lensR.position.set(0.22, 2.0, 0.42);
+    lensR.position.set(0.22, 2.22, 0.42);
 
     const frameL = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.26, 0.12), frameMat);
-    frameL.position.set(-0.22, 2.0, 0.41);
+    frameL.position.set(-0.22, 2.22, 0.41);
     const frameR = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.26, 0.12), frameMat);
-    frameR.position.set(0.22, 2.0, 0.41);
+    frameR.position.set(0.22, 2.22, 0.41);
 
     const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 0.1), bridgeMat);
-    bridge.position.set(0, 2.05, 0.41);
+    bridge.position.set(0, 2.27, 0.41);
 
     const armL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.5), frameMat);
-    armL.position.set(-0.4, 2.0, 0.15);
+    armL.position.set(-0.4, 2.22, 0.15);
     const armR = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.5), frameMat);
-    armR.position.set(0.4, 2.0, 0.15);
+    armR.position.set(0.4, 2.22, 0.15);
 
     group.add(frameL, frameR, lensL, lensR, bridge, armL, armR);
   } else if(accessoryName === "Golden Crown") {
     const crownMat = new THREE.MeshLambertMaterial({color: 0xffcc00, emissive: 0x332200});
     const gemMat = new THREE.MeshLambertMaterial({color: 0xff0055});
     const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.44, 0.45, 5), crownMat);
-    crown.position.set(0, 2.45, 0);
+    crown.position.set(0, 2.65, 0);
     const gem = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), gemMat);
-    gem.position.set(0, 2.48, 0.45);
+    gem.position.set(0, 2.68, 0.45);
     group.add(crown, gem);
   } else if(accessoryName === "Cool Backpack") {
     const packMat = new THREE.MeshLambertMaterial({color: 0x8b4513});
@@ -801,8 +874,9 @@ function buildAvatar3DModel(userData) {
   const frontFaceMat = new THREE.MeshLambertMaterial({map: faceTexture, color: headCol});
   const headMaterials = [sideHeadMat, sideHeadMat, sideHeadMat, sideHeadMat, frontFaceMat, sideHeadMat];
   
+  // Cabeza apoyada sobre el torso (top torso ~1.75 → centro cabeza 2.2)
   const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), headMaterials);
-  headMesh.position.set(0, 2.0, 0);
+  headMesh.position.set(0, 2.2, 0);
   headMesh.name = "head";
   headMesh.castShadow = true;
   headMesh.receiveShadow = true;
@@ -958,12 +1032,17 @@ function startPreviewAnimation() {
 
 function launchWebClient(gameName) {
   currentGameType = gameName;
+  document.body.classList.add('in-game');
   showPage('webClient');
   document.getElementById('clientGameTitle').textContent = `Jugando: ${gameName}`;
   document.getElementById('activeGameHeader').textContent = gameName;
+  const sub = document.getElementById('gameMenuSubtitle');
+  if(sub) sub.textContent = gameName;
   document.getElementById('clientLoading').style.display = 'flex';
   document.getElementById('clientGameplay').style.display = 'none';
   document.getElementById('clientBarFill').style.width = '0%';
+  const menu = document.getElementById('gameMenuOverlay');
+  if(menu) menu.classList.remove('open');
   
   gameSessionEarnings = 0;
   const earnLbl = document.getElementById('clientEarnings');
@@ -982,6 +1061,9 @@ function launchWebClient(gameName) {
     initGameWebGL(gameName);
     connectMultiplayer(gameName);
     startGameLoop();
+    setupMobileControls();
+    // Ajustar tamaño tras layout fullscreen
+    setTimeout(resizeGameRenderer, 50);
   }, 1200);
 }
 
@@ -993,12 +1075,57 @@ function exitWebClient() {
   if(gameAnimId) cancelAnimationFrame(gameAnimId);
   Object.keys(keysPressed).forEach(key => keysPressed[key] = false);
   isRightMouseDown = false;
+  joystickInput = {x:0, z:0};
   stopAmbientMusic();
+  document.body.classList.remove('in-game');
+  const menu = document.getElementById('gameMenuOverlay');
+  if(menu) menu.classList.remove('open');
   showPage('home');
 }
 
+function toggleGameMenu() {
+  const menu = document.getElementById('gameMenuOverlay');
+  if(!menu) return;
+  menu.classList.toggle('open');
+}
+
+function resizeGameRenderer() {
+  const container = document.getElementById('webGLContainer');
+  if(!container || !gameRenderer || !gameCamera) return;
+  const width = container.clientWidth || window.innerWidth;
+  const height = container.clientHeight || window.innerHeight;
+  gameCamera.aspect = width / height;
+  gameCamera.updateProjectionMatrix();
+  gameRenderer.setSize(width, height);
+  gameRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+}
+window.addEventListener('resize', () => {
+  if(document.body.classList.contains('in-game')) resizeGameRenderer();
+});
+
 window.addEventListener('keydown', (e) => {
+  // No capturar teclas si se está escribiendo en el chat u otro input
+  const tag = (e.target && e.target.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA') {
+    if (e.code === 'Escape') {
+      e.target.blur();
+      if (chatOpen) toggleChat();
+    }
+    return;
+  }
+
   if(document.getElementById('webClient').classList.contains('active')) {
+    if (e.code === 'KeyT') {
+      e.preventDefault();
+      toggleChat();
+      return;
+    }
+    if (e.code === 'Escape') {
+      e.preventDefault();
+      if (chatOpen) toggleChat();
+      else toggleGameMenu();
+      return;
+    }
     if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD','Space'].includes(e.code)) {
       e.preventDefault();
     }
@@ -1007,6 +1134,9 @@ window.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('keyup', (e) => {
+  const tag = (e.target && e.target.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
   if(document.getElementById('webClient').classList.contains('active')) {
     keysPressed[e.code] = false;
   }
@@ -1017,6 +1147,181 @@ window.addEventListener('blur', () => {
   isRightMouseDown = false;
 });
 
+
+// ===== Skybox mejorada =====
+function createSkybox(scene, gameName) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+
+  let top, mid, bot, sunColor;
+  if (gameName.includes('City')) {
+    top = '#050816'; mid = '#1a2744'; bot = '#2d3a55'; sunColor = '#a0c4ff';
+  } else if (gameName.includes('Battle')) {
+    top = '#1a0505'; mid = '#4a1515'; bot = '#6b3030'; sunColor = '#ff6644';
+  } else if (gameName.includes('Race')) {
+    top = '#0d1b2a'; mid = '#1b3a4b'; bot = '#415a77'; sunColor = '#e0fbfc';
+  } else if (gameName.includes('Sky')) {
+    top = '#4cc9f0'; mid = '#90e0ef'; bot = '#caf0f8'; sunColor = '#ffffff';
+  } else {
+    top = '#1e90ff'; mid = '#87ceeb'; bot = '#b0e0e6'; sunColor = '#fffde7';
+  }
+
+  const grad = ctx.createLinearGradient(0, 0, 0, 512);
+  grad.addColorStop(0, top);
+  grad.addColorStop(0.45, mid);
+  grad.addColorStop(1, bot);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 512, 512);
+
+  // Sol / luna
+  ctx.beginPath();
+  ctx.arc(380, 120, 36, 0, Math.PI * 2);
+  ctx.fillStyle = sunColor;
+  ctx.globalAlpha = 0.9;
+  ctx.fill();
+  ctx.globalAlpha = 0.25;
+  ctx.beginPath();
+  ctx.arc(380, 120, 60, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // Nubes simples
+  if (!gameName.includes('Battle') && !gameName.includes('City')) {
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    for (let i = 0; i < 8; i++) {
+      const cx = 40 + (i * 70) % 480;
+      const cy = 200 + (i % 3) * 40;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, 40 + (i % 3) * 10, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(cx + 25, cy - 6, 28, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Estrellas para mapas nocturnos
+  if (gameName.includes('City') || gameName.includes('Battle')) {
+    ctx.fillStyle = '#ffffff';
+    for (let i = 0; i < 60; i++) {
+      const sx = (i * 97) % 512;
+      const sy = (i * 53) % 220;
+      ctx.globalAlpha = 0.4 + (i % 5) * 0.1;
+      ctx.fillRect(sx, sy, 2, 2);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const skyGeo = new THREE.SphereGeometry(400, 32, 24);
+  const skyMat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide, depthWrite: false });
+  const sky = new THREE.Mesh(skyGeo, skyMat);
+  sky.name = 'skybox';
+  scene.add(sky);
+  scene.background = new THREE.Color(mid);
+  scene.fog = new THREE.Fog(new THREE.Color(bot), 40, 180);
+}
+
+// ===== Controles móviles =====
+let joystickInput = { x: 0, z: 0 };
+let lookTouchId = null, joyTouchId = null;
+let lookLastX = 0, lookLastY = 0;
+
+function setupMobileControls() {
+  const base = document.getElementById('joystickBase');
+  const knob = document.getElementById('joystickKnob');
+  const jumpBtn = document.getElementById('jumpBtn');
+  const lookZone = document.getElementById('lookZone');
+  if (!base || !knob) return;
+
+  const maxR = 35;
+
+  function setKnob(dx, dy) {
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    const clamped = Math.min(len, maxR);
+    const nx = (dx / len) * clamped;
+    const ny = (dy / len) * clamped;
+    knob.style.left = (35 + nx) + 'px';
+    knob.style.top = (35 + ny) + 'px';
+    joystickInput.x = nx / maxR;
+    joystickInput.z = ny / maxR;
+  }
+
+  function resetKnob() {
+    knob.style.left = '35px';
+    knob.style.top = '35px';
+    joystickInput.x = 0;
+    joystickInput.z = 0;
+    joyTouchId = null;
+  }
+
+  base.ontouchstart = (e) => {
+    e.preventDefault();
+    const t = e.changedTouches[0];
+    joyTouchId = t.identifier;
+    const rect = base.getBoundingClientRect();
+    setKnob(t.clientX - (rect.left + rect.width / 2), t.clientY - (rect.top + rect.height / 2));
+  };
+  base.ontouchmove = (e) => {
+    e.preventDefault();
+    for (const t of e.changedTouches) {
+      if (t.identifier === joyTouchId) {
+        const rect = base.getBoundingClientRect();
+        setKnob(t.clientX - (rect.left + rect.width / 2), t.clientY - (rect.top + rect.height / 2));
+      }
+    }
+  };
+  base.ontouchend = base.ontouchcancel = (e) => {
+    for (const t of e.changedTouches) {
+      if (t.identifier === joyTouchId) resetKnob();
+    }
+  };
+
+  if (jumpBtn) {
+    jumpBtn.ontouchstart = (e) => {
+      e.preventDefault();
+      keysPressed['Space'] = true;
+    };
+    jumpBtn.ontouchend = jumpBtn.ontouchcancel = (e) => {
+      e.preventDefault();
+      keysPressed['Space'] = false;
+    };
+  }
+
+  if (lookZone) {
+    lookZone.ontouchstart = (e) => {
+      e.preventDefault();
+      const t = e.changedTouches[0];
+      lookTouchId = t.identifier;
+      lookLastX = t.clientX;
+      lookLastY = t.clientY;
+    };
+    lookZone.ontouchmove = (e) => {
+      e.preventDefault();
+      for (const t of e.changedTouches) {
+        if (t.identifier === lookTouchId) {
+          const dx = t.clientX - lookLastX;
+          const dy = t.clientY - lookLastY;
+          lookLastX = t.clientX;
+          lookLastY = t.clientY;
+          cameraAngleX -= dx * 0.008;
+          cameraAngleY += dy * 0.008;
+          if (cameraAngleY > 1.4) cameraAngleY = 1.4;
+          if (cameraAngleY < -0.2) cameraAngleY = -0.2;
+        }
+      }
+    };
+    lookZone.ontouchend = lookZone.ontouchcancel = (e) => {
+      for (const t of e.changedTouches) {
+        if (t.identifier === lookTouchId) lookTouchId = null;
+      }
+    };
+  }
+}
+
 function initGameWebGL(gameName) {
   const container = document.getElementById('webGLContainer');
   if(!container) return;
@@ -1026,16 +1331,18 @@ function initGameWebGL(gameName) {
   const height = container.clientHeight || 550;
 
   gameScene = new THREE.Scene();
-  gameScene.background = new THREE.Color(gameName.includes("City") ? 0x111b2b : (gameName.includes("Battle") ? 0x2b1111 : 0x87ceeb));
-
-  gameCamera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+  gameCamera = new THREE.PerspectiveCamera(60, width / Math.max(height,1), 0.1, 2000);
   
   gameRenderer = new THREE.WebGLRenderer({antialias: true});
   gameRenderer.setSize(width, height);
+  gameRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   // Sombras dinámicas en el cliente de juego
   gameRenderer.shadowMap.enabled = true;
   gameRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
   container.appendChild(gameRenderer.domElement);
+
+  // Skybox mejorada
+  createSkybox(gameScene, gameName);
 
   container.addEventListener('contextmenu', e => e.preventDefault());
   container.addEventListener('mousedown', (e) => {
@@ -1170,6 +1477,11 @@ function startGameLoop() {
     if(keysPressed['ArrowRight'] || keysPressed['KeyD']) inputX += 1;
     if(keysPressed['ArrowUp'] || keysPressed['KeyW']) inputZ -= 1;
     if(keysPressed['ArrowDown'] || keysPressed['KeyS']) inputZ += 1;
+    // Joystick móvil (añadir sobre teclado)
+    if (typeof joystickInput !== 'undefined') {
+      inputX += joystickInput.x;
+      inputZ += joystickInput.z;
+    }
 
     if(keysPressed['Space'] && isGrounded) {
       velocityY = jumpForce;
@@ -1380,6 +1692,15 @@ let multiplayerSendTimer = 0;
 let lastSentPosition = null;
 
 function getMultiplayerServerURL() {
+  // Usa el mismo host si se sirve desde el server Node; fallback a Render
+  const host = window.location.hostname;
+  if (host && host !== 'localhost' && host !== '127.0.0.1' && !host.startsWith('192.168.')) {
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${proto}//${window.location.host}`;
+  }
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return `ws://${host}:${window.location.port || 10000}`;
+  }
   return "wss://epicbloxserversito.onrender.com";
 }
 function getAvatarSnapshot() {
@@ -1410,6 +1731,11 @@ function setMultiplayerStatus(text, color="#7dd3fc") {
   if (el) {
     el.textContent = text;
     el.style.color = color;
+  }
+  const inline = document.getElementById("multiplayerStatusInline");
+  if (inline) {
+    inline.textContent = text;
+    inline.style.color = color;
   }
 }
 
@@ -1442,6 +1768,7 @@ function openMultiplayerSocket() {
       multiplayerReady = true;
       multiplayerReconnectAttempts = 0;
       setMultiplayerStatus("👥 Conectando...", "#7dd3fc");
+      setChatConnStatus(true);
 
       multiplayerSocket.send(JSON.stringify({
         type:"join",
@@ -1463,6 +1790,7 @@ function openMultiplayerSocket() {
         epicGameId = data.gameId || epicGameId;
         updateIdPanel();
         setMultiplayerStatus(`👥 ${data.count} jugador(es)`, "#86efac");
+        setChatConnStatus(true);
         (data.players || []).forEach(p => addOrUpdateRemotePlayer(p));
         return;
       }
@@ -1486,12 +1814,19 @@ function openMultiplayerSocket() {
 
       if (data.type === "roomInfo") {
         updateMultiplayerCount(data.count);
+        return;
+      }
+
+      if (data.type === "chat") {
+        appendChatMessage(data.username || "Player", data.message || "", !!data.system);
+        return;
       }
     });
 
     multiplayerSocket.addEventListener("close", () => {
       multiplayerReady = false;
       multiplayerId = null;
+      setChatConnStatus(false);
       if (!multiplayerIntentionalClose) {
         setMultiplayerStatus("👥 Reconectando...", "#facc15");
         scheduleMultiplayerReconnect();
@@ -1502,6 +1837,7 @@ function openMultiplayerSocket() {
 
     multiplayerSocket.addEventListener("error", () => {
       multiplayerReady = false;
+      setChatConnStatus(false);
       setMultiplayerStatus("👥 Servidor no disponible", "#fca5a5");
     });
   } catch(e) {
@@ -1537,6 +1873,7 @@ function disconnectMultiplayer(keepRoom=false) {
   multiplayerReady = false;
   multiplayerId = null;
   if (!keepRoom) multiplayerRoom = null;
+  setChatConnStatus(false);
 
   Object.keys(remotePlayers).forEach(removeRemotePlayer);
   remotePlayers = {};
@@ -1546,6 +1883,7 @@ function addOrUpdateRemotePlayer(p) {
   if (!p || !p.id || p.id === multiplayerId || !gameScene) return;
 
   let group = remotePlayers[p.id];
+  const uname = p.username || "Player";
 
   if (!group) {
     group = buildAvatar3DModel({
@@ -1555,12 +1893,17 @@ function addOrUpdateRemotePlayer(p) {
       }
     });
     group.name = "remotePlayer_" + p.id;
+    group.add(createNameTag(uname));
+    // Posición inicial inmediata
+    if (typeof p.x === "number") group.position.x = p.x;
+    if (typeof p.y === "number") group.position.y = p.y + 0.4;
+    if (typeof p.z === "number") group.position.z = p.z;
+    if (typeof p.rotation === "number") group.rotation.y = p.rotation;
     gameScene.add(group);
     remotePlayers[p.id] = group;
   }
 
   if (p.avatar) {
-    // Si cambió el avatar, reconstruimos solamente ese jugador.
     const oldAvatar = group.userData.avatarJSON;
     const newAvatar = JSON.stringify(p.avatar);
     if (oldAvatar !== newAvatar) {
@@ -1571,17 +1914,25 @@ function addOrUpdateRemotePlayer(p) {
       group.name = "remotePlayer_" + p.id;
       group.position.copy(pos);
       group.rotation.y = rot;
+      group.add(createNameTag(uname));
       gameScene.add(group);
       remotePlayers[p.id] = group;
     }
     group.userData.avatarJSON = newAvatar;
   }
 
+  // Actualizar nametag si cambió el nombre
+  if (group.userData.username !== uname) {
+    const oldTag = group.getObjectByName('nameTag');
+    if (oldTag) group.remove(oldTag);
+    group.add(createNameTag(uname));
+  }
+
   if (typeof p.x === "number") group.userData.targetX = p.x;
   if (typeof p.y === "number") group.userData.targetY = p.y + 0.4;
   if (typeof p.z === "number") group.userData.targetZ = p.z;
   if (typeof p.rotation === "number") group.userData.targetRotation = p.rotation;
-  group.userData.username = p.username || "Player";
+  group.userData.username = uname;
 }
 
 function removeRemotePlayer(id) {
@@ -1595,8 +1946,8 @@ function sendMultiplayerPosition(playerPos) {
       multiplayerSocket.readyState !== WebSocket.OPEN) return;
 
   multiplayerSendTimer += 1;
-  // 20 actualizaciones por segundo: suficiente para movimiento fluido.
-  if (multiplayerSendTimer % 3 !== 0) return;
+  // ~30 actualizaciones/seg para movimiento fluido en tiempo real
+  if (multiplayerSendTimer % 2 !== 0) return;
 
   const payload = {
     type:"move",
@@ -1608,13 +1959,37 @@ function sendMultiplayerPosition(playerPos) {
   };
 
   if (lastSentPosition &&
-      Math.abs(payload.x-lastSentPosition.x)<0.001 &&
-      Math.abs(payload.y-lastSentPosition.y)<0.001 &&
-      Math.abs(payload.z-lastSentPosition.z)<0.001 &&
+      Math.abs(payload.x-lastSentPosition.x)<0.0005 &&
+      Math.abs(payload.y-lastSentPosition.y)<0.0005 &&
+      Math.abs(payload.z-lastSentPosition.z)<0.0005 &&
       Math.abs(payload.rotation-lastSentPosition.rotation)<0.001) return;
 
   lastSentPosition = payload;
   multiplayerSocket.send(JSON.stringify(payload));
+}
+
+function createNameTag(username) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 256, 64);
+  ctx.font = 'bold 28px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  // sombra
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillText(username, 129, 33);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(username, 128, 32);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(1.6, 0.4, 1);
+  sprite.position.set(0, 1.55, 0);
+  sprite.name = 'nameTag';
+  return sprite;
 }
 
 function updateRemotePlayers(dt) {
@@ -1626,15 +2001,42 @@ function updateRemotePlayers(dt) {
     const tz = group.userData.targetZ;
     const tr = group.userData.targetRotation;
 
-    if (typeof tx === "number") group.position.x += (tx-group.position.x) * Math.min(1, dt*14);
-    if (typeof ty === "number") group.position.y += (ty-group.position.y) * Math.min(1, dt*14);
-    if (typeof tz === "number") group.position.z += (tz-group.position.z) * Math.min(1, dt*14);
+    const prevX = group.position.x;
+    const prevZ = group.position.z;
+
+    if (typeof tx === "number") group.position.x += (tx-group.position.x) * Math.min(1, dt*18);
+    if (typeof ty === "number") group.position.y += (ty-group.position.y) * Math.min(1, dt*18);
+    if (typeof tz === "number") group.position.z += (tz-group.position.z) * Math.min(1, dt*18);
 
     if (typeof tr === "number") {
       let diff = tr - group.rotation.y;
       while(diff < -Math.PI) diff += Math.PI*2;
       while(diff > Math.PI) diff -= Math.PI*2;
-      group.rotation.y += diff * Math.min(1, dt*14);
+      group.rotation.y += diff * Math.min(1, dt*16);
+    }
+
+    // Animación de caminar en jugadores remotos
+    const dx = group.position.x - prevX;
+    const dz = group.position.z - prevZ;
+    const speed = Math.sqrt(dx*dx + dz*dz) / Math.max(dt, 0.001);
+    const leftArm = group.getObjectByName("leftArm");
+    const rightArm = group.getObjectByName("rightArm");
+    const leftLeg = group.getObjectByName("leftLeg");
+    const rightLeg = group.getObjectByName("rightLeg");
+
+    if (speed > 0.3) {
+      group.userData.walkPhase = (group.userData.walkPhase || 0) + dt * 10;
+      const swing = Math.sin(group.userData.walkPhase) * 0.7;
+      if(leftArm) leftArm.rotation.x = swing;
+      if(rightArm) rightArm.rotation.x = -swing;
+      if(leftLeg) leftLeg.rotation.x = -swing;
+      if(rightLeg) rightLeg.rotation.x = swing;
+    } else {
+      const damp = Math.pow(0.01, dt);
+      if(leftArm) leftArm.rotation.x *= damp;
+      if(rightArm) rightArm.rotation.x *= damp;
+      if(leftLeg) leftLeg.rotation.x *= damp;
+      if(rightLeg) rightLeg.rotation.x *= damp;
     }
   });
 }
@@ -1901,6 +2303,7 @@ function showPage(p){
   if(p !== 'webClient') {
     if(gameAnimId) cancelAnimationFrame(gameAnimId);
     stopAmbientMusic();
+    document.body.classList.remove('in-game');
   }
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
   const target = document.getElementById(p);
@@ -2096,7 +2499,111 @@ function toggleAccessory(a){
   sendAvatarUpdateToMultiplayer();
 }
 
-function toggleChat(){const chatWindow = document.getElementById('chatWindow'); chatWindow.style.display=chatWindow.style.display==="block"?"none":"block"}
+let chatUnread = 0;
+let chatOpen = false;
+
+function toggleChat(){
+  const chatWindow = document.getElementById('chatWindow');
+  chatOpen = !chatOpen;
+  if(chatOpen) {
+    chatWindow.classList.add('open');
+    chatWindow.style.display = 'flex';
+    chatWindow.style.zIndex = '600';
+    chatUnread = 0;
+    updateChatBadge();
+    const input = document.getElementById('chatInput');
+    if(input) setTimeout(() => input.focus(), 50);
+  } else {
+    chatWindow.classList.remove('open');
+    chatWindow.style.display = 'none';
+  }
+}
+
+function updateChatBadge() {
+  const show = chatUnread > 0 && !chatOpen;
+  const text = chatUnread > 9 ? '9+' : String(chatUnread);
+  const badge = document.getElementById('chatBadge');
+  if(badge) {
+    badge.style.display = show ? 'inline-block' : 'none';
+    badge.textContent = text;
+  }
+  const fabBadge = document.getElementById('fabChatBadge');
+  if(fabBadge) {
+    fabBadge.style.display = show ? 'block' : 'none';
+    fabBadge.textContent = text;
+  }
+}
+
+function setChatConnStatus(online) {
+  const el = document.getElementById('chatConnStatus');
+  if(!el) return;
+  if(online) {
+    el.textContent = '● En línea';
+    el.style.color = '#86efac';
+  } else {
+    el.textContent = '● Offline';
+    el.style.color = '#fca5a5';
+  }
+}
+
+function appendChatMessage(username, message, isSystem) {
+  const body = document.getElementById('chatBody');
+  if(!body) return;
+
+  const time = new Date();
+  const hh = String(time.getHours()).padStart(2,'0');
+  const mm = String(time.getMinutes()).padStart(2,'0');
+
+  const div = document.createElement('div');
+  div.className = 'chat-msg' + (isSystem ? ' system' : '');
+  div.innerHTML = `<span class="chat-time">${hh}:${mm}</span><span class="chat-user">${escapeHtml(username)}:</span> ${escapeHtml(message)}`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+
+  // In-game overlay (only while playing)
+  const ig = document.getElementById('ingameChat');
+  if(ig && document.getElementById('webClient')?.classList.contains('active')) {
+    const igDiv = document.createElement('div');
+    igDiv.className = 'ig-msg' + (isSystem ? ' system' : '');
+    igDiv.innerHTML = `<span class="ig-user">${escapeHtml(username)}:</span> ${escapeHtml(message)}`;
+    ig.appendChild(igDiv);
+    while(ig.children.length > 6) ig.removeChild(ig.firstChild);
+    setTimeout(() => { if(igDiv.parentNode) igDiv.remove(); }, 8000);
+  }
+
+  if(!chatOpen && !isSystem) {
+    chatUnread++;
+    updateChatBadge();
+  }
+}
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function sendChatMessage() {
+  const input = document.getElementById('chatInput');
+  if(!input) return;
+  const text = input.value.trim();
+  if(!text) return;
+
+  if(!multiplayerReady || !multiplayerSocket || multiplayerSocket.readyState !== WebSocket.OPEN) {
+    appendChatMessage('Sistema', 'No estás conectado a una partida. Entra a un juego para chatear.', true);
+    input.value = '';
+    return;
+  }
+
+  multiplayerSocket.send(JSON.stringify({
+    type: 'chat',
+    message: text.slice(0, 200)
+  }));
+  input.value = '';
+}
+
 function resetLocalData(){if(confirm("¿Borrar todas las cuentas locales de este navegador?")){localStorage.removeItem(USERS_KEY);localStorage.removeItem(SESSION_KEY);location.reload()}}
 
 function init(){
