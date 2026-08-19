@@ -23,9 +23,18 @@
       "Classic Jeans"
     ],
     "friends": [],
-    "friendRequests": [],
+    "friendRequests": [
+      "qatester9"
+    ],
     "outgoingRequests": [],
     "lastDailyLogin": "Tue Aug 18 2026",
-    "createdAt": "2026-08-18T23:20:23.848Z"
+    "createdAt": "2026-08-18T23:20:23.848Z",
+    "userId": 1001,
+    "avatarInventory": [
+      "Classic Smile",
+      "Blue Shirt",
+      "Classic Jeans"
+    ],
+    "gameInventory": []
   }
 }
