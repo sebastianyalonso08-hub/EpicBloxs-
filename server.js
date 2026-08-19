@@ -569,6 +569,8 @@ const server = http.createServer(async (req, res) => {
     const sess = getSessionUser(req);
     const myKey = sess ? sess.key : null;
     const results = [];
+    // El buscador de amigos usa EXCLUSIVAMENTE cuentas registradas en EpicBloxs.
+    // Nunca toma jugadores de rooms/WebSocket: estar en una partida no crea una cuenta.
     for (const [key, user] of Object.entries(users)) {
       const username = String(user.username || "");
       const usernameLower = username.toLowerCase();
@@ -682,7 +684,9 @@ const server = http.createServer(async (req, res) => {
       users[sess.key] = me; users[targetKey] = other; saveUsersDisk(users);
       return json(res, 200, { ok: true, accepted: true, user: publicUser(me, sess.key) });
     }
-    if (me.outgoingRequests.includes(targetKey)) return json(res, 400, { error: "Ya enviaste una solicitud." });
+    if (me.outgoingRequests.includes(targetKey)) {
+      return json(res, 400, { error: "No se pudo enviar la solicitud: ya tienes una solicitud pendiente para este usuario." });
+    }
     if (!other.friendRequests.includes(sess.key)) other.friendRequests.push(sess.key);
     if (!me.outgoingRequests.includes(targetKey)) me.outgoingRequests.push(targetKey);
     users[sess.key] = me; users[targetKey] = other; saveUsersDisk(users);
@@ -861,8 +865,8 @@ const server = http.createServer(async (req, res) => {
     if (!sess) return json(res, 401, { error: "No autenticado." });
     const body = await readBody(req);
     const otherKey = resolveUserKey(sess.users, safeText(body.id, "", 40));
-    if (!otherKey) return json(res, 404, { error: "Usuario no encontrado." });
-    if (otherKey === sess.key) return json(res, 400, { error: "No puedes escribirte a ti mismo." });
+    if (!otherKey) return json(res, 404, { error: "No se pudo enviar el mensaje: ese usuario ya no existe en EpicBloxs." });
+    if (otherKey === sess.key) return json(res, 400, { error: "No puedes enviarte mensajes a ti mismo." });
     const text = censorText(safeText(body.text, "", 300)).trim();
     if (!text) return json(res, 400, { error: "Escribe un mensaje." });
     const conv = dmConvKey(sess.key, otherKey);
