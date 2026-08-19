@@ -20,7 +20,7 @@ const publicDir = path.join(__dirname, "public");
 const indexPath = path.join(publicDir, "index.html");
 const dataDir = process.env.EPICBLOXS_DATA_DIR
   ? path.resolve(process.env.EPICBLOXS_DATA_DIR)
-  : (process.env.RENDER ? "/var/data" : path.join(__dirname, "data"));
+  : path.join(__dirname, "data");
 const usersPath = path.join(dataDir, "users.json");
 const catalogPath = path.join(dataDir, "catalog.json");
 const sessionsPath = path.join(dataDir, "sessions.json");
