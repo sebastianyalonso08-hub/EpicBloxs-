@@ -1632,10 +1632,63 @@ let raceFinished = false;
 let raceStartTime = 0;
 let obbyBestCheckpoint = 0;
 
+// ===== SpawnPoints fijos =====
+// Se mantienen separados de las colisiones para reutilizarlos en futuras mejoras
+// (equipos, rondas, checkpoints, teletransportes, respawn avanzado, etc.).
+const GAME_SPAWN_POINTS = Object.freeze({
+  'Epic Obby': Object.freeze([{ x: 0, y: 0.30, z: 1 }]),
+  'Bloxs City': Object.freeze([{ x: 0, y: 0.02, z: 0 }]),
+  'Pet World': Object.freeze([{ x: 0, y: 0.02, z: 0 }]),
+  'Battle Arena': Object.freeze([{ x: 0, y: 0.5, z: 16 }]),
+  'Speed Race': Object.freeze([{ x: 0, y: 0.02, z: 35 }]),
+  'Sky Islands': Object.freeze([{ x: 0, y: 0, z: 0 }])
+});
+
+let activeSpawnPoints = [];
+let spawnPointObjects = [];
+
+function getSpawnPoints(gameName) {
+  const points = GAME_SPAWN_POINTS[gameName.trim()] || [{ x: 0, y: 0.02, z: 0 }];
+  return points.map(p => ({ x: p.x, y: p.y, z: p.z }));
+}
+
+function getPrimarySpawnPoint(gameName) {
+  const points = getSpawnPoints(gameName);
+  return points[0] || { x: 0, y: 0.02, z: 0 };
+}
+
+function registerSpawnPoints(gameName) {
+  activeSpawnPoints = getSpawnPoints(gameName);
+
+  // SpawnPoints reales de la escena: invisibles, sin geometría y sin colisión.
+  // Quedan listos para futuras mejoras como equipos, rondas y teletransportes.
+  for (let i = 0; i < activeSpawnPoints.length; i++) {
+    const point = activeSpawnPoints[i];
+    const spawn = new THREE.Object3D();
+    spawn.name = `SpawnPoint_${gameName.replace(/\s+/g, '_')}_${i + 1}`;
+    spawn.position.set(point.x, point.y, point.z);
+    spawn.userData.isSpawnPoint = true;
+    spawn.userData.gameName = gameName.trim();
+    spawn.userData.spawnIndex = i;
+    spawn.visible = false;
+    gameScene.add(spawn);
+    spawnPointObjects.push(spawn);
+  }
+  return activeSpawnPoints;
+}
+
+function getRandomSpawnPoint(gameName) {
+  const points = activeSpawnPoints.length ? activeSpawnPoints : getSpawnPoints(gameName);
+  const point = points[Math.floor(Math.random() * points.length)] || { x: 0, y: 0.02, z: 0 };
+  return { x: point.x, y: point.y, z: point.z };
+}
+
 function clearGameExtras(){
   const all = [...gameDecorations, ...petFollowers, ...fightTargets, ...raceCheckpoints];
   for(const obj of all){ try{ gameScene.remove(obj); }catch(e){} }
   gameDecorations=[]; petFollowers=[]; fightTargets=[]; raceCheckpoints=[]; activeCheckpoint=0;
+  for (const sp of spawnPointObjects) { try { gameScene.remove(sp); } catch(e) {} }
+  spawnPointObjects=[]; activeSpawnPoints=[];
   swordMesh=null; gameActionCooldown=0; raceFinished=false; raceStartTime=performance.now(); obbyBestCheckpoint=0;
 }
 
@@ -1835,6 +1888,7 @@ function initGameWebGL(gameName) {
   clearGameExtras();
   buildUniqueGameWorld(gameName);
   buildGameSpecificWorld(gameName);
+  registerSpawnPoints(gameName);
 
   const c = current();
   clearAllRemotePlayers();
@@ -1927,7 +1981,8 @@ function respawnAfterVoid() {
 function startGameLoop() {
   if(gameAnimId) cancelAnimationFrame(gameAnimId);
 
-  let playerPos = { x: 0, y: 0, z: currentGameType.trim()==='Speed Race' ? 35 : 0 };
+  const initialSpawn = getPrimarySpawnPoint(currentGameType);
+  let playerPos = { x: initialSpawn.x, y: initialSpawn.y, z: initialSpawn.z };
   let velocityY = 0;
   const gravity = 18;
   const jumpForce = 9.5;
@@ -2070,7 +2125,8 @@ function startGameLoop() {
           if(currentGameType.trim()==='Epic Obby' && obbyBestCheckpoint>0){
             playerPos.x=0; playerPos.z=-9-(obbyBestCheckpoint*5.1); playerPos.y=1.7+(obbyBestCheckpoint*0.78);
           } else {
-            playerPos.x=0; playerPos.y=(currentGameType.trim()==='Sky Islands'?1:0); playerPos.z=0;
+            const spawn = getRandomSpawnPoint(currentGameType);
+            playerPos.x=spawn.x; playerPos.y=spawn.y; playerPos.z=spawn.z;
           }
           velocityY = 0;
           isGrounded = true;
