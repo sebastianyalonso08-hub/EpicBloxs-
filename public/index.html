@@ -2208,12 +2208,6 @@ function openMultiplayerSocket() {
         return;
       }
 
-      if (data.type === "gameStats") {
-        _gameStats = (data && data.stats) || {};
-        loadGames(games);
-        return;
-      }
-
       if (data.type === "chat") {
         appendChatMessage(data.username || "Player", data.message || "", !!data.system, data.ts);
         return;
@@ -3168,11 +3162,9 @@ function renderFriendsPage(){
 async function searchRegisteredUsernameExact(name){
   const query=String(name||"").trim();
   if(!query) throw new Error("Escribe un nombre de usuario.");
-  const search=await api("/api/users/search?q="+encodeURIComponent(query),{},2);
-  const rs=search.results||[];
-  const target=rs.find(r=>String(r.username||"").trim().toLowerCase()===query.toLowerCase());
-  if(!target) throw new Error(rs.length?"No existe una cuenta con ese Username exacto.":"Usuario no encontrado.");
-  return target;
+  const lookup=await api("/api/users/lookup?username="+encodeURIComponent(query),{},2);
+  if(!lookup || !lookup.user) throw new Error("Usuario no encontrado.");
+  return lookup.user;
 }
 
 function addFriendFromInput(){
@@ -3184,7 +3176,7 @@ function addFriendFromInput(){
   searchRegisteredUsernameExact(name)
     .then(target=>api("/api/friends/request",{method:"POST",body:JSON.stringify({id:target.id})},2))
     .then(data=>{if(data.user)setCachedUser(data.user);if(input)input.value="";return refreshFriendsFromServer();})
-    .then(()=>alert("📨 Solicitud de amistad enviada."))
+    .then(()=>alert("Usuario encontrado. Solicitud enviada"))
     .catch(err=>alert(err.message||"No se pudo enviar la solicitud."));
 }
 
@@ -3348,7 +3340,7 @@ async function refreshGameStats(){
 function startGameStatsHeartbeat(){
   if(_gameStatsTimer) clearInterval(_gameStatsTimer);
   refreshGameStats();
-  _gameStatsTimer=setInterval(refreshGameStats,1000);
+  _gameStatsTimer=setInterval(refreshGameStats,8000);
 }
 
 function searchGames(t){
