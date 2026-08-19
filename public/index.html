@@ -578,7 +578,6 @@ const catalogDatabase = [
   { id: 'Black Beanie', name: 'Black Beanie', category: 'hats', price: 90, desc: 'Gorro negro' },
   { id: 'Pink Bow', name: 'Pink Bow', category: 'hats', price: 85, desc: 'Lazo rosa · Mujer' },
   { id: 'White Fedora', name: 'White Fedora', category: 'hats', price: 140, desc: 'Sombrero fedora blanco' },
-  { id: 'Blue Cap', name: 'Blue Cap', category: 'hats', price: 70, desc: 'Gorra deportiva azul' },
 
   // Camisas
   { id: 'Blue Shirt', name: 'Blue Shirt', category: 'shirts', price: 75, desc: 'Camisa azul 2D' },
@@ -1340,9 +1339,6 @@ function createAccessoryMesh(accessoryName) {
     const mat=new THREE.MeshLambertMaterial({color:0xf5f5f5});
     const top=new THREE.Mesh(new THREE.CylinderGeometry(0.36,0.42,0.42,20),mat); top.position.set(0,2.68,0);
     const brim=new THREE.Mesh(new THREE.CylinderGeometry(0.65,0.65,0.08,24),mat); brim.position.set(0,2.48,0); group.add(top,brim);
-  } else if(accessoryName === "Blue Cap") {
-    const cap=new THREE.Mesh(new THREE.BoxGeometry(0.86,0.3,0.75),new THREE.MeshLambertMaterial({color:0x2196f3})); cap.position.set(0,2.62,0);
-    const visor=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.08,0.45),new THREE.MeshLambertMaterial({color:0x1565c0})); visor.position.set(0,2.48,0.45); group.add(cap,visor);
   } else if(accessoryName === "Golden Headphones") {
     const mat=new THREE.MeshLambertMaterial({color:0xd4af37});
     const band=new THREE.Mesh(new THREE.TorusGeometry(0.48,0.055,8,24,Math.PI),mat); band.rotation.x=Math.PI/2; band.position.set(0,2.43,0);
@@ -3339,8 +3335,8 @@ function sendAvatarUpdateToMultiplayer() {
 // ================= END EPICBLOXS MULTIPLAYER ====================
 
 
-const SESSION_KEY="epicbloxs_token_global";
-const USER_CACHE_KEY="epicbloxs_user_cache";
+const SESSION_KEY="epicbloxs_token_global_v2";
+const USER_CACHE_KEY="epicbloxs_user_cache_v2";
 // URL del servidor GLOBAL (Render). Si abres el HTML desde el mismo server, usa el origen actual.
 const GLOBAL_SERVER = "https://epicbloxserversito.onrender.com";
 
@@ -3396,7 +3392,14 @@ async function api(path, opts={}, retries=3) {
         if (!res.ok) throw new Error("Servidor sin API de cuentas (hay que subir el server.js nuevo).");
       }
       if (res.status === 401) {
-        throw new Error("El servidor no reconocio tu sesion. Vuelve a iniciar sesion una vez y ya no se volvera a pedir.");
+        // El token anterior puede pertenecer a una version vieja del servidor.
+        // Se limpia una sola vez para que el siguiente login cree una sesion
+        // compatible con el registro global actual.
+        setToken("");
+        setCachedUser(null);
+        const authScreen = document.getElementById("authScreen");
+        if (authScreen) authScreen.style.display = "flex";
+        throw new Error("Tu sesión anterior ya no es válida. Inicia sesión una vez para crear una sesión nueva.");
       }
       if (!res.ok) throw new Error(data.error || ("Error " + res.status));
       return data;
@@ -3594,7 +3597,7 @@ async function runNewAccountBot(username){
 
 
 
-function register(e){
+async function register(e){
   e.preventDefault();
   const regMsg = document.getElementById("registerMessage");
   const username = document.getElementById("registerUsername").value.trim();
@@ -3604,63 +3607,31 @@ function register(e){
   if (password.length < 6) return msg(regMsg, "Minimo 6 caracteres en la contraseña.", "error");
   if (password !== confirm) return msg(regMsg, "Las contraseñas no coinciden.", "error");
 
-  // Instantaneo (como local): entrar YA
-  const key = username.toLowerCase();
-  const tempUser = {
-    id: key,
-    username: username,
-    sunnys: 500,
-    bio: "Insert Bio.",
-    theme: "light",
-    avatar: {
-      accessories: [],
-      torsoType: "male",
-      colors: { head: "#f5c928", arms: "#f5c928", torso: "#1477b9", legs: "#8cae45" }
-    },
-    avatarInventory: [],
-    gameInventory: [],
-    inventory: [],
-    friends: [],
-    friendRequests: [],
-    outgoingRequests: [],
-    loginStreak: 0,
-    lastStreakClaim: "",
-    createdAt: new Date().toISOString()
-  };
-  tempUser.avatar.accessories = [];
-  tempUser.avatar.torsoType = "male";
-  setToken("pending_" + key);
-  setCachedUser(tempUser);
-  // Guardar password temporal solo para reintentar el registro global
-  try { sessionStorage.setItem("eb_pending_pw", password); sessionStorage.setItem("eb_pending_user", username); } catch(e) {}
-  msg(regMsg, "Cuenta creada.", "success");
-  setTimeout(() => {
-    loadCurrentUser();
-    // EpicBot hace el setup por el jugador
-    setTimeout(() => runNewAccountBot(username), 400);
-  }, 50);
+  // La cuenta ahora se crea PRIMERO en el registro global del servidor.
+  // No se muestra una cuenta local/falsa si el servidor todavía no la guardó.
+  msg(regMsg, "Registrando cuenta...", "success");
+  try {
+    const data = await api("/api/register", {
+      method: "POST",
+      body: JSON.stringify({ username, password })
+    }, 4);
 
-  // En paralelo: registrar en el servidor GLOBAL (sin bloquear)
-  syncRegisterGlobal(username, password);
-}
+    if (!data || !data.token || !data.user) {
+      throw new Error("El servidor no devolvio los datos de la cuenta.");
+    }
 
-function syncRegisterGlobal(username, password) {
-  const key = username.toLowerCase();
-  api("/api/register", { method: "POST", body: JSON.stringify({ username, password }) }, 4)
-    .then(data => {
-      setToken(data.token);
-      setCachedUser(data.user);
-      try { sessionStorage.removeItem("eb_pending_pw"); sessionStorage.removeItem("eb_pending_user"); } catch(e) {}
-      try { updateUI(data.user); } catch(e) {}
-    })
-    .catch(() => {
-      // Reintentar en 5s (Render despertando)
-      setTimeout(() => {
-        const u = sessionStorage.getItem("eb_pending_user");
-        const p = sessionStorage.getItem("eb_pending_pw");
-        if (u && p) syncRegisterGlobal(u, p);
-      }, 5000);
-    });
+    setToken(data.token);
+    setCachedUser(data.user);
+    try { sessionStorage.removeItem("eb_pending_pw"); sessionStorage.removeItem("eb_pending_user"); } catch(e) {}
+    msg(regMsg, "Cuenta creada y guardada en EpicBloxs.", "success");
+
+    // EpicBot solo prepara el avatar después de que la cuenta ya existe
+    // realmente en users.json.
+    setTimeout(() => runNewAccountBot(data.user.username || username), 100);
+    setTimeout(() => loadCurrentUser(), 150);
+  } catch (err) {
+    msg(regMsg, err && err.message ? err.message : "No se pudo crear la cuenta.", "error");
+  }
 }
 
 function login(e){
@@ -3715,10 +3686,28 @@ function loadCurrentUser(){
   const authScreen = document.getElementById("authScreen");
   const token = getToken();
   const cached = getCachedUser();
-  if (!token && !cached) { authScreen.style.display = "flex"; return; }
 
-  const enterApp = (user) => {
-    if (!user) { authScreen.style.display = "flex"; return; }
+  // Los tokens "pending_" pertenecen al sistema antiguo que creaba cuentas
+  // localmente. Ya no se consideran cuentas reales del registro global.
+  if (String(token || "").startsWith("pending_")) {
+    setToken("");
+    try { sessionStorage.removeItem("eb_pending_pw"); sessionStorage.removeItem("eb_pending_user"); } catch(e) {}
+  }
+
+  const currentToken = getToken();
+  if (!currentToken) {
+    // Un usuario guardado solamente en localStorage NO se considera registrado
+    // globalmente. Debe iniciar sesion/registrarse para aparecer en el buscador.
+    authScreen.style.display = "flex";
+    return;
+  }
+
+  // El servidor es la unica fuente de verdad. Esto evita que una cuenta vieja
+  // o inventada del cache aparezca como registrada si no existe en users.json.
+  authScreen.style.display = "none";
+  api("/api/me", {}, 3).then(data => {
+    if (!data || !data.user) throw new Error("Cuenta no encontrada");
+    const user = data.user;
     normalizeInventories(user);
     setCachedUser(user);
     authScreen.style.display = "none";
@@ -3732,35 +3721,11 @@ function loadCurrentUser(){
     try { refreshServerStats(); } catch(e) {}
     try { startPresenceHeartbeat(); } catch(e) {}
     try { startGameStatsHeartbeat(); } catch(e) {}
-  };
-
-  // Entrada inmediata (rapida como local)
-  if (cached) enterApp(cached);
-  else if (token) {
-    // sin cache aun: no bloquear pantalla
-    authScreen.style.display = "none";
-  }
-
-  // Si el token es pendiente, reintentar registro global en background
-  if (String(token).startsWith("pending_")) {
-    try {
-      const u = sessionStorage.getItem("eb_pending_user");
-      const p = sessionStorage.getItem("eb_pending_pw");
-      if (u && p && typeof syncRegisterGlobal === "function") syncRegisterGlobal(u, p);
-    } catch(e) {}
-    return;
-  }
-
-  // Refresco silencioso desde el servidor
-  if (token && !String(token).startsWith("pending_")) {
-    api("/api/me", {}, 2).then(data => {
-      enterApp(data.user);
-    }).catch(() => {
-      if (!cached) {
-        // no sacar al usuario si ya entro
-      }
-    });
-  }
+  }).catch(() => {
+    setToken("");
+    setCachedUser(null);
+    authScreen.style.display = "flex";
+  });
 }
 
 function applyTheme(theme){
@@ -4367,6 +4332,25 @@ function catalogIconSVG(item) {
   if(item.category === 'faces' && item.id === 'Cool Wink') return `<svg ${common}><circle cx="48" cy="48" r="34" fill="#F5C928" stroke="#9A7B00" stroke-width="4"/><circle cx="35" cy="41" r="4" fill="#222"/><path d="M57 40C63 35 68 40 63 44" stroke="#222" stroke-width="4" stroke-linecap="round"/><path d="M35 56C42 62 53 62 60 55" stroke="#222" stroke-width="4" stroke-linecap="round"/></svg>`;
   if(item.category === 'gear' && item.id === 'Classic Shades') return `<svg ${common}><path d="M14 43C20 37 32 36 45 42V55C31 60 20 58 14 52V43Z" fill="#222" stroke="#111" stroke-width="4"/><path d="M82 43C76 37 64 36 51 42V55C65 60 76 58 82 52V43Z" fill="#222" stroke="#111" stroke-width="4"/><path d="M45 44H51" stroke="#111" stroke-width="5"/></svg>`;
   if(item.category === 'gear' && item.id === 'Cool Backpack') return `<svg ${common}><rect x="25" y="23" width="46" height="55" rx="10" fill="#8D5A32" stroke="#4E2F1A" stroke-width="4"/><path d="M35 24C35 10 61 10 61 24" stroke="#4E2F1A" stroke-width="7" fill="none"/><rect x="31" y="46" width="34" height="17" rx="5" fill="#B77A45" stroke="#4E2F1A" stroke-width="3"/><circle cx="48" cy="54" r="3" fill="#4E2F1A"/></svg>`;
+  if(item.id === 'Black Beanie') return `<svg ${common}><path d="M22 58C22 32 33 18 48 18C63 18 74 32 74 58" fill="#242424" stroke="#111" stroke-width="4"/><rect x="18" y="55" width="60" height="17" rx="7" fill="#151515" stroke="#111" stroke-width="4"/><path d="M35 27C39 23 43 21 48 21C53 21 58 23 61 27" stroke="#555" stroke-width="3" fill="none"/></svg>`;
+  if(item.id === 'Pink Bow') return `<svg ${common}><path d="M47 45C35 30 18 29 17 40C16 51 31 58 47 51Z" fill="#F48FB1" stroke="#AD1457" stroke-width="4"/><path d="M49 45C61 30 78 29 79 40C80 51 65 58 49 51Z" fill="#F48FB1" stroke="#AD1457" stroke-width="4"/><circle cx="48" cy="48" r="9" fill="#EC407A" stroke="#AD1457" stroke-width="3"/></svg>`;
+  if(item.id === 'White Fedora') return `<svg ${common}><path d="M27 43C29 27 37 20 48 20C59 20 67 27 69 43" fill="#F5F5F5" stroke="#777" stroke-width="4"/><path d="M19 42H77C74 54 22 54 19 42Z" fill="#FFF" stroke="#777" stroke-width="4"/><path d="M29 38H67" stroke="#222" stroke-width="6"/></svg>`;
+  if(item.id === 'Red Tee') return `<svg ${common}><path d="M27 20L39 15H57L69 20L82 35L69 46L63 37V78H33V37L27 46L14 35Z" fill="#E53935" stroke="#9E1B17" stroke-width="4"/><path d="M39 16C40 28 56 28 57 16" stroke="#FFCDD2" stroke-width="4" fill="none"/><rect x="38" y="49" width="20" height="14" rx="3" fill="#B71C1C"/><text x="48" y="60" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold">EB</text></svg>`;
+  if(item.id === 'Black Jacket') return `<svg ${common}><path d="M28 20L40 15H56L68 20L82 36L69 47L63 38V78H33V38L27 47L14 36Z" fill="#252525" stroke="#080808" stroke-width="4"/><path d="M48 18V78" stroke="#777" stroke-width="3"/><path d="M39 17L48 34L57 17" fill="#333" stroke="#999" stroke-width="2"/><circle cx="43" cy="43" r="2" fill="#DDD"/><circle cx="43" cy="52" r="2" fill="#DDD"/></svg>`;
+  if(item.id === 'Pink Tee') return `<svg ${common}><path d="M27 20L39 15H57L69 20L82 35L69 46L63 37V78H33V37L27 46L14 35Z" fill="#F48FB1" stroke="#AD1457" stroke-width="4"/><path d="M39 16C40 28 56 28 57 16" stroke="#FCE4EC" stroke-width="4" fill="none"/><path d="M40 51C44 47 52 47 56 51" stroke="#C2185B" stroke-width="3" fill="none"/></svg>`;
+  if(item.id === 'Lavender Hoodie') return `<svg ${common}><path d="M28 24L39 17H57L68 24L82 38L70 49L64 42V78H32V42L26 49L14 38Z" fill="#B39DDB" stroke="#6A4C93" stroke-width="4"/><path d="M38 18C39 31 57 31 58 18" stroke="#EDE7F6" stroke-width="4" fill="none"/><path d="M42 35L48 43L54 35" stroke="#6A4C93" stroke-width="3" fill="none"/><rect x="38" y="56" width="20" height="13" rx="3" fill="#9575CD"/></svg>`;
+  if(item.id === 'White Blouse') return `<svg ${common}><path d="M27 20L39 15H57L69 20L82 35L69 46L63 37V78H33V37L27 46L14 35Z" fill="#FAFAFA" stroke="#9E9E9E" stroke-width="4"/><path d="M39 16L48 31L57 16" fill="#E0E0E0" stroke="#757575" stroke-width="2"/><path d="M42 40H54M42 48H54M42 56H54" stroke="#757575" stroke-width="2"/></svg>`;
+  if(item.id === 'Black Jeans') return `<svg ${common}><path d="M27 18H69L75 78H52L48 51L44 78H21Z" fill="#202124" stroke="#090909" stroke-width="4"/><rect x="27" y="18" width="42" height="9" fill="#111"/><path d="M48 27V77" stroke="#666" stroke-width="2"/><path d="M31 34V49H42M65 34V49H54" stroke="#555" stroke-width="2" fill="none"/></svg>`;
+  if(item.id === 'White Pants') return `<svg ${common}><path d="M27 18H69L75 78H52L48 51L44 78H21Z" fill="#F5F5F5" stroke="#9E9E9E" stroke-width="4"/><rect x="27" y="18" width="42" height="9" fill="#D6D6D6"/><path d="M48 27V77" stroke="#BDBDBD" stroke-width="2"/><circle cx="42" cy="22" r="2" fill="#777"/><circle cx="54" cy="22" r="2" fill="#777"/></svg>`;
+  if(item.id === 'Pink Jeans') return `<svg ${common}><path d="M27 18H69L75 78H52L48 51L44 78H21Z" fill="#F48FB1" stroke="#AD1457" stroke-width="4"/><rect x="27" y="18" width="42" height="9" fill="#EC407A"/><path d="M48 27V77" stroke="#FCE4EC" stroke-width="2"/><path d="M31 34V48H42M65 34V48H54" stroke="#FCE4EC" stroke-width="2" fill="none"/></svg>`;
+  if(item.id === 'Purple Pants') return `<svg ${common}><path d="M27 18H69L75 78H52L48 51L44 78H21Z" fill="#7E57C2" stroke="#4527A0" stroke-width="4"/><rect x="27" y="18" width="42" height="9" fill="#5E35B1"/><path d="M48 27V77" stroke="#B39DDB" stroke-width="2"/><rect x="29" y="35" width="11" height="12" rx="2" fill="#9575CD"/><rect x="56" y="35" width="11" height="12" rx="2" fill="#9575CD"/></svg>`;
+  if(item.id === 'Happy Face') return `<svg ${common}><circle cx="48" cy="48" r="34" fill="#FFD54F" stroke="#B28704" stroke-width="4"/><circle cx="36" cy="41" r="4" fill="#222"/><circle cx="60" cy="41" r="4" fill="#222"/><path d="M32 53C39 66 57 66 64 53" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`;
+  if(item.id === 'Sleepy Face') return `<svg ${common}><circle cx="48" cy="48" r="34" fill="#FFD54F" stroke="#B28704" stroke-width="4"/><path d="M29 42C34 47 39 47 44 42M52 42C57 47 62 47 67 42" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M38 58C44 61 52 61 58 58" stroke="#222" stroke-width="3" fill="none"/><text x="63" y="30" font-size="15" font-weight="bold" fill="#555">Z</text></svg>`;
+  if(item.id === 'Cute Face') return `<svg ${common}><circle cx="48" cy="48" r="34" fill="#FFD54F" stroke="#B28704" stroke-width="4"/><circle cx="35" cy="42" r="5" fill="#222"/><circle cx="61" cy="42" r="5" fill="#222"/><circle cx="29" cy="51" r="5" fill="#F48FB1"/><circle cx="67" cy="51" r="5" fill="#F48FB1"/><path d="M40 57C45 62 51 62 56 57" stroke="#222" stroke-width="3" fill="none"/></svg>`;
+  if(item.id === 'Starry Face') return `<svg ${common}><circle cx="48" cy="48" r="34" fill="#FFD54F" stroke="#B28704" stroke-width="4"/><path d="M35 35L38 42L45 43L40 48L41 55L35 51L29 55L30 48L25 43L32 42Z" fill="#FFF"/><path d="M61 35L64 42L71 43L66 48L67 55L61 51L55 55L56 48L51 43L58 42Z" fill="#FFF"/><path d="M39 60C45 64 51 64 57 60" stroke="#222" stroke-width="3" fill="none"/></svg>`;
+  if(item.id === 'Heart Necklace') return `<svg ${common}><path d="M23 25C27 55 69 55 73 25" stroke="#777" stroke-width="5" fill="none"/><path d="M48 47C38 38 28 48 48 68C68 48 58 38 48 47Z" fill="#E91E63" stroke="#880E4F" stroke-width="3"/></svg>`;
+  if(item.id === 'Shoulder Bunny') return `<svg ${common}><ellipse cx="48" cy="54" rx="25" ry="24" fill="#F5F5F5" stroke="#777" stroke-width="4"/><ellipse cx="35" cy="24" rx="8" ry="18" fill="#F5F5F5" stroke="#777" stroke-width="4"/><ellipse cx="61" cy="24" rx="8" ry="18" fill="#F5F5F5" stroke="#777" stroke-width="4"/><circle cx="40" cy="51" r="3" fill="#222"/><circle cx="56" cy="51" r="3" fill="#222"/><circle cx="48" cy="59" r="4" fill="#F48FB1"/></svg>`;
+  if(item.id === 'Golden Headphones') return `<svg ${common}><path d="M25 52V43C25 15 71 15 71 43V52" stroke="#D4AF37" stroke-width="8" fill="none"/><rect x="18" y="45" width="15" height="25" rx="7" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><rect x="63" y="45" width="15" height="25" rx="7" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><path d="M33 58H63" stroke="#D4AF37" stroke-width="4"/></svg>`;
   if(item.custom && item.type === '2d' && item.data && item.data.imageData) return `<img src=\"${item.data.imageData}\" style=\"max-width:100%;max-height:150px;object-fit:contain\" alt=\"Ropa 2D\">`;
   if(item.custom && item.type === 'accessory3d') return `<div style=\"font-size:58px\">🧊</div>`;
   return `<svg ${common}><rect x="18" y="18" width="60" height="60" rx="12" fill="#E9EEF3" stroke="#9AA7B2" stroke-width="4"/><path d="M30 50H66" stroke="#1684E8" stroke-width="6" stroke-linecap="round"/></svg>`;
