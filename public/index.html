@@ -3167,17 +3167,33 @@ async function searchRegisteredUsernameExact(name){
   return lookup.user;
 }
 
-function addFriendFromInput(){
+async function addFriendFromInput(){
   const input=document.getElementById("addFriendInput");
   const name=input?input.value.trim():"";
   const token=getToken();
   if(!token) return alert("Debes iniciar sesión.");
-  if(String(token).startsWith("pending_")) return alert("Tu cuenta todavía se está conectando al servidor. Inténtalo de nuevo en unos segundos.");
-  searchRegisteredUsernameExact(name)
-    .then(target=>api("/api/friends/request",{method:"POST",body:JSON.stringify({id:target.id})},2))
-    .then(data=>{if(data.user)setCachedUser(data.user);if(input)input.value="";return refreshFriendsFromServer();})
-    .then(()=>alert("Usuario encontrado. Solicitud enviada"))
-    .catch(err=>alert(err.message||"No se pudo enviar la solicitud."));
+  if(String(token).startsWith("pending_")) return alert("Tu cuenta todavía se está conectando al servidor. Espera a que termine de registrarse y vuelve a intentarlo.");
+  if(!name) return alert("Escribe un nombre de usuario.");
+
+  try {
+    // Buscar directamente por Username exacto en todas las cuentas registradas.
+    const data = await api("/api/users/lookup?username="+encodeURIComponent(name),{},3);
+    const target = data && data.user;
+    if(!target || !target.id) throw new Error("Usuario no encontrado.");
+
+    // Enviar la solicitud usando el ID único encontrado por el servidor.
+    const sent = await api("/api/friends/request",{
+      method:"POST",
+      body:JSON.stringify({ id:String(target.id), username:target.username })
+    },3);
+
+    if(sent.user) setCachedUser(sent.user);
+    if(input) input.value="";
+    await refreshFriendsFromServer();
+    alert("Usuario encontrado. Solicitud enviada");
+  } catch(err) {
+    alert(err.message || "No se pudo enviar la solicitud.");
+  }
 }
 
 function acceptFriendRequest(fromKey) {
