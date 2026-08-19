@@ -1,1 +1,31 @@
-{}
+{
+  "sebuser": {
+    "username": "SebUser",
+    "passwordHash": "ca7afd6a5b83ee0bc412d15c060f8388fa35e192e7d9086fa8bb4ebe88695166",
+    "sunnys": 600,
+    "bio": "Insert Bio.",
+    "avatar": {
+      "accessories": [
+        "Classic Smile",
+        "Blue Shirt",
+        "Classic Jeans"
+      ],
+      "colors": {
+        "head": "#f5c928",
+        "arms": "#f5c928",
+        "torso": "#1477b9",
+        "legs": "#8cae45"
+      }
+    },
+    "inventory": [
+      "Classic Smile",
+      "Blue Shirt",
+      "Classic Jeans"
+    ],
+    "friends": [],
+    "friendRequests": [],
+    "outgoingRequests": [],
+    "lastDailyLogin": "Tue Aug 18 2026",
+    "createdAt": "2026-08-18T23:20:23.848Z"
+  }
+}
