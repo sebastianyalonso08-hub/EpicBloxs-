@@ -320,6 +320,7 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
     <div id="friendProfileAvatar" class="profile-avatar-large"></div>
     <h2 id="friendProfileName" style="text-align:center;margin:5px 0">Player ✓</h2>
     <p id="friendProfileUsername" style="text-align:center;color:#777;margin:0 0 10px">@Player</p>
+    <p id="friendProfileId" style="text-align:center;color:#999;font-size:12px;margin:0 0 10px">ID #—</p>
     <div style="text-align:center;margin-bottom:15px">
       <span style="background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">🟢 En línea</span>
     </div>
@@ -1338,7 +1339,6 @@ function launchWebClient(gameName) {
     epicGameId = getGameId(gameName);
     epicServerId = null;
     epicPlayerId = null;
-    updateIdPanel();
     initGameWebGL(gameName);
     connectMultiplayer(gameName);
     sendPresence(true, { gameId: epicGameId, gameName: gameName, roomName: gameName, serverId: epicServerId });
@@ -1777,8 +1777,8 @@ function startGameLoop() {
 
   let playerPos = { x: 0, y: 0, z: 0 };
   let velocityY = 0;
-  const gravity = 20;
-  const jumpForce = 8;
+  const gravity = 18;
+  const jumpForce = 9.5;
   const moveSpeed = 6;
   let isGrounded = true;
   let lastTime = performance.now();
@@ -2042,34 +2042,7 @@ function getGameId(gameName) {
   return "GAME-" + Math.abs(hash).toString(16).toUpperCase().padStart(8, "0").slice(0, 8);
 }
 
-function ensureIdPanel() {
-  const ui = document.querySelector("#webClient .client-ui");
-  if (!ui || document.getElementById("epicIdsPanel")) return;
-
-  const panel = document.createElement("div");
-  panel.id = "epicIdsPanel";
-  panel.style.cssText =
-    "position:absolute;top:52px;right:15px;z-index:8;" +
-    "background:rgba(10,15,25,.88);color:#fff;padding:9px 12px;" +
-    "border:1px solid rgba(255,255,255,.15);border-radius:8px;" +
-    "font:12px Arial;line-height:1.55;min-width:190px;pointer-events:none;";
-  panel.innerHTML = `
-    <div><b>🎮 Game ID:</b> <span id="epicGameIdText">...</span></div>
-    <div><b>🖥️ Server ID:</b> <span id="epicServerIdText">...</span></div>
-    <div><b>👤 Player ID:</b> <span id="epicPlayerIdText">...</span></div>
-  `;
-  ui.appendChild(panel);
-}
-
-function updateIdPanel() {
-  ensureIdPanel();
-  const a = document.getElementById("epicGameIdText");
-  const b = document.getElementById("epicServerIdText");
-  const c = document.getElementById("epicPlayerIdText");
-  if (a) a.textContent = epicGameId || "...";
-  if (b) b.textContent = epicServerId || "...";
-  if (c) c.textContent = epicPlayerId || "...";
-}
+// ID interno del sistema (sin mostrar Game ID / Server ID / Player ID en pantalla)
 // ================= END EPICBLOXS IDS ====================
 
 // ==================== EPICBLOXS MULTIPLAYER ====================
@@ -2183,8 +2156,7 @@ function openMultiplayerSocket() {
         epicPlayerId = data.playerId || data.id;
         epicServerId = data.serverId || "SRV-UNKNOWN";
         epicGameId = data.gameId || epicGameId;
-        updateIdPanel();
-        const acc = (typeof data.accounts === 'number') ? data.accounts : null;
+            const acc = (typeof data.accounts === 'number') ? data.accounts : null;
         setMultiplayerStatus(
           acc != null
             ? `👥 ${data.count} en sala · ${acc} cuentas`
@@ -2233,6 +2205,12 @@ function openMultiplayerSocket() {
 
       if (data.type === "roomInfo") {
         updateMultiplayerCount(data.count);
+        return;
+      }
+
+      if (data.type === "gameStats") {
+        _gameStats = (data && data.stats) || {};
+        loadGames(games);
         return;
       }
 
@@ -3144,7 +3122,7 @@ function renderFriends(){
     const cls = p.playing ? 'presence-playing' : (p.online ? 'presence-online' : 'presence-offline');
     const label = p.playing ? `🎮 Jugando: ${escapeHTML(p.gameName || 'un juego')}` : (p.online ? '🟢 En línea' : '⚪ Desconectado');
     return `
-    <div class="friend" onclick="viewFriendProfile('${escapeHTML(f.username)}')">
+    <div class="friend" onclick="viewFriendProfile('${escapeHTML(f.id)}')">
       <div class="friend-avatar">${avatarPortraitHTML(f, 82)}</div>
       <div class="friend-name" style="font-size:12px;font-weight:bold;margin-top:4px">${escapeHTML(f.username)}</div>
       <div class="presence-dot ${cls}"><span class="dot"></span>${label}</div>
@@ -3175,7 +3153,7 @@ function renderFriendsPage(){
       const label = p.playing ? `🎮 Jugando ${escapeHTML(p.gameName || 'un juego')}` : (p.online ? '🟢 En línea' : '⚪ Desconectado');
       const join = p.playing ? `<button class="join" onclick="event.stopPropagation();joinFriendGame('${escapeHTML(f.id)}')">▶ Unirse</button>` : '';
       return `
-      <div class="friend-card" onclick="viewFriendProfile('${escapeHTML(f.username)}')">
+      <div class="friend-card" onclick="viewFriendProfile('${escapeHTML(f.id)}')">
         <div class="friend-card-avatar">${avatarPortraitHTML(f, 110)}</div>
         <div class="friend-name" style="font-size:15px;font-weight:bold;margin-top:8px">${escapeHTML(f.username)}</div>
         <div class="presence-dot ${cls}"><span class="dot"></span>${label}</div>
@@ -3187,20 +3165,24 @@ function renderFriendsPage(){
   grid.innerHTML = html;
 }
 
+async function searchRegisteredUsernameExact(name){
+  const query=String(name||"").trim();
+  if(!query) throw new Error("Escribe un nombre de usuario.");
+  const search=await api("/api/users/search?q="+encodeURIComponent(query),{},2);
+  const rs=search.results||[];
+  const target=rs.find(r=>String(r.username||"").trim().toLowerCase()===query.toLowerCase());
+  if(!target) throw new Error(rs.length?"No existe una cuenta con ese Username exacto.":"Usuario no encontrado.");
+  return target;
+}
+
 function addFriendFromInput(){
-  const input=document.getElementById('addFriendInput');
+  const input=document.getElementById("addFriendInput");
   const name=input?input.value.trim():"";
-  if(!name) return alert("Escribe un nombre de usuario.");
   const token=getToken();
   if(!token) return alert("Debes iniciar sesión.");
   if(String(token).startsWith("pending_")) return alert("Tu cuenta todavía se está conectando al servidor. Inténtalo de nuevo en unos segundos.");
-  api('/api/users/search?q='+encodeURIComponent(name),{},2)
-    .then(search=>{
-      const rs=search.results||[];
-      const target=rs.find(r=>(r.username||'').toLowerCase()===name.toLowerCase()||(r.id||'').toLowerCase()===name.toLowerCase()) || (rs.length===1?rs[0]:null);
-      if(!target) throw new Error(rs.length?"Escribe el nombre exacto del usuario.":"Usuario no encontrado.");
-      return api('/api/friends/request',{method:'POST',body:JSON.stringify({id:target.id})},2);
-    })
+  searchRegisteredUsernameExact(name)
+    .then(target=>api("/api/friends/request",{method:"POST",body:JSON.stringify({id:target.id})},2))
     .then(data=>{if(data.user)setCachedUser(data.user);if(input)input.value="";return refreshFriendsFromServer();})
     .then(()=>alert("📨 Solicitud de amistad enviada."))
     .catch(err=>alert(err.message||"No se pudo enviar la solicitud."));
@@ -3257,55 +3239,43 @@ function joinFriendGame(friendId){
   setTimeout(() => launchWebClient(p.gameName), 50);
 }
 
-function viewFriendProfile(username){
-  api('/api/users/' + encodeURIComponent(username.toLowerCase()))
-    .then(data => {
-      const friend = data.user;
-      document.getElementById('friendProfileName').textContent = friend.username + " ✓";
-      document.getElementById('friendProfileUsername').textContent = "@" + friend.username;
-      document.getElementById('friendProfileBio').textContent = friend.bio || "Sin descripción disponible.";
-      const cachedFriend = getMyFriends().find(f => (f.id || '').toLowerCase() === (friend.id || '').toLowerCase() || (f.username || '').toLowerCase() === (friend.username || '').toLowerCase());
-      const presence = (cachedFriend && cachedFriend.presence) || { online:false, playing:false };
-      const presenceEl = document.getElementById('friendProfilePresence');
-      const joinBtn = document.getElementById('friendProfileJoinBtn');
-      if (presenceEl) {
-        presenceEl.innerHTML = presence.playing ? `<span style="background:#e8f0ff;color:#1d4ed8;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">🎮 Jugando: ${escapeHTML(presence.gameName || 'un juego')}</span>` : (presence.online ? `<span style="background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">🟢 En línea</span>` : `<span style="background:#f1f3f4;color:#666;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">⚪ Desconectado</span>`);
-      }
-      if (joinBtn) {
-        joinBtn.disabled = !presence.playing;
-        joinBtn.textContent = presence.playing ? '▶ Unirse al Juego' : 'Unirse al Juego';
-        joinBtn.onclick = presence.playing ? () => joinFriendGame(friend.id) : null;
-      }
-      const avEl = document.getElementById('friendProfileAvatar');
-      if (avEl) {
-        avEl.style.background = 'transparent';
-        avEl.innerHTML = avatarPortraitHTML(friend, 260);
-      }
-      showPage('friendProfile');
+function openUserProfile(userId){
+  const id=String(userId||"").trim();
+  if(!id) return alert("Perfil no válido.");
+  history.pushState({profileId:id},"","/perfil/"+encodeURIComponent(id));
+  api("/api/users/"+encodeURIComponent(id))
+    .then(data=>{
+      const friend=data.user;
+      document.getElementById("friendProfileName").textContent=friend.username+" ✓";
+      document.getElementById("friendProfileUsername").textContent="@"+friend.username;
+      const idEl=document.getElementById("friendProfileId"); if(idEl) idEl.textContent="ID #"+friend.userId+" · /perfil/"+friend.userId;
+      document.getElementById("friendProfileBio").textContent=friend.bio || "Sin descripción disponible.";
+      const cachedFriend=getMyFriends().find(f=>String(f.id)===String(friend.id));
+      const presence=(cachedFriend&&cachedFriend.presence)||{online:false,playing:false};
+      const presenceEl=document.getElementById("friendProfilePresence");
+      const joinBtn=document.getElementById("friendProfileJoinBtn");
+      if(presenceEl) presenceEl.innerHTML=presence.playing?`<span style="background:#e8f0ff;color:#1d4ed8;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">🎮 Jugando: ${escapeHTML(presence.gameName||"un juego")}</span>`:(presence.online?`<span style="background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">🟢 En línea</span>`:`<span style="background:#f1f3f4;color:#666;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">⚪ Desconectado</span>`);
+      if(joinBtn){joinBtn.disabled=!presence.playing;joinBtn.textContent=presence.playing?"▶ Unirse al Juego":"Unirse al Juego";joinBtn.onclick=presence.playing?()=>joinFriendGame(friend.id):null;}
+      const avEl=document.getElementById("friendProfileAvatar");
+      if(avEl){avEl.style.background="transparent";avEl.innerHTML=avatarPortraitHTML(friend,260);}
+      showPage("friendProfile");
     })
-    .catch(() => {
-      // buscar por nombre
-      api('/api/users/search?q=' + encodeURIComponent(username))
-        .then(s => {
-          const hit = (s.results||[]).find(r => r.username.toLowerCase() === username.toLowerCase()) || (s.results||[])[0];
-          if (!hit) return alert("Usuario no encontrado.");
-          return api('/api/users/' + encodeURIComponent(hit.id));
-        })
-        .then(data => {
-          if (!data || !data.user) return;
-          const friend = data.user;
-          document.getElementById('friendProfileName').textContent = friend.username + " ✓";
-          document.getElementById('friendProfileUsername').textContent = "@" + friend.username;
-          document.getElementById('friendProfileBio').textContent = friend.bio || "Sin descripción disponible.";
-          const avEl = document.getElementById('friendProfileAvatar');
-          if (avEl) {
-            avEl.style.background = 'transparent';
-            avEl.innerHTML = avatarPortraitHTML(friend, 260);
-          }
-          showPage('friendProfile');
-        })
-        .catch(() => alert("Usuario no encontrado en el servidor global."));
-    });
+    .catch(()=>alert("Usuario no encontrado en el servidor global."));
+}
+
+function viewFriendProfile(userId){ openUserProfile(userId); }
+
+window.addEventListener("popstate",()=>{
+  const match=location.pathname.match(/^\/perfil\/(\d+)$/);
+  if(match) openUserProfile(match[1]);
+});
+
+function openFriendProfileFromUsername(username){
+  api("/api/users/search?q="+encodeURIComponent(username),{},2).then(search=>{
+    const hit=(search.results||[]).find(r=>String(r.username||"").toLowerCase()===String(username||"").toLowerCase());
+    if(!hit) throw new Error("Usuario no encontrado.");
+    openUserProfile(hit.id);
+  }).catch(e=>alert(e.message||"Usuario no encontrado."));
 }
 
 function escapeHTML(s){if(!s)return"";const d=document.createElement("div");d.textContent=s;return d.innerHTML}
@@ -3378,7 +3348,7 @@ async function refreshGameStats(){
 function startGameStatsHeartbeat(){
   if(_gameStatsTimer) clearInterval(_gameStatsTimer);
   refreshGameStats();
-  _gameStatsTimer=setInterval(refreshGameStats,8000);
+  _gameStatsTimer=setInterval(refreshGameStats,1000);
 }
 
 function searchGames(t){
@@ -3747,3 +3717,5 @@ init();
 
 </body>
 </html>
+
+(function(){ const m=location.pathname.match(/^\/perfil\/(\d+)$/); if(m){ setTimeout(()=>openUserProfile(m[1]),0); } })();
