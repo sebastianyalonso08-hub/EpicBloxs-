@@ -44,7 +44,7 @@ body.theme-purple{background:#f4efff;color:#30204d}body.theme-purple .sidebar,bo
 .chat{position:fixed;right:30px;bottom:0;width:240px;height:40px;background:#292929;color:#fff;border-radius:7px 7px 0 0;padding:12px 18px;cursor:pointer;z-index:200;font-weight:bold;box-shadow:0 -2px 10px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:space-between}.chat .chat-badge{background:#e53935;color:#fff;font-size:11px;border-radius:10px;padding:1px 7px;margin-left:8px;display:none}
 .creator-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.creator-card{background:#fff;border:1px solid #ccc;border-radius:8px;padding:16px}.creator-tools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.creator-tools button{border:1px solid #bbb;background:#f5f5f5;border-radius:5px;padding:7px 10px;cursor:pointer}.creator-tools button.active{background:#1684e8;color:#fff;border-color:#1684e8}.creator-viewer{height:430px;background:linear-gradient(#dff1ff,#f6fbff);border:1px solid #ccc;border-radius:8px;overflow:hidden;position:relative}.creator-viewer canvas{width:100%;height:100%;display:block}.creator-cube-list{max-height:180px;overflow:auto;border:1px solid #ddd;border-radius:6px;padding:8px}.creator-cube-row{display:flex;align-items:center;gap:8px;padding:6px;border-bottom:1px solid #eee}.creator-cube-row:last-child{border-bottom:0}.creator-cube-row button{margin-left:auto}.creator-color{width:42px;height:34px;padding:0;border:1px solid #aaa}.creator-2d-preview{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}.creator-2d-canvas{width:320px;height:320px;border:1px solid #bbb;background:#fff;image-rendering:auto;touch-action:none}.creator-small{font-size:12px;color:#666}.moderation-badge{display:inline-flex;gap:6px;align-items:center;background:#fff4cc;color:#775800;border:1px solid #e3c55d;padding:4px 8px;border-radius:12px;font-size:11px;font-weight:bold}.creator-msg{min-height:18px;font-size:12px;margin-top:8px}.creator-msg.ok{color:#188038}.creator-msg.err{color:#c5221f}@media(max-width:900px){.creator-layout{grid-template-columns:1fr}.creator-viewer{height:360px}}.creator-transform{border:1px solid #cfd7df;background:#f7faff;border-radius:8px;padding:10px;margin:10px 0}.creator-transform-title{font-weight:700;font-size:13px;margin-bottom:4px}.creator-transform-tools{margin:6px 0}.creator-transform-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.creator-transform-grid label{font-size:11px;color:#555;display:flex;gap:4px;align-items:center}.creator-transform-grid input{width:100%;min-width:0;padding:5px;border:1px solid #bbb;border-radius:4px}.creator-list-selected{outline:2px solid #1684e8;background:#eef7ff}.creator-gizmo-label{font:700 11px Arial,sans-serif;color:#222;background:rgba(255,255,255,.92);padding:2px 5px;border-radius:4px;border:1px solid #ccd6e0}@media(max-width:600px){.creator-transform-grid{grid-template-columns:1fr 1fr}}
 
-.chat-window{display:none;position:fixed;right:30px;bottom:40px;width:340px;height:420px;background:#fff;border:1px solid #bbb;z-index:200;border-radius:8px 8px 0 0;box-shadow:0 5px 25px rgba(0,0,0,0.25);flex-direction:column;overflow:hidden}.chat-window.open{display:flex}.chat-header{background:#292929;color:#fff;padding:12px 14px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}.chat-header .chat-status{font-size:11px;font-weight:normal;color:#86efac}.chat-body{flex:1;overflow-y:auto;padding:12px;color:#333;background:#f7f8fa;display:flex;flex-direction:column;gap:8px}.chat-msg{font-size:13px;line-height:1.35;padding:8px 10px;border-radius:8px;background:#fff;border:1px solid #e5e7eb;word-break:break-word}.chat-msg.system{background:#eef2ff;border-color:#c7d2fe;color:#4338ca;font-style:italic}.chat-msg .chat-user{font-weight:bold;color:#1684e8;margin-right:4px}.chat-msg.system .chat-user{color:#4338ca}.chat-msg .chat-time{float:right;font-size:10px;color:#9ca3af;margin-left:8px}.chat-input-row{display:flex;gap:6px;padding:10px;border-top:1px solid #ddd;background:#fff;flex-shrink:0}.chat-input-row input{flex:1;padding:9px 12px;border:1px solid #ccc;border-radius:6px;font-size:13px;outline:none}.chat-input-row input:focus{border-color:#1684e8}.chat-input-row button{padding:9px 14px;background:#1684e8;color:#fff;border:0;border-radius:6px;font-weight:bold;cursor:pointer}.chat-input-row button:hover{background:#0d5aa7}.ingame-chat{position:absolute;left:12px;bottom:50px;width:min(360px,90%);max-height:180px;overflow-y:auto;pointer-events:none;z-index:50;display:flex;flex-direction:column;gap:4px}.ingame-chat .ig-msg{background:rgba(0,0,0,0.55);color:#fff;padding:5px 10px;border-radius:6px;font-size:12px;backdrop-filter:blur(4px)}.ingame-chat .ig-msg .ig-user{font-weight:bold;color:#7dd3fc;margin-right:4px}.ingame-chat .ig-msg.system{color:#c4b5fd}
+.chat-window{display:none;position:fixed;right:30px;bottom:40px;width:340px;height:420px;background:#fff;border:1px solid #bbb;z-index:200;border-radius:8px 8px 0 0;box-shadow:0 5px 25px rgba(0,0,0,0.25);flex-direction:column;overflow:hidden}.chat-window.open{display:flex}.chat-header{background:#292929;color:#fff;padding:12px 14px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}.chat-header .chat-status{font-size:11px;font-weight:normal;color:#86efac}.chat-body{flex:1;overflow-y:auto;padding:12px;color:#333;background:#f7f8fa;display:flex;flex-direction:column;gap:8px}.chat-msg{font-size:13px;line-height:1.35;padding:8px 10px;border-radius:8px;background:#fff;border:1px solid #e5e7eb;word-break:break-word}.chat-msg.system{background:#eef2ff;border-color:#c7d2fe;color:#4338ca;font-style:italic}.chat-msg .chat-user{font-weight:bold;color:#1684e8;margin-right:4px}.chat-msg.system .chat-user{color:#4338ca}.chat-msg .chat-time{float:right;font-size:10px;color:#9ca3af;margin-left:8px}.chat-input-row{display:flex;gap:6px;padding:10px;border-top:1px solid #ddd;background:#fff;flex-shrink:0}.chat-input-row input{flex:1;padding:9px 12px;border:1px solid #ccc;border-radius:6px;font-size:13px;outline:none}.chat-input-row input:focus{border-color:#1684e8}.chat-input-row button{padding:9px 14px;background:#1684e8;color:#fff;border:0;border-radius:6px;font-weight:bold;cursor:pointer}.chat-input-row button:hover{background:#0d5aa7}.chat-tabs{display:flex;gap:0;background:#1f1f1f;flex-shrink:0}.chat-tabs button{flex:1;padding:9px 6px;background:#1f1f1f;color:#cfcfcf;border:0;border-bottom:2px solid transparent;font-size:12px;font-weight:bold;cursor:pointer}.chat-tabs button.active{color:#fff;border-bottom-color:#1684e8;background:#292929}.dm-list{flex:1;overflow-y:auto;background:#f7f8fa}.dm-row{display:flex;align-items:center;gap:8px;padding:9px 10px;border-bottom:1px solid #e8eaed;cursor:pointer;background:#fff}.dm-row:hover{background:#eef7ff}.dm-row .dm-info{flex:1;min-width:0}.dm-row .dm-name{font-size:13px;font-weight:bold;color:#222}.dm-row .dm-last{font-size:11px;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dm-unread{background:#d93025;color:#fff;border-radius:10px;font-size:10px;padding:2px 6px;font-weight:bold}.dm-mini-avatar{width:34px;height:34px;border-radius:50%;overflow:hidden;background:#dfe7ec;flex-shrink:0}.dm-mini-avatar>*{width:100%!important;height:100%!important}.dm-back{background:#292929;color:#fff;border:0;padding:7px 10px;font-size:11px;cursor:pointer;text-align:left;flex-shrink:0}.dm-msg{max-width:80%;padding:7px 10px;border-radius:10px;font-size:13px;word-break:break-word}.dm-msg.me{align-self:flex-end;background:#1684e8;color:#fff}.dm-msg.them{align-self:flex-start;background:#fff;border:1px solid #e5e7eb;color:#222}.dm-msg .dm-time{display:block;font-size:9px;opacity:.7;margin-top:2px}.ingame-chat{position:absolute;left:12px;bottom:50px;width:min(360px,90%);max-height:180px;overflow-y:auto;pointer-events:none;z-index:50;display:flex;flex-direction:column;gap:4px}.ingame-chat .ig-msg{background:rgba(0,0,0,0.55);color:#fff;padding:5px 10px;border-radius:6px;font-size:12px;backdrop-filter:blur(4px)}.ingame-chat .ig-msg .ig-user{font-weight:bold;color:#7dd3fc;margin-right:4px}.ingame-chat .ig-msg.system{color:#c4b5fd}
 
 /* ===== Cliente 3D pantalla completa ===== */
 body.in-game .topbar, body.in-game .sidebar, body.in-game .main > .page:not(#webClient), body.in-game > .chat { display: none !important; }
@@ -339,7 +339,7 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
     </div>
     <div style="margin-top:20px;display:flex;gap:10px">
       <button id="friendProfileJoinBtn" class="buy" style="flex:1" disabled>Unirse al Juego</button>
-      <button class="section-button" style="flex:1;margin:0" onclick="alert('💬 Mensajería directa en desarrollo.')">Enviar Mensaje</button>
+      <button id="friendProfileMsgBtn" class="section-button" style="flex:1;margin:0" onclick="alert('Abre un perfil para escribir.')">Enviar Mensaje</button>
     </div>
   </div>
 </section>
@@ -511,14 +511,40 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 <div id="chatWindow" class="chat-window">
   <div class="chat-header">
     <span>EpicBloxs Chat <span class="moderation-badge" style="margin-left:5px">###</span></span>
-    <span class="chat-status" id="chatConnStatus">● Offline</span>
+    <span class="chat-status" id="chatConnStatus">Offline</span>
   </div>
-  <div class="chat-body" id="chatBody">
-    <div class="chat-msg system"><span class="chat-user">Sistema:</span> Entra a un juego para chatear en tiempo real con otros jugadores.</div>
+  <div class="chat-tabs">
+    <button id="chatTabRoom" class="active" onclick="setChatTab('room')">Sala del juego</button>
+    <button id="chatTabDm" onclick="setChatTab('dm')">Chat directo <span id="dmTabBadge" class="dm-unread" style="display:none">0</span></button>
   </div>
-  <div class="chat-input-row">
-    <input id="chatInput" type="text" maxlength="200" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendChatMessage()">
-    <button onclick="sendChatMessage()">Enviar</button>
+
+  <div id="chatRoomPane" style="flex:1;display:flex;flex-direction:column;min-height:0">
+    <div class="chat-body" id="chatBody">
+      <div class="chat-msg system"><span class="chat-user">Sistema:</span> Entra a un juego para chatear en tiempo real con otros jugadores.</div>
+    </div>
+    <div class="chat-input-row">
+      <input id="chatInput" type="text" maxlength="200" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendChatMessage()">
+      <button onclick="sendChatMessage()">Enviar</button>
+    </div>
+  </div>
+
+  <div id="chatDmPane" style="flex:1;display:none;flex-direction:column;min-height:0">
+    <div id="dmListPane" style="flex:1;display:flex;flex-direction:column;min-height:0">
+      <div class="chat-input-row" style="border-top:0;border-bottom:1px solid #ddd">
+        <input id="dmSearchInput" type="text" maxlength="40" placeholder="Buscar usuario para escribirle..." onkeydown="if(event.key==='Enter')dmSearchUsers()">
+        <button onclick="dmSearchUsers()">Buscar</button>
+      </div>
+      <div id="dmList" class="dm-list"></div>
+    </div>
+    <div id="dmThreadPane" style="flex:1;display:none;flex-direction:column;min-height:0">
+      <button class="dm-back" onclick="dmCloseThread()">Volver a conversaciones</button>
+      <div class="chat-header" style="background:#3b3b3b;padding:8px 12px;font-size:13px"><span id="dmThreadName">Usuario</span><span class="chat-status" id="dmThreadPresence"></span></div>
+      <div class="chat-body" id="dmThreadBody"></div>
+      <div class="chat-input-row">
+        <input id="dmInput" type="text" maxlength="300" placeholder="Escribe un mensaje privado..." onkeydown="if(event.key==='Enter')dmSend()">
+        <button onclick="dmSend()">Enviar</button>
+      </div>
+    </div>
   </div>
 </div>
 <div class="chat" onclick="toggleChat()">Chat <span class="chat-badge" id="chatBadge">0</span></div>
@@ -2252,6 +2278,7 @@ function startLocalEmote(name){
 function stopLocalEmote(){
   if(!localEmote) return;
   localEmote = null;
+  // Volver de golpe a la postura normal (quieto), sin dejar el cuerpo torcido.
   resetLimbs(playerMeshGroup);
 }
 
@@ -2565,6 +2592,9 @@ function startGameLoop() {
       playerMeshGroup.rotation.y += diff * Math.min(1, 12 * dt);
     }
 
+    // Si te mueves, saltas o se acaba el tiempo, el baile termina y el cuerpo vuelve a la postura normal.
+    if (localEmote && (isMovingInput || !isGrounded || !isLocalEmoteActive())) stopLocalEmote();
+
     if (!isLocalEmoteActive()) {
       const leftArm = playerMeshGroup.getObjectByName("leftArm");
       const rightArm = playerMeshGroup.getObjectByName("rightArm");
@@ -2631,12 +2661,9 @@ function startGameLoop() {
     if(playerMeshGroup) playerMeshGroup.position.set(playerPos.x, playerPos.y + 0.4, playerPos.z);
 
     // EMOTES: baile del jugador local (se corta si se mueve o salta).
-    if (isLocalEmoteActive()) {
-      if (isMovingInput || !isGrounded) stopLocalEmote();
-      else if (playerMeshGroup) {
-        const bob = applyEmoteAnimation(playerMeshGroup, localEmote.name, (performance.now() - localEmote.start) / 1000);
-        playerMeshGroup.position.y += bob;
-      }
+    if (isLocalEmoteActive() && playerMeshGroup) {
+      const bob = applyEmoteAnimation(playerMeshGroup, localEmote.name, (performance.now() - localEmote.start) / 1000);
+      playerMeshGroup.position.y += bob;
     }
 
     sendMultiplayerPosition(playerPos);
@@ -2870,6 +2897,14 @@ function openMultiplayerSocket() {
 
       if (data.type === "roomInfo") {
         updateMultiplayerCount(data.count);
+        return;
+      }
+
+      if (data.type === "dm") {
+        dmUnreadTotal++;
+        dmUpdateBadge();
+        if(chatOpen && chatTab === 'dm' && String(dmCurrentId) === String(data.from)) dmOpenThread(data.from, data.username, true);
+        else appendChatMessage('Sistema', 'Mensaje privado de ' + (data.username || 'alguien') + ': ' + (data.text || ''), true, data.ts);
         return;
       }
 
@@ -3155,8 +3190,10 @@ function updateRemotePlayers(dt) {
     const rightLeg = group.getObjectByName("rightLeg");
 
     if (emoteActive) {
-      if (speed > 1.2) {
+      if (speed > 0.5) {
+        // El jugador remoto se movio: se corta el baile y vuelve a la postura normal.
         group.userData.emoteUntil = 0;
+        group.userData.emoteName = null;
         resetLimbs(group);
       } else {
         const et = (performance.now() - (group.userData.emoteStart || 0)) / 1000;
@@ -3254,6 +3291,9 @@ async function api(path, opts={}, retries=3) {
       const textBody = await res.text();
       try { data = textBody ? JSON.parse(textBody) : {}; } catch(e) {
         if (!res.ok) throw new Error("Servidor sin API de cuentas (hay que subir el server.js nuevo).");
+      }
+      if (res.status === 401) {
+        throw new Error("El servidor no reconocio tu sesion. Vuelve a iniciar sesion una vez y ya no se volvera a pedir.");
       }
       if (!res.ok) throw new Error(data.error || ("Error " + res.status));
       return data;
@@ -3842,10 +3882,11 @@ async function runUserSearch(forcedQuery, showAll){
   }
   if(status) status.textContent = 'Buscando...';
   try {
-    const data = await api('/api/users/search?limit=300&q=' + encodeURIComponent(q), {}, 2);
+    const data = await api('/api/users/search?limit=5000&q=' + encodeURIComponent(q), {}, 2);
     _searchCache = data.results || [];
+    const total = data.total || _searchCache.length;
     if(status) status.textContent = _searchCache.length
-      ? ('Se encontraron ' + _searchCache.length + ' de ' + (data.total || _searchCache.length) + ' cuentas registradas.')
+      ? ('Mostrando ' + _searchCache.length + (total > _searchCache.length ? (' de ' + total) : '') + ' cuentas registradas.')
       : 'No se encontro ninguna cuenta con ese nombre o ID.';
     renderUserSearchResults();
   } catch(err){
@@ -4093,6 +4134,8 @@ function openUserProfile(userId){
         const created=friend.createdAt?new Date(friend.createdAt):null;
         createdEl.textContent=(created&&!isNaN(created.getTime())&&created.getFullYear()>1971)?("Miembro desde "+created.toLocaleDateString()):"Cuenta antigua";
       }
+      const msgBtn=document.getElementById("friendProfileMsgBtn");
+      if(msgBtn) msgBtn.onclick=()=>openDirectChatWith(friend.id, friend.username);
       const actionEl=document.getElementById("friendProfileAction");
       if(actionEl) actionEl.innerHTML=friendActionHTML({ id:friend.id, relation:friend.relation || data.relation });
       if(joinBtn){joinBtn.disabled=!presence.playing;joinBtn.textContent=presence.playing?"▶ Unirse al Juego":"Unirse al Juego";joinBtn.onclick=presence.playing?()=>joinFriendGame(friend.id):null;}
@@ -4421,6 +4464,172 @@ function toggleAccessory(a){
 let chatUnread = 0;
 let chatOpen = false;
 
+// ==================== CHAT DIRECTO (mensajes privados) ====================
+let chatTab = 'room';
+let dmCurrentId = null;
+let dmCurrentName = '';
+let dmPollTimer = null;
+let dmUnreadTotal = 0;
+
+function setChatTab(tab){
+  chatTab = tab;
+  const roomPane = document.getElementById('chatRoomPane');
+  const dmPane = document.getElementById('chatDmPane');
+  const roomBtn = document.getElementById('chatTabRoom');
+  const dmBtn = document.getElementById('chatTabDm');
+  if(roomPane) roomPane.style.display = tab === 'room' ? 'flex' : 'none';
+  if(dmPane) dmPane.style.display = tab === 'dm' ? 'flex' : 'none';
+  if(roomBtn) roomBtn.classList.toggle('active', tab === 'room');
+  if(dmBtn) dmBtn.classList.toggle('active', tab === 'dm');
+  if(tab === 'dm'){
+    if(dmCurrentId) dmOpenThread(dmCurrentId, dmCurrentName);
+    else dmLoadInbox();
+    dmStartPolling();
+  } else {
+    dmStopPolling();
+  }
+}
+
+function dmStartPolling(){
+  dmStopPolling();
+  dmPollTimer = setInterval(() => {
+    if(!chatOpen || chatTab !== 'dm') return;
+    if(dmCurrentId) dmOpenThread(dmCurrentId, dmCurrentName, true);
+    else dmLoadInbox(true);
+  }, 4000);
+}
+function dmStopPolling(){
+  if(dmPollTimer) clearInterval(dmPollTimer);
+  dmPollTimer = null;
+}
+
+function dmUpdateBadge(){
+  const badge = document.getElementById('dmTabBadge');
+  if(!badge) return;
+  badge.style.display = dmUnreadTotal > 0 ? 'inline-block' : 'none';
+  badge.textContent = dmUnreadTotal > 9 ? '9+' : String(dmUnreadTotal);
+}
+
+async function dmLoadInbox(silent){
+  const box = document.getElementById('dmList');
+  if(!box) return;
+  if(!getToken()){
+    box.innerHTML = '<div class="chat-msg system" style="margin:10px">Inicia sesion para usar el chat directo.</div>';
+    return;
+  }
+  if(!silent) box.innerHTML = '<div class="chat-msg system" style="margin:10px">Cargando conversaciones...</div>';
+  try {
+    const data = await api('/api/dm/inbox', {}, 1);
+    dmUnreadTotal = data.unreadTotal || 0;
+    dmUpdateBadge();
+    const convs = data.conversations || [];
+    const friends = getMyFriends().filter(f => !convs.some(c => String(c.id) === String(f.id)));
+    let html = '';
+    if(convs.length){
+      html += convs.map(c => dmRowHTML(c, c.lastMessage ? ((c.lastMessage.from === 'me' ? 'Tu: ' : '') + c.lastMessage.text) : '')).join('');
+    }
+    if(friends.length){
+      html += '<div style="padding:8px 10px;font-size:11px;color:#666;background:#eef2f6">Tus amigos</div>';
+      html += friends.map(f => dmRowHTML(f, 'Empezar conversacion')).join('');
+    }
+    if(!html) html = '<div class="chat-msg system" style="margin:10px">Aun no tienes conversaciones. Busca un usuario arriba para escribirle.</div>';
+    box.innerHTML = html;
+  } catch(err){
+    box.innerHTML = '<div class="chat-msg system" style="margin:10px">' + escapeHTML(err.message || 'No se pudo cargar el chat directo.') + '</div>';
+  }
+}
+
+function dmRowHTML(u, subtitle){
+  const p = u.presence || {};
+  const dot = p.playing ? 'Jugando' : (p.online ? 'En linea' : 'Desconectado');
+  return '<div class="dm-row" onclick="dmOpenThread(\'' + escapeHTML(String(u.id)) + '\',\'' + escapeHTML(String(u.username || '')).replace(/'/g, '') + '\')">' +
+    '<div class="dm-mini-avatar">' + avatarPortraitHTML(u, 34) + '</div>' +
+    '<div class="dm-info"><div class="dm-name">' + escapeHTML(u.username || 'Player') + '</div>' +
+    '<div class="dm-last">' + escapeHTML(subtitle || '') + ' - ' + dot + '</div></div>' +
+    (u.unread ? '<span class="dm-unread">' + u.unread + '</span>' : '') + '</div>';
+}
+
+async function dmSearchUsers(){
+  const input = document.getElementById('dmSearchInput');
+  const box = document.getElementById('dmList');
+  const q = input ? input.value.trim() : '';
+  if(!box) return;
+  if(!q) return dmLoadInbox();
+  box.innerHTML = '<div class="chat-msg system" style="margin:10px">Buscando...</div>';
+  try {
+    const data = await api('/api/users/search?limit=100&q=' + encodeURIComponent(q), {}, 1);
+    const list = (data.results || []).filter(u => u.relation !== 'self');
+    box.innerHTML = list.length
+      ? list.map(u => dmRowHTML(u, 'Escribir mensaje')).join('')
+      : '<div class="chat-msg system" style="margin:10px">Sin resultados.</div>';
+  } catch(err){
+    box.innerHTML = '<div class="chat-msg system" style="margin:10px">' + escapeHTML(err.message || 'Error al buscar.') + '</div>';
+  }
+}
+
+async function dmOpenThread(id, username, silent){
+  dmCurrentId = String(id);
+  dmCurrentName = username || dmCurrentName;
+  const listPane = document.getElementById('dmListPane');
+  const threadPane = document.getElementById('dmThreadPane');
+  const body = document.getElementById('dmThreadBody');
+  if(listPane) listPane.style.display = 'none';
+  if(threadPane) threadPane.style.display = 'flex';
+  const nameEl = document.getElementById('dmThreadName');
+  if(nameEl) nameEl.textContent = dmCurrentName || 'Usuario';
+  if(body && !silent) body.innerHTML = '<div class="chat-msg system">Cargando mensajes...</div>';
+  try {
+    const data = await api('/api/dm/thread?id=' + encodeURIComponent(dmCurrentId), {}, 1);
+    if(data.user){
+      dmCurrentName = data.user.username || dmCurrentName;
+      if(nameEl) nameEl.textContent = dmCurrentName;
+      const pres = document.getElementById('dmThreadPresence');
+      const p = data.user.presence || {};
+      if(pres) pres.textContent = p.playing ? ('Jugando ' + (p.gameName || '')) : (p.online ? 'En linea' : 'Desconectado');
+    }
+    const msgs = data.messages || [];
+    if(body){
+      body.innerHTML = msgs.length
+        ? msgs.map(m => '<div class="dm-msg ' + (m.from === 'me' ? 'me' : 'them') + '">' + escapeHTML(m.text) + '<span class="dm-time">' + new Date(m.ts).toLocaleTimeString() + '</span></div>').join('')
+        : '<div class="chat-msg system">No hay mensajes todavia. Escribe el primero.</div>';
+      body.scrollTop = body.scrollHeight;
+    }
+  } catch(err){
+    if(body) body.innerHTML = '<div class="chat-msg system">' + escapeHTML(err.message || 'No se pudo abrir la conversacion.') + '</div>';
+  }
+}
+
+function dmCloseThread(){
+  dmCurrentId = null;
+  const listPane = document.getElementById('dmListPane');
+  const threadPane = document.getElementById('dmThreadPane');
+  if(listPane) listPane.style.display = 'flex';
+  if(threadPane) threadPane.style.display = 'none';
+  dmLoadInbox();
+}
+
+async function dmSend(){
+  const input = document.getElementById('dmInput');
+  const text = input ? input.value.trim() : '';
+  if(!text || !dmCurrentId) return;
+  input.value = '';
+  try {
+    await api('/api/dm/send', { method:'POST', body: JSON.stringify({ id: dmCurrentId, text }) }, 1);
+    await dmOpenThread(dmCurrentId, dmCurrentName, true);
+  } catch(err){
+    alert(err.message || 'No se pudo enviar el mensaje.');
+    if(input) input.value = text;
+  }
+}
+
+// Abre el chat directo con un usuario desde su perfil.
+function openDirectChatWith(id, username){
+  const win = document.getElementById('chatWindow');
+  if(win && !chatOpen) toggleChat();
+  setChatTab('dm');
+  dmOpenThread(String(id), username || '');
+}
+
 function toggleChat(){
   const chatWindow = document.getElementById('chatWindow');
   chatOpen = !chatOpen;
@@ -4430,11 +4639,14 @@ function toggleChat(){
     chatWindow.style.zIndex = '600';
     chatUnread = 0;
     updateChatBadge();
+    if(chatTab === 'dm'){ setChatTab('dm'); }
+    else { dmLoadInbox(true); }
     const input = document.getElementById('chatInput');
-    if(input) setTimeout(() => input.focus(), 50);
+    if(input && chatTab === 'room') setTimeout(() => input.focus(), 50);
   } else {
     chatWindow.classList.remove('open');
     chatWindow.style.display = 'none';
+    dmStopPolling();
   }
 }
 
