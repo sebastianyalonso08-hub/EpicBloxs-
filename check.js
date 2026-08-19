@@ -1,0 +1,3660 @@
+
+
+let previewRenderer = null, previewScene = null, previewCamera = null, previewAnimId = null;
+let gameRenderer = null, gameScene = null, gameCamera = null, gameAnimId = null;
+let keysPressed = {};
+let playerMeshGroup = null;
+let gameSessionEarnings = 0;
+let currentGameType = "Epic Obby";
+let collectibleCoins = [];
+let activePlatforms = [];
+let solidColliders = [];
+
+let isRightMouseDown = false;
+let mouseXOnMouseDown = 0;
+let mouseYOnMouseDown = 0;
+let cameraAngleX = 0;
+let cameraAngleY = 0.4;
+let cameraDistance = 4;
+
+let audioCtx = null;
+let musicInterval = null;
+
+// Catalog database with categories and prices
+const catalogDatabase = [
+  { id: 'Epic Cap', name: 'Epic Cap', category: 'hats', price: 50, desc: 'Sombrero clásico azul' },
+  { id: 'Golden Crown', name: 'Golden Crown', category: 'hats', price: 250, desc: 'Corona dorada real' },
+  { id: 'Blue Shirt', name: 'Blue Shirt', category: 'shirts', price: 75, desc: 'Camisa 2D estilo Roblox clásica' },
+  { id: 'Green Hoodie', name: 'Green Hoodie', category: 'shirts', price: 120, desc: 'Sudadera con capucha verde 2D' },
+  { id: 'Classic Jeans', name: 'Classic Jeans', category: 'pants', price: 80, desc: 'Pantalones de mezclilla 2D' },
+  { id: 'Dark Cargo Pants', name: 'Dark Cargo Pants', category: 'pants', price: 110, desc: 'Pantalones oscuros con bolsillos 2D' },
+  { id: 'Classic Smile', name: 'Classic Smile', category: 'faces', price: 40, desc: 'Cara feliz clásica' },
+  { id: 'Cool Wink', name: 'Cool Wink', category: 'faces', price: 90, desc: 'Cara guiñando el ojo' },
+  { id: 'Classic Shades', name: 'Classic Shades', category: 'gear', price: 100, desc: 'Gafas de sol estilizadas' },
+  { id: 'Cool Backpack', name: 'Cool Backpack', category: 'gear', price: 180, desc: 'Mochila marrón de aventurero' }
+];
+
+let creatorMode = '3d';
+let creatorScene, creatorCamera, creatorRenderer, creatorAnim;
+let creatorGroup, creatorSelected = null, creatorCubes = [];
+let creator2dCtx = null, creatorDrawing = false, creatorLastX = 0, creatorLastY = 0, creatorClothingTex = null, creatorOrbit={drag:false,x:0,rx:0,ry:0};
+
+function creatorSetMode(mode){
+  creatorMode = mode;
+  document.getElementById('creator3dPanel').style.display = mode === '3d' ? '' : 'none';
+  document.getElementById('creator2dPanel').style.display = mode === '2d' ? '' : 'none';
+  document.getElementById('creatorTab3d').classList.toggle('active', mode === '3d');
+  document.getElementById('creatorTab2d').classList.toggle('active', mode === '2d');
+  creatorInitViewer();
+}
+
+function creatorInit2D(){
+  const canvas=document.getElementById('creator2dCanvas'); if(!canvas || canvas.dataset.ready) return;
+  creator2dCtx=canvas.getContext('2d');
+  creator2dCtx.fillStyle='#ffffff'; creator2dCtx.fillRect(0,0,canvas.width,canvas.height);
+  const start=e=>{creatorDrawing=true; const r=canvas.getBoundingClientRect(); creatorLastX=(e.clientX-r.left)*canvas.width/r.width; creatorLastY=(e.clientY-r.top)*canvas.height/r.height;};
+  const move=e=>{if(!creatorDrawing)return; const r=canvas.getBoundingClientRect(); const x=(e.clientX-r.left)*canvas.width/r.width, y=(e.clientY-r.top)*canvas.height/r.height; creator2dCtx.strokeStyle=document.getElementById('creatorBrushColor').value; creator2dCtx.lineWidth=Number(document.getElementById('creatorBrushSize').value); creator2dCtx.lineCap='round'; creator2dCtx.beginPath(); creator2dCtx.moveTo(creatorLastX,creatorLastY); creator2dCtx.lineTo(x,y); creator2dCtx.stroke(); if(creatorClothingTex) creatorClothingTex.needsUpdate=true; creatorLastX=x; creatorLastY=y;};
+  canvas.addEventListener('pointerdown',start); canvas.addEventListener('pointermove',move); window.addEventListener('pointerup',()=>creatorDrawing=false); canvas.dataset.ready='1';
+}
+function creatorClear2D(){ const c=document.getElementById('creator2dCanvas'); if(!c)return; creator2dCtx=c.getContext('2d'); creator2dCtx.clearRect(0,0,c.width,c.height); creator2dCtx.fillStyle='#fff'; creator2dCtx.fillRect(0,0,c.width,c.height); if(creatorClothingTex) creatorClothingTex.needsUpdate=true; }
+function creatorLoadImage(ev){ const file=ev.target.files&&ev.target.files[0]; if(!file)return; if(file.size>1500000){return creatorMessage('La imagen es demasiado grande (máximo 1.5 MB).',true);} const img=new Image(); img.onload=()=>{creatorClear2D(); const c=document.getElementById('creator2dCanvas'); const scale=Math.min(c.width/img.width,c.height/img.height); const w=img.width*scale,h=img.height*scale; creator2dCtx.drawImage(img,(c.width-w)/2,(c.height-h)/2,w,h);}; img.src=URL.createObjectURL(file); }
+
+function creatorInitViewer(){
+  const box=document.getElementById('creatorViewer'); if(!box || typeof THREE==='undefined')return;
+  creatorInit2D(); if(creatorRenderer){ while(box.firstChild)box.removeChild(box.firstChild); cancelAnimationFrame(creatorAnim); }
+  creatorScene=new THREE.Scene(); creatorScene.background=new THREE.Color(0xeaf4ff);
+  creatorCamera=new THREE.PerspectiveCamera(45,Math.max(1,box.clientWidth)/Math.max(1,box.clientHeight),0.1,100); creatorCamera.position.set(3.5,2.7,5.5);
+  creatorRenderer=new THREE.WebGLRenderer({antialias:true}); creatorRenderer.setSize(Math.max(1,box.clientWidth),Math.max(1,box.clientHeight)); box.appendChild(creatorRenderer.domElement);
+  creatorScene.add(new THREE.HemisphereLight(0xffffff,0x78909c,1.8)); const dl=new THREE.DirectionalLight(0xffffff,2); dl.position.set(4,6,5); creatorScene.add(dl);
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(12,12),new THREE.MeshLambertMaterial({color:0xdfe7ec})); floor.rotation.x=-Math.PI/2; creatorScene.add(floor);
+  creatorGroup=new THREE.Group(); creatorScene.add(creatorGroup);
+  // Cámara orbital del creador: arrastrar para girar, rueda para zoom.
+  creatorOrbit={drag:false,lastX:0,lastY:0,yaw:0,pitch:0.18,distance:6.3};
+  const viewerCanvas=creatorRenderer.domElement;
+  viewerCanvas.style.touchAction='none';
+  const updateCreatorCamera=()=>{
+    const targetY=1.25;
+    const maxPitch=Math.PI*0.47;
+    creatorOrbit.pitch=Math.max(-maxPitch,Math.min(maxPitch,creatorOrbit.pitch));
+    creatorOrbit.distance=Math.max(2.6,Math.min(12,creatorOrbit.distance));
+    const cp=Math.cos(creatorOrbit.pitch), sp=Math.sin(creatorOrbit.pitch);
+    const sy=Math.sin(creatorOrbit.yaw), cy=Math.cos(creatorOrbit.yaw);
+    creatorCamera.position.set(
+      Math.sin(creatorOrbit.yaw)*cp*creatorOrbit.distance,
+      targetY+sp*creatorOrbit.distance,
+      Math.cos(creatorOrbit.yaw)*cp*creatorOrbit.distance
+    );
+    creatorCamera.lookAt(0,targetY,0);
+  };
+  viewerCanvas.addEventListener('pointerdown',e=>{
+    creatorOrbit.drag=true; creatorOrbit.lastX=e.clientX; creatorOrbit.lastY=e.clientY;
+    viewerCanvas.setPointerCapture?.(e.pointerId);
+  });
+  viewerCanvas.addEventListener('pointermove',e=>{
+    if(!creatorOrbit.drag)return;
+    const dx=e.clientX-creatorOrbit.lastX, dy=e.clientY-creatorOrbit.lastY;
+    creatorOrbit.lastX=e.clientX; creatorOrbit.lastY=e.clientY;
+    creatorOrbit.yaw-=dx*0.012;
+    creatorOrbit.pitch-=dy*0.009;
+    updateCreatorCamera();
+  });
+  viewerCanvas.addEventListener('pointerup',e=>{creatorOrbit.drag=false; try{viewerCanvas.releasePointerCapture?.(e.pointerId);}catch(_){}});
+  viewerCanvas.addEventListener('pointercancel',()=>creatorOrbit.drag=false);
+  viewerCanvas.addEventListener('wheel',e=>{
+    e.preventDefault(); creatorOrbit.distance+=e.deltaY*0.008; updateCreatorCamera();
+  },{passive:false});
+  updateCreatorCamera();
+  if(creatorMode==='2d') creatorAddClothingPreview(); else { creatorCubes=[]; creatorSelected=null; creatorAddCube(true); }
+  creatorAnim=()=>{ if(!creatorRenderer)return; requestAnimationFrame(creatorAnim); creatorRenderer.render(creatorScene,creatorCamera); }; creatorAnim();
+  renderCreatorCubeList();
+}
+function creatorAddClothingPreview(){
+  const body=new THREE.Mesh(new THREE.BoxGeometry(1.6,2.1,0.9),new THREE.MeshLambertMaterial({color:0xf5c928})); body.position.y=1.2; creatorGroup.add(body);
+  const c=document.getElementById('creator2dCanvas'); const tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace;
+  const plane=new THREE.Mesh(new THREE.PlaneGeometry(1.55,1.8),new THREE.MeshBasicMaterial({map:tex,transparent:true})); plane.position.set(0,1.25,0.46); creatorGroup.add(plane);
+}
+function creatorAddCube(first=false){
+  if(!creatorGroup)return; const color=document.getElementById('creatorCubeColor').value||'#1684e8'; const cube=new THREE.Mesh(new THREE.BoxGeometry(.65,.65,.65),new THREE.MeshLambertMaterial({color})); const n=creatorCubes.length; cube.position.set((n%3-1)*.78,1.35+Math.floor(n/3)*.72,0); cube.userData.index=n; cube.userData.color=color; cube.castShadow=true; cube.userData.drag=0; creatorGroup.add(cube); creatorCubes.push(cube); creatorSelected=cube; renderCreatorCubeList(); if(!first) creatorMessage('Cubo añadido.');}
+function creatorSelectCube(i){ creatorSelected=creatorCubes[i]||null; renderCreatorCubeList(); }
+function creatorPaintCube(color){ if(creatorSelected){ creatorSelected.material.color.set(color); creatorSelected.userData.color=color; renderCreatorCubeList(); } }
+function creatorRemoveCube(){ if(!creatorSelected||!creatorGroup)return; creatorGroup.remove(creatorSelected); creatorCubes=creatorCubes.filter(c=>c!==creatorSelected); creatorSelected=creatorCubes[creatorCubes.length-1]||null; renderCreatorCubeList(); }
+function renderCreatorCubeList(){ const box=document.getElementById('creatorCubeList'); if(!box)return; if(!creatorCubes.length){box.innerHTML='<div class="creator-small">No hay cubos.</div>';return;} box.innerHTML=creatorCubes.map((c,i)=>`<div class="creator-cube-row"><span>🧊 Cubo ${i+1}</span><span style="width:18px;height:18px;border-radius:3px;background:${c.userData.color};border:1px solid #999"></span><button onclick="creatorSelectCube(${i})">${creatorSelected===c?'Seleccionado':'Seleccionar'}</button></div>`).join(''); }
+function creatorMessage(text,error=false){ const el=document.getElementById('creatorMessage'); if(!el)return; el.textContent=text; el.className='creator-msg '+(error?'err':'ok'); }
+function creatorPublish(){
+  const c=current(); if(!c)return creatorMessage('Debes iniciar sesión.',true);
+  const name=document.getElementById('creatorName').value.trim(), description=document.getElementById('creatorDescription').value.trim(), category=document.getElementById('creatorCategory').value;
+  const price=Math.floor(Number(document.getElementById('creatorPrice')?.value ?? 0));
+  if(name.length<2)return creatorMessage('Pon un nombre al objeto.',true);
+  if(!Number.isFinite(price) || price<0 || price>1000000)return creatorMessage('El precio debe estar entre 0 y 1.000.000 Sunnys.',true);
+  let data={}; let type='accessory3d';
+  if(creatorMode==='3d'){ data={cubes:creatorCubes.map((cube,i)=>({x:cube.position.x,y:cube.position.y,z:cube.position.z,color:cube.userData.color||'#1684e8',scale:[cube.scale.x,cube.scale.y,cube.scale.z]}))}; }
+  else { type='2d'; data={imageData:document.getElementById('creator2dCanvas').toDataURL('image/png')}; }
+  fetch('/api/creator/publish',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},body:JSON.stringify({name,description,category,type,price,data})}).then(r=>r.json().then(x=>({ok:r.ok,status:r.status,data:x}))).then(({ok,data})=>{ creatorMessage(data.message||data.error||'Listo.',!ok); if(ok){ loadCustomCatalog(); }}).catch(()=>creatorMessage('No se pudo conectar con el servidor.',true));
+}
+function loadCustomCatalog(){ fetch('/api/catalog/custom').then(r=>r.json()).then(data=>{ const custom=data.items||[]; custom.forEach(item=>{ const local=catalogDatabase.find(x=>x.id===item.id); if(local){ local.price=Number(item.price)||0; local.desc=item.description||'Creado por la comunidad'; local.custom=true; local.data=item.data; local.type=item.type; } else { catalogDatabase.push({id:item.id,name:item.name,category:item.category,price:Number(item.price)||0,desc:item.description||'Creado por la comunidad',custom:true,data:item.data,type:item.type}); } }); if(typeof renderCatalog==='function') renderCatalog('all'); }).catch(()=>{}); }
+
+function startAmbientMusic(gameName) {
+  stopAmbientMusic();
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let scale = [220, 247, 277, 329, 370, 440];
+    let waveType = 'sine';
+    let tempo = 450;
+
+    if(gameName.includes("City")) {
+      scale = [130, 164, 196, 220, 261, 329];
+      waveType = 'triangle';
+      tempo = 600;
+    } else if(gameName.includes("Battle")) {
+      scale = [110, 130, 146, 164, 196, 220];
+      waveType = 'sawtooth';
+      tempo = 350;
+    } else if(gameName.includes("Race")) {
+      scale = [293, 329, 370, 440, 493, 587];
+      waveType = 'square';
+      tempo = 300;
+    }
+
+    musicInterval = setInterval(() => {
+      if(!audioCtx || audioCtx.state === 'closed') return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = waveType;
+      const freq = scale[Math.floor(Math.random() * scale.length)];
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 1.5);
+    }, tempo);
+  } catch(e) {
+    console.log("Audio no soportado o bloqueado por navegador", e);
+  }
+}
+
+function stopAmbientMusic() {
+  if(musicInterval) clearInterval(musicInterval);
+  if(audioCtx && audioCtx.state !== 'closed') {
+    audioCtx.close();
+  }
+  audioCtx = null;
+}
+
+
+// ===== Racha de Sunnys =====
+function streakRewardForDay(day){
+  // dia 1: 50, 2:75, 3:100, ... tope 500
+  const d = Math.max(1, Number(day) || 1);
+  return Math.min(500, 25 + d * 25);
+}
+
+function getTodayKey(){
+  const n = new Date();
+  return n.getFullYear() + "-" + String(n.getMonth()+1).padStart(2,"0") + "-" + String(n.getDate()).padStart(2,"0");
+}
+
+function getYesterdayKey(){
+  const n = new Date();
+  n.setDate(n.getDate() - 1);
+  return n.getFullYear() + "-" + String(n.getMonth()+1).padStart(2,"0") + "-" + String(n.getDate()).padStart(2,"0");
+}
+
+function updateStreakUI(){
+  const c = current();
+  if (!c) return;
+  const u = c.user;
+  const streak = u.loginStreak || 0;
+  const today = getTodayKey();
+  const claimedToday = u.lastStreakClaim === today;
+  const rewardDay = claimedToday ? streak : streak + 1;
+  const reward = streakRewardForDay(Math.max(1, rewardDay));
+  const next = streakRewardForDay(Math.max(1, rewardDay) + 1);
+
+  const elDays = document.getElementById("streakDays");
+  const elReward = document.getElementById("streakReward");
+  const elNext = document.getElementById("streakNext");
+  const elLast = document.getElementById("streakLast");
+  const elBar = document.getElementById("streakBar");
+  const elMsg = document.getElementById("streakMsg");
+
+  if (elDays) elDays.textContent = streak + (streak === 1 ? " día" : " días");
+  if (elReward) elReward.textContent = claimedToday ? "Ya reclamado hoy" : ("+" + reward + " ☀️");
+  if (elNext) elNext.textContent = "+" + next + " ☀️";
+  if (elLast) elLast.textContent = u.lastStreakClaim || "Nunca";
+  if (elBar) elBar.style.width = Math.min(100, (streak % 7) / 7 * 100) + "%";
+  if (elMsg && !elMsg.dataset.locked) elMsg.textContent = "";
+}
+
+function claimStreakReward(){
+  const c = current();
+  if (!c) return;
+  const u = c.user;
+  const today = getTodayKey();
+  const yesterday = getYesterdayKey();
+  const elMsg = document.getElementById("streakMsg");
+
+  if (u.lastStreakClaim === today) {
+    if (elMsg) { elMsg.style.color = "#d93025"; elMsg.textContent = "Ya reclamaste la racha de hoy."; }
+    updateStreakUI();
+    return;
+  }
+
+  if (u.lastStreakClaim === yesterday) {
+    u.loginStreak = (u.loginStreak || 0) + 1;
+  } else {
+    u.loginStreak = 1; // se rompio o primera vez
+  }
+
+  const reward = streakRewardForDay(u.loginStreak);
+  u.sunnys = (u.sunnys || 0) + reward;
+  u.lastStreakClaim = today;
+  setCachedUser(u);
+  const map = getUsers(); map[c.key] = u; saveUsers(map);
+  try { updateUI(u); } catch(e) {}
+  updateStreakUI();
+  if (elMsg) {
+    elMsg.style.color = "#188038";
+    elMsg.textContent = "Racha x" + u.loginStreak + ": +" + reward + " Sunnys!";
+    elMsg.dataset.locked = "1";
+    setTimeout(() => { elMsg.dataset.locked = ""; }, 2000);
+  }
+}
+
+
+function addSunnys(amount) {
+  const c = current();
+  if(!c) return;
+  c.user.sunnys = (c.user.sunnys || 500) + amount;
+  const u = getUsers();
+  u[c.key] = c.user;
+  saveUsers(u);
+  updateUI(c.user);
+}
+
+// Generación de cara 2D sobre la cabeza (Opaca para evitar invisibilidad)
+function createFaceTexture(headColor, faceName) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  
+  ctx.fillStyle = headColor || '#f5c928';
+  ctx.fillRect(0, 0, 256, 256);
+  
+  if (faceName === 'Cool Wink') {
+    // Ojo izquierdo abierto
+    ctx.fillStyle = '#111111';
+    ctx.beginPath();
+    ctx.arc(80, 85, 16, 0, Math.PI * 2);
+    ctx.fill();
+    // Ojo derecho guiño (línea curva)
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = '#111111';
+    ctx.beginPath();
+    ctx.arc(176, 85, 14, Math.PI, 0, false);
+    ctx.stroke();
+    // Sonrisa chula
+    ctx.lineWidth = 12;
+    ctx.beginPath();
+    ctx.arc(128, 125, 40, 0.1 * Math.PI, 0.9 * Math.PI);
+    ctx.stroke();
+  } else {
+    // Classic Smile (Default)
+    ctx.fillStyle = '#111111';
+    ctx.beginPath();
+    ctx.arc(80, 85, 18, 0, Math.PI * 2);
+    ctx.arc(176, 85, 18, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(86, 78, 6, 0, Math.PI * 2);
+    ctx.arc(182, 78, 6, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.lineWidth = 14;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#111111';
+    ctx.beginPath();
+    ctx.arc(128, 120, 45, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.stroke();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+// Textura 2D de camisa estilo Roblox para el Torso (mejorada)
+// Helper: rounded rectangle compatible con más navegadores
+function roundRectPath(ctx, x, y, w, h, r) {
+  if (ctx.roundRect) { ctx.roundRect(x, y, w, h, r); return; }
+  r = Math.min(r, w/2, h/2);
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function createShirtTexture(torsoColor, shirtName) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+
+  // Fondo base (color del torso si no hay camisa)
+  ctx.fillStyle = torsoColor || '#1477b9';
+  ctx.fillRect(0, 0, 256, 256);
+
+  if(shirtName === 'Blue Shirt') {
+    // Base azul con degradado
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0, '#42a5f5');
+    grad.addColorStop(0.4, '#1e88e5');
+    grad.addColorStop(1, '#1565c0');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 256, 256);
+
+    // Sombra lateral suave
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.fillRect(0, 0, 40, 256);
+    ctx.fillRect(216, 0, 40, 256);
+
+    // Cuello en V blanco
+    ctx.fillStyle = '#f5f5f5';
+    ctx.beginPath();
+    ctx.moveTo(78, 0);
+    ctx.lineTo(128, 52);
+    ctx.lineTo(178, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#cfd8dc';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(78, 0);
+    ctx.lineTo(128, 52);
+    ctx.lineTo(178, 0);
+    ctx.stroke();
+
+    // Panel central más oscuro
+    ctx.fillStyle = '#0d47a1';
+    ctx.fillRect(48, 70, 160, 150);
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.fillRect(48, 70, 160, 20);
+
+    // Costuras verticales
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(70, 70); ctx.lineTo(70, 220);
+    ctx.moveTo(186, 70); ctx.lineTo(186, 220);
+    ctx.stroke();
+
+    // Logo EB con sombra
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.font = 'bold 42px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('EB', 130, 158);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('EB', 128, 155);
+
+    // Botones
+    ctx.fillStyle = '#eceff1';
+    for(let y of [90, 120, 150, 180]) {
+      ctx.beginPath();
+      ctx.arc(128, y, 5, 0, Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = '#90a4ae';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+  } else if(shirtName === 'Green Hoodie') {
+    // Base verde con degradado
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0, '#66bb6a');
+    grad.addColorStop(0.5, '#43a047');
+    grad.addColorStop(1, '#2e7d32');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 256, 256);
+
+    // Capucha central más oscura
+    ctx.fillStyle = '#1b5e20';
+    ctx.fillRect(72, 0, 112, 256);
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.fillRect(80, 0, 20, 256);
+
+    // Cuello de capucha
+    ctx.fillStyle = '#0d3b12';
+    ctx.beginPath();
+    ctx.ellipse(128, 18, 55, 28, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#2e7d32';
+    ctx.beginPath();
+    ctx.ellipse(128, 22, 42, 18, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // Cierre dorado con detalle
+    ctx.fillStyle = '#ffc107';
+    ctx.fillRect(120, 70, 16, 140);
+    ctx.fillStyle = '#ff8f00';
+    ctx.fillRect(122, 72, 12, 136);
+    ctx.fillStyle = '#ffe082';
+    for(let y = 80; y < 200; y += 10) {
+      ctx.fillRect(122, y, 12, 3);
+    }
+
+    // Cordones de la capucha
+    ctx.strokeStyle = '#c8e6c9';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(100, 40); ctx.lineTo(95, 95);
+    ctx.moveTo(156, 40); ctx.lineTo(161, 95);
+    ctx.stroke();
+    ctx.fillStyle = '#a5d6a7';
+    ctx.beginPath(); ctx.arc(95, 98, 6, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(161, 98, 6, 0, Math.PI*2); ctx.fill();
+
+    // Bolsillo canguro
+    ctx.fillStyle = '#1b5e20';
+    ctx.beginPath();
+    roundRectPath(ctx, 70, 150, 116, 55, 8);
+    ctx.fill();
+    ctx.strokeStyle = '#0d3b12';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    roundRectPath(ctx, 70, 150, 116, 55, 8);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.moveTo(85, 165); ctx.lineTo(171, 165);
+    ctx.stroke();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+// Textura 2D de pantalones estilo Roblox para las Piernas (mejorada)
+function createPantsTexture(legsColor, pantsName) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = legsColor || '#8cae45';
+  ctx.fillRect(0, 0, 256, 256);
+
+  if(pantsName === 'Classic Jeans') {
+    // Base denim
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0, '#5c6bc0');
+    grad.addColorStop(0.3, '#3949ab');
+    grad.addColorStop(1, '#283593');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 256, 256);
+
+    // Textura sutil de denim
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    for(let i = -256; i < 512; i += 8) {
+      ctx.beginPath();
+      ctx.moveTo(i, 0); ctx.lineTo(i + 256, 256);
+      ctx.stroke();
+    }
+
+    // Pretina / cinturón
+    ctx.fillStyle = '#1a237e';
+    ctx.fillRect(0, 0, 256, 28);
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.fillRect(0, 0, 256, 6);
+    // Hebilla
+    ctx.fillStyle = '#c0c0c0';
+    ctx.fillRect(112, 6, 32, 16);
+    ctx.fillStyle = '#1a237e';
+    ctx.fillRect(118, 10, 20, 8);
+
+    // Costura central (entrepierna)
+    ctx.strokeStyle = '#e8eaf6';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(128, 28); ctx.lineTo(128, 256);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(232,234,246,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(122, 28); ctx.lineTo(122, 256);
+    ctx.moveTo(134, 28); ctx.lineTo(134, 256);
+    ctx.stroke();
+
+    // Bolsillos delanteros
+    ctx.strokeStyle = '#e8eaf6';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(20, 40); ctx.lineTo(20, 95); ctx.lineTo(70, 95); ctx.lineTo(70, 55);
+    ctx.quadraticCurveTo(70, 40, 50, 40); ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(236, 40); ctx.lineTo(236, 95); ctx.lineTo(186, 95); ctx.lineTo(186, 55);
+    ctx.quadraticCurveTo(186, 40, 206, 40); ctx.closePath();
+    ctx.stroke();
+
+    // Costuras laterales
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(8, 28); ctx.lineTo(8, 256);
+    ctx.moveTo(248, 28); ctx.lineTo(248, 256);
+    ctx.stroke();
+
+  } else if(pantsName === 'Dark Cargo Pants') {
+    // Base oscura
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0, '#546e7a');
+    grad.addColorStop(0.4, '#37474f');
+    grad.addColorStop(1, '#263238');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 256, 256);
+
+    // Pretina
+    ctx.fillStyle = '#1c2529';
+    ctx.fillRect(0, 0, 256, 26);
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.fillRect(0, 0, 256, 5);
+    // Botones de pretina
+    ctx.fillStyle = '#90a4ae';
+    for(let x of [40, 80, 176, 216]) {
+      ctx.beginPath(); ctx.arc(x, 13, 4, 0, Math.PI*2); ctx.fill();
+    }
+
+    // Costura central
+    ctx.strokeStyle = '#78909c';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(128, 26); ctx.lineTo(128, 256);
+    ctx.stroke();
+
+    // Bolsillos cargo
+    function drawCargoPocket(x, y, w, h) {
+      ctx.fillStyle = '#455a64';
+      ctx.beginPath();
+      roundRectPath(ctx, x, y, w, h, 4);
+      ctx.fill();
+      ctx.strokeStyle = '#1c2529';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      roundRectPath(ctx, x, y, w, h, 4);
+      ctx.stroke();
+      // Solapa
+      ctx.fillStyle = '#37474f';
+      ctx.beginPath();
+      roundRectPath(ctx, x, y, w, 14, 3);
+      ctx.fill();
+      ctx.beginPath();
+      roundRectPath(ctx, x, y, w, 14, 3);
+      ctx.stroke();
+      // Botón
+      ctx.fillStyle = '#90a4ae';
+      ctx.beginPath();
+      ctx.arc(x + w/2, y + 7, 3.5, 0, Math.PI*2);
+      ctx.fill();
+    }
+    drawCargoPocket(12, 70, 48, 70);
+    drawCargoPocket(196, 70, 48, 70);
+    drawCargoPocket(12, 160, 48, 55);
+    drawCargoPocket(196, 160, 48, 55);
+
+    // Costuras laterales
+    ctx.strokeStyle = 'rgba(144,164,174,0.35)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(6, 26); ctx.lineTo(6, 256);
+    ctx.moveTo(250, 26); ctx.lineTo(250, 256);
+    ctx.stroke();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+// Creación de accesorios 3D
+function createAccessoryMesh(accessoryName) {
+  const group = new THREE.Group();
+  if(accessoryName === "Epic Cap") {
+    const capMat = new THREE.MeshLambertMaterial({color: 0x1684e8});
+    const capTop = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.35, 0.86), capMat);
+    capTop.position.set(0, 2.62, 0);
+    const visorMat = new THREE.MeshLambertMaterial({color: 0x0d5aa7});
+    const visor = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.08, 0.5), visorMat);
+    visor.position.set(0, 2.47, 0.48);
+    const button = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.06, 0.12), new THREE.MeshLambertMaterial({color: 0xffffff}));
+    button.position.set(0, 2.81, 0);
+    group.add(capTop, visor, button);
+  } else if(accessoryName === "Classic Shades") {
+    const frameMat = new THREE.MeshLambertMaterial({color: 0x111111});
+    const lensMat = new THREE.MeshLambertMaterial({color: 0x1a1a1a, roughness: 0.1});
+    const bridgeMat = new THREE.MeshLambertMaterial({color: 0x444444});
+
+    const lensL = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.22, 0.1), lensMat);
+    lensL.position.set(-0.22, 2.22, 0.42);
+    const lensR = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.22, 0.1), lensMat);
+    lensR.position.set(0.22, 2.22, 0.42);
+
+    const frameL = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.26, 0.12), frameMat);
+    frameL.position.set(-0.22, 2.22, 0.41);
+    const frameR = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.26, 0.12), frameMat);
+    frameR.position.set(0.22, 2.22, 0.41);
+
+    const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 0.1), bridgeMat);
+    bridge.position.set(0, 2.27, 0.41);
+
+    const armL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.5), frameMat);
+    armL.position.set(-0.4, 2.22, 0.15);
+    const armR = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.5), frameMat);
+    armR.position.set(0.4, 2.22, 0.15);
+
+    group.add(frameL, frameR, lensL, lensR, bridge, armL, armR);
+  } else if(accessoryName === "Golden Crown") {
+    const crownMat = new THREE.MeshLambertMaterial({color: 0xffcc00, emissive: 0x332200});
+    const gemMat = new THREE.MeshLambertMaterial({color: 0xff0055});
+    const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.44, 0.45, 5), crownMat);
+    crown.position.set(0, 2.65, 0);
+    const gem = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), gemMat);
+    gem.position.set(0, 2.68, 0.45);
+    group.add(crown, gem);
+  } else if(accessoryName === "Cool Backpack") {
+    const packMat = new THREE.MeshLambertMaterial({color: 0x8b4513});
+    const pocketMat = new THREE.MeshLambertMaterial({color: 0xa0522d});
+    const pack = new THREE.Mesh(new THREE.BoxGeometry(0.96, 1.16, 0.5), packMat);
+    pack.position.set(0, 1.05, -0.46);
+    const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.58, 0.16), pocketMat);
+    pocket.position.set(0, 0.85, -0.73);
+    group.add(pack, pocket);
+  }
+  return group;
+}
+
+// Constructor del Avatar con soporte de ropa 2D y accesorios múltiples
+function buildAvatar3DModel(userData) {
+  const avatarGroup = new THREE.Group();
+  const avatarData = (userData && userData.avatar) || {};
+  const colors = avatarData.colors || {};
+  const accessories = avatarData.accessories || [];
+
+  const headCol = colors.head || "#f5c928";
+  const torsoCol = colors.torso || "#1477b9";
+  const armCol = colors.arms || "#f5c928";
+  const legCol = colors.legs || "#8cae45";
+
+  // Buscar cara y ropa equipada en los accesorios / inventario
+  let activeFace = "Classic Smile";
+  let activeShirt = null;
+  let activePants = null;
+
+  accessories.forEach(acc => {
+    if(acc === "Classic Smile" || acc === "Cool Wink") activeFace = acc;
+    if(acc === "Blue Shirt" || acc === "Green Hoodie") activeShirt = acc;
+    if(acc === "Classic Jeans" || acc === "Dark Cargo Pants") activePants = acc;
+  });
+
+  // Materiales con texturas 2D estilo Roblox
+  const torsoTexture = createShirtTexture(torsoCol, activeShirt);
+  const torsoMat = new THREE.MeshLambertMaterial({map: torsoTexture});
+
+  const legsTexture = createPantsTexture(legCol, activePants);
+  const legMat = new THREE.MeshLambertMaterial({map: legsTexture});
+
+  const armMat = new THREE.MeshLambertMaterial({color: armCol});
+
+  const sideHeadMat = new THREE.MeshLambertMaterial({color: headCol});
+  const faceTexture = createFaceTexture(headCol, activeFace);
+  const frontFaceMat = new THREE.MeshLambertMaterial({map: faceTexture, color: headCol});
+  const headMaterials = [sideHeadMat, sideHeadMat, sideHeadMat, sideHeadMat, frontFaceMat, sideHeadMat];
+  
+  // Proporciones R6 clásicas (sin solapar torso/piernas)
+  // Torso: bottom y=0.3 · Piernas: top y=0.3 · Cabeza encima del torso
+  const torsoType = (avatarData.torsoType === "female") ? "female" : "male";
+  let armX = 0.9, armY = 1.0, armW = 0.45, armH = 1.4;
+  let torsoMesh;
+
+  if (torsoType === "female") {
+    // Classic Female R6: UNA sola malla con silueta en reloj de arena (como la referencia)
+    // Perfil frontal tipo girl torso: ancha arriba, pinzada al centro, cadera media
+    const shape = new THREE.Shape();
+    // Contorno derecho (luego espejo automatico con shape cerrado)
+    // Coordenadas en plano XY; se extruye en Z
+    // y: +0.7 top ... -0.7 bottom  (altura total 1.4 como el hombre)
+    shape.moveTo(0, 0.70);
+    shape.lineTo(0.56, 0.70);   // hombro exterior
+    shape.lineTo(0.56, 0.28);   // baja recto del pecho
+    shape.lineTo(0.28, 0.02);   // diagonal hacia cintura (recorte triangular)
+    shape.lineTo(0.28, -0.12);  // cintura estrecha
+    shape.lineTo(0.46, -0.42);  // abre hacia cadera
+    shape.lineTo(0.46, -0.70);  // base
+    shape.lineTo(0, -0.70);     // centro inferior
+    shape.lineTo(0, 0.70);      // cierra por el centro (mitad); extrude usa forma completa
+    // Rehacer forma completa simetrica (izquierda + derecha)
+    const full = new THREE.Shape();
+    full.moveTo(-0.56, 0.70);
+    full.lineTo(0.56, 0.70);
+    full.lineTo(0.56, 0.28);
+    full.lineTo(0.28, 0.02);
+    full.lineTo(0.28, -0.12);
+    full.lineTo(0.46, -0.42);
+    full.lineTo(0.46, -0.70);
+    full.lineTo(-0.46, -0.70);
+    full.lineTo(-0.46, -0.42);
+    full.lineTo(-0.28, -0.12);
+    full.lineTo(-0.28, 0.02);
+    full.lineTo(-0.56, 0.28);
+    full.lineTo(-0.56, 0.70);
+
+    const extrudeSettings = {
+      depth: 0.55,
+      bevelEnabled: true,
+      bevelThickness: 0.04,
+      bevelSize: 0.03,
+      bevelSegments: 1
+    };
+    const geo = new THREE.ExtrudeGeometry(full, extrudeSettings);
+    geo.translate(0, 0, -0.275); // centrar en Z
+    // Centrar pivote en Y del bounding box
+    geo.computeBoundingBox();
+    const bb = geo.boundingBox;
+    const cy = (bb.min.y + bb.max.y) / 2;
+    geo.translate(0, -cy, 0);
+
+    torsoMesh = new THREE.Mesh(geo, torsoMat);
+    torsoMesh.name = "torso";
+    torsoMesh.position.set(0, 1.0, 0); // bottom ~0.3, top ~1.7
+    torsoMesh.castShadow = true;
+    torsoMesh.receiveShadow = true;
+
+    armX = 0.80;
+    armY = 1.12; // a la altura de los hombros
+    armW = 0.42;
+    armH = 1.35;
+  } else {
+    // Hombre R6 clásico: bloque 1.2 x 1.4 x 0.6, centro y=1.0
+    torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 0.6), torsoMat);
+    torsoMesh.position.set(0, 1.0, 0);
+    torsoMesh.name = "torso";
+    torsoMesh.castShadow = true;
+    torsoMesh.receiveShadow = true;
+  }
+
+  // Cabeza encima del torso (torso top ~1.7)
+  const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), headMaterials);
+  headMesh.position.set(0, 2.15, 0);
+  headMesh.name = "head";
+  headMesh.castShadow = true;
+  headMesh.receiveShadow = true;
+
+  const leftArm = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.5), armMat);
+  leftArm.position.set(-armX, armY, 0);
+  leftArm.name = "leftArm";
+  leftArm.castShadow = true;
+  leftArm.receiveShadow = true;
+
+  const rightArm = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.5), armMat);
+  rightArm.position.set(armX, armY, 0);
+  rightArm.name = "rightArm";
+  rightArm.castShadow = true;
+  rightArm.receiveShadow = true;
+
+  // Piernas DEBAJO del torso (top de pierna = bottom de torso = 0.3)
+  const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.5), legMat);
+  leftLeg.position.set(-0.3, -0.3, 0);
+  leftLeg.name = "leftLeg";
+  leftLeg.castShadow = true;
+  leftLeg.receiveShadow = true;
+
+  const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.5), legMat);
+  rightLeg.position.set(0.3, -0.3, 0);
+  rightLeg.name = "rightLeg";
+  rightLeg.castShadow = true;
+  rightLeg.receiveShadow = true;
+
+  avatarGroup.add(headMesh, torsoMesh, leftArm, rightArm, leftLeg, rightLeg);
+
+  // Agregar accesorios 3D equipados
+  if(Array.isArray(accessories)) {
+    accessories.forEach(accName => {
+      if(accName !== "Classic Smile" && accName !== "Cool Wink" && accName !== "Blue Shirt" && accName !== "Green Hoodie" && accName !== "Classic Jeans" && accName !== "Dark Cargo Pants") {
+        const accMesh = createAccessoryMesh(accName);
+        accMesh.traverse(child => {
+          if(child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+        avatarGroup.add(accMesh);
+      }
+    });
+  }
+
+  avatarGroup.scale.set(0.5, 0.5, 0.5);
+  return avatarGroup;
+}
+
+function initPreviewRenderer() {
+  const container = document.getElementById('previewCanvasContainer');
+  if(!container) return;
+  container.innerHTML = "";
+
+  const width = container.clientWidth || 300;
+  const height = container.clientHeight || 390;
+
+  previewScene = new THREE.Scene();
+  previewCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+  previewCamera.position.set(0, 1.0, 3);
+
+  previewRenderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
+  previewRenderer.setSize(width, height);
+  // Sombras dinámicas
+  previewRenderer.shadowMap.enabled = true;
+  previewRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  container.appendChild(previewRenderer.domElement);
+
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
+  previewScene.add(ambientLight);
+
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
+  dirLight.position.set(4, 10, 6);
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.width = 1024;
+  dirLight.shadow.mapSize.height = 1024;
+  dirLight.shadow.camera.near = 0.5;
+  dirLight.shadow.camera.far = 30;
+  dirLight.shadow.camera.left = -4;
+  dirLight.shadow.camera.right = 4;
+  dirLight.shadow.camera.top = 4;
+  dirLight.shadow.camera.bottom = -4;
+  dirLight.shadow.bias = -0.002;
+  dirLight.shadow.radius = 3;
+  previewScene.add(dirLight);
+
+  // Luz de relleno suave (sin sombras)
+  const fillLight = new THREE.DirectionalLight(0xb3e5fc, 0.25);
+  fillLight.position.set(-4, 4, -3);
+  previewScene.add(fillLight);
+
+  // Suelo que recibe sombras del avatar (pies ~ y=-0.38)
+  const groundGeo = new THREE.CircleGeometry(1.8, 48);
+  const groundMat = new THREE.MeshLambertMaterial({
+    color: 0x7bb957,
+    transparent: true,
+    opacity: 0.95
+  });
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -0.42;
+  ground.receiveShadow = true;
+  ground.name = "previewGround";
+  previewScene.add(ground);
+
+  // Disco de sombra de contacto sutil
+  const shadowDisc = new THREE.Mesh(
+    new THREE.CircleGeometry(0.5, 32),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.15 })
+  );
+  shadowDisc.rotation.x = -Math.PI / 2;
+  shadowDisc.position.y = -0.41;
+  shadowDisc.name = "previewShadowDisc";
+  previewScene.add(shadowDisc);
+
+  updatePreviewAvatar3D();
+  startPreviewAnimation();
+}
+
+function updatePreviewAvatar3D() {
+  if(!previewScene) return;
+  const oldAvatar = previewScene.getObjectByName("playerAvatar3D");
+  if(oldAvatar) previewScene.remove(oldAvatar);
+
+  const c = current();
+  const avatarGroup = buildAvatar3DModel(c ? c.user : null);
+  avatarGroup.name = "playerAvatar3D";
+  avatarGroup.position.set(0, 0.04, 0);
+  previewScene.add(avatarGroup);
+}
+
+function startPreviewAnimation() {
+  if(previewAnimId) cancelAnimationFrame(previewAnimId);
+  function animate() {
+    previewAnimId = requestAnimationFrame(animate);
+    const avatar = previewScene?.getObjectByName("playerAvatar3D");
+    if(avatar) {
+      avatar.rotation.y += 0.012;
+    }
+    if(previewRenderer && previewScene && previewCamera) {
+      previewRenderer.render(previewScene, previewCamera);
+    }
+  }
+  animate();
+}
+
+function launchWebClient(gameName) {
+  currentGameType = gameName;
+  document.body.classList.add('in-game');
+  showPage('webClient');
+  document.getElementById('clientGameTitle').textContent = `Jugando: ${gameName}`;
+  document.getElementById('activeGameHeader').textContent = gameName;
+  const hint=document.getElementById('gameHint');
+  if(hint){
+    const n=gameName.trim();
+    hint.textContent =
+      n==='Battle Arena' ? '⚔️ F = atacar · 3 golpes derriban al objetivo' :
+      n==='Pet World' ? '🐾 Tus mascotas te siguen · explora huevos, lago y parque' :
+      n==='Speed Race' ? '🏁 Pasa los 6 checkpoints y llega a la meta' :
+      n==='Epic Obby' ? '🏃 Salta, toca checkpoints y llega a la meta' :
+      n==='Sky Islands' ? '☁️ Salta entre islas y recoge monedas' :
+      n==='Bloxs City' ? '🏙️ Explora los barrios, parque y lago' : '';
+  }
+  const sub = document.getElementById('gameMenuSubtitle');
+  if(sub) sub.textContent = gameName;
+  document.getElementById('clientLoading').style.display = 'flex';
+  document.getElementById('clientGameplay').style.display = 'none';
+  document.getElementById('clientBarFill').style.width = '0%';
+  const menu = document.getElementById('gameMenuOverlay');
+  if(menu) menu.classList.remove('open');
+  const deathOverlay = document.getElementById('voidDeathOverlay');
+  if(deathOverlay) deathOverlay.classList.remove('open');
+  voidDeathActive = false;
+  voidRespawnFn = null;
+  
+  gameSessionEarnings = 0;
+  const earnLbl = document.getElementById('clientEarnings');
+  if(earnLbl) earnLbl.textContent = gameSessionEarnings;
+  
+  startAmbientMusic(gameName);
+
+  setTimeout(() => { document.getElementById('clientBarFill').style.width = '100%'; }, 100);
+  setTimeout(() => {
+    document.getElementById('clientLoading').style.display = 'none';
+    document.getElementById('clientGameplay').style.display = 'block';
+    epicGameId = getGameId(gameName);
+    epicServerId = null;
+    epicPlayerId = null;
+    initGameWebGL(gameName);
+    connectMultiplayer(gameName);
+    sendPresence(true, { gameId: epicGameId, gameName: gameName, roomName: gameName, serverId: epicServerId });
+    startGameLoop();
+    setupMobileControls();
+    // Ajustar tamaño tras layout fullscreen
+    setTimeout(resizeGameRenderer, 50);
+  }, 1200);
+}
+
+function exitWebClient() {
+  try { toggleGameInventory(false); } catch(e) {}
+  disconnectMultiplayer();
+  epicGameId = null;
+  epicServerId = null;
+  epicPlayerId = null;
+  if(gameAnimId) cancelAnimationFrame(gameAnimId);
+  Object.keys(keysPressed).forEach(key => keysPressed[key] = false);
+  isRightMouseDown = false;
+  joystickInput = {x:0, z:0};
+  stopAmbientMusic();
+  document.body.classList.remove('in-game');
+  sendPresence(false);
+  const menu = document.getElementById('gameMenuOverlay');
+  if(menu) menu.classList.remove('open');
+  const deathOverlay = document.getElementById('voidDeathOverlay');
+  if(deathOverlay) deathOverlay.classList.remove('open');
+  voidDeathActive = false;
+  voidRespawnFn = null;
+  showPage('home');
+}
+
+function toggleGameMenu() {
+  const menu = document.getElementById('gameMenuOverlay');
+  if(!menu) return;
+  menu.classList.toggle('open');
+}
+
+function resizeGameRenderer() {
+  const container = document.getElementById('webGLContainer');
+  if(!container || !gameRenderer || !gameCamera) return;
+  const width = container.clientWidth || window.innerWidth;
+  const height = container.clientHeight || window.innerHeight;
+  gameCamera.aspect = width / height;
+  gameCamera.updateProjectionMatrix();
+  gameRenderer.setSize(width, height);
+  gameRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+}
+window.addEventListener('resize', () => {
+  if(document.body.classList.contains('in-game')) resizeGameRenderer();
+});
+
+window.addEventListener('keydown', (e) => {
+  // No capturar teclas si se está escribiendo en el chat u otro input
+  const tag = (e.target && e.target.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA') {
+    if (e.code === 'Escape') {
+      e.target.blur();
+      if (chatOpen) toggleChat();
+    }
+    return;
+  }
+
+  if(document.getElementById('webClient').classList.contains('active')) {
+    if (e.code === 'KeyT') {
+      e.preventDefault();
+      toggleChat();
+      return;
+    }
+    if (e.code === 'Escape') {
+      e.preventDefault();
+      if (chatOpen) toggleChat();
+      else toggleGameMenu();
+      return;
+    }
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD','Space'].includes(e.code)) {
+      e.preventDefault();
+    }
+    keysPressed[e.code] = true;
+  }
+});
+
+window.addEventListener('keyup', (e) => {
+  const tag = (e.target && e.target.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+  if(document.getElementById('webClient').classList.contains('active')) {
+    keysPressed[e.code] = false;
+  }
+});
+
+window.addEventListener('blur', () => {
+  Object.keys(keysPressed).forEach(key => keysPressed[key] = false);
+  isRightMouseDown = false;
+});
+
+
+// ===== Skybox mejorada =====
+function createSkybox(scene, gameName) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+
+  let top, mid, bot, sunColor;
+  if (gameName.includes('City')) {
+    top = '#050816'; mid = '#1a2744'; bot = '#2d3a55'; sunColor = '#a0c4ff';
+  } else if (gameName.includes('Battle')) {
+    top = '#1a0505'; mid = '#4a1515'; bot = '#6b3030'; sunColor = '#ff6644';
+  } else if (gameName.includes('Race')) {
+    top = '#0d1b2a'; mid = '#1b3a4b'; bot = '#415a77'; sunColor = '#e0fbfc';
+  } else if (gameName.includes('Sky')) {
+    top = '#4cc9f0'; mid = '#90e0ef'; bot = '#caf0f8'; sunColor = '#ffffff';
+  } else {
+    top = '#1e90ff'; mid = '#87ceeb'; bot = '#b0e0e6'; sunColor = '#fffde7';
+  }
+
+  const grad = ctx.createLinearGradient(0, 0, 0, 512);
+  grad.addColorStop(0, top);
+  grad.addColorStop(0.45, mid);
+  grad.addColorStop(1, bot);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 512, 512);
+
+  // Sol / luna
+  ctx.beginPath();
+  ctx.arc(380, 120, 36, 0, Math.PI * 2);
+  ctx.fillStyle = sunColor;
+  ctx.globalAlpha = 0.9;
+  ctx.fill();
+  ctx.globalAlpha = 0.25;
+  ctx.beginPath();
+  ctx.arc(380, 120, 60, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // Nubes simples
+  if (!gameName.includes('Battle') && !gameName.includes('City')) {
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    for (let i = 0; i < 8; i++) {
+      const cx = 40 + (i * 70) % 480;
+      const cy = 200 + (i % 3) * 40;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, 40 + (i % 3) * 10, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(cx + 25, cy - 6, 28, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Estrellas para mapas nocturnos
+  if (gameName.includes('City') || gameName.includes('Battle')) {
+    ctx.fillStyle = '#ffffff';
+    for (let i = 0; i < 60; i++) {
+      const sx = (i * 97) % 512;
+      const sy = (i * 53) % 220;
+      ctx.globalAlpha = 0.4 + (i % 5) * 0.1;
+      ctx.fillRect(sx, sy, 2, 2);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const skyGeo = new THREE.SphereGeometry(400, 32, 24);
+  const skyMat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide, depthWrite: false });
+  const sky = new THREE.Mesh(skyGeo, skyMat);
+  sky.name = 'skybox';
+  scene.add(sky);
+  scene.background = new THREE.Color(mid);
+  scene.fog = new THREE.Fog(new THREE.Color(bot), 40, 180);
+}
+
+// ===== Controles móviles =====
+let joystickInput = { x: 0, z: 0 };
+let lookTouchId = null, joyTouchId = null;
+let lookLastX = 0, lookLastY = 0;
+
+function setupMobileControls() {
+  const base = document.getElementById('joystickBase');
+  const knob = document.getElementById('joystickKnob');
+  const jumpBtn = document.getElementById('jumpBtn');
+  const lookZone = document.getElementById('lookZone');
+  if (!base || !knob) return;
+
+  const maxR = 35;
+
+  function setKnob(dx, dy) {
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    const clamped = Math.min(len, maxR);
+    const nx = (dx / len) * clamped;
+    const ny = (dy / len) * clamped;
+    knob.style.left = (35 + nx) + 'px';
+    knob.style.top = (35 + ny) + 'px';
+    joystickInput.x = nx / maxR;
+    joystickInput.z = ny / maxR;
+  }
+
+  function resetKnob() {
+    knob.style.left = '35px';
+    knob.style.top = '35px';
+    joystickInput.x = 0;
+    joystickInput.z = 0;
+    joyTouchId = null;
+  }
+
+  base.ontouchstart = (e) => {
+    e.preventDefault();
+    const t = e.changedTouches[0];
+    joyTouchId = t.identifier;
+    const rect = base.getBoundingClientRect();
+    setKnob(t.clientX - (rect.left + rect.width / 2), t.clientY - (rect.top + rect.height / 2));
+  };
+  base.ontouchmove = (e) => {
+    e.preventDefault();
+    for (const t of e.changedTouches) {
+      if (t.identifier === joyTouchId) {
+        const rect = base.getBoundingClientRect();
+        setKnob(t.clientX - (rect.left + rect.width / 2), t.clientY - (rect.top + rect.height / 2));
+      }
+    }
+  };
+  base.ontouchend = base.ontouchcancel = (e) => {
+    for (const t of e.changedTouches) {
+      if (t.identifier === joyTouchId) resetKnob();
+    }
+  };
+
+  if (jumpBtn) {
+    jumpBtn.ontouchstart = (e) => {
+      e.preventDefault();
+      keysPressed['Space'] = true;
+    };
+    jumpBtn.ontouchend = jumpBtn.ontouchcancel = (e) => {
+      e.preventDefault();
+      keysPressed['Space'] = false;
+    };
+  }
+
+  if (lookZone) {
+    lookZone.ontouchstart = (e) => {
+      e.preventDefault();
+      const t = e.changedTouches[0];
+      lookTouchId = t.identifier;
+      lookLastX = t.clientX;
+      lookLastY = t.clientY;
+    };
+    lookZone.ontouchmove = (e) => {
+      e.preventDefault();
+      for (const t of e.changedTouches) {
+        if (t.identifier === lookTouchId) {
+          const dx = t.clientX - lookLastX;
+          const dy = t.clientY - lookLastY;
+          lookLastX = t.clientX;
+          lookLastY = t.clientY;
+          cameraAngleX -= dx * 0.008;
+          cameraAngleY += dy * 0.008;
+          if (cameraAngleY > 1.4) cameraAngleY = 1.4;
+          if (cameraAngleY < -0.2) cameraAngleY = -0.2;
+        }
+      }
+    };
+    lookZone.ontouchend = lookZone.ontouchcancel = (e) => {
+      for (const t of e.changedTouches) {
+        if (t.identifier === lookTouchId) lookTouchId = null;
+      }
+    };
+  }
+}
+
+let gameDecorations = [];
+let petFollowers = [];
+let swordMesh = null;
+let fightTargets = [];
+let raceCheckpoints = [];
+let activeCheckpoint = 0;
+let gameActionCooldown = 0;
+let raceFinished = false;
+let raceStartTime = 0;
+let obbyBestCheckpoint = 0;
+let obbyCheckpointSpawns = [];
+
+// ===== SpawnPoints fijos =====
+// Se mantienen separados de las colisiones para reutilizarlos en futuras mejoras
+// (equipos, rondas, checkpoints, teletransportes, respawn avanzado, etc.).
+const GAME_SPAWN_POINTS = Object.freeze({
+  'Epic Obby': Object.freeze([{ x: 0, y: 0.30, z: 1 }]),
+  'Bloxs City': Object.freeze([{ x: 0, y: 0.02, z: 0 }]),
+  'Pet World': Object.freeze([{ x: 0, y: 0.02, z: 0 }]),
+  'Battle Arena': Object.freeze([{ x: 0, y: 0.5, z: 16 }]),
+  'Speed Race': Object.freeze([{ x: 0, y: 0.02, z: 35 }]),
+  'Sky Islands': Object.freeze([{ x: 0, y: 0, z: 0 }])
+});
+
+let activeSpawnPoints = [];
+let spawnPointObjects = [];
+
+function getSpawnPoints(gameName) {
+  const points = GAME_SPAWN_POINTS[gameName.trim()] || [{ x: 0, y: 0.02, z: 0 }];
+  return points.map(p => ({ x: p.x, y: p.y, z: p.z }));
+}
+
+function getPrimarySpawnPoint(gameName) {
+  const points = getSpawnPoints(gameName);
+  return points[0] || { x: 0, y: 0.02, z: 0 };
+}
+
+function getCurrentRespawnPoint(gameName) {
+  const name = gameName.trim();
+  if (name === 'Epic Obby' && obbyCheckpointSpawns.length) {
+    const point = obbyCheckpointSpawns[Math.max(0, Math.min(obbyBestCheckpoint, obbyCheckpointSpawns.length - 1))];
+    return { x: point.x, y: point.y, z: point.z };
+  }
+  return getPrimarySpawnPoint(name);
+}
+
+function placePlayerAtSpawn(playerPos, gameName) {
+  const point = getCurrentRespawnPoint(gameName);
+  playerPos.x = point.x;
+  playerPos.y = point.y;
+  playerPos.z = point.z;
+}
+
+function registerSpawnPoints(gameName) {
+  activeSpawnPoints = getSpawnPoints(gameName);
+
+  // SpawnPoints reales de la escena: invisibles, sin geometría y sin colisión.
+  // Quedan listos para futuras mejoras como equipos, rondas y teletransportes.
+  for (let i = 0; i < activeSpawnPoints.length; i++) {
+    const point = activeSpawnPoints[i];
+    const spawn = new THREE.Object3D();
+    spawn.name = `SpawnPoint_${gameName.replace(/\s+/g, '_')}_${i + 1}`;
+    spawn.position.set(point.x, point.y, point.z);
+    spawn.userData.isSpawnPoint = true;
+    spawn.userData.gameName = gameName.trim();
+    spawn.userData.spawnIndex = i;
+    spawn.visible = false;
+    gameScene.add(spawn);
+    spawnPointObjects.push(spawn);
+  }
+  return activeSpawnPoints;
+}
+
+function getRandomSpawnPoint(gameName) {
+  const points = activeSpawnPoints.length ? activeSpawnPoints : getSpawnPoints(gameName);
+  const point = points[Math.floor(Math.random() * points.length)] || { x: 0, y: 0.02, z: 0 };
+  return { x: point.x, y: point.y, z: point.z };
+}
+
+function clearGameExtras(){
+  const all = [...gameDecorations, ...petFollowers, ...fightTargets, ...raceCheckpoints];
+  for(const obj of all){ try{ gameScene.remove(obj); }catch(e){} }
+  gameDecorations=[]; petFollowers=[]; fightTargets=[]; raceCheckpoints=[]; activeCheckpoint=0;
+  for (const sp of spawnPointObjects) { try { gameScene.remove(sp); } catch(e) {} }
+  spawnPointObjects=[]; activeSpawnPoints=[];
+  obbyCheckpointSpawns=[];
+  swordMesh=null; gameActionCooldown=0; raceFinished=false; raceStartTime=performance.now(); obbyBestCheckpoint=0;
+}
+
+function addBox(x,y,z,w,h,d,color,opts={}){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), new THREE.MeshLambertMaterial({color}));
+  m.position.set(x,y,z); m.castShadow=opts.castShadow!==false; m.receiveShadow=true; gameScene.add(m);
+  if(opts.solid!==false) solidColliders.push({x,y,z,width:w,height:h,depth:d});
+  if(opts.decorate!==false) gameDecorations.push(m);
+  return m;
+}
+function addCylinder(x,y,z,r,h,color){
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,16),new THREE.MeshLambertMaterial({color}));
+  m.position.set(x,y,z); m.castShadow=true; gameScene.add(m); gameDecorations.push(m); return m;
+}
+function addTree(x,z,scale=1){
+  addCylinder(x,1.4*scale,z,0.32*scale,2.8*scale,0x7a4b2a);
+  const c=addCylinder(x,3.3*scale,z,1.35*scale,2.1*scale,0x2f9e44); c.scale.y=1.0;
+}
+function addLamp(x,z){
+  addCylinder(x,2,z,0.08,4,0x444444); const bulb=addCylinder(x,4.2,z,0.18,0.35,0xffe7a0); bulb.material.emissive=new THREE.Color(0x664400); }
+function addCoinAt(x,y,z){
+  const coin=new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.45,0.16,18), new THREE.MeshLambertMaterial({color:0xffcc00,emissive:0x443300}));
+  coin.rotation.x=Math.PI/2; coin.position.set(x,y,z); coin.castShadow=true; gameScene.add(coin); collectibleCoins.push(coin); return coin;
+}
+function addPetFollowers(){
+  petFollowers=[];
+  const defs=[{c:0xff78c6,ear:0xffffff},{c:0x7cc8ff,ear:0xffffff},{c:0xb68cff,ear:0xffe0f0}];
+  defs.forEach((d,i)=>{
+    const g=new THREE.Group();
+    const body=new THREE.Mesh(new THREE.SphereGeometry(0.58,16,16),new THREE.MeshLambertMaterial({color:d.c})); body.position.y=0.7; g.add(body);
+    const head=new THREE.Mesh(new THREE.SphereGeometry(0.48,16,16),new THREE.MeshLambertMaterial({color:d.c})); head.position.set(0,1.35,0); g.add(head);
+    const eyeMat=new THREE.MeshLambertMaterial({color:0x222222});
+    for(const sx of [-0.16,0.16]){ const e=new THREE.Mesh(new THREE.SphereGeometry(0.055,8,8),eyeMat); e.position.set(sx,1.42,-0.42); g.add(e); }
+    g.position.set((i-1)*1.6,0,-2.4); gameScene.add(g); petFollowers.push(g);
+  });
+}
+function addSwordToPlayer(){
+  if(!playerMeshGroup || swordMesh) return;
+  swordMesh=new THREE.Group();
+  const blade=new THREE.Mesh(new THREE.BoxGeometry(0.12,1.25,0.06),new THREE.MeshLambertMaterial({color:0xd7e4ff,metalness:0.2}));
+  const handle=new THREE.Mesh(new THREE.BoxGeometry(0.18,0.35,0.12),new THREE.MeshLambertMaterial({color:0x6b3f1f}));
+  blade.position.y=0.7; handle.position.y=0.0; swordMesh.add(blade,handle);
+  swordMesh.rotation.z=-0.35; swordMesh.position.set(0.65,0.95,-0.1); playerMeshGroup.add(swordMesh);
+}
+function buildGameSpecificWorld(gameName){
+  const n=gameName.trim();
+
+  if(n==='Epic Obby'){
+    // Zona inicial: segura y con el primer salto claro.
+    addBox(0,0,1,8,0.6,8,0x3b82f6,{solid:true});
+    addBox(0,0.75,-4.2,6.2,0.6,4.2,0x22c55e,{solid:true});
+    obbyCheckpointSpawns = [{x:0,y:0.3,z:1}, {x:0,y:1.05,z:-4.2}];
+    for(let i=0;i<22;i++){
+      const lane=i%3-1;
+      const x=lane*3.5 + (Math.floor(i/3)%2 ? 0.9 : -0.9);
+      const z=-8.8-i*4.45;
+      const y=1.3+i*0.54;
+      const w=4.25+(i%4===0?0.55:0), d=3.75;
+      addBox(x,y,z,w,0.6,d,[0x4f8df7,0xf14f63,0x38b48a,0xf5b942][i%4],{solid:true});
+      obbyCheckpointSpawns.push({x,y:y+0.3,z});
+      // Obstáculos más bajos y colocados para que puedan superarse con un salto normal.
+      if(i%4===1) addBox(x+(i%2?1.15:-1.15),y+0.45,z,0.72,0.9,0.72,0xf97316,{solid:true});
+      if(i%5===2) addBox(x,y+0.32,z+1.05,1.25,0.64,0.7,0x111827,{solid:true});
+      addCoinAt(x,y+0.72,z);
+    }
+    const finishZ=-8.8-22*4.45;
+    addBox(0,0.54+22*0.54,finishZ,20,0.7,1.8,0x22c55e,{solid:true});
+    addBox(-8,4.0+22*0.54,finishZ,1,6.5,1,0xf1c40f); addBox(8,4.0+22*0.54,finishZ,1,6.5,1,0xf1c40f); addBox(0,7.3+22*0.54,finishZ,17,1,1,0xf1c40f);
+  } else if(n==='Bloxs City'){
+    for(let z=-48;z<=48;z+=12) addBox(0,0.03,z,100,0.06,5,0x2a2f38,{solid:false});
+    for(let x=-48;x<=48;x+=12) addBox(x,0.03,0,5,0.06,100,0x2a2f38,{solid:false});
+    for(let x=-42;x<=42;x+=12) for(let z=-42;z<=42;z+=12){
+      if(Math.abs(x)<=18&&Math.abs(z)<=18) continue;
+      addBox(x,0.07,z,7.0,0.14,7.0,0x8a8f98,{solid:false});
+    }
+    const colors=[0x6baed6,0x9ecae1,0xfd8d3c,0x74c476,0xbc80bd,0xffd92f,0x90caf9,0xef9a9a];
+    for(let bx=-4;bx<=4;bx+=2) for(let bz=-4;bz<=4;bz+=2){
+      if(Math.abs(bx)+Math.abs(bz)<3) continue;
+      const h=5+((Math.abs(bx*3+bz*2)+2)%6), x=bx*7, z=bz*7;
+      addBox(x,h/2-0.5,z,5.2,h,5.2,colors[(Math.abs(bx+bz)+20)%colors.length],{solid:true});
+      addBox(x,h-0.9,z-2.66,1.4,1.5,0.1,0x172033,{solid:false});
+    }
+    addBox(0,-0.1,0,24,0.2,24,0x55b879,{solid:false});
+    for(const p of [[-9,-9],[9,-9],[-9,9],[9,9],[0,-9],[0,9],[-9,0],[9,0]]) addTree(p[0],p[1],0.9);
+    addBox(0,-0.08,27,26,0.16,14,0x4aa8ff,{solid:false});
+    addBox(0,0.15,19,10,0.3,12,0xb58b52,{solid:false});
+    addBox(-30,2,-18,9,4,7,0xef5350); addBox(30,2,18,9,4,7,0x42a5f5);
+    addBox(-30,2,18,9,4,7,0x8e44ad); addBox(30,2,-18,9,4,7,0x26a69a);
+    for(const [x,z] of [[-30,-18],[30,-18],[-30,18],[30,18]]) addLamp(x,z);
+  } else if(n==='Pet World'){
+    addBox(0,-0.1,0,70,0.2,70,0x8bcf7b,{solid:false});
+    addBox(0,0.05,0,14,0.12,52,0xd8c39f,{solid:false}); addBox(0,0.05,0,52,0.12,14,0xd8c39f,{solid:false});
+    for(let i=0;i<28;i++){ const x=((i*17)%56)-28,z=((i*29)%56)-28; if(Math.abs(x)<9&&Math.abs(z)<9) continue; addTree(x,z,0.75+(i%3)*0.1); }
+    addBox(0,-0.08,-22,20,0.16,12,0x53b7ff,{solid:false});
+    addBox(-20,-0.08,20,14,0.16,14,0xf0c27b,{solid:false});
+    addBox(0,0.12,17,24,0.24,12,0xe5e7eb,{solid:false});
+    addBox(-8,1.1,17,1,2,1,0xf43f5e); addBox(8,1.1,17,1,2,1,0x60a5fa); addBox(-8,2.0,18,16,0.35,0.5,0xf59e0b,{solid:false});
+    for(let i=-3;i<=3;i++){ addCylinder(i*2.2,0.6,9,0.9,1.2,0xc08c5a); const egg=new THREE.Mesh(new THREE.SphereGeometry(0.82,18,18),new THREE.MeshLambertMaterial({color:[0xffb3c1,0xb8e1ff,0xc7a7ff,0xffe59a][(i+3)%4]})); egg.scale.y=1.2; egg.position.set(i*2.2,1.7,9); gameScene.add(egg); gameDecorations.push(egg); }
+    addBox(-17,2,-2,8,4,6,0x8e44ad); addBox(17,2,-2,8,4,6,0x16a085);
+    addPetFollowers();
+  } else if(n==='Battle Arena'){
+    addBox(0,0,0,44,1,44,0x6b2e2e,{solid:true});
+    addBox(-21,3,0,1,6,44,0x3a1d1d); addBox(21,3,0,1,6,44,0x3a1d1d); addBox(0,3,-21,44,6,1,0x3a1d1d); addBox(0,3,21,44,6,1,0x3a1d1d);
+    for(const [x,z,h] of [[-11,-11,3],[11,-11,3],[-11,11,3],[11,11,3],[0,0,4],[0,-10,2],[0,10,2]]) addBox(x,h/2,z,4,h,4,0x8d5a3c,{solid:true});
+    for(const [x,z] of [[-15,0],[15,0],[0,-15],[0,15]]) addBox(x,1.1,z,3,2.2,3,0xd39c43,{solid:true});
+    addSwordToPlayer();
+    for(const [x,z] of [[-8,0],[8,0],[0,-8],[0,8],[-8,8],[8,-8]]){
+      const g=new THREE.Group();
+      const body=new THREE.Mesh(new THREE.BoxGeometry(0.9,1.6,0.5),new THREE.MeshLambertMaterial({color:0xf0a05a})); body.position.y=0.8; g.add(body);
+      const head=new THREE.Mesh(new THREE.SphereGeometry(0.4,12,12),new THREE.MeshLambertMaterial({color:0xffd39a})); head.position.y=1.9; g.add(head);
+      g.position.set(x,0,z); g.userData.hp=3; g.userData.respawnAt=0; gameScene.add(g); fightTargets.push(g);
+    }
+  } else if(n==='Speed Race'){
+    addBox(0,-0.1,-20,74,0.2,110,0x1f2937,{solid:true});
+    for(const x of [-18,0,18]) addBox(x,0,-22,12,0.08,78,0x374151,{solid:false});
+    for(const z of [-48,-24,0,24]) addBox(0,1.5,z,18,3,2.5,0x36c2ff,{solid:true});
+    for(const z of [-60,-36,-12,12,36]){ addBox(-27,1.5,z,1,3,10,0xf59e0b,{solid:true}); addBox(27,1.5,z,1,3,10,0xf59e0b,{solid:true}); }
+    for(let i=0;i<6;i++){ const z=28-i*17; const line=addBox(0,0.1,z,52,0.12,1.5,i===5?0x2ecc71:0xffd54f,{solid:false}); line.userData.checkpointIndex=i; raceCheckpoints.push(line); }
+    addBox(0,0.8,44,12,1.6,10,0xf1c40f,{solid:true}); addBox(0,1.7,50,12,1.2,1,0x2ecc71,{solid:false});
+    raceStartTime=performance.now();
+  } else if(n==='Sky Islands'){
+    addBox(0,-0.5,0,20,1,20,0x79b96b,{solid:true}); addBox(-20,-2,-12,15,1,15,0x6ea85e,{solid:true}); addBox(20,-3,-6,13,1,13,0x8fbd73,{solid:true}); addBox(8,-4,18,16,1,16,0x6da96d,{solid:true});
+    addBox(-10,-1,-6,8,0.8,3,0xa47c48,{solid:true}); addBox(10,-1,6,8,0.8,3,0xa47c48,{solid:true}); addBox(0,-2,10,3,0.8,10,0xa47c48,{solid:true});
+    for(const [x,z] of [[-5,-5],[-20,-12],[20,-6],[8,18],[0,0]]) addTree(x,z,0.8);
+    for(let i=0;i<16;i++) addCoinAt((i%4-1.5)*5,2+Math.floor(i/4)*1.1,-(i*7)%30);
+  }
+}
+
+function initGameWebGL(gameName) {
+  const container = document.getElementById('webGLContainer');
+  if(!container) return;
+  container.innerHTML = "";
+
+  const width = container.clientWidth || 950;
+  const height = container.clientHeight || 550;
+
+  gameScene = new THREE.Scene();
+  gameCamera = new THREE.PerspectiveCamera(60, width / Math.max(height,1), 0.1, 2000);
+  
+  gameRenderer = new THREE.WebGLRenderer({antialias: true});
+  gameRenderer.setSize(width, height);
+  gameRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  // Sombras dinámicas en el cliente de juego
+  gameRenderer.shadowMap.enabled = true;
+  gameRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  container.appendChild(gameRenderer.domElement);
+
+  // Skybox mejorada
+  createSkybox(gameScene, gameName);
+
+  container.addEventListener('contextmenu', e => e.preventDefault());
+  container.addEventListener('mousedown', (e) => {
+    if (e.button === 2) {
+      isRightMouseDown = true;
+      mouseXOnMouseDown = e.clientX;
+      mouseYOnMouseDown = e.clientY;
+    }
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (isRightMouseDown) {
+      const deltaX = e.clientX - mouseXOnMouseDown;
+      const deltaY = e.clientY - mouseYOnMouseDown;
+      mouseXOnMouseDown = e.clientX;
+      mouseYOnMouseDown = e.clientY;
+      cameraAngleX -= deltaX * 0.005;
+      cameraAngleY += deltaY * 0.005;
+      if (cameraAngleY > 1.4) cameraAngleY = 1.4;
+      if (cameraAngleY < -0.2) cameraAngleY = -0.2;
+    }
+  });
+
+  window.addEventListener('mouseup', (e) => {
+    if (e.button === 2) {
+      isRightMouseDown = false;
+    }
+  });
+
+  const ambient = new THREE.AmbientLight(0xffffff, 0.45);
+  gameScene.add(ambient);
+
+  const sun = new THREE.DirectionalLight(0xfff5e6, 1.0);
+  sun.position.set(12, 25, 10);
+  sun.castShadow = true;
+  sun.shadow.mapSize.width = 2048;
+  sun.shadow.mapSize.height = 2048;
+  sun.shadow.camera.near = 1;
+  sun.shadow.camera.far = 80;
+  sun.shadow.camera.left = -30;
+  sun.shadow.camera.right = 30;
+  sun.shadow.camera.top = 30;
+  sun.shadow.camera.bottom = -30;
+  sun.shadow.bias = -0.0015;
+  sun.shadow.radius = 2.5;
+  gameScene.add(sun);
+
+  // Luz de relleno (sin sombras) para suavizar
+  const fill = new THREE.DirectionalLight(0xa0d8ff, 0.3);
+  fill.position.set(-8, 10, -6);
+  gameScene.add(fill);
+
+  clearGameExtras();
+  buildUniqueGameWorld(gameName);
+  buildGameSpecificWorld(gameName);
+  registerSpawnPoints(gameName);
+
+  const c = current();
+  clearAllRemotePlayers();
+  playerMeshGroup = buildAvatar3DModel(c ? c.user : null);
+  playerMeshGroup.position.set(0, 0, 0);
+  gameScene.add(playerMeshGroup);
+  if(gameName.trim() === "Battle Arena") addSwordToPlayer();
+}
+
+function buildUniqueGameWorld(gameName) {
+  collectibleCoins = [];
+  activePlatforms = [];
+  solidColliders = [];
+
+  const floorGeo = new THREE.BoxGeometry(100, 1, 100);
+  let floorMat = new THREE.MeshLambertMaterial({color: 0x4caf50});
+  
+  if(gameName.includes("City")) floorMat = new THREE.MeshLambertMaterial({color: 0x333333});
+  if(gameName.includes("Battle")) floorMat = new THREE.MeshLambertMaterial({color: 0x553333});
+  if(gameName.includes("Race")) floorMat = new THREE.MeshLambertMaterial({color: 0x222222});
+
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.position.set(0, -0.5, 0);
+  floor.receiveShadow = true;
+  const noGlobalFloor = ['Epic Obby','Sky Islands'].includes(gameName.trim());
+  floor.visible = !noGlobalFloor;
+  gameScene.add(floor);
+  if(!noGlobalFloor) solidColliders.push({ x: 0, y: -0.5, z: 0, width: 100, height: 1, depth: 100 });
+
+  if(false) {
+    for(let i = 1; i <= 10; i++) {
+      const platMat = new THREE.MeshLambertMaterial({color: i % 2 === 0 ? 0xff5555 : 0x5555ff});
+      const platX = (i % 2 === 0 ? 3 : -3);
+      const platY = i * 1.2;
+      const platZ = -i * 5;
+      const plat = new THREE.Mesh(new THREE.BoxGeometry(4, 0.6, 4), platMat);
+      plat.position.set(platX, platY, platZ);
+      plat.castShadow = true;
+      plat.receiveShadow = true;
+      gameScene.add(plat);
+      activePlatforms.push({ x: platX, y: platY, z: platZ, width: 4, height: 0.6, depth: 4 });
+      // Los bloques/plataformas tambien deben bloquear el cuerpo lateralmente.
+      solidColliders.push({ x: platX, y: platY, z: platZ, width: 4, height: 0.6, depth: 4 });
+    }
+  } else if(gameName.includes("City")) {
+    for(let i = -3; i <= 3; i += 2) {
+      const bMat = new THREE.MeshLambertMaterial({color: 0x6688aa});
+      const bHeight = 6 + Math.abs(i) * 3;
+      const bx = i * 5, by = bHeight / 2 - 0.5, bz = -12;
+      const b = new THREE.Mesh(new THREE.BoxGeometry(3, bHeight, 3), bMat);
+      b.position.set(bx, by, bz);
+      b.castShadow = true;
+      b.receiveShadow = true;
+      gameScene.add(b);
+      solidColliders.push({ x: bx, y: by, z: bz, width: 3, height: bHeight, depth: 3 });
+    }
+  }
+
+  for(let i = 0; i < 15; i++) {
+    const coinGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.2, 16);
+    const coinMat = new THREE.MeshLambertMaterial({color: 0xffcc00, emissive: 0x443300});
+    const coin = new THREE.Mesh(coinGeo, coinMat);
+    coin.rotation.x = Math.PI / 2;
+    coin.position.set((Math.random() - 0.5) * 40, 0.4, (Math.random() - 0.5) * 40);
+    coin.castShadow = true;
+    gameScene.add(coin);
+    collectibleCoins.push(coin);
+  }
+}
+
+let voidDeathActive = false;
+let voidRespawnFn = null;
+
+function showVoidDeath(respawnFn) {
+  voidDeathActive = true;
+  voidRespawnFn = respawnFn;
+  Object.keys(keysPressed).forEach(key => keysPressed[key] = false);
+  const overlay = document.getElementById('voidDeathOverlay');
+  if(overlay) overlay.classList.add('open');
+}
+
+function respawnAfterVoid() {
+  if(typeof voidRespawnFn === 'function') voidRespawnFn();
+  voidDeathActive = false;
+  voidRespawnFn = null;
+  const overlay = document.getElementById('voidDeathOverlay');
+  if(overlay) overlay.classList.remove('open');
+}
+
+function startGameLoop() {
+  if(gameAnimId) cancelAnimationFrame(gameAnimId);
+
+  const initialSpawn = getPrimarySpawnPoint(currentGameType);
+  let playerPos = { x: initialSpawn.x, y: initialSpawn.y, z: initialSpawn.z };
+  let velocityY = 0;
+  const gravity = 18;
+  const jumpForce = 9.5;
+  const moveSpeed = 6;
+  let isGrounded = true;
+  let lastTime = performance.now();
+  let attackFlash = 0;
+
+  function animateGame(now) {
+    gameAnimId = requestAnimationFrame(animateGame);
+    const dt = Math.min((now - lastTime) / 1000, 0.05);
+    lastTime = now;
+
+    let inputX = 0, inputZ = 0;
+    if(keysPressed['ArrowLeft'] || keysPressed['KeyA']) inputX -= 1;
+    if(keysPressed['ArrowRight'] || keysPressed['KeyD']) inputX += 1;
+    if(keysPressed['ArrowUp'] || keysPressed['KeyW']) inputZ -= 1;
+    if(keysPressed['ArrowDown'] || keysPressed['KeyS']) inputZ += 1;
+    // Joystick móvil (añadir sobre teclado)
+    if (typeof joystickInput !== 'undefined') {
+      inputX += joystickInput.x;
+      inputZ += joystickInput.z;
+    }
+
+    if(gameActionCooldown > 0) gameActionCooldown -= dt;
+    if(currentGameType.trim() === 'Battle Arena' && !voidDeathActive && keysPressed['KeyF'] && gameActionCooldown <= 0){
+      gameActionCooldown = 0.45; attackFlash = 0.22;
+      const px=playerPos.x, pz=playerPos.z;
+      for(const target of fightTargets){
+        if(target.userData.respawnAt && performance.now()<target.userData.respawnAt) continue;
+        const dx=target.position.x-px, dz=target.position.z-pz;
+        if(Math.hypot(dx,dz)<4.5) {
+          target.userData.hp=Math.max(0,(target.userData.hp||3)-1);
+          target.scale.set(1.25,0.8,1.25);
+          setTimeout(()=>{try{target.scale.set(1,1,1);}catch(e){}},140);
+          if(target.userData.hp<=0){ target.visible=false; target.userData.respawnAt=performance.now()+2500; }
+        }
+      }
+    }
+    if(currentGameType.trim() === 'Battle Arena'){
+      for(const target of fightTargets){
+        if(!target.visible && target.userData.respawnAt && performance.now()>=target.userData.respawnAt){
+          target.visible=true; target.userData.hp=3; target.userData.respawnAt=0; target.scale.set(1,1,1);
+        }
+      }
+    }
+
+    if(currentGameType.trim() === 'Battle Arena' && swordMesh){
+      if(attackFlash>0){ attackFlash -= dt; swordMesh.rotation.z = -1.45; }
+      else swordMesh.rotation.z = -0.35;
+    }
+
+    if(currentGameType.trim() === 'Pet World' && petFollowers.length){
+      petFollowers.forEach((pet,i)=>{
+        const targetX=playerPos.x + (i-1)*1.5; const targetZ=playerPos.z + 2.2 + Math.sin(now*0.002+i)*0.35;
+        pet.position.x += (targetX-pet.position.x)*Math.min(1,dt*5);
+        pet.position.z += (targetZ-pet.position.z)*Math.min(1,dt*5);
+        pet.position.y = 0.12 + Math.abs(Math.sin(now*0.004+i))*0.16;
+      });
+    }
+
+    if(!voidDeathActive && keysPressed['Space'] && isGrounded) {
+      velocityY = jumpForce;
+      isGrounded = false;
+    }
+
+    // Gravedad con salto variable: soltar ESPACIO reduce el impulso y
+    // permite hacer saltos cortos o altos según cuánto se mantenga pulsado.
+    const gravityNow = velocityY > 0
+      ? (keysPressed['Space'] ? gravity : gravity * 1.9)
+      : gravity * 1.25;
+    velocityY -= gravityNow * dt;
+    const previousY = playerPos.y;
+    playerPos.y += velocityY * dt;
+
+    // TECHO: si el jugador sube y cruza la cara inferior de un bloque,
+    // se detiene justo debajo del techo. La colision horizontal no afecta a esta comprobacion.
+    if(velocityY > 0 && solidColliders && solidColliders.length) {
+      const ph = 1.50;
+      const playerTop = playerPos.y + ph;
+      const previousTop = previousY + ph;
+      const playerHalfW = 0.34;
+      const playerHalfD = 0.34;
+
+      for(const s of solidColliders) {
+        const minY = s.y - s.height / 2;
+        const halfW = s.width / 2 + playerHalfW;
+        const halfD = s.depth / 2 + playerHalfD;
+
+        const insideX = Math.abs(playerPos.x - s.x) < halfW;
+        const insideZ = Math.abs(playerPos.z - s.z) < halfD;
+
+        if(insideX && insideZ && previousTop <= minY && playerTop >= minY) {
+          playerPos.y = minY - ph;
+          velocityY = 0;
+          break;
+        }
+      }
+    }
+
+    let landingY = 0;
+    let foundGround = false;
+    const voidStartGame = ['Epic Obby','Sky Islands'].includes(currentGameType.trim());
+    if(!voidStartGame && playerPos.y <= 0) {
+      landingY = 0;
+      foundGround = true;
+    }
+
+    if(currentGameType.includes("Obby")) {
+      activePlatforms.forEach(p => {
+        const halfW = p.width / 2;
+        const halfD = p.depth / 2;
+        const topY = p.y + p.height / 2;
+        if(playerPos.x >= p.x - halfW && playerPos.x <= p.x + halfW &&
+           playerPos.z >= p.z - halfD && playerPos.z <= p.z + halfD &&
+           playerPos.y <= topY && playerPos.y >= topY - 0.6 && velocityY <= 0 && topY >= landingY) {
+          landingY = topY;
+          foundGround = true;
+        }
+      });
+    }
+
+    if(['Epic Obby','Sky Islands','Battle Arena','Bloxs City','Pet World','Speed Race'].includes(currentGameType.trim())) {
+      for(const s of solidColliders){
+        const topY=s.y+s.height/2; const halfW=s.width/2, halfD=s.depth/2;
+        if(playerPos.x>=s.x-halfW && playerPos.x<=s.x+halfW && playerPos.z>=s.z-halfD && playerPos.z<=s.z+halfD && playerPos.y<=topY && playerPos.y>=topY-0.75 && velocityY<=0 && topY>=landingY){
+          landingY=topY; foundGround=true;
+        }
+      }
+    }
+
+    if(foundGround && playerPos.y <= landingY + 0.15 && velocityY <= 0) {
+      playerPos.y = landingY;
+      velocityY = 0;
+      isGrounded = true;
+    } else {
+      isGrounded = false;
+      if(playerPos.y < -10 && !voidDeathActive) {
+        showVoidDeath(() => {
+          placePlayerAtSpawn(playerPos, currentGameType);
+          velocityY = 0;
+          isGrounded = true;
+          lastTime = performance.now();
+        });
+      }
+    }
+
+    if(voidDeathActive) {
+      inputX = 0;
+      inputZ = 0;
+      velocityY = 0;
+    }
+
+    if(inputX !== 0 || inputZ !== 0) {
+      const inputLength = Math.hypot(inputX, inputZ);
+      inputX /= inputLength;
+      inputZ /= inputLength;
+
+      // Movimiento relativo a la cámara: W siempre avanza hacia donde mira la cámara.
+      const forwardX = -Math.sin(cameraAngleX);
+      const forwardZ = -Math.cos(cameraAngleX);
+      const rightX = Math.cos(cameraAngleX);
+      const rightZ = -Math.sin(cameraAngleX);
+      const moveX = (rightX * inputX) + (forwardX * -inputZ);
+      const moveZ = (rightZ * inputX) + (forwardZ * -inputZ);
+      const moveLength = Math.hypot(moveX, moveZ) || 1;
+      const normalizedX = moveX / moveLength;
+      const normalizedZ = moveZ / moveLength;
+
+      const tryX = playerPos.x + normalizedX * moveSpeed * dt;
+      const tryZ = playerPos.z + normalizedZ * moveSpeed * dt;
+      // COLISION HORIZONTAL: solo las paredes/bloques laterales bloquean el movimiento.
+      // La hitbox se ajusta al avatar real para que no choque desde lejos.
+      const pw = 0.34, pd = 0.34, ph = 1.50;
+      const skin = 0.015;
+      const canMoveHorizontal = (nx, nz) => {
+        if (!solidColliders || !solidColliders.length) return true;
+
+        const playerBottom = playerPos.y;
+        const playerTop = playerPos.y + ph;
+
+        for (const s of solidColliders) {
+          const halfW = s.width / 2 + pw + skin;
+          const halfD = s.depth / 2 + pd + skin;
+          const minY = s.y - s.height / 2;
+          const maxY = s.y + s.height / 2;
+
+          // Si no hay solape vertical, este bloque no puede bloquear lateralmente.
+          if (playerTop <= minY || playerBottom >= maxY) continue;
+
+          // Solo comprobamos X/Z aqui: esta es exclusivamente la colision horizontal.
+          if (Math.abs(nx - s.x) < halfW && Math.abs(nz - s.z) < halfD) {
+            return false;
+          }
+        }
+        return true;
+      };
+
+      // Resolver cada eje por separado evita atravesar esquinas en diagonal.
+      if (canMoveHorizontal(tryX, playerPos.z)) playerPos.x = tryX;
+      if (canMoveHorizontal(playerPos.x, tryZ)) playerPos.z = tryZ;
+      // Sin limites invisibles: el jugador puede alejarse libremente del SpawnPoint.
+      // Las unicas restricciones de movimiento provienen de colisiones reales del mapa.
+
+      const targetAngle = Math.atan2(normalizedX, normalizedZ);
+      let diff = targetAngle - playerMeshGroup.rotation.y;
+      while(diff < -Math.PI) diff += Math.PI * 2;
+      while(diff > Math.PI) diff -= Math.PI * 2;
+      playerMeshGroup.rotation.y += diff * Math.min(1, 12 * dt);
+
+      if(isGrounded) {
+        const time = now * 0.012;
+        const leftArm = playerMeshGroup.getObjectByName("leftArm");
+        const rightArm = playerMeshGroup.getObjectByName("rightArm");
+        const leftLeg = playerMeshGroup.getObjectByName("leftLeg");
+        const rightLeg = playerMeshGroup.getObjectByName("rightLeg");
+        if(leftArm && rightArm && leftLeg && rightLeg) {
+          leftArm.rotation.x = Math.sin(time) * 0.8;
+          rightArm.rotation.x = -Math.sin(time) * 0.8;
+          leftLeg.rotation.x = -Math.sin(time) * 0.8;
+          rightLeg.rotation.x = Math.sin(time) * 0.8;
+        }
+      }
+    } else {
+      const leftArm = playerMeshGroup.getObjectByName("leftArm");
+      const rightArm = playerMeshGroup.getObjectByName("rightArm");
+      const leftLeg = playerMeshGroup.getObjectByName("leftLeg");
+      const rightLeg = playerMeshGroup.getObjectByName("rightLeg");
+      const damp = Math.pow(0.02, dt);
+      if(leftArm) leftArm.rotation.x *= damp;
+      if(rightArm) rightArm.rotation.x *= damp;
+      if(leftLeg) leftLeg.rotation.x *= damp;
+      if(rightLeg) rightLeg.rotation.x *= damp;
+    }
+
+    if(currentGameType.trim()==='Epic Obby' && foundGround && obbyCheckpointSpawns.length){
+      let checkpoint=0;
+      let bestDistance=Infinity;
+      for(let i=0;i<obbyCheckpointSpawns.length;i++){
+        const cp=obbyCheckpointSpawns[i];
+        const dist=Math.hypot(playerPos.x-cp.x, playerPos.z-cp.z);
+        if(dist<bestDistance){ bestDistance=dist; checkpoint=i; }
+      }
+      checkpoint=Math.max(0,Math.min(22,checkpoint));
+      if(bestDistance<4.0 && checkpoint>obbyBestCheckpoint){
+        obbyBestCheckpoint=checkpoint;
+        const hint=document.getElementById('gameHint');
+        if(hint) hint.textContent=`🏁 Checkpoint ${checkpoint}/22`;
+      }
+    }
+
+    if(currentGameType.trim()==='Speed Race' && !raceFinished){
+      const cp=raceCheckpoints.find(r=>r.userData.checkpointIndex===activeCheckpoint);
+      if(cp){
+        const dx=playerPos.x-cp.position.x, dz=playerPos.z-cp.position.z;
+        if(Math.hypot(dx,dz)<7){
+          activeCheckpoint++;
+          const hint=document.getElementById('gameHint');
+          if(hint) hint.textContent=activeCheckpoint>=6?'🏆 ¡Meta!':`🏁 Checkpoint ${activeCheckpoint}/6`;
+        }
+      }
+      if(activeCheckpoint>=6 && playerPos.z < -58){
+        raceFinished=true;
+        const seconds=((performance.now()-raceStartTime)/1000).toFixed(2);
+        const hint=document.getElementById('gameHint');
+        if(hint) hint.textContent=`🏆 ¡Ganaste la carrera en ${seconds}s!`;
+      }
+    }
+
+    if(!isGrounded) {
+      const leftArm = playerMeshGroup.getObjectByName("leftArm");
+      const rightArm = playerMeshGroup.getObjectByName("rightArm");
+      if(leftArm) leftArm.rotation.x = -1.5;
+      if(rightArm) rightArm.rotation.x = -1.5;
+    }
+
+    if(playerMeshGroup) playerMeshGroup.position.set(playerPos.x, playerPos.y + 0.4, playerPos.z);
+
+    sendMultiplayerPosition(playerPos);
+    updateRemotePlayers(dt);
+
+    collectibleCoins.forEach((coin) => {
+      if(coin.visible) {
+        coin.rotation.z += 2.4 * dt;
+        const dx = playerPos.x - coin.position.x;
+        const dy = (playerPos.y + 0.5) - coin.position.y;
+        const dz = playerPos.z - coin.position.z;
+        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if(dist < 1.2) {
+          coin.visible = false;
+          gameSessionEarnings += 1;
+          addSunnys(1);
+          const earnLbl = document.getElementById('clientEarnings');
+          if(earnLbl) earnLbl.textContent = gameSessionEarnings;
+        }
+      }
+    });
+
+    if(gameCamera && playerMeshGroup) {
+      const cx = playerMeshGroup.position.x + cameraDistance * Math.sin(cameraAngleX) * Math.cos(cameraAngleY);
+      const cy = playerMeshGroup.position.y + 0.8 + cameraDistance * Math.sin(cameraAngleY);
+      const cz = playerMeshGroup.position.z + cameraDistance * Math.cos(cameraAngleX) * Math.cos(cameraAngleY);
+      gameCamera.position.set(cx, cy, cz);
+      gameCamera.lookAt(playerMeshGroup.position.x, playerMeshGroup.position.y + 0.5, playerMeshGroup.position.z);
+    }
+
+    if(gameRenderer && gameScene && gameCamera) gameRenderer.render(gameScene, gameCamera);
+  }
+  animateGame(performance.now());
+}
+
+
+
+// ==================== EPICBLOXS IDS ====================
+let epicGameId = null;
+let epicServerId = null;
+let epicPlayerId = null;
+
+function makeLocalId(prefix) {
+  const bytes = new Uint8Array(8);
+  if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(bytes);
+  else for (let i=0;i<bytes.length;i++) bytes[i] = Math.floor(Math.random()*256);
+  return prefix + "-" + [...bytes].map(x => x.toString(16).padStart(2,"0")).join("").toUpperCase();
+}
+
+function getGameId(gameName) {
+  // IDs estables por nombre de juego (misma sala para todos los que juegan el mismo mapa)
+  const known = {
+    "Bloxs City ":"CITY-7F42",
+    "Epic Obby ":"OBBY-91AC",
+    "Speed Race ":"RACE-33D8",
+    "Battle Arena ":"PVP-73B2",
+    "Sky Islands ":"SKY-19E4",
+    "Pet World ":"PET-44C1"
+  };
+  const trimmed = String(gameName || "").trim();
+  for (const [k, v] of Object.entries(known)) {
+    if (k.trim() === trimmed || gameName === k) return v;
+  }
+  // Fallback determinista: mismo nombre → mismo ID
+  let hash = 0;
+  const s = trimmed.toLowerCase();
+  for (let i = 0; i < s.length; i++) hash = ((hash << 5) - hash + s.charCodeAt(i)) | 0;
+  return "GAME-" + Math.abs(hash).toString(16).toUpperCase().padStart(8, "0").slice(0, 8);
+}
+
+// ID interno del sistema (sin mostrar Game ID / Server ID / Player ID en pantalla)
+// ================= END EPICBLOXS IDS ====================
+
+// ==================== EPICBLOXS MULTIPLAYER ====================
+let multiplayerSocket = null;
+let multiplayerRoom = null;
+let multiplayerId = null;
+let remotePlayers = {};
+let multiplayerReady = false;
+let multiplayerSendTimer = 0;
+let lastSentPosition = null;
+
+function getMultiplayerServerURL() {
+  const host = window.location.hostname || '';
+  const port = window.location.port;
+  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+
+  // Servido por el mismo Node/Render (mismo host)
+  if (host && host !== '' && window.location.protocol !== 'file:') {
+    // localhost / LAN: usar mismo host y puerto de la página
+    if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.')) {
+      return `${proto}//${host}:${port || 10000}`;
+    }
+    // Producción (Render u otro): mismo origen
+    return `${proto}//${window.location.host}`;
+  }
+  // file:// o sin host → Render público
+  return "wss://epicbloxserversito.onrender.com";
+}
+function getAvatarSnapshot() {
+  const c = current();
+  if (!c) return null;
+  const a = c.user.avatar || {};
+  return {
+    colors: a.colors || {
+      head:"#f5c928", arms:"#f5c928", torso:"#1477b9", legs:"#8cae45"
+    },
+    accessories: a.accessories || []
+  };
+}
+
+function ensureMultiplayerUI() {
+  const ui = document.querySelector("#webClient .client-ui");
+  if (!ui || document.getElementById("multiplayerStatus")) return;
+  const span = document.createElement("span");
+  span.id = "multiplayerStatus";
+  span.style.marginLeft = "12px";
+  span.style.color = "#7dd3fc";
+  span.textContent = "👥 Conectando...";
+  ui.appendChild(span);
+}
+
+function setMultiplayerStatus(text, color="#7dd3fc") {
+  const el = document.getElementById("multiplayerStatus");
+  if (el) {
+    el.textContent = text;
+    el.style.color = color;
+  }
+  const inline = document.getElementById("multiplayerStatusInline");
+  if (inline) {
+    inline.textContent = text;
+    inline.style.color = color;
+  }
+}
+
+let multiplayerReconnectTimer = null;
+let multiplayerReconnectAttempts = 0;
+let multiplayerIntentionalClose = false;
+
+function connectMultiplayer(gameName) {
+  disconnectMultiplayer(true);
+  ensureMultiplayerUI();
+
+  const c = current();
+  if (!c) return;
+
+  multiplayerRoom = gameName;
+  multiplayerIntentionalClose = false;
+  multiplayerReconnectAttempts = 0;
+  lastSentPosition = null;
+  openMultiplayerSocket();
+}
+
+function openMultiplayerSocket() {
+  const c = current();
+  if (!c || multiplayerIntentionalClose || !multiplayerRoom) return;
+
+  try {
+    multiplayerSocket = new WebSocket(getMultiplayerServerURL());
+
+    multiplayerSocket.addEventListener("open", () => {
+      multiplayerReady = true;
+      multiplayerReconnectAttempts = 0;
+      setMultiplayerStatus("👥 Conectando...", "#7dd3fc");
+      setChatConnStatus(true);
+
+      multiplayerSocket.send(JSON.stringify({
+        type:"join",
+        room: multiplayerRoom,
+        gameId: epicGameId,
+        username: c.user.username,
+        avatar: getAvatarSnapshot()
+      }));
+    });
+
+    multiplayerSocket.addEventListener("message", (event) => {
+      let data;
+      try { data = JSON.parse(event.data); } catch(e) { return; }
+
+      if (data.type === "welcome") {
+        multiplayerId = data.playerId || data.id;
+        epicPlayerId = data.playerId || data.id;
+        epicServerId = data.serverId || "SRV-UNKNOWN";
+        epicGameId = data.gameId || epicGameId;
+            const acc = (typeof data.accounts === 'number') ? data.accounts : null;
+        setMultiplayerStatus(
+          acc != null
+            ? `👥 ${data.count} en sala · ${acc} cuentas`
+            : `👥 ${data.count} jugador(es)`,
+          "#86efac"
+        );
+        setChatConnStatus(true);
+        if (acc != null) {
+          const el = document.getElementById('serverAccountsInfo');
+          if (el) el.textContent = 'Cuentas registradas: ' + acc;
+        }
+        clearAllRemotePlayers();
+        (data.players || []).forEach(p => {
+          if (p && p.id && p.id !== multiplayerId) addOrUpdateRemotePlayer(p);
+        });
+        // Chat de la sala
+        const body = document.getElementById('chatBody');
+        if (body) body.innerHTML = '';
+        appendChatMessage('Sistema', 'Conectado a la sala. ¡Chat en tiempo real activo!', true);
+        return;
+      }
+
+      if (data.type === "playerJoined") {
+        addOrUpdateRemotePlayer(data.player);
+        updateMultiplayerCount(data.count);
+        return;
+      }
+
+      if (data.type === "playerMoved") {
+        addOrUpdateRemotePlayer(data.player);
+        return;
+      }
+
+      if (data.type === "playerLeft") {
+        if (data.id) removeRemotePlayer(data.id);
+        // Por si quedo un fantasma con otro id del mismo user
+        if (data.username && gameScene) {
+          Object.keys(remotePlayers).forEach(rid => {
+            const g = remotePlayers[rid];
+            if (g && g.userData && g.userData.username === data.username) removeRemotePlayer(rid);
+          });
+        }
+        updateMultiplayerCount(data.count);
+        return;
+      }
+
+      if (data.type === "roomInfo") {
+        updateMultiplayerCount(data.count);
+        return;
+      }
+
+      if (data.type === "chat") {
+        appendChatMessage(data.username || "Player", data.message || "", !!data.system, data.ts);
+        return;
+      }
+    });
+
+    multiplayerSocket.addEventListener("close", () => {
+      multiplayerReady = false;
+      multiplayerId = null;
+      setChatConnStatus(false);
+      if (!multiplayerIntentionalClose) {
+        setMultiplayerStatus("👥 Reconectando...", "#facc15");
+        scheduleMultiplayerReconnect();
+      } else {
+        setMultiplayerStatus("👥 Desconectado", "#fca5a5");
+      }
+    });
+
+    multiplayerSocket.addEventListener("error", () => {
+      multiplayerReady = false;
+      setChatConnStatus(false);
+      setMultiplayerStatus("👥 Servidor no disponible", "#fca5a5");
+    });
+  } catch(e) {
+    multiplayerReady = false;
+    setMultiplayerStatus("👥 Servidor no disponible", "#fca5a5");
+    scheduleMultiplayerReconnect();
+  }
+}
+
+function scheduleMultiplayerReconnect() {
+  if (multiplayerIntentionalClose || multiplayerReconnectTimer) return;
+  multiplayerReconnectAttempts++;
+  const delay = Math.min(15000, 1000 * Math.pow(2, Math.min(4, multiplayerReconnectAttempts - 1)));
+  multiplayerReconnectTimer = setTimeout(() => {
+    multiplayerReconnectTimer = null;
+    openMultiplayerSocket();
+  }, delay);
+}
+
+function refreshServerStats() {
+  api('/health', {}, 1).then(data => {
+    const accounts = (data && typeof data.users === 'number') ? data.users : null;
+    const players = (data && typeof data.players === 'number') ? data.players : null;
+    if (accounts != null) {
+      const el = document.getElementById('serverAccountsInfo');
+      if (el) el.textContent = 'Cuentas registradas: ' + accounts;
+      // tambien en status multip si no hay sala
+      const st = document.getElementById('multiplayerStatus');
+      if (st && !multiplayerReady) st.textContent = '👥 Cuentas: ' + accounts;
+    }
+  }).catch(()=>{});
+}
+
+function updateMultiplayerCount(count) {
+  setMultiplayerStatus(`👥 ${count} jugador(es)`, "#86efac");
+}
+
+function disconnectMultiplayer(keepRoom=false) {
+  multiplayerIntentionalClose = true;
+  if (multiplayerReconnectTimer) {
+    clearTimeout(multiplayerReconnectTimer);
+    multiplayerReconnectTimer = null;
+  }
+  if (multiplayerSocket) {
+    try { multiplayerSocket.close(); } catch(e) {}
+  }
+  multiplayerSocket = null;
+  multiplayerReady = false;
+  multiplayerId = null;
+  if (!keepRoom) multiplayerRoom = null;
+  setChatConnStatus(false);
+
+  Object.keys(remotePlayers).forEach(removeRemotePlayer);
+  remotePlayers = {};
+}
+
+function addOrUpdateRemotePlayer(p) {
+  if (!p || !p.id || p.id === multiplayerId || !gameScene) return;
+
+  let group = remotePlayers[p.id];
+  const uname = p.username || "Player";
+
+  if (!group) {
+    // Quitar fantasmas con el mismo nombre de escena
+    const ghost = gameScene.getObjectByName("remotePlayer_" + p.id);
+    if (ghost) gameScene.remove(ghost);
+
+    group = buildAvatar3DModel({
+      avatar: p.avatar || {
+        colors:{head:"#f5c928",arms:"#f5c928",torso:"#1477b9",legs:"#8cae45"},
+        accessories:[]
+      }
+    });
+    group.name = "remotePlayer_" + p.id;
+    group.userData.username = uname;
+    group.userData.playerId = p.id;
+    group.add(createNameTag(uname));
+    if (typeof p.x === "number") group.position.x = p.x;
+    if (typeof p.y === "number") group.position.y = p.y + 0.4;
+    if (typeof p.z === "number") group.position.z = p.z;
+    if (typeof p.rotation === "number") group.rotation.y = p.rotation;
+    gameScene.add(group);
+    remotePlayers[p.id] = group;
+  }
+
+  if (p.avatar) {
+    const oldAvatar = group.userData.avatarJSON;
+    const newAvatar = JSON.stringify(p.avatar);
+    if (oldAvatar !== newAvatar) {
+      const pos = group.position.clone();
+      const rot = group.rotation.y;
+      gameScene.remove(group);
+      group = buildAvatar3DModel({avatar:p.avatar});
+      group.name = "remotePlayer_" + p.id;
+      group.position.copy(pos);
+      group.rotation.y = rot;
+      group.add(createNameTag(uname));
+      gameScene.add(group);
+      remotePlayers[p.id] = group;
+    }
+    group.userData.avatarJSON = newAvatar;
+  }
+
+  // Actualizar nametag si cambió el nombre
+  if (group.userData.username !== uname) {
+    const oldTag = group.getObjectByName('nameTag');
+    if (oldTag) group.remove(oldTag);
+    group.add(createNameTag(uname));
+  }
+
+  if (typeof p.x === "number") group.userData.targetX = p.x;
+  if (typeof p.y === "number") group.userData.targetY = p.y + 0.4;
+  if (typeof p.z === "number") group.userData.targetZ = p.z;
+  if (typeof p.rotation === "number") group.userData.targetRotation = p.rotation;
+  group.userData.username = uname;
+}
+
+
+function clearAllRemotePlayers() {
+  const ids = Object.keys(remotePlayers || {});
+  ids.forEach(id => {
+    try { removeRemotePlayer(id); } catch(e) {}
+  });
+  remotePlayers = {};
+  // Barrido de fantasmas en la escena
+  if (gameScene) {
+    const toRemove = [];
+    gameScene.traverse(obj => {
+      if (obj && obj.name && String(obj.name).indexOf('remotePlayer_') === 0) toRemove.push(obj);
+    });
+    toRemove.forEach(obj => {
+      try { gameScene.remove(obj); } catch(e) {}
+    });
+  }
+}
+
+function removeRemotePlayer(id) {
+  const group = remotePlayers[id];
+  if (group && gameScene) {
+    try { gameScene.remove(group); } catch(e) {}
+  }
+  // Limpiar cualquier fantasma residual
+  if (gameScene) {
+    const ghost = gameScene.getObjectByName("remotePlayer_" + id);
+    if (ghost) try { gameScene.remove(ghost); } catch(e) {}
+  }
+  delete remotePlayers[id];
+}
+
+
+let lastMoveSendTime = 0;
+function sendMultiplayerPosition(playerPos) {
+  if (!multiplayerReady || !multiplayerSocket ||
+      multiplayerSocket.readyState !== WebSocket.OPEN) return;
+
+  const now = performance.now();
+  // Tiempo real: hasta ~30 paquetes/segundo
+  if (now - lastMoveSendTime < 33) return;
+
+  const payload = {
+    type:"move",
+    room: multiplayerRoom,
+    x: Number(playerPos.x.toFixed(3)),
+    y: Number(playerPos.y.toFixed(3)),
+    z: Number(playerPos.z.toFixed(3)),
+    rotation: playerMeshGroup ? Number(playerMeshGroup.rotation.y.toFixed(3)) : 0
+  };
+
+  // Enviar siempre si se movió o rotó (umbral muy bajo)
+  if (lastSentPosition &&
+      Math.abs(payload.x-lastSentPosition.x)<0.0001 &&
+      Math.abs(payload.y-lastSentPosition.y)<0.0001 &&
+      Math.abs(payload.z-lastSentPosition.z)<0.0001 &&
+      Math.abs(payload.rotation-lastSentPosition.rotation)<0.0005) {
+    // Keepalive cada 500ms aunque esté quieto (otros ven presencia)
+    if (now - lastMoveSendTime < 500) return;
+  }
+
+  lastMoveSendTime = now;
+  lastSentPosition = payload;
+  try {
+    multiplayerSocket.send(JSON.stringify(payload));
+  } catch (e) {}
+}
+
+function createNameTag(username) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 256, 64);
+  ctx.font = 'bold 28px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  // sombra
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillText(username, 129, 33);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(username, 128, 32);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(1.6, 0.4, 1);
+  sprite.position.set(0, 1.55, 0);
+  sprite.name = 'nameTag';
+  return sprite;
+}
+
+function updateRemotePlayers(dt) {
+  Object.values(remotePlayers).forEach(group => {
+    if (!group) return;
+
+    const tx = group.userData.targetX;
+    const ty = group.userData.targetY;
+    const tz = group.userData.targetZ;
+    const tr = group.userData.targetRotation;
+
+    const prevX = group.position.x;
+    const prevZ = group.position.z;
+
+    const lerp = Math.min(1, dt * 22);
+    if (typeof tx === "number") group.position.x += (tx-group.position.x) * lerp;
+    if (typeof ty === "number") group.position.y += (ty-group.position.y) * lerp;
+    if (typeof tz === "number") group.position.z += (tz-group.position.z) * lerp;
+
+    if (typeof tr === "number") {
+      let diff = tr - group.rotation.y;
+      while(diff < -Math.PI) diff += Math.PI*2;
+      while(diff > Math.PI) diff -= Math.PI*2;
+      group.rotation.y += diff * Math.min(1, dt*20);
+    }
+
+    // Animación de caminar en jugadores remotos
+    const dx = group.position.x - prevX;
+    const dz = group.position.z - prevZ;
+    const speed = Math.sqrt(dx*dx + dz*dz) / Math.max(dt, 0.001);
+    const leftArm = group.getObjectByName("leftArm");
+    const rightArm = group.getObjectByName("rightArm");
+    const leftLeg = group.getObjectByName("leftLeg");
+    const rightLeg = group.getObjectByName("rightLeg");
+
+    if (speed > 0.3) {
+      group.userData.walkPhase = (group.userData.walkPhase || 0) + dt * 10;
+      const swing = Math.sin(group.userData.walkPhase) * 0.7;
+      if(leftArm) leftArm.rotation.x = swing;
+      if(rightArm) rightArm.rotation.x = -swing;
+      if(leftLeg) leftLeg.rotation.x = -swing;
+      if(rightLeg) rightLeg.rotation.x = swing;
+    } else {
+      const damp = Math.pow(0.01, dt);
+      if(leftArm) leftArm.rotation.x *= damp;
+      if(rightArm) rightArm.rotation.x *= damp;
+      if(leftLeg) leftLeg.rotation.x *= damp;
+      if(rightLeg) rightLeg.rotation.x *= damp;
+    }
+  });
+}
+
+function sendAvatarUpdateToMultiplayer() {
+  if (!multiplayerReady || !multiplayerSocket ||
+      multiplayerSocket.readyState !== WebSocket.OPEN) return;
+
+  multiplayerSocket.send(JSON.stringify({
+    type:"avatar",
+    room: multiplayerRoom,
+    avatar: getAvatarSnapshot()
+  }));
+}
+// ================= END EPICBLOXS MULTIPLAYER ====================
+
+
+const SESSION_KEY="epicbloxs_token_global";
+const USER_CACHE_KEY="epicbloxs_user_cache";
+// URL del servidor GLOBAL (Render). Si abres el HTML desde el mismo server, usa el origen actual.
+const GLOBAL_SERVER = "https://epicbloxserversito.onrender.com";
+
+function getApiBase() {
+  try {
+    const host = window.location.hostname || "";
+    // Si la pagina se sirve desde el mismo Node/Render, usar ese origen
+    if (window.location.protocol !== "file:" && host && host !== "null") {
+      // localhost dev
+      if (host === "localhost" || host === "127.0.0.1") {
+        return window.location.origin;
+      }
+      // produccion / cualquier host real
+      return window.location.origin;
+    }
+  } catch (e) {}
+  return GLOBAL_SERVER;
+}
+
+function getToken(){ return localStorage.getItem(SESSION_KEY) || ""; }
+function setToken(t){ if(t) localStorage.setItem(SESSION_KEY,t); else localStorage.removeItem(SESSION_KEY); }
+function getCachedUser(){
+  try { return JSON.parse(localStorage.getItem(USER_CACHE_KEY)||"null"); } catch(e){ return null; }
+}
+function setCachedUser(u){
+  if(u) localStorage.setItem(USER_CACHE_KEY, JSON.stringify(u));
+  else localStorage.removeItem(USER_CACHE_KEY);
+}
+
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+// API global con reintentos (Render free a veces tarda en despertar)
+async function api(path, opts={}, retries=3) {
+  const headers = Object.assign({"Content-Type":"application/json"}, opts.headers||{});
+  const token = getToken();
+  if (token) headers["Authorization"] = "Bearer " + token;
+
+  let lastErr = null;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), attempt === 1 ? 25000 : 20000);
+    try {
+      const res = await fetch(getApiBase() + path, Object.assign({}, opts, {
+        headers,
+        signal: controller.signal,
+        mode: "cors",
+        cache: "no-store"
+      }));
+      clearTimeout(timer);
+      let data = {};
+      const textBody = await res.text();
+      try { data = textBody ? JSON.parse(textBody) : {}; } catch(e) {
+        if (!res.ok) throw new Error("Servidor sin API de cuentas (hay que subir el server.js nuevo).");
+      }
+      if (!res.ok) throw new Error(data.error || ("Error " + res.status));
+      return data;
+    } catch (e) {
+      clearTimeout(timer);
+      lastErr = e;
+      const msg = (e && e.message) ? e.message : String(e);
+      // Reintentar solo errores de red / timeout
+      const retryable = e.name === "AbortError" || /fetch|network|Failed|Load failed|timeout|respond/i.test(msg);
+      if (!retryable || attempt === retries) {
+        if (e.name === "AbortError") throw new Error("El servidor tarda en responder. Espera 30s y vuelve a intentar.");
+        if (/Failed to fetch|NetworkError|Load failed/i.test(msg)) {
+          throw new Error("No hay conexion con el servidor. Abre la web desde la URL de Render (no el archivo HTML) y espera a que el server despierte.");
+        }
+        throw (e instanceof Error ? e : new Error(msg));
+      }
+      // Esperar antes de reintentar (despierta Render)
+      await sleep(1500 * attempt);
+    }
+  }
+  throw lastErr || new Error("Error de conexion");
+}
+
+async function persistUser(user) {
+  if (!user || !getToken()) return null;
+  setCachedUser(user);
+  try {
+    const data = await api("/api/me", {
+      method: "POST",
+      body: JSON.stringify({
+        avatar: user.avatar,
+        avatarInventory: user.avatarInventory,
+        gameInventory: user.gameInventory,
+        sunnys: user.sunnys,
+        bio: user.bio,
+        theme: user.theme || "light",
+        loginStreak: user.loginStreak,
+        lastStreakClaim: user.lastStreakClaim
+      })
+    }, 3);
+    if (data.user) {
+      setCachedUser(data.user);
+      return data.user;
+    }
+  } catch(e) {
+    throw e;
+  }
+  return user;
+}
+
+function getUsers(){
+  const u = getCachedUser();
+  if (!u) return {};
+  const key = (u.id || (u.username||"").toLowerCase());
+  return { [key]: u };
+}
+function saveUsers(usersMap) {
+  const c = current();
+  if (c && usersMap && usersMap[c.key]) persistUser(usersMap[c.key]);
+  else if (getCachedUser()) persistUser(getCachedUser());
+}
+
+function switchAuth(type){
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
+  const loginTab = document.getElementById("loginTab");
+  const registerTab = document.getElementById("registerTab");
+  loginForm.classList.toggle("active", type==="login");
+  registerForm.classList.toggle("active", type==="register");
+  loginTab.classList.toggle("active", type==="login");
+  registerTab.classList.toggle("active", type==="register");
+  document.getElementById("loginMessage").textContent = "";
+  document.getElementById("registerMessage").textContent = "";
+}
+
+function hashPassword(p){
+  let hash = 0;
+  for (let i = 0; i < p.length; i++) {
+    const char = p.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return "h_" + Math.abs(hash).toString(16) + "_" + btoa(p);
+}
+
+
+
+// ===== EpicBot: hace el setup por el jugador (no solo explica) =====
+const BOT_DONE_KEY = "epicbloxs_bot_done";
+
+function botPanel(){ return document.getElementById("epicBot"); }
+function botBody(){ return document.getElementById("epicBotBody"); }
+
+function botShow(){
+  const p = botPanel();
+  if(!p) return;
+  p.classList.add("open");
+  const body = botBody();
+  if(body) body.innerHTML = "";
+  const bar = document.getElementById("epicBotBar");
+  if(bar) bar.style.width = "0%";
+  const sub = document.getElementById("epicBotSub");
+  if(sub) sub.textContent = "Configurando tu cuenta...";
+  const foot = document.getElementById("epicBotFoot");
+  if(foot) foot.textContent = "Trabajando por ti...";
+}
+
+function botHide(){
+  const p = botPanel();
+  if(p) p.classList.remove("open");
+}
+
+function botAddStep(id, label){
+  const body = botBody();
+  if(!body) return;
+  const div = document.createElement("div");
+  div.className = "epic-bot-step doing";
+  div.id = "botstep-" + id;
+  div.innerHTML = '<span class="dot"></span><span>' + label + "</span>";
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function botDoneStep(id){
+  const el = document.getElementById("botstep-" + id);
+  if(el){ el.classList.remove("doing"); el.classList.add("done"); }
+}
+
+function botProgress(pct){
+  const bar = document.getElementById("epicBotBar");
+  if(bar) bar.style.width = Math.max(0, Math.min(100, pct)) + "%";
+}
+
+function botWait(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+async function runNewAccountBot(username){
+  try {
+    const done = JSON.parse(localStorage.getItem(BOT_DONE_KEY) || "{}");
+    if (done[(username || "").toLowerCase()]) return;
+  } catch(e) {}
+
+  botShow();
+  botAddStep("avatar", "Preparando avatar...");
+  botAddStep("save", "Guardando cuenta...");
+  botProgress(10);
+
+  const c = current();
+  if (!c || !c.user) { botHide(); return; }
+  let u = c.user;
+
+  await botWait(300);
+  u.avatar = u.avatar || {};
+  u.avatar.torsoType = u.avatar.torsoType || "male";
+  u.avatar.colors = u.avatar.colors || { head:"#f5c928", arms:"#f5c928", torso:"#1477b9", legs:"#8cae45" };
+  if (!u.avatar.colors.head) u.avatar.colors.head = "#f5c928";
+  if (!u.avatar.colors.arms) u.avatar.colors.arms = "#f5c928";
+  if (!u.avatar.colors.torso) u.avatar.colors.torso = "#1477b9";
+  if (!u.avatar.colors.legs) u.avatar.colors.legs = "#8cae45";
+  // Separar inventario del avatar del inventario de juego.
+  // Compatibilidad: lo comprado anteriormente pasa a avatarInventory.
+  u.avatarInventory = Array.isArray(u.avatarInventory) ? u.avatarInventory : (Array.isArray(u.inventory) ? u.inventory.slice() : []);
+  u.gameInventory = Array.isArray(u.gameInventory) ? u.gameInventory : [];
+  u.inventory = [];
+  u.avatar.accessories = Array.isArray(u.avatar.accessories) ? u.avatar.accessories : [];
+  if (typeof u.sunnys !== "number") u.sunnys = 500;
+  if (typeof u.loginStreak !== "number") u.loginStreak = 0;
+  if (!u.lastStreakClaim) u.lastStreakClaim = "";
+  botDoneStep("avatar");
+  botProgress(55);
+
+  setCachedUser(u);
+  try { updateUI(u); } catch(e) {}
+  try { initPreviewRenderer(); } catch(e) {}
+  try { updatePreviewAvatar3D(); } catch(e) {}
+
+  await botWait(300);
+  try { persistUser(u); } catch(e) {}
+  botDoneStep("save");
+  botProgress(100);
+
+  const sub = document.getElementById("epicBotSub");
+  if (sub) sub.textContent = "Listo";
+  const foot = document.getElementById("epicBotFoot");
+  if (foot) foot.textContent = "Avatar listo. Inventario de ropa y accesorios separado.";
+
+  try {
+    const done = JSON.parse(localStorage.getItem(BOT_DONE_KEY) || "{}");
+    done[(username || u.username || "").toLowerCase()] = true;
+    localStorage.setItem(BOT_DONE_KEY, JSON.stringify(done));
+  } catch(e) {}
+
+  await botWait(1200);
+  botHide();
+}
+
+
+
+function register(e){
+  e.preventDefault();
+  const regMsg = document.getElementById("registerMessage");
+  const username = document.getElementById("registerUsername").value.trim();
+  const password = document.getElementById("registerPassword").value;
+  const confirm = document.getElementById("registerConfirmPassword").value;
+  if (username.length < 3) return msg(regMsg, "Minimo 3 caracteres en el usuario.", "error");
+  if (password.length < 6) return msg(regMsg, "Minimo 6 caracteres en la contraseña.", "error");
+  if (password !== confirm) return msg(regMsg, "Las contraseñas no coinciden.", "error");
+
+  // Instantaneo (como local): entrar YA
+  const key = username.toLowerCase();
+  const tempUser = {
+    id: key,
+    username: username,
+    sunnys: 500,
+    bio: "Insert Bio.",
+    theme: "light",
+    avatar: {
+      accessories: [],
+      torsoType: "male",
+      colors: { head: "#f5c928", arms: "#f5c928", torso: "#1477b9", legs: "#8cae45" }
+    },
+    avatarInventory: [],
+    gameInventory: [],
+    inventory: [],
+    friends: [],
+    friendRequests: [],
+    outgoingRequests: [],
+    loginStreak: 0,
+    lastStreakClaim: "",
+    createdAt: new Date().toISOString()
+  };
+  tempUser.avatar.accessories = [];
+  tempUser.avatar.torsoType = "male";
+  setToken("pending_" + key);
+  setCachedUser(tempUser);
+  // Guardar password temporal solo para reintentar el registro global
+  try { sessionStorage.setItem("eb_pending_pw", password); sessionStorage.setItem("eb_pending_user", username); } catch(e) {}
+  msg(regMsg, "Cuenta creada.", "success");
+  setTimeout(() => {
+    loadCurrentUser();
+    // EpicBot hace el setup por el jugador
+    setTimeout(() => runNewAccountBot(username), 400);
+  }, 50);
+
+  // En paralelo: registrar en el servidor GLOBAL (sin bloquear)
+  syncRegisterGlobal(username, password);
+}
+
+function syncRegisterGlobal(username, password) {
+  const key = username.toLowerCase();
+  api("/api/register", { method: "POST", body: JSON.stringify({ username, password }) }, 4)
+    .then(data => {
+      setToken(data.token);
+      setCachedUser(data.user);
+      try { sessionStorage.removeItem("eb_pending_pw"); sessionStorage.removeItem("eb_pending_user"); } catch(e) {}
+      try { updateUI(data.user); } catch(e) {}
+    })
+    .catch(() => {
+      // Reintentar en 5s (Render despertando)
+      setTimeout(() => {
+        const u = sessionStorage.getItem("eb_pending_user");
+        const p = sessionStorage.getItem("eb_pending_pw");
+        if (u && p) syncRegisterGlobal(u, p);
+      }, 5000);
+    });
+}
+
+function login(e){
+  e.preventDefault();
+  const loginMsg = document.getElementById("loginMessage");
+  const username = document.getElementById("loginUsername").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  if (!username || !password) return msg(loginMsg, "Completa usuario y contraseña.", "error");
+
+  msg(loginMsg, "Entrando...", "success");
+
+  // Entrada rapida si ya hay cache del mismo usuario
+  const key = username.toLowerCase();
+  const cached = getCachedUser();
+  if (cached && (cached.id === key || (cached.username || "").toLowerCase() === key)) {
+    setCachedUser(cached);
+    loadCurrentUser();
+  }
+
+  api("/api/login", { method: "POST", body: JSON.stringify({ username, password }) }, 4)
+    .then(data => {
+      setToken(data.token);
+      setCachedUser(data.user);
+      loadCurrentUser();
+    })
+    .catch(err => {
+      // Si ya entro con cache, no molestar
+      if (getToken() && getCachedUser()) return;
+      msg(loginMsg, err.message || "Usuario o contraseña incorrectos.", "error");
+    });
+}
+
+function msg(el,text,type){el.className="auth-message "+type;el.textContent=text}
+function normalizeInventories(user){
+  if(!user) return user;
+  if(!Array.isArray(user.avatarInventory)) user.avatarInventory = Array.isArray(user.inventory) ? user.inventory.slice() : [];
+  if(!Array.isArray(user.gameInventory)) user.gameInventory = [];
+  // Los artículos de avatar no deben entrar al inventario de la partida.
+  user.inventory = [];
+  return user;
+}
+
+function current(){
+  const u = getCachedUser();
+  if(!u) return null;
+  normalizeInventories(u);
+  const key = u.id || (u.username||'').toLowerCase();
+  return { key, user: u };
+}
+
+function loadCurrentUser(){
+  const authScreen = document.getElementById("authScreen");
+  const token = getToken();
+  const cached = getCachedUser();
+  if (!token && !cached) { authScreen.style.display = "flex"; return; }
+
+  const enterApp = (user) => {
+    if (!user) { authScreen.style.display = "flex"; return; }
+    normalizeInventories(user);
+    setCachedUser(user);
+    authScreen.style.display = "none";
+    updateUI(user);
+    loadGames();
+    loadInventory();
+    renderCatalog("all");
+    try { initPreviewRenderer(); } catch(e) {}
+    try { renderFriends(); } catch(e) {}
+    try { refreshFriendsFromServer(); } catch(e) {}
+    try { refreshServerStats(); } catch(e) {}
+    try { startPresenceHeartbeat(); } catch(e) {}
+    try { startGameStatsHeartbeat(); } catch(e) {}
+  };
+
+  // Entrada inmediata (rapida como local)
+  if (cached) enterApp(cached);
+  else if (token) {
+    // sin cache aun: no bloquear pantalla
+    authScreen.style.display = "none";
+  }
+
+  // Si el token es pendiente, reintentar registro global en background
+  if (String(token).startsWith("pending_")) {
+    try {
+      const u = sessionStorage.getItem("eb_pending_user");
+      const p = sessionStorage.getItem("eb_pending_pw");
+      if (u && p && typeof syncRegisterGlobal === "function") syncRegisterGlobal(u, p);
+    } catch(e) {}
+    return;
+  }
+
+  // Refresco silencioso desde el servidor
+  if (token && !String(token).startsWith("pending_")) {
+    api("/api/me", {}, 2).then(data => {
+      enterApp(data.user);
+    }).catch(() => {
+      if (!cached) {
+        // no sacar al usuario si ya entro
+      }
+    });
+  }
+}
+
+function applyTheme(theme){
+  theme=["light","dark","blue","purple"].includes(theme)?theme:"light";
+  document.body.classList.remove("theme-dark","theme-blue","theme-purple");
+  if(theme!=="light") document.body.classList.add("theme-"+theme);
+  const sel=document.getElementById("themeSelect"); if(sel) sel.value=theme;
+}
+function changeTheme(theme){
+  const u=getCachedUser(); if(!u) return;
+  u.theme=theme; setCachedUser(u); applyTheme(theme); persistUser(u);
+}
+async function saveDescription(){
+  const u=getCachedUser(), input=document.getElementById("bioEditor"), m=document.getElementById("bioSaveMsg");
+  if(!u||!input) return;
+  u.bio=(input.value||"").trim().slice(0,200);
+  if(m){m.textContent="Guardando...";m.style.color="#666";}
+  try {
+    const saved=await persistUser(u);
+    const finalUser=saved || u;
+    setCachedUser(finalUser);
+    const profileBio=document.getElementById("profileBio");
+    if(profileBio) profileBio.textContent=finalUser.bio || "Sin descripción disponible.";
+    if(m){m.textContent="✅ Descripción guardada.";m.style.color="#188038";setTimeout(()=>m.textContent="",2200);}
+  } catch(e) {
+    setCachedUser(u);
+    if(m){m.textContent="❌ No se pudo guardar en el servidor.";m.style.color="#c62828";}
+  }
+}
+function refreshSettings(){
+  const u=getCachedUser(); if(!u) return;
+  const b=document.getElementById("bioEditor"); if(b)b.value=u.bio||"";
+  const profileBio=document.getElementById("profileBio"); if(profileBio) profileBio.textContent=u.bio||"Sin descripción disponible.";
+  applyTheme(u.theme||"light");
+}
+
+function updateUI(u){
+  applyTheme(u && u.theme ? u.theme : "light");
+  document.getElementById('topUser').textContent=u.username;
+  document.getElementById('sideUsername').textContent=u.username;
+  document.getElementById('welcomeTitle').innerHTML=`Hello Epic, ${escapeHTML(u.username)}! <span class="check">✓</span>`;
+  document.getElementById('profileName').textContent=u.username+" ✓";
+  document.getElementById('profileUsername').textContent="@"+u.username;
+  const profileBio=document.getElementById('profileBio');
+  if(profileBio) profileBio.textContent=u.bio || "Sin descripción disponible.";
+  document.getElementById('profileMoney').textContent=u.sunnys || 0;
+  document.getElementById('moneyDisplay').textContent="☀️ "+(u.sunnys || 0);
+  document.getElementById('settingsUser').textContent=u.username;
+  document.getElementById('settingsMoney').textContent=u.sunnys || 0;
+  
+  updateCatalogButtons(u);
+  updateAccessoryButtons(u);
+  updatePreviewAvatar3D();
+  renderTopAvatarMini(u);
+  renderFriends();
+}
+
+
+// ===== Retrato 3D del avatar (mirando al frente) =====
+let _portraitRenderer = null;
+let _portraitScene = null;
+let _portraitCamera = null;
+const _portraitCache = {};
+
+function getAvatarPortraitDataURL(userData, size) {
+  size = size || 128;
+  const cacheKey = JSON.stringify({
+    a: (userData && userData.avatar) || {},
+    s: size
+  });
+  if (_portraitCache[cacheKey]) return _portraitCache[cacheKey];
+
+  try {
+    if (!_portraitRenderer) {
+      _portraitRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+      _portraitRenderer.setClearColor(0x000000, 0);
+      _portraitScene = new THREE.Scene();
+      _portraitCamera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+      _portraitCamera.position.set(0, 0.55, 3.2);
+      _portraitCamera.lookAt(0, 0.45, 0);
+      const amb = new THREE.AmbientLight(0xffffff, 0.75);
+      const dir = new THREE.DirectionalLight(0xffffff, 0.7);
+      dir.position.set(2, 5, 4);
+      _portraitScene.add(amb, dir);
+    }
+
+    _portraitRenderer.setSize(size, size);
+    // limpiar avatares previos
+    const old = _portraitScene.getObjectByName('portraitAvatar');
+    if (old) _portraitScene.remove(old);
+
+    const group = buildAvatar3DModel(userData);
+    group.name = 'portraitAvatar';
+    group.rotation.y = 0; // mirando al frente (hacia +Z / cámara)
+    group.position.set(0, -0.55, 0);
+    _portraitScene.add(group);
+
+    _portraitRenderer.render(_portraitScene, _portraitCamera);
+    const url = _portraitRenderer.domElement.toDataURL('image/png');
+    _portraitScene.remove(group);
+
+    // limitar cache
+    const keys = Object.keys(_portraitCache);
+    if (keys.length > 40) delete _portraitCache[keys[0]];
+    _portraitCache[cacheKey] = url;
+    return url;
+  } catch (e) {
+    return null;
+  }
+}
+
+function avatarPortraitHTML(userData, size, extraStyle) {
+  size = size || 128;
+  const url = getAvatarPortraitDataURL(userData, size);
+  const bg = 'linear-gradient(180deg,#bde7ff 0%,#bde7ff 65%,#7bb957 65%)';
+  if (url) {
+    return `<img src="${url}" alt="avatar" style="width:100%;height:100%;object-fit:contain;background:${bg};display:block;${extraStyle||''}">`;
+  }
+  // fallback 2D
+  const head = (userData && userData.avatar && userData.avatar.colors && userData.avatar.colors.head) || '#f5c928';
+  const torso = (userData && userData.avatar && userData.avatar.colors && userData.avatar.colors.torso) || '#1477b9';
+  return `<div style="width:100%;height:100%;background:${bg};display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px">
+    <div style="width:28%;height:28%;background:${head};border-radius:4px"></div>
+    <div style="width:40%;height:36%;background:${torso};border-radius:3px"></div>
+  </div>`;
+}
+
+function renderTopAvatarMini(u) {
+  const topAv = document.getElementById('topAvatar');
+  const homeAv = document.getElementById('homeAvatar');
+  const profAv = document.getElementById('profileAvatar');
+  const userData = { avatar: (u && u.avatar) || {} };
+
+  if (topAv) topAv.innerHTML = avatarPortraitHTML(userData, 64);
+  if (homeAv) homeAv.innerHTML = avatarPortraitHTML(userData, 150);
+  if (profAv) {
+    profAv.style.width = '150px';
+    profAv.style.height = '150px';
+    profAv.innerHTML = avatarPortraitHTML(userData, 150);
+  }
+}
+
+
+let _friendsCache = [];
+let _requestsCache = [];
+let _presenceTimer = null;
+let _gameStatsTimer = null;
+let _gameStats = {};
+
+function getMyFriends(){
+  return _friendsCache.slice();
+}
+
+async function refreshFriendsFromServer() {
+  if (!getToken()) return;
+  try {
+    const data = await api('/api/friends/list');
+    _friendsCache = (data.friends || []).map(u => ({ ...u, _key: u.id }));
+    _requestsCache = (data.requests || []).map(u => ({ ...u, _key: u.id }));
+    // merge into current user cache
+    const me = getCachedUser();
+    if (me) {
+      me.friends = (data.friends || []).map(u => u.id);
+      me.friendRequests = (data.requests || []).map(u => u.id);
+      setCachedUser(me);
+    }
+    renderFriends();
+    renderFriendsPage();
+  } catch (e) {
+    console.warn('friends refresh', e);
+  }
+}
+
+function findUserByNameOrId(query) {
+  // usado solo como fallback sincrono - la busqueda real es async
+  return null;
+}
+
+function renderFriends(){
+  const friendsBox = document.getElementById('friendsBox');
+  const friendsTitle = document.getElementById('friendsTitle');
+  if(!friendsBox) return;
+
+  const list = getMyFriends();
+  if(friendsTitle) friendsTitle.textContent = `Friends (${list.length})`;
+
+  if(list.length === 0){
+    friendsBox.innerHTML = "<p style='color:#777;font-size:13px;padding-left:10px'>Aún no tienes amigos. Ve a Friends para buscar jugadores globales.</p>";
+    return;
+  }
+
+  friendsBox.innerHTML = list.map(f => {
+    const p = f.presence || {};
+    const cls = p.playing ? 'presence-playing' : (p.online ? 'presence-online' : 'presence-offline');
+    const label = p.playing ? `🎮 Jugando: ${escapeHTML(p.gameName || 'un juego')}` : (p.online ? '🟢 En línea' : '⚪ Desconectado');
+    return `
+    <div class="friend" onclick="viewFriendProfile('${escapeHTML(f.id)}')">
+      <div class="friend-avatar">${avatarPortraitHTML(f, 82)}</div>
+      <div class="friend-name" style="font-size:12px;font-weight:bold;margin-top:4px">${escapeHTML(f.username)}</div>
+      <div class="presence-dot ${cls}"><span class="dot"></span>${label}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderFriendsPage(){
+  const grid = document.getElementById('friendsListGrid');
+  if(!grid) return;
+  const list = getMyFriends();
+  const incoming = _requestsCache || [];
+  const box = document.getElementById('incomingRequestsBox');
+  if(box){
+    if(incoming.length){
+      let h=`<div class="settings-card" style="padding:12px;border-color:#1684e8"><h3 style="margin:0 0 10px;font-size:16px;color:#555">Solicitudes recibidas (${incoming.length})</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">`;
+      incoming.forEach(u=>{h+=`<div class="friend-card" style="border-color:#1684e8;cursor:default"><div class="friend-card-avatar">${avatarPortraitHTML(u,90)}</div><div style="font-size:14px;font-weight:bold;margin-top:8px">${escapeHTML(u.username)}</div><div style="display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap"><button class="section-button" style="background:#188038;margin:0;padding:6px 12px;font-size:12px" onclick="acceptFriendRequest('${escapeHTML(u.id)}')">Aceptar</button><button class="section-button" style="background:#d93025;margin:0;padding:6px 12px;font-size:12px" onclick="rejectFriendRequest('${escapeHTML(u.id)}')">Rechazar</button></div></div>`});
+      h+='</div></div>'; box.innerHTML=h;
+    }else box.innerHTML='';
+  }
+  let html='';
+  if(list.length===0){grid.innerHTML="<p style='color:#777;'>Tu lista está vacía. Busca un usuario global arriba para enviar una solicitud.</p>";return;}
+  if (list.length) {
+    html += `<div style="grid-column:1/-1;margin:12px 0 8px"><h3 style="margin:0;font-size:16px;color:#555">Amigos (${list.length})</h3></div>`;
+    html += list.map(f => {
+      const p = f.presence || {};
+      const cls = p.playing ? 'presence-playing' : (p.online ? 'presence-online' : 'presence-offline');
+      const label = p.playing ? `🎮 Jugando ${escapeHTML(p.gameName || 'un juego')}` : (p.online ? '🟢 En línea' : '⚪ Desconectado');
+      const join = p.playing ? `<button class="join" onclick="event.stopPropagation();joinFriendGame('${escapeHTML(f.id)}')">▶ Unirse</button>` : '';
+      return `
+      <div class="friend-card" onclick="viewFriendProfile('${escapeHTML(f.id)}')">
+        <div class="friend-card-avatar">${avatarPortraitHTML(f, 110)}</div>
+        <div class="friend-name" style="font-size:15px;font-weight:bold;margin-top:8px">${escapeHTML(f.username)}</div>
+        <div class="presence-dot ${cls}"><span class="dot"></span>${label}</div>
+        <div class="presence-actions">${join}</div>
+      </div>`;
+    }).join('');
+  }
+
+  grid.innerHTML = html;
+}
+
+async function searchRegisteredUsernameExact(name){
+  const query=String(name||"").trim();
+  if(!query) throw new Error("Escribe un nombre de usuario.");
+  const lookup=await api("/api/users/lookup?username="+encodeURIComponent(query),{},2);
+  if(!lookup || !lookup.user) throw new Error("Usuario no encontrado.");
+  return lookup.user;
+}
+
+async function addFriendFromInput(){
+  const input=document.getElementById("addFriendInput");
+  const name=input?input.value.trim():"";
+  const token=getToken();
+  if(!token) return alert("Debes iniciar sesión.");
+  if(String(token).startsWith("pending_")) return alert("Tu cuenta todavía se está conectando al servidor. Espera a que termine de registrarse y vuelve a intentarlo.");
+  if(!name) return alert("Escribe un nombre de usuario.");
+
+  try {
+    // Buscar directamente por Username exacto en todas las cuentas registradas.
+    const data = await api("/api/users/lookup?username="+encodeURIComponent(name),{},3);
+    const target = data && data.user;
+    if(!target || !target.id) throw new Error("Usuario no encontrado.");
+
+    // Enviar la solicitud usando el ID único encontrado por el servidor.
+    const sent = await api("/api/friends/request",{
+      method:"POST",
+      body:JSON.stringify({ id:String(target.id), username:target.username })
+    },3);
+
+    if(sent.user) setCachedUser(sent.user);
+    if(input) input.value="";
+    await refreshFriendsFromServer();
+    alert("Usuario encontrado. Solicitud enviada");
+  } catch(err) {
+    alert(err.message || "No se pudo enviar la solicitud.");
+  }
+}
+
+function acceptFriendRequest(fromKey) {
+  api('/api/friends/accept', { method:'POST', body: JSON.stringify({ id: fromKey }) })
+    .then(data => {
+      if (data.user) setCachedUser(data.user);
+      refreshFriendsFromServer();
+      alert("✅ Amigo agregado globalmente.");
+    })
+    .catch(err => alert(err.message || "Error"));
+}
+
+function rejectFriendRequest(fromKey) {
+  api('/api/friends/reject', { method:'POST', body: JSON.stringify({ id: fromKey }) })
+    .then(() => refreshFriendsFromServer())
+    .catch(err => alert(err.message || "Error"));
+}
+
+async function sendPresence(playing = false, extra = {}) {
+  const token = getToken();
+  if (!token || String(token).startsWith('pending_')) return;
+  try {
+    await api('/api/presence', {
+      method:'POST',
+      body:JSON.stringify({
+        playing: !!playing,
+        gameId: extra.gameId || (playing ? epicGameId : ''),
+        gameName: extra.gameName || (playing ? currentGameType : ''),
+        roomName: extra.roomName || (playing ? multiplayerRoom || currentGameType : ''),
+        serverId: extra.serverId || (playing ? epicServerId : '')
+      })
+    }, 1);
+  } catch(e) {}
+}
+
+function startPresenceHeartbeat(){
+  if (_presenceTimer) clearInterval(_presenceTimer);
+  sendPresence(false);
+  _presenceTimer = setInterval(() => {
+    const inGame = document.body.classList.contains('in-game') && !!currentGameType;
+    sendPresence(inGame, inGame ? { gameId:epicGameId, gameName:currentGameType, roomName:multiplayerRoom, serverId:epicServerId } : {});
+    if (document.getElementById('friends')?.classList.contains('active') || document.getElementById('home')?.classList.contains('active')) refreshFriendsFromServer();
+  }, 8000);
+}
+
+function joinFriendGame(friendId){
+  const friend = getMyFriends().find(f => String(f.id) === String(friendId));
+  const p = friend && friend.presence;
+  if (!friend || !p || !p.playing || !p.gameName) return alert('Ese amigo ya no está jugando.');
+  showPage('home');
+  setTimeout(() => launchWebClient(p.gameName), 50);
+}
+
+function openUserProfile(userId){
+  const id=String(userId||"").trim();
+  if(!id) return alert("Perfil no válido.");
+  history.pushState({profileId:id},"","/perfil/"+encodeURIComponent(id));
+  api("/api/users/"+encodeURIComponent(id))
+    .then(data=>{
+      const friend=data.user;
+      document.getElementById("friendProfileName").textContent=friend.username+" ✓";
+      document.getElementById("friendProfileUsername").textContent="@"+friend.username;
+      const idEl=document.getElementById("friendProfileId"); if(idEl) idEl.textContent="ID #"+friend.userId+" · /perfil/"+friend.userId;
+      document.getElementById("friendProfileBio").textContent=friend.bio || "Sin descripción disponible.";
+      const cachedFriend=getMyFriends().find(f=>String(f.id)===String(friend.id));
+      const presence=(cachedFriend&&cachedFriend.presence)||{online:false,playing:false};
+      const presenceEl=document.getElementById("friendProfilePresence");
+      const joinBtn=document.getElementById("friendProfileJoinBtn");
+      if(presenceEl) presenceEl.innerHTML=presence.playing?`<span style="background:#e8f0ff;color:#1d4ed8;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">🎮 Jugando: ${escapeHTML(presence.gameName||"un juego")}</span>`:(presence.online?`<span style="background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">🟢 En línea</span>`:`<span style="background:#f1f3f4;color:#666;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">⚪ Desconectado</span>`);
+      if(joinBtn){joinBtn.disabled=!presence.playing;joinBtn.textContent=presence.playing?"▶ Unirse al Juego":"Unirse al Juego";joinBtn.onclick=presence.playing?()=>joinFriendGame(friend.id):null;}
+      const avEl=document.getElementById("friendProfileAvatar");
+      if(avEl){avEl.style.background="transparent";avEl.innerHTML=avatarPortraitHTML(friend,260);}
+      showPage("friendProfile");
+    })
+    .catch(()=>alert("Usuario no encontrado en el servidor global."));
+}
+
+function viewFriendProfile(userId){ openUserProfile(userId); }
+
+window.addEventListener("popstate",()=>{
+  const match=location.pathname.match(/^\/perfil\/(\d+)$/);
+  if(match) openUserProfile(match[1]);
+});
+
+function openFriendProfileFromUsername(username){
+  api("/api/users/search?q="+encodeURIComponent(username),{},2).then(search=>{
+    const hit=(search.results||[]).find(r=>String(r.username||"").toLowerCase()===String(username||"").toLowerCase());
+    if(!hit) throw new Error("Usuario no encontrado.");
+    openUserProfile(hit.id);
+  }).catch(e=>alert(e.message||"Usuario no encontrado."));
+}
+
+function escapeHTML(s){if(!s)return"";const d=document.createElement("div");d.textContent=s;return d.innerHTML}
+function logout(){
+  disconnectMultiplayer();
+  if(gameAnimId) cancelAnimationFrame(gameAnimId);
+  stopAmbientMusic();
+  setToken('');
+  setCachedUser(null);
+  document.getElementById('authScreen').style.display="flex";
+  switchAuth("login");
+}
+
+function showPage(p){
+  if(p !== 'webClient') {
+    if(gameAnimId) cancelAnimationFrame(gameAnimId);
+    stopAmbientMusic();
+    document.body.classList.remove('in-game');
+  }
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  const target = document.getElementById(p);
+  if(target){
+    target.classList.add("active");
+  }
+  if(p==="inventory") loadInventory();
+  if(p==="streak") updateStreakUI();
+  if(p==="avatar") { try { const t=(current()&&current().user.avatar&&current().user.avatar.torsoType)||"male"; const mb=document.getElementById("torsoTypeMale"); const fb=document.getElementById("torsoTypeFemale"); if(mb) mb.style.background=t==="male"?"#1684e8":"#292929"; if(fb) fb.style.background=t==="female"?"#e91e8c":"#292929"; } catch(e){} }
+  if(p==="games") loadGames();
+  if(p==="friends") { refreshFriendsFromServer(); renderFriendsPage(); }
+  if(p==="settings") { refreshSettings(); }
+  if(p==="catalog") {
+    renderCatalog('all');
+  }
+  if(p==="create") {
+    setTimeout(() => creatorInitViewer(), 80);
+  }
+  if(p==="avatar") {
+    setTimeout(() => initPreviewRenderer(), 100);
+  }
+  window.scrollTo(0,0);
+}
+
+const games=[
+  ["Epic Obby ","🏃 Supera 22 plataformas, obstáculos, monedas y una gran meta"],
+  ["Bloxs City ","🏙️ Explora barrios, parque, lago, tiendas y rascacielos"],
+  ["Speed Race ","🏎️ Corre por una pista con rampas, curvas y checkpoints"],
+  ["Battle Arena ","⚔️ Arena con espadas, muros, cofres y maniquíes de entrenamiento — F atacar"],
+  ["Sky Islands ","☁️ Recorre varias islas flotantes conectadas por puentes"],
+  ["Pet World ","🐾 Explora un parque de mascotas, huevos, lago y compañeros"]
+];
+
+function loadGames(list=games){
+  const render=(arr)=>arr.map(g=>{
+    const gid=getGameId(g[0]);
+    const count=Number(_gameStats[gid]||0);
+    return `<div class="game" onclick="launchWebClient('${g[0]}')"><div class="game-image">3D</div><div class="game-info"><div class="game-name">${g[0]}</div><div class="game-players">${g[1]}<br><b>👥 ${count} jugador(es) jugando</b></div><button class="play-button">▶ Jugar en 3D</button></div></div>`;
+  }).join("");
+  const grid=document.getElementById('gamesGrid');
+  const recent=document.getElementById('recentGames');
+  if(grid) grid.innerHTML=render(list);
+  if(recent) recent.innerHTML=render(list.slice(0,6));
+}
+
+async function refreshGameStats(){
+  try {
+    const data=await api('/api/games/stats',{},1);
+    _gameStats=(data&&data.stats)||{};
+    const page=document.getElementById('games');
+    loadGames(page && page.classList.contains('active') ? games : games);
+  } catch(e) {}
+}
+
+function startGameStatsHeartbeat(){
+  if(_gameStatsTimer) clearInterval(_gameStatsTimer);
+  refreshGameStats();
+  _gameStatsTimer=setInterval(refreshGameStats,8000);
+}
+
+function searchGames(t){
+  const gamesPage = document.getElementById('games');
+  if(!gamesPage.classList.contains('active')) showPage("games");
+  const term = t.trim().toLowerCase();
+  loadGames(term ? games.filter(g=>g[0].toLowerCase().includes(term)) : games);
+}
+
+function filterCatalog(category, btnElement) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  if(btnElement) btnElement.classList.add('active');
+  renderCatalog(category);
+}
+
+function catalogIconSVG(item) {
+  const common = 'width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg"';
+  if(item.category === 'hats' && item.id === 'Epic Cap') return `<svg ${common}><path d="M18 49C24 25 72 25 78 49" fill="#1976D2" stroke="#123A63" stroke-width="4"/><path d="M16 48H80C77 61 65 67 48 67C31 67 19 61 16 48Z" fill="#2196F3" stroke="#123A63" stroke-width="4"/><path d="M25 50C38 54 58 54 71 50" stroke="#90CAF9" stroke-width="4" stroke-linecap="round"/></svg>`;
+  if(item.category === 'hats' && item.id === 'Golden Crown') return `<svg ${common}><path d="M17 30L29 44L40 22L48 43L60 22L69 44L80 30L75 66H21L17 30Z" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><rect x="20" y="60" width="56" height="13" rx="4" fill="#FFC107" stroke="#9A6B00" stroke-width="4"/><circle cx="29" cy="43" r="4" fill="#E53935"/><circle cx="60" cy="42" r="4" fill="#1E88E5"/></svg>`;
+  if(item.category === 'shirts' && item.id === 'Blue Shirt') return `<svg ${common}><defs><linearGradient id="bsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#42A5F5"/><stop offset="100%" stop-color="#1565C0"/></linearGradient></defs><path d="M25 20L39 14H57L71 20L84 34L70 45L64 36V78H32V36L26 45L12 34L25 20Z" fill="url(#bsg)" stroke="#0D47A1" stroke-width="3.5"/><path d="M39 14L48 42L57 14" fill="#F5F5F5" stroke="#CFD8DC" stroke-width="2"/><rect x="36" y="48" width="24" height="26" rx="2" fill="#0D47A1"/><text x="48" y="66" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="Arial">EB</text><circle cx="48" cy="52" r="2" fill="#ECEFF1"/><circle cx="48" cy="60" r="2" fill="#ECEFF1"/><circle cx="48" cy="68" r="2" fill="#ECEFF1"/></svg>`;
+  if(item.category === 'shirts' && item.id === 'Green Hoodie') return `<svg ${common}><defs><linearGradient id="ghg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#66BB6A"/><stop offset="100%" stop-color="#2E7D32"/></linearGradient></defs><path d="M28 24L39 17H57L68 24L81 38L69 49L64 42V78H32V42L27 49L15 38L28 24Z" fill="url(#ghg)" stroke="#1B5E20" stroke-width="3.5"/><path d="M38 18C38 34 58 34 58 18" stroke="#A5D6A7" stroke-width="5" fill="none"/><rect x="45" y="32" width="6" height="36" rx="1" fill="#FFC107"/><path d="M42 28L40 48M54 28L56 48" stroke="#C8E6C9" stroke-width="2.5" stroke-linecap="round"/><rect x="34" y="55" width="28" height="14" rx="3" fill="#1B5E20" stroke="#0D3B12" stroke-width="1.5"/></svg>`;
+  if(item.category === 'pants' && item.id === 'Classic Jeans') return `<svg ${common}><defs><linearGradient id="cjg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5C6BC0"/><stop offset="100%" stop-color="#283593"/></linearGradient></defs><path d="M27 17H69L75 79H52L48 51L44 79H21L27 17Z" fill="url(#cjg)" stroke="#1A237E" stroke-width="3.5"/><rect x="27" y="17" width="42" height="8" fill="#1A237E"/><rect x="42" y="19" width="12" height="5" rx="1" fill="#C0C0C0"/><path d="M48 25V78" stroke="#E8EAF6" stroke-width="2.5"/><path d="M32 30L32 48L42 48" stroke="#E8EAF6" stroke-width="1.8" fill="none"/><path d="M64 30L64 48L54 48" stroke="#E8EAF6" stroke-width="1.8" fill="none"/></svg>`;
+  if(item.category === 'pants' && item.id === 'Dark Cargo Pants') return `<svg ${common}><defs><linearGradient id="dcg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#546E7A"/><stop offset="100%" stop-color="#263238"/></linearGradient></defs><path d="M27 17H69L75 79H52L48 51L44 79H21L27 17Z" fill="url(#dcg)" stroke="#1C2529" stroke-width="3.5"/><rect x="27" y="17" width="42" height="7" fill="#1C2529"/><path d="M48 24V78" stroke="#78909C" stroke-width="2"/><rect x="24" y="38" width="14" height="18" rx="2" fill="#455A64" stroke="#1C2529" stroke-width="1.5"/><rect x="24" y="38" width="14" height="5" rx="1" fill="#37474F"/><rect x="58" y="38" width="14" height="18" rx="2" fill="#455A64" stroke="#1C2529" stroke-width="1.5"/><rect x="58" y="38" width="14" height="5" rx="1" fill="#37474F"/><rect x="24" y="60" width="14" height="14" rx="2" fill="#455A64" stroke="#1C2529" stroke-width="1.5"/><rect x="58" y="60" width="14" height="14" rx="2" fill="#455A64" stroke="#1C2529" stroke-width="1.5"/></svg>`;
+  if(item.category === 'faces' && item.id === 'Classic Smile') return `<svg ${common}><circle cx="48" cy="48" r="34" fill="#F5C928" stroke="#9A7B00" stroke-width="4"/><circle cx="36" cy="40" r="4" fill="#222"/><circle cx="60" cy="40" r="4" fill="#222"/><path d="M33 54C39 65 57 65 63 54" stroke="#222" stroke-width="4" stroke-linecap="round"/></svg>`;
+  if(item.category === 'faces' && item.id === 'Cool Wink') return `<svg ${common}><circle cx="48" cy="48" r="34" fill="#F5C928" stroke="#9A7B00" stroke-width="4"/><circle cx="35" cy="41" r="4" fill="#222"/><path d="M57 40C63 35 68 40 63 44" stroke="#222" stroke-width="4" stroke-linecap="round"/><path d="M35 56C42 62 53 62 60 55" stroke="#222" stroke-width="4" stroke-linecap="round"/></svg>`;
+  if(item.category === 'gear' && item.id === 'Classic Shades') return `<svg ${common}><path d="M14 43C20 37 32 36 45 42V55C31 60 20 58 14 52V43Z" fill="#222" stroke="#111" stroke-width="4"/><path d="M82 43C76 37 64 36 51 42V55C65 60 76 58 82 52V43Z" fill="#222" stroke="#111" stroke-width="4"/><path d="M45 44H51" stroke="#111" stroke-width="5"/></svg>`;
+  if(item.category === 'gear' && item.id === 'Cool Backpack') return `<svg ${common}><rect x="25" y="23" width="46" height="55" rx="10" fill="#8D5A32" stroke="#4E2F1A" stroke-width="4"/><path d="M35 24C35 10 61 10 61 24" stroke="#4E2F1A" stroke-width="7" fill="none"/><rect x="31" y="46" width="34" height="17" rx="5" fill="#B77A45" stroke="#4E2F1A" stroke-width="3"/><circle cx="48" cy="54" r="3" fill="#4E2F1A"/></svg>`;
+  if(item.custom && item.type === '2d' && item.data && item.data.imageData) return `<img src=\"${item.data.imageData}\" style=\"max-width:100%;max-height:150px;object-fit:contain\" alt=\"Ropa 2D\">`;
+  if(item.custom && item.type === 'accessory3d') return `<div style=\"font-size:58px\">🧊</div>`;
+  return `<svg ${common}><rect x="18" y="18" width="60" height="60" rx="12" fill="#E9EEF3" stroke="#9AA7B2" stroke-width="4"/><path d="M30 50H66" stroke="#1684E8" stroke-width="6" stroke-linecap="round"/></svg>`;
+}
+
+function renderCatalog(category) {
+  const container = document.getElementById('catalogGridContainer');
+  if(!container) return;
+  const filtered = category === 'all' ? catalogDatabase : catalogDatabase.filter(item => item.category === category);
+  container.innerHTML = filtered.map(item => `
+    <div class="catalog-item">
+      <div class="catalog-image">${catalogIconSVG(item)}</div>
+      <h3 style="margin:5px 0">${item.name}</h3>
+      <p style="color:#666;font-size:12px;margin:3px 0">${item.desc}</p>
+      <p style="color:#666;font-size:13px;margin:5px 0">☀️ ${item.price} Sunnys</p>
+      <button class="buy" id="cat-btn-${item.id}" onclick="buy('${item.id}', ${item.price})">Buy</button>
+    </div>
+  `).join('');
+  const c = current();
+  if(c) updateCatalogButtons(c.user);
+}
+
+function buy(item,price){
+  const c=current();if(!c)return alert("Debes iniciar sesión.");
+  c.user.avatarInventory = Array.isArray(c.user.avatarInventory) ? c.user.avatarInventory : (Array.isArray(c.user.inventory) ? c.user.inventory.slice() : []);
+  c.user.inventory = [];
+  if(c.user.avatarInventory.includes(item))return alert("Ya tienes este artículo.");
+  if((c.user.sunnys || 0) < price)return alert("❌ No tienes suficientes Sunnys.");
+  c.user.sunnys -= price;
+  c.user.avatarInventory.push(item);
+  const u=getUsers();u[c.key]=c.user;saveUsers(u);
+  updateUI(c.user);loadInventory();renderCatalog(document.querySelector('.cat-tab.active')?.textContent.includes('Sombreros') ? 'hats' : 'all');alert("✅ Compraste "+item+"!");
+}
+
+function updateCatalogButtons(u){
+  const inv = (u && (u.avatarInventory || u.inventory)) || [];
+  catalogDatabase.forEach(item => {
+    const btn = document.getElementById(`cat-btn-${item.id}`);
+    if(btn){
+      if(inv.includes(item.id)){
+        btn.textContent = "Comprado";
+        btn.disabled = true;
+        btn.style.background = "#888";
+        btn.style.boxShadow = "none";
+        btn.style.cursor = "default";
+      } else {
+        btn.textContent = "Buy";
+        btn.disabled = false;
+        btn.style.background = "linear-gradient(135deg,#1684e8,#0d5aa7)";
+        btn.style.boxShadow = "0 2px 5px rgba(22,132,232,0.3)";
+        btn.style.cursor = "pointer";
+      }
+    }
+  });
+}
+
+function updateAccessoryButtons(u){
+  const accContainer = document.getElementById('accessoryButtons');
+  if(!accContainer) return;
+  const inv = (u && (u.avatarInventory || u.inventory)) || [];
+  const equipped = (u && u.avatar && u.avatar.accessories) || [];
+  
+  let html = `<p style="font-size:12px;color:#555;margin:0 0 8px;">Haz clic para equipar o desequipar múltiples ítems y ropa 2D:</p>`;
+  html += `<button class="section-button" style="background:#d93025;margin-right:6px;margin-bottom:6px;" onclick="toggleAccessory('normal')">Quitar Todo</button>`;
+  
+  let hasAny = false;
+  
+  catalogDatabase.forEach(item => {
+    if(inv.includes(item.id)) {
+      hasAny = true;
+      const isEquipped = equipped.includes(item.id);
+      html += `<button class="section-button" style="background:${isEquipped ? '#188038' : '#292929'};margin-right:6px;margin-bottom:6px;" onclick="toggleAccessory('${item.id}')">${isEquipped ? '✓ Quitar ' : '+ Poner '} ${item.name}</button>`;
+    }
+  });
+  
+  if(!hasAny) {
+    html += `<p style="font-size:12px;color:#777;">No tienes accesorios comprados. Visita el Catálogo.</p>`;
+  }
+  accContainer.innerHTML = html;
+}
+
+
+function toggleGameInventory(force){
+  const panel = document.getElementById('gameInventoryPanel');
+  if(!panel) return;
+  const open = (typeof force === 'boolean') ? force : !panel.classList.contains('open');
+  if(open){
+    renderGameInventory();
+    panel.classList.add('open');
+    // cerrar menu si esta abierto
+    const menu = document.getElementById('gameMenuOverlay');
+    if(menu) menu.classList.remove('open');
+  } else {
+    panel.classList.remove('open');
+  }
+}
+
+function renderGameInventory(){
+  const grid = document.getElementById('gameInventoryGrid');
+  if(!grid) return;
+  const c = current();
+  const inv = (c && c.user && Array.isArray(c.user.gameInventory)) ? c.user.gameInventory : [];
+  let html = '';
+  for(let i=0;i<9;i++){
+    const itemId = inv[i];
+    if(itemId){
+      const item = (typeof catalogDatabase !== 'undefined') ? catalogDatabase.find(it => it.id === itemId) : null;
+      const name = item ? item.name : itemId;
+      html += `<div class="game-inv-slot filled"><div class="slot-n">${i+1}</div><div style="font-size:22px;line-height:1">📦</div><div style="margin-top:4px;text-align:center;font-size:11px;font-weight:bold">${name}</div></div>`;
+    } else {
+      html += `<div class="game-inv-slot"><div class="slot-n">${i+1}</div><div>Vacío</div></div>`;
+    }
+  }
+  grid.innerHTML = html;
+}
+
+
+function loadInventory(){
+  const c=current();
+  const inventoryGrid = document.getElementById('inventoryGrid');
+  if(!inventoryGrid) return;
+  if(!c){ inventoryGrid.innerHTML=""; return; }
+  const inv = Array.isArray(c.user.avatarInventory) ? c.user.avatarInventory : (Array.isArray(c.user.inventory) ? c.user.inventory : []);
+  let html = "";
+  if(!inv.length){
+    html = `<div class="settings-card" style="grid-column:1/-1;text-align:center;color:#777">Todavía no tienes ropa ni accesorios. Visita el Catálogo.</div>`;
+  } else {
+    inv.forEach((itemId) => {
+      const item = (typeof catalogDatabase !== 'undefined') ? catalogDatabase.find(it => it.id === itemId) : null;
+      const icon = item ? catalogIconSVG(item) : `<span style="font-weight:bold;font-size:13px;color:#333">${itemId}</span>`;
+      html += `<div class="catalog-item inventory-item"><div class="catalog-image">${icon}</div><h3 style="margin:5px 0 0 0;font-size:13px;text-align:center;">${item ? item.name : itemId}</h3><p style="color:#666;font-size:11px;margin:5px 0;text-align:center">${item ? item.desc : 'Objeto del avatar'}</p></div>`;
+    });
+  }
+  inventoryGrid.innerHTML = html;
+}
+
+const colors=["#f5c928","#ff0000","#00aaff","#00cc66","#ffffff","#222222","#ff8c42","#9b59b6","#ff69b4"];
+function makeColorButtons(id,part){document.getElementById(id).innerHTML=colors.map(c=>`<button class="color-button" style="background:${c}" onclick="setBodyColor('${part}','${c}')"></button>`).join("")}
+
+function setTorsoType(type){
+  const c=current(); if(!c) return;
+  c.user.avatar = c.user.avatar || {accessories:[], colors:{}};
+  c.user.avatar.torsoType = (type === 'female') ? 'female' : 'male';
+  const u=getUsers(); u[c.key]=c.user; saveUsers(u);
+  setCachedUser(c.user);
+  try {
+    const maleBtn = document.getElementById('torsoTypeMale');
+    const femaleBtn = document.getElementById('torsoTypeFemale');
+    if (maleBtn) maleBtn.style.background = type==='male' ? '#1684e8' : '#292929';
+    if (femaleBtn) femaleBtn.style.background = type==='female' ? '#e91e8c' : '#292929';
+  } catch(e) {}
+  try { updatePreviewAvatar3D(); } catch(e) {}
+  try { Object.keys(_portraitCache).forEach(k=>delete _portraitCache[k]); } catch(e) {}
+}
+
+function setBodyColor(part,color){
+  const c=current();if(!c)return;
+  c.user.avatar = c.user.avatar || {accessories:[],colors:{}};
+  c.user.avatar.colors = c.user.avatar.colors || {};
+  c.user.avatar.colors[part]=color;
+  const u=getUsers();u[c.key]=c.user;saveUsers(u);
+  try{ Object.keys(_portraitCache).forEach(k=>delete _portraitCache[k]); }catch(e){}
+  updateUI(c.user);
+  updatePreviewAvatar3D();
+  sendAvatarUpdateToMultiplayer();
+}
+
+function toggleAccessory(a){
+  const c=current();if(!c)return;
+  c.user.avatar = c.user.avatar || {colors:{}, accessories:[]};
+  c.user.avatar.accessories = c.user.avatar.accessories || [];
+  
+  if(a === 'normal') {
+    c.user.avatar.accessories = [];
+  } else {
+    // Si es cara, camisa o pantalón, reemplazar el de la misma categoría para evitar conflictos
+    const itemData = catalogDatabase.find(item => item.id === a);
+    if(itemData) {
+      if(itemData.category === 'faces') {
+        c.user.avatar.accessories = c.user.avatar.accessories.filter(acc => !["Classic Smile", "Cool Wink"].includes(acc));
+      } else if(itemData.category === 'shirts') {
+        c.user.avatar.accessories = c.user.avatar.accessories.filter(acc => !["Blue Shirt", "Green Hoodie"].includes(acc));
+      } else if(itemData.category === 'pants') {
+        c.user.avatar.accessories = c.user.avatar.accessories.filter(acc => !["Classic Jeans", "Dark Cargo Pants"].includes(acc));
+      }
+    }
+
+    const idx = c.user.avatar.accessories.indexOf(a);
+    if(idx > -1) {
+      c.user.avatar.accessories.splice(idx, 1);
+    } else {
+      c.user.avatar.accessories.push(a);
+    }
+  }
+
+  const u=getUsers();u[c.key]=c.user;saveUsers(u);
+  try{ Object.keys(_portraitCache).forEach(k=>delete _portraitCache[k]); }catch(e){}
+  updateUI(c.user);
+  updatePreviewAvatar3D();
+  sendAvatarUpdateToMultiplayer();
+}
+
+let chatUnread = 0;
+let chatOpen = false;
+
+function toggleChat(){
+  const chatWindow = document.getElementById('chatWindow');
+  chatOpen = !chatOpen;
+  if(chatOpen) {
+    chatWindow.classList.add('open');
+    chatWindow.style.display = 'flex';
+    chatWindow.style.zIndex = '600';
+    chatUnread = 0;
+    updateChatBadge();
+    const input = document.getElementById('chatInput');
+    if(input) setTimeout(() => input.focus(), 50);
+  } else {
+    chatWindow.classList.remove('open');
+    chatWindow.style.display = 'none';
+  }
+}
+
+function updateChatBadge() {
+  const show = chatUnread > 0 && !chatOpen;
+  const text = chatUnread > 9 ? '9+' : String(chatUnread);
+  const badge = document.getElementById('chatBadge');
+  if(badge) {
+    badge.style.display = show ? 'inline-block' : 'none';
+    badge.textContent = text;
+  }
+  const fabBadge = document.getElementById('fabChatBadge');
+  if(fabBadge) {
+    fabBadge.style.display = show ? 'block' : 'none';
+    fabBadge.textContent = text;
+  }
+}
+
+function setChatConnStatus(online) {
+  const el = document.getElementById('chatConnStatus');
+  if(!el) return;
+  if(online) {
+    el.textContent = '● En línea';
+    el.style.color = '#86efac';
+  } else {
+    el.textContent = '● Offline';
+    el.style.color = '#fca5a5';
+  }
+}
+
+let _lastChatKey = '';
+function appendChatMessage(username, message, isSystem, ts) {
+  const body = document.getElementById('chatBody');
+  if(!body) return;
+
+  // Evitar duplicados
+  const key = (ts || '') + '|' + username + '|' + message;
+  if (key === _lastChatKey && !isSystem) return;
+  _lastChatKey = key;
+
+  const time = ts ? new Date(ts) : new Date();
+  const hh = String(time.getHours()).padStart(2,'0');
+  const mm = String(time.getMinutes()).padStart(2,'0');
+
+  const div = document.createElement('div');
+  div.className = 'chat-msg' + (isSystem ? ' system' : '');
+  div.innerHTML = `<span class="chat-time">${hh}:${mm}</span><span class="chat-user">${escapeHtml(username)}:</span> ${escapeHtml(message)}`;
+  body.appendChild(div);
+  // Limitar historial
+  while (body.children.length > 80) body.removeChild(body.firstChild);
+  body.scrollTop = body.scrollHeight;
+
+  // In-game overlay (only while playing)
+  const ig = document.getElementById('ingameChat');
+  if(ig && document.getElementById('webClient')?.classList.contains('active')) {
+    const igDiv = document.createElement('div');
+    igDiv.className = 'ig-msg' + (isSystem ? ' system' : '');
+    igDiv.innerHTML = `<span class="ig-user">${escapeHtml(username)}:</span> ${escapeHtml(message)}`;
+    ig.appendChild(igDiv);
+    while(ig.children.length > 6) ig.removeChild(ig.firstChild);
+    setTimeout(() => { if(igDiv.parentNode) igDiv.remove(); }, 8000);
+  }
+
+  if(!chatOpen && !isSystem) {
+    chatUnread++;
+    updateChatBadge();
+  }
+}
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function sendChatMessage() {
+  const input = document.getElementById('chatInput');
+  if(!input) return;
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+
+  if(!multiplayerReady || !multiplayerSocket || multiplayerSocket.readyState !== WebSocket.OPEN) {
+    appendChatMessage('Sistema', 'No estás conectado. Entra a un juego 3D para chatear en tiempo real.', true);
+    return;
+  }
+
+  try {
+    multiplayerSocket.send(JSON.stringify({
+      type: 'chat',
+      message: text.slice(0, 200)
+    }));
+  } catch (e) {
+    appendChatMessage('Sistema', 'Error al enviar el mensaje. Reintentando conexión...', true);
+  }
+}
+
+function resetLocalData(){if(confirm("¿Cerrar sesión y borrar cache local?")){setToken('');setCachedUser(null);location.reload()}}
+
+function init(){
+  makeColorButtons("headColors","head");makeColorButtons("armColors","arms");makeColorButtons("torsoColors","torso");makeColorButtons("legsColors","legs");
+  const c=current();if(c)loadCurrentUser();else document.getElementById('authScreen').style.display="flex";
+  loadGames();
+  loadCustomCatalog();
+  setTimeout(creatorInitViewer, 250);
+}
+init();
