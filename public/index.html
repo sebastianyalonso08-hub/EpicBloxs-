@@ -572,16 +572,45 @@ let musicInterval = null;
 
 // Catalog database with categories and prices
 const catalogDatabase = [
-  { id: 'Epic Cap', name: 'Epic Cap', category: 'hats', price: 50, desc: 'Sombrero clásico azul' },
-  { id: 'Golden Crown', name: 'Golden Crown', category: 'hats', price: 250, desc: 'Corona dorada real' },
-  { id: 'Blue Shirt', name: 'Blue Shirt', category: 'shirts', price: 75, desc: 'Camisa 2D estilo Roblox clásica' },
-  { id: 'Green Hoodie', name: 'Green Hoodie', category: 'shirts', price: 120, desc: 'Sudadera con capucha verde 2D' },
+  // Sombreros
+  { id: 'Epic Cap', name: 'Epic Cap', category: 'hats', price: 50, desc: 'Gorra azul clásica' },
+  { id: 'Golden Crown', name: 'Golden Crown', category: 'hats', price: 250, desc: 'Corona dorada' },
+  { id: 'Black Beanie', name: 'Black Beanie', category: 'hats', price: 90, desc: 'Gorro negro' },
+  { id: 'Pink Bow', name: 'Pink Bow', category: 'hats', price: 85, desc: 'Lazo rosa · Mujer' },
+  { id: 'White Fedora', name: 'White Fedora', category: 'hats', price: 140, desc: 'Sombrero fedora blanco' },
+  { id: 'Blue Cap', name: 'Blue Cap', category: 'hats', price: 70, desc: 'Gorra deportiva azul' },
+
+  // Camisas
+  { id: 'Blue Shirt', name: 'Blue Shirt', category: 'shirts', price: 75, desc: 'Camisa azul 2D' },
+  { id: 'Green Hoodie', name: 'Green Hoodie', category: 'shirts', price: 120, desc: 'Sudadera verde 2D' },
+  { id: 'Red Tee', name: 'Red Tee', category: 'shirts', price: 65, desc: 'Camiseta roja 2D' },
+  { id: 'Black Jacket', name: 'Black Jacket', category: 'shirts', price: 150, desc: 'Chaqueta negra 2D' },
+  { id: 'Pink Tee', name: 'Pink Tee', category: 'shirts', price: 70, desc: 'Camiseta rosa 2D · Mujer' },
+  { id: 'Lavender Hoodie', name: 'Lavender Hoodie', category: 'shirts', price: 125, desc: 'Sudadera lavanda 2D · Mujer' },
+  { id: 'White Blouse', name: 'White Blouse', category: 'shirts', price: 110, desc: 'Blusa blanca 2D · Mujer' },
+
+  // Pantalones
   { id: 'Classic Jeans', name: 'Classic Jeans', category: 'pants', price: 80, desc: 'Pantalones de mezclilla 2D' },
-  { id: 'Dark Cargo Pants', name: 'Dark Cargo Pants', category: 'pants', price: 110, desc: 'Pantalones oscuros con bolsillos 2D' },
+  { id: 'Dark Cargo Pants', name: 'Dark Cargo Pants', category: 'pants', price: 110, desc: 'Pantalones cargo oscuros 2D' },
+  { id: 'Black Jeans', name: 'Black Jeans', category: 'pants', price: 90, desc: 'Jeans negros 2D' },
+  { id: 'White Pants', name: 'White Pants', category: 'pants', price: 85, desc: 'Pantalones blancos 2D' },
+  { id: 'Pink Jeans', name: 'Pink Jeans', category: 'pants', price: 95, desc: 'Jeans rosas 2D · Mujer' },
+  { id: 'Purple Pants', name: 'Purple Pants', category: 'pants', price: 100, desc: 'Pantalones morados 2D · Mujer' },
+
+  // Caras
   { id: 'Classic Smile', name: 'Classic Smile', category: 'faces', price: 40, desc: 'Cara feliz clásica' },
   { id: 'Cool Wink', name: 'Cool Wink', category: 'faces', price: 90, desc: 'Cara guiñando el ojo' },
-  { id: 'Classic Shades', name: 'Classic Shades', category: 'gear', price: 100, desc: 'Gafas de sol estilizadas' },
-  { id: 'Cool Backpack', name: 'Cool Backpack', category: 'gear', price: 180, desc: 'Mochila marrón de aventurero' }
+  { id: 'Happy Face', name: 'Happy Face', category: 'faces', price: 60, desc: 'Cara sonriente' },
+  { id: 'Sleepy Face', name: 'Sleepy Face', category: 'faces', price: 75, desc: 'Cara dormida' },
+  { id: 'Cute Face', name: 'Cute Face', category: 'faces', price: 95, desc: 'Cara tierna · Mujer' },
+  { id: 'Starry Face', name: 'Starry Face', category: 'faces', price: 120, desc: 'Cara con estrellas · Mujer' },
+
+  // Accesorios
+  { id: 'Classic Shades', name: 'Classic Shades', category: 'gear', price: 100, desc: 'Gafas de sol' },
+  { id: 'Cool Backpack', name: 'Cool Backpack', category: 'gear', price: 180, desc: 'Mochila de aventurero' },
+  { id: 'Heart Necklace', name: 'Heart Necklace', category: 'gear', price: 90, desc: 'Collar de corazón · Mujer' },
+  { id: 'Shoulder Bunny', name: 'Shoulder Bunny', category: 'gear', price: 160, desc: 'Conejito para el hombro' },
+  { id: 'Golden Headphones', name: 'Golden Headphones', category: 'gear', price: 200, desc: 'Auriculares dorados' }
 ];
 
 let creatorMode = '2d';
@@ -874,7 +903,7 @@ function createFaceTexture(headColor, faceName) {
     ctx.beginPath();
     ctx.arc(128, 125, 40, 0.1 * Math.PI, 0.9 * Math.PI);
     ctx.stroke();
-  } else {
+  } else if (faceName === 'Classic Smile' || !faceName) {
     // Classic Smile (Default)
     ctx.fillStyle = '#111111';
     ctx.beginPath();
@@ -894,6 +923,21 @@ function createFaceTexture(headColor, faceName) {
     ctx.beginPath();
     ctx.arc(128, 120, 45, 0.15 * Math.PI, 0.85 * Math.PI);
     ctx.stroke();
+  } else if (faceName === 'Happy Face') {
+    ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(80,85,16,0,Math.PI*2); ctx.arc(176,85,16,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#111'; ctx.lineWidth=12; ctx.beginPath(); ctx.arc(128,120,44,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+  } else if (faceName === 'Sleepy Face') {
+    ctx.strokeStyle='#111'; ctx.lineWidth=8; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(62,88); ctx.lineTo(98,88); ctx.moveTo(158,88); ctx.lineTo(194,88); ctx.stroke();
+    ctx.lineWidth=10; ctx.beginPath(); ctx.arc(128,125,38,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+  } else if (faceName === 'Cute Face') {
+    ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(78,85,13,0,Math.PI*2); ctx.arc(178,85,13,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(82,80,5,0,Math.PI*2); ctx.arc(182,80,5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#ef6b8a'; ctx.beginPath(); ctx.arc(58,115,10,0,Math.PI*2); ctx.arc(198,115,10,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#111'; ctx.lineWidth=8; ctx.beginPath(); ctx.arc(128,125,30,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+  } else if (faceName === 'Starry Face') {
+    ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(78,85,16,0,Math.PI*2); ctx.arc(178,85,16,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='bold 22px Arial'; ctx.textAlign='center'; ctx.fillText('✦',78,93); ctx.fillText('✦',178,93);
+    ctx.strokeStyle='#111'; ctx.lineWidth=8; ctx.beginPath(); ctx.arc(128,125,30,0.1*Math.PI,0.9*Math.PI); ctx.stroke();
   }
 
   const texture = new THREE.CanvasTexture(canvas);
@@ -1050,6 +1094,24 @@ function createShirtTexture(torsoColor, shirtName) {
     ctx.stroke();
   }
 
+  else if (shirtName === 'Red Tee') {
+    ctx.fillStyle='#d32f2f'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#ef5350'; ctx.fillRect(0,0,256,30);
+    ctx.fillStyle='#fff'; ctx.font='bold 38px Arial'; ctx.textAlign='center'; ctx.fillText('EB',128,150);
+  } else if (shirtName === 'Black Jacket') {
+    ctx.fillStyle='#171717'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#2c2c2c'; ctx.fillRect(25,0,206,256);
+    ctx.strokeStyle='#aaa'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(128,25); ctx.lineTo(128,235); ctx.stroke();
+  } else if (shirtName === 'Pink Tee') {
+    ctx.fillStyle='#f06292'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#ec407a'; ctx.fillRect(0,0,256,30);
+    ctx.fillStyle='#fff'; ctx.font='bold 32px Arial'; ctx.textAlign='center'; ctx.fillText('♥',128,150);
+  } else if (shirtName === 'Lavender Hoodie') {
+    ctx.fillStyle='#9575cd'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#7e57c2'; ctx.fillRect(65,0,126,256);
+    ctx.strokeStyle='#d1c4e9'; ctx.lineWidth=5; ctx.beginPath(); ctx.arc(128,20,48,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle='#6a4caf'; ctx.fillRect(72,150,112,55);
+  } else if (shirtName === 'White Blouse') {
+    ctx.fillStyle='#fafafa'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#e0e0e0'; ctx.fillRect(0,0,256,8);
+    ctx.fillStyle='#f8bbd0'; ctx.beginPath(); ctx.moveTo(128,35); ctx.lineTo(155,70); ctx.lineTo(128,92); ctx.lineTo(101,70); ctx.closePath(); ctx.fill();
+  }
+
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
@@ -1193,6 +1255,20 @@ function createPantsTexture(legsColor, pantsName) {
     ctx.stroke();
   }
 
+  else if (pantsName === 'Black Jeans') {
+    ctx.fillStyle='#202124'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#111'; ctx.fillRect(0,0,256,28);
+    ctx.strokeStyle='#555'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(128,28); ctx.lineTo(128,256); ctx.stroke();
+  } else if (pantsName === 'White Pants') {
+    ctx.fillStyle='#f4f4f4'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#d5d5d5'; ctx.fillRect(0,0,256,25);
+    ctx.strokeStyle='#bbb'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(128,25); ctx.lineTo(128,256); ctx.stroke();
+  } else if (pantsName === 'Pink Jeans') {
+    ctx.fillStyle='#ec6f9e'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#c94f7c'; ctx.fillRect(0,0,256,28);
+    ctx.strokeStyle='#f8bbd0'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(128,28); ctx.lineTo(128,256); ctx.stroke();
+  } else if (pantsName === 'Purple Pants') {
+    ctx.fillStyle='#673ab7'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#512da8'; ctx.fillRect(0,0,256,27);
+    ctx.strokeStyle='#b39ddb'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(128,27); ctx.lineTo(128,256); ctx.stroke();
+  }
+
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
@@ -1251,6 +1327,33 @@ function createAccessoryMesh(accessoryName) {
     const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.58, 0.16), pocketMat);
     pocket.position.set(0, 0.85, -0.73);
     group.add(pack, pocket);
+  } else if(accessoryName === "Black Beanie") {
+    const mat=new THREE.MeshLambertMaterial({color:0x171717});
+    const cap=new THREE.Mesh(new THREE.CylinderGeometry(0.47,0.52,0.35,20),mat); cap.position.set(0,2.62,0);
+    const rim=new THREE.Mesh(new THREE.TorusGeometry(0.48,0.07,8,20),mat); rim.position.set(0,2.45,0); group.add(cap,rim);
+  } else if(accessoryName === "Pink Bow") {
+    const mat=new THREE.MeshLambertMaterial({color:0xf06292});
+    const l=new THREE.Mesh(new THREE.BoxGeometry(0.38,0.28,0.12),mat), r=l.clone();
+    l.position.set(-0.22,2.55,0.05); r.position.set(0.22,2.55,0.05);
+    const c=new THREE.Mesh(new THREE.BoxGeometry(0.18,0.18,0.15),new THREE.MeshLambertMaterial({color:0xec407a})); c.position.set(0,2.55,0.08); group.add(l,r,c);
+  } else if(accessoryName === "White Fedora") {
+    const mat=new THREE.MeshLambertMaterial({color:0xf5f5f5});
+    const top=new THREE.Mesh(new THREE.CylinderGeometry(0.36,0.42,0.42,20),mat); top.position.set(0,2.68,0);
+    const brim=new THREE.Mesh(new THREE.CylinderGeometry(0.65,0.65,0.08,24),mat); brim.position.set(0,2.48,0); group.add(top,brim);
+  } else if(accessoryName === "Blue Cap") {
+    const cap=new THREE.Mesh(new THREE.BoxGeometry(0.86,0.3,0.75),new THREE.MeshLambertMaterial({color:0x2196f3})); cap.position.set(0,2.62,0);
+    const visor=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.08,0.45),new THREE.MeshLambertMaterial({color:0x1565c0})); visor.position.set(0,2.48,0.45); group.add(cap,visor);
+  } else if(accessoryName === "Golden Headphones") {
+    const mat=new THREE.MeshLambertMaterial({color:0xd4af37});
+    const band=new THREE.Mesh(new THREE.TorusGeometry(0.48,0.055,8,24,Math.PI),mat); band.rotation.x=Math.PI/2; band.position.set(0,2.43,0);
+    const a=new THREE.Mesh(new THREE.BoxGeometry(0.16,0.34,0.18),mat), b=a.clone(); a.position.set(-0.48,2.38,0); b.position.set(0.48,2.38,0); group.add(band,a,b);
+  } else if(accessoryName === "Heart Necklace") {
+    const heart=new THREE.Mesh(new THREE.SphereGeometry(0.12,12,12),new THREE.MeshLambertMaterial({color:0xe91e63})); heart.scale.set(1.2,0.9,0.6); heart.position.set(0,1.05,0.43); group.add(heart);
+  } else if(accessoryName === "Shoulder Bunny") {
+    const mat=new THREE.MeshLambertMaterial({color:0xffffff});
+    const body=new THREE.Mesh(new THREE.SphereGeometry(0.18,12,12),mat); body.position.set(0.48,1.45,0.05);
+    const head=new THREE.Mesh(new THREE.SphereGeometry(0.14,12,12),mat); head.position.set(0.48,1.7,0.05);
+    const ear1=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.24,0.06),mat), ear2=ear1.clone(); ear1.position.set(0.42,1.9,0.05); ear2.position.set(0.54,1.9,0.05); group.add(body,head,ear1,ear2);
   }
   return group;
 }
@@ -3912,7 +4015,9 @@ async function sendFriendRequestTo(id){
     renderUserSearchResults();
     await refreshFriendsFromServer();
     alert('Solicitud enviada.');
-  } catch(err){ alert(err.message || 'No se pudo enviar la solicitud.'); }
+  } catch(err){
+    alert('No se pudo enviar la solicitud de amistad. ' + (err.message || 'Inténtalo de nuevo más tarde.'));
+  }
 }
 
 async function cancelFriendRequest(id){
@@ -4617,7 +4722,7 @@ async function dmSend(){
     await api('/api/dm/send', { method:'POST', body: JSON.stringify({ id: dmCurrentId, text }) }, 1);
     await dmOpenThread(dmCurrentId, dmCurrentName, true);
   } catch(err){
-    alert(err.message || 'No se pudo enviar el mensaje.');
+    alert('No se pudo enviar el mensaje. ' + (err.message || 'Inténtalo de nuevo más tarde.'));
     if(input) input.value = text;
   }
 }
