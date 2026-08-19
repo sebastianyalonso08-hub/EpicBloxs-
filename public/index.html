@@ -389,7 +389,12 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
         </div>
         <div class="creator-2d-preview">
           <canvas id="creator2dCanvas" class="creator-2d-canvas" width="512" height="512"></canvas>
-          <div class="creator-small" style="max-width:260px">Dibuja directamente sobre la plantilla. También puedes subir una imagen para usarla como textura. Las imágenes subidas quedan en revisión antes de aparecer públicamente.</div>
+          <div class="creator-small" style="max-width:280px">Dibuja directamente sobre la plantilla. También puedes subir una imagen para usarla como textura. Las imágenes subidas quedan en revisión antes de aparecer públicamente.
+            <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+              <a class="section-button" href="/templates/camiseta_template.png" download="EpicBlox_Camiseta_Template.png" style="display:inline-block;margin:0;background:#1684e8;text-decoration:none">⬇️ Descargar camiseta</a>
+              <a class="section-button" href="/templates/pantalon_template.png" download="EpicBlox_Pantalon_Template.png" style="display:inline-block;margin:0;background:#6f42c1;text-decoration:none">⬇️ Descargar pantalón</a>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -398,6 +403,10 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
         <textarea id="creatorDescription" maxlength="200" rows="3" placeholder="Descripción" style="width:100%;margin-top:8px;padding:9px;border:1px solid #bbb;border-radius:5px;resize:vertical"></textarea>
         <div class="creator-tools">
           <select id="creatorCategory" style="padding:8px;border:1px solid #bbb;border-radius:5px"><option value="gear">Accesorio / Gear</option><option value="hats">Sombrero</option><option value="shirts">Camisa 2D</option><option value="pants">Pantalón 2D</option></select>
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #bbb;border-radius:5px;background:#fff;">☀️ Precio
+            <input id="creatorPrice" type="number" min="0" max="1000000" step="1" value="0" inputmode="numeric" style="width:110px;padding:7px;border:1px solid #bbb;border-radius:5px">
+            <span>Sunnys</span>
+          </label>
           <button class="section-button" style="margin:0;background:#1684e8" onclick="creatorPublish()">Publicar en catálogo</button>
         </div>
         <div id="creatorMessage" class="creator-msg"></div>
@@ -587,10 +596,42 @@ function creatorInitViewer(){
   creatorScene.add(new THREE.HemisphereLight(0xffffff,0x78909c,1.8)); const dl=new THREE.DirectionalLight(0xffffff,2); dl.position.set(4,6,5); creatorScene.add(dl);
   const floor=new THREE.Mesh(new THREE.PlaneGeometry(12,12),new THREE.MeshLambertMaterial({color:0xdfe7ec})); floor.rotation.x=-Math.PI/2; creatorScene.add(floor);
   creatorGroup=new THREE.Group(); creatorScene.add(creatorGroup);
-  creatorOrbit={drag:false,x:0,rx:0,ry:0};
-  creatorRenderer.domElement.addEventListener('pointerdown',e=>{creatorOrbit.drag=true;creatorOrbit.x=e.clientX;});
-  window.addEventListener('pointerup',()=>creatorOrbit.drag=false);
-  creatorRenderer.domElement.addEventListener('pointermove',e=>{if(!creatorOrbit.drag)return; creatorOrbit.ry+=(e.clientX-creatorOrbit.x)*0.01; creatorOrbit.x=e.clientX; creatorGroup.rotation.y=creatorOrbit.ry;});
+  // Cámara orbital del creador: arrastrar para girar, rueda para zoom.
+  creatorOrbit={drag:false,lastX:0,lastY:0,yaw:0,pitch:0.18,distance:6.3};
+  const viewerCanvas=creatorRenderer.domElement;
+  viewerCanvas.style.touchAction='none';
+  const updateCreatorCamera=()=>{
+    const targetY=1.25;
+    const maxPitch=Math.PI*0.47;
+    creatorOrbit.pitch=Math.max(-maxPitch,Math.min(maxPitch,creatorOrbit.pitch));
+    creatorOrbit.distance=Math.max(2.6,Math.min(12,creatorOrbit.distance));
+    const cp=Math.cos(creatorOrbit.pitch), sp=Math.sin(creatorOrbit.pitch);
+    const sy=Math.sin(creatorOrbit.yaw), cy=Math.cos(creatorOrbit.yaw);
+    creatorCamera.position.set(
+      Math.sin(creatorOrbit.yaw)*cp*creatorOrbit.distance,
+      targetY+sp*creatorOrbit.distance,
+      Math.cos(creatorOrbit.yaw)*cp*creatorOrbit.distance
+    );
+    creatorCamera.lookAt(0,targetY,0);
+  };
+  viewerCanvas.addEventListener('pointerdown',e=>{
+    creatorOrbit.drag=true; creatorOrbit.lastX=e.clientX; creatorOrbit.lastY=e.clientY;
+    viewerCanvas.setPointerCapture?.(e.pointerId);
+  });
+  viewerCanvas.addEventListener('pointermove',e=>{
+    if(!creatorOrbit.drag)return;
+    const dx=e.clientX-creatorOrbit.lastX, dy=e.clientY-creatorOrbit.lastY;
+    creatorOrbit.lastX=e.clientX; creatorOrbit.lastY=e.clientY;
+    creatorOrbit.yaw-=dx*0.012;
+    creatorOrbit.pitch-=dy*0.009;
+    updateCreatorCamera();
+  });
+  viewerCanvas.addEventListener('pointerup',e=>{creatorOrbit.drag=false; try{viewerCanvas.releasePointerCapture?.(e.pointerId);}catch(_){}});
+  viewerCanvas.addEventListener('pointercancel',()=>creatorOrbit.drag=false);
+  viewerCanvas.addEventListener('wheel',e=>{
+    e.preventDefault(); creatorOrbit.distance+=e.deltaY*0.008; updateCreatorCamera();
+  },{passive:false});
+  updateCreatorCamera();
   if(creatorMode==='2d') creatorAddClothingPreview(); else { creatorCubes=[]; creatorSelected=null; creatorAddCube(true); }
   creatorAnim=()=>{ if(!creatorRenderer)return; requestAnimationFrame(creatorAnim); creatorRenderer.render(creatorScene,creatorCamera); }; creatorAnim();
   renderCreatorCubeList();
@@ -610,13 +651,15 @@ function creatorMessage(text,error=false){ const el=document.getElementById('cre
 function creatorPublish(){
   const c=current(); if(!c)return creatorMessage('Debes iniciar sesión.',true);
   const name=document.getElementById('creatorName').value.trim(), description=document.getElementById('creatorDescription').value.trim(), category=document.getElementById('creatorCategory').value;
+  const price=Math.floor(Number(document.getElementById('creatorPrice')?.value ?? 0));
   if(name.length<2)return creatorMessage('Pon un nombre al objeto.',true);
+  if(!Number.isFinite(price) || price<0 || price>1000000)return creatorMessage('El precio debe estar entre 0 y 1.000.000 Sunnys.',true);
   let data={}; let type='accessory3d';
   if(creatorMode==='3d'){ data={cubes:creatorCubes.map((cube,i)=>({x:cube.position.x,y:cube.position.y,z:cube.position.z,color:cube.userData.color||'#1684e8',scale:[cube.scale.x,cube.scale.y,cube.scale.z]}))}; }
   else { type='2d'; data={imageData:document.getElementById('creator2dCanvas').toDataURL('image/png')}; }
-  fetch('/api/creator/publish',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},body:JSON.stringify({name,description,category,type,data})}).then(r=>r.json().then(x=>({ok:r.ok,status:r.status,data:x}))).then(({ok,data})=>{ creatorMessage(data.message||data.error||'Listo.',!ok); if(ok){ loadCustomCatalog(); }}).catch(()=>creatorMessage('No se pudo conectar con el servidor.',true));
+  fetch('/api/creator/publish',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},body:JSON.stringify({name,description,category,type,price,data})}).then(r=>r.json().then(x=>({ok:r.ok,status:r.status,data:x}))).then(({ok,data})=>{ creatorMessage(data.message||data.error||'Listo.',!ok); if(ok){ loadCustomCatalog(); }}).catch(()=>creatorMessage('No se pudo conectar con el servidor.',true));
 }
-function loadCustomCatalog(){ fetch('/api/catalog/custom').then(r=>r.json()).then(data=>{ const custom=data.items||[]; custom.forEach(item=>{ if(!catalogDatabase.some(x=>x.id===item.id)) catalogDatabase.push({id:item.id,name:item.name,category:item.category,price:0,desc:item.description||'Creado por la comunidad',custom:true,data:item.data,type:item.type}); }); if(typeof renderCatalog==='function') renderCatalog('all'); }).catch(()=>{}); }
+function loadCustomCatalog(){ fetch('/api/catalog/custom').then(r=>r.json()).then(data=>{ const custom=data.items||[]; custom.forEach(item=>{ const local=catalogDatabase.find(x=>x.id===item.id); if(local){ local.price=Number(item.price)||0; local.desc=item.description||'Creado por la comunidad'; local.custom=true; local.data=item.data; local.type=item.type; } else { catalogDatabase.push({id:item.id,name:item.name,category:item.category,price:Number(item.price)||0,desc:item.description||'Creado por la comunidad',custom:true,data:item.data,type:item.type}); } }); if(typeof renderCatalog==='function') renderCatalog('all'); }).catch(()=>{}); }
 
 function startAmbientMusic(gameName) {
   stopAmbientMusic();
@@ -1749,6 +1792,7 @@ let gameActionCooldown = 0;
 let raceFinished = false;
 let raceStartTime = 0;
 let obbyBestCheckpoint = 0;
+let obbyCheckpointSpawns = [];
 
 // ===== SpawnPoints fijos =====
 // Se mantienen separados de las colisiones para reutilizarlos en futuras mejoras
@@ -1773,6 +1817,22 @@ function getSpawnPoints(gameName) {
 function getPrimarySpawnPoint(gameName) {
   const points = getSpawnPoints(gameName);
   return points[0] || { x: 0, y: 0.02, z: 0 };
+}
+
+function getCurrentRespawnPoint(gameName) {
+  const name = gameName.trim();
+  if (name === 'Epic Obby' && obbyCheckpointSpawns.length) {
+    const point = obbyCheckpointSpawns[Math.max(0, Math.min(obbyBestCheckpoint, obbyCheckpointSpawns.length - 1))];
+    return { x: point.x, y: point.y, z: point.z };
+  }
+  return getPrimarySpawnPoint(name);
+}
+
+function placePlayerAtSpawn(playerPos, gameName) {
+  const point = getCurrentRespawnPoint(gameName);
+  playerPos.x = point.x;
+  playerPos.y = point.y;
+  playerPos.z = point.z;
 }
 
 function registerSpawnPoints(gameName) {
@@ -1807,6 +1867,7 @@ function clearGameExtras(){
   gameDecorations=[]; petFollowers=[]; fightTargets=[]; raceCheckpoints=[]; activeCheckpoint=0;
   for (const sp of spawnPointObjects) { try { gameScene.remove(sp); } catch(e) {} }
   spawnPointObjects=[]; activeSpawnPoints=[];
+  obbyCheckpointSpawns=[];
   swordMesh=null; gameActionCooldown=0; raceFinished=false; raceStartTime=performance.now(); obbyBestCheckpoint=0;
 }
 
@@ -1855,21 +1916,26 @@ function buildGameSpecificWorld(gameName){
   const n=gameName.trim();
 
   if(n==='Epic Obby'){
-    addBox(0,0,1,7,0.6,7,0x3b82f6,{solid:true});
-    addBox(0,1.0,-4,5.5,0.6,4.5,0x22c55e,{solid:true});
+    // Zona inicial: segura y con el primer salto claro.
+    addBox(0,0,1,8,0.6,8,0x3b82f6,{solid:true});
+    addBox(0,0.75,-4.2,6.2,0.6,4.2,0x22c55e,{solid:true});
+    obbyCheckpointSpawns = [{x:0,y:0.3,z:1}, {x:0,y:1.05,z:-4.2}];
     for(let i=0;i<22;i++){
       const lane=i%3-1;
-      const x=lane*4.2 + (Math.floor(i/3)%2?1.6:-1.6);
-      const z=-9-i*5.1;
-      const y=1.7+i*0.78;
-      const w=3.2+(i%4===0?1.2:0), d=3.3;
+      const x=lane*3.5 + (Math.floor(i/3)%2 ? 0.9 : -0.9);
+      const z=-8.8-i*4.45;
+      const y=1.3+i*0.54;
+      const w=4.25+(i%4===0?0.55:0), d=3.75;
       addBox(x,y,z,w,0.6,d,[0x4f8df7,0xf14f63,0x38b48a,0xf5b942][i%4],{solid:true});
-      if(i%4===1) addBox(x+(i%2?1.3:-1.3),y+0.8,z,0.7,1.6,0.7,0xf97316,{solid:true});
-      if(i%5===2) addBox(x,y+0.45,z+1.3,1.2,0.9,0.65,0x111827,{solid:true});
-      addCoinAt(x,y+0.75,z);
+      obbyCheckpointSpawns.push({x,y:y+0.3,z});
+      // Obstáculos más bajos y colocados para que puedan superarse con un salto normal.
+      if(i%4===1) addBox(x+(i%2?1.15:-1.15),y+0.45,z,0.72,0.9,0.72,0xf97316,{solid:true});
+      if(i%5===2) addBox(x,y+0.32,z+1.05,1.25,0.64,0.7,0x111827,{solid:true});
+      addCoinAt(x,y+0.72,z);
     }
-    addBox(0,19.0,-126,18,0.7,1.2,0x22c55e,{solid:true});
-    addBox(-8,23,-126,1,9,1,0xf1c40f); addBox(8,23,-126,1,9,1,0xf1c40f); addBox(0,27,-126,17,1,1,0xf1c40f);
+    const finishZ=-8.8-22*4.45;
+    addBox(0,0.54+22*0.54,finishZ,20,0.7,1.8,0x22c55e,{solid:true});
+    addBox(-8,4.0+22*0.54,finishZ,1,6.5,1,0xf1c40f); addBox(8,4.0+22*0.54,finishZ,1,6.5,1,0xf1c40f); addBox(0,7.3+22*0.54,finishZ,17,1,1,0xf1c40f);
   } else if(n==='Bloxs City'){
     for(let z=-48;z<=48;z+=12) addBox(0,0.03,z,100,0.06,5,0x2a2f38,{solid:false});
     for(let x=-48;x<=48;x+=12) addBox(x,0.03,0,5,0.06,100,0x2a2f38,{solid:false});
@@ -2240,12 +2306,7 @@ function startGameLoop() {
       isGrounded = false;
       if(playerPos.y < -10 && !voidDeathActive) {
         showVoidDeath(() => {
-          if(currentGameType.trim()==='Epic Obby' && obbyBestCheckpoint>0){
-            playerPos.x=0; playerPos.z=-9-(obbyBestCheckpoint*5.1); playerPos.y=1.7+(obbyBestCheckpoint*0.78);
-          } else {
-            const spawn = getRandomSpawnPoint(currentGameType);
-            playerPos.x=spawn.x; playerPos.y=spawn.y; playerPos.z=spawn.z;
-          }
+          placePlayerAtSpawn(playerPos, currentGameType);
           velocityY = 0;
           isGrounded = true;
           lastTime = performance.now();
@@ -2307,8 +2368,8 @@ function startGameLoop() {
       // Resolver cada eje por separado evita atravesar esquinas en diagonal.
       if (canMoveHorizontal(tryX, playerPos.z)) playerPos.x = tryX;
       if (canMoveHorizontal(playerPos.x, tryZ)) playerPos.z = tryZ;
-      playerPos.x = Math.max(-48, Math.min(48, playerPos.x));
-      playerPos.z = Math.max(-48, Math.min(48, playerPos.z));
+      // Sin limites invisibles: el jugador puede alejarse libremente del SpawnPoint.
+      // Las unicas restricciones de movimiento provienen de colisiones reales del mapa.
 
       const targetAngle = Math.atan2(normalizedX, normalizedZ);
       let diff = targetAngle - playerMeshGroup.rotation.y;
@@ -2341,9 +2402,16 @@ function startGameLoop() {
       if(rightLeg) rightLeg.rotation.x *= damp;
     }
 
-    if(currentGameType.trim()==='Epic Obby' && foundGround){
-      const checkpoint=Math.max(0,Math.min(22,Math.floor(Math.max(0,-playerPos.z-8)/5.1)));
-      if(checkpoint>obbyBestCheckpoint){
+    if(currentGameType.trim()==='Epic Obby' && foundGround && obbyCheckpointSpawns.length){
+      let checkpoint=0;
+      let bestDistance=Infinity;
+      for(let i=0;i<obbyCheckpointSpawns.length;i++){
+        const cp=obbyCheckpointSpawns[i];
+        const dist=Math.hypot(playerPos.x-cp.x, playerPos.z-cp.z);
+        if(dist<bestDistance){ bestDistance=dist; checkpoint=i; }
+      }
+      checkpoint=Math.max(0,Math.min(22,checkpoint));
+      if(bestDistance<4.0 && checkpoint>obbyBestCheckpoint){
         obbyBestCheckpoint=checkpoint;
         const hint=document.getElementById('gameHint');
         if(hint) hint.textContent=`🏁 Checkpoint ${checkpoint}/22`;
@@ -4039,8 +4107,69 @@ function setChatConnStatus(online) {
   }
 }
 
+const CHAT_MODERATION_TERMS = [
+  // Español
+  "puta","puto","putas","putos","mierda","joder","coño","cojones","cabron","cabrona","pendejo","pendeja","gilipollas","imbecil","imbécil","idiota","estupido","estúpido","estupida","estúpida","maricon","maricón","marica","zorra","culero","verga","polla","chingar","chingada","malparido","perra","bastardo",
+  // English
+  "fuck","fucking","fucked","shit","bullshit","bitch","asshole","dick","dickhead","pussy","cunt","bastard","motherfucker","damn","crap","slut","whore","idiot","stupid",
+  // Português
+  "merda","porra","caralho","cacete","viado","veado","bicha","babaca","otario","otária","foder","fodase","fodasse","desgraçado","desgracado","vagabunda","vagabundo",
+  // Français / Italiano / Deutsch / Nederlands / Polski / Русский translit.
+  "merde","putain","connard","connasse","encule","enculé","salope","pute","nique","cazzo","puttana","stronzo","stronza","vaffanculo","coglione","troia","scheisse","scheiße","arschloch","fotze","hurensohn","hure","wichser","klootzak","kut","hoer","tering","tyfus","godverdomme","kurwa","cholera","dupa","skurwysyn","suka","cipa","jebac","jebać","pierdol","debil","kurva","hovno","kokot","blyad","blyat","bljad","pizda","khuy","hui","xuy","yob","ebat","mudak","durak","gavno","govno",
+  // Referencias sexuales / NSFW
+  "porn","porno","pornografia","pornography","xxx","nsfw","sexcam","sexting","nudes","nudez","desnudo","desnuda","sexo","sexual","genitales","genitals","masturb","masturbacion","masturbación","ereccion","erección","semen","cumshot","blowjob","handjob","anal","hentai","fetish","fetiche","prostituta","prostitucion","prostitución",
+  // Autolesión / violencia extrema en chat
+  "suicide","suicidio","kys","selfharm","self harm","autolesion","autolesión","matarte","muerete","muérete","kill yourself",
+  // Slurs comunes
+  "nigger","nigga","faggot","fag","dyke","retard","retarded","tranny","spic","kike","chink","coon","wetback","gook","cracker"
+];
+function clientModerationNormalize(text){
+  return String(text||'').toLowerCase().normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/[\u200B-\u200D\uFEFF]/g,'')
+    .replace(/[4@]/g,'a').replace(/[3€]/g,'e').replace(/[1!|]/g,'i')
+    .replace(/[0]/g,'o').replace(/[$5]/g,'s').replace(/[7]/g,'t').replace(/[9]/g,'g')
+    .replace(/[аa]/g,'a').replace(/[еe]/g,'e').replace(/[іi]/g,'i')
+    .replace(/[оo]/g,'o').replace(/[рp]/g,'p').replace(/[сc]/g,'c')
+    .replace(/[хx]/g,'x').replace(/[уy]/g,'y').replace(/[кk]/g,'k')
+    .replace(/[^\p{L}\p{N}]+/gu,'');
+}
+function clientModerationVariants(term){
+  const compact=clientModerationNormalize(term); if(!compact) return [];
+  const collapsed=compact.replace(/([a-z])\1+/g,'$1');
+  return [...new Set([compact,collapsed])];
+}
+function clientIsWordChar(ch){ return /[\p{L}\p{N}_]/u.test(ch||''); }
+function censorChatClient(text){
+  const source=String(text||''); if(!source) return source;
+  const chars=Array.from(source);
+  const normChars=chars.map((ch,idx)=>({idx,n:clientModerationNormalize(ch)}));
+  for(const term of CHAT_MODERATION_TERMS){
+    for(const v of clientModerationVariants(term)){
+      if(!v) continue;
+      for(let pos=0; pos<normChars.length; ){
+        let built='', j=pos, idxs=[];
+        while(j<normChars.length && built.length<v.length){
+          if(normChars[j].n){ built+=normChars[j].n; idxs.push(normChars[j].idx); }
+          j++;
+        }
+        if(built!==v || !idxs.length){ pos++; continue; }
+        const first=idxs[0], last=idxs[idxs.length-1];
+        const before=first>0?chars[first-1]:'';
+        const after=last<chars.length-1?chars[last+1]:'';
+        if(!clientIsWordChar(before) && !clientIsWordChar(after)){
+          for(let k=first;k<=last;k++) chars[k]='#';
+        }
+        pos=Math.max(j,pos+1);
+      }
+    }
+  }
+  return chars.join('');
+}
+
 let _lastChatKey = '';
 function appendChatMessage(username, message, isSystem, ts) {
+
   const body = document.getElementById('chatBody');
   if(!body) return;
 
@@ -4055,7 +4184,9 @@ function appendChatMessage(username, message, isSystem, ts) {
 
   const div = document.createElement('div');
   div.className = 'chat-msg' + (isSystem ? ' system' : '');
-  div.innerHTML = `<span class="chat-time">${hh}:${mm}</span><span class="chat-user">${escapeHtml(username)}:</span> ${escapeHtml(message)}`;
+  const safeUsername = censorChatClient(username);
+  const safeMessage = censorChatClient(message);
+  div.innerHTML = `<span class="chat-time">${hh}:${mm}</span><span class="chat-user">${escapeHtml(safeUsername)}:</span> ${escapeHtml(safeMessage)}`;
   body.appendChild(div);
   // Limitar historial
   while (body.children.length > 80) body.removeChild(body.firstChild);
@@ -4066,7 +4197,7 @@ function appendChatMessage(username, message, isSystem, ts) {
   if(ig && document.getElementById('webClient')?.classList.contains('active')) {
     const igDiv = document.createElement('div');
     igDiv.className = 'ig-msg' + (isSystem ? ' system' : '');
-    igDiv.innerHTML = `<span class="ig-user">${escapeHtml(username)}:</span> ${escapeHtml(message)}`;
+    igDiv.innerHTML = `<span class="ig-user">${escapeHtml(safeUsername)}:</span> ${escapeHtml(safeMessage)}`;
     ig.appendChild(igDiv);
     while(ig.children.length > 6) ig.removeChild(ig.firstChild);
     setTimeout(() => { if(igDiv.parentNode) igDiv.remove(); }, 8000);
@@ -4089,7 +4220,7 @@ function escapeHtml(str) {
 function sendChatMessage() {
   const input = document.getElementById('chatInput');
   if(!input) return;
-  const text = input.value.trim();
+  const text = censorChatClient(input.value.trim());
   if(!text) return;
   input.value = '';
 
