@@ -193,17 +193,56 @@ function nextNumericUserId(users) {
   return max + 1;
 }
 
+// Normaliza cuentas antiguas para que TODAS (incluso las creadas hace mucho)
+// tengan ID numerico, listas de amigos y los campos que usa la web actual.
 function ensureUserIds(users) {
   let changed = false;
   let next = nextNumericUserId(users);
-  for (const user of Object.values(users || {})) {
+  for (const [key, user] of Object.entries(users || {})) {
+    if (!user || typeof user !== "object") continue;
     if (!Number.isInteger(Number(user.userId))) {
       user.userId = next++;
+      changed = true;
+    }
+    if (typeof user.username !== "string" || !user.username.trim()) {
+      user.username = key;
+      changed = true;
+    }
+    for (const field of ["friends", "friendRequests", "outgoingRequests"]) {
+      if (!Array.isArray(user[field])) { user[field] = []; changed = true; }
+    }
+    if (!Array.isArray(user.avatarInventory)) {
+      user.avatarInventory = Array.isArray(user.inventory) ? user.inventory.slice() : [];
+      changed = true;
+    }
+    if (!Array.isArray(user.gameInventory)) { user.gameInventory = []; changed = true; }
+    if (!user.avatar || typeof user.avatar !== "object") {
+      user.avatar = { accessories: [], torsoType: "male", colors: { head: "#f5c928", arms: "#f5c928", torso: "#1477b9", legs: "#8cae45" } };
+      changed = true;
+    }
+    if (!Array.isArray(user.avatar.accessories)) { user.avatar.accessories = []; changed = true; }
+    if (!user.avatar.colors || typeof user.avatar.colors !== "object") {
+      user.avatar.colors = { head: "#f5c928", arms: "#f5c928", torso: "#1477b9", legs: "#8cae45" };
+      changed = true;
+    }
+    if (typeof user.createdAt !== "string" || !user.createdAt) {
+      user.createdAt = new Date(0).toISOString();
       changed = true;
     }
   }
   if (changed) saveUsersDisk(users);
   return users;
+}
+
+// Relacion entre la cuenta que consulta y otra cuenta cualquiera.
+function relationBetween(users, myKey, otherKey) {
+  if (!myKey || !otherKey) return "none";
+  if (myKey === otherKey) return "self";
+  const me = users[myKey] || {};
+  if ((me.friends || []).includes(otherKey)) return "friend";
+  if ((me.outgoingRequests || []).includes(otherKey)) return "outgoing";
+  if ((me.friendRequests || []).includes(otherKey)) return "incoming";
+  return "none";
 }
 
 function resolveUserKey(users, identifier) {
@@ -443,31 +482,46 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (urlPath === "/api/users/search" && req.method === "GET") {
-    const rawQuery = safeText(new URL(req.url, "http://x").searchParams.get("q"), "", 40);
+    const params = new URL(req.url, "http://x").searchParams;
+    const rawQuery = safeText(params.get("q"), "", 40);
     const q = rawQuery.toLowerCase();
+    const limit = Math.max(1, Math.min(300, Number(params.get("limit")) || 120));
     const users = ensureUserIds(loadUsers());
+    const sess = getSessionUser(req);
+    const myKey = sess ? sess.key : null;
     const results = [];
     for (const [key, user] of Object.entries(users)) {
       const username = String(user.username || "");
       const usernameLower = username.toLowerCase();
-      if (!q || key === q || usernameLower === q || key.includes(q) || usernameLower.includes(q)) {
-        results.push({
-          id: String(user.userId),
-          userId: Number(user.userId),
-          usernameKey: key,
-          username,
-          bio: user.bio || "",
-          avatar: user.avatar || {}
-        });
-      }
+      const idText = String(user.userId || "");
+      const match = !q || key.includes(q) || usernameLower.includes(q) || idText === q;
+      if (!match) continue;
+      results.push({
+        id: String(user.userId),
+        userId: Number(user.userId),
+        usernameKey: key,
+        username,
+        bio: user.bio || "",
+        avatar: user.avatar || {},
+        createdAt: user.createdAt || "",
+        presence: getPresence(key),
+        relation: relationBetween(users, myKey, key)
+      });
     }
     results.sort((a, b) => {
       const ae = String(a.username || "").toLowerCase() === q;
       const be = String(b.username || "").toLowerCase() === q;
       if (ae !== be) return ae ? -1 : 1;
+      const ap = (a.presence && (a.presence.playing || a.presence.online)) ? 0 : 1;
+      const bp = (b.presence && (b.presence.playing || b.presence.online)) ? 0 : 1;
+      if (ap !== bp) return ap - bp;
       return String(a.username || "").localeCompare(String(b.username || ""));
     });
-    return json(res, 200, { results, exact: results.find(r => String(r.username || "").toLowerCase() === q) || null });
+    return json(res, 200, {
+      total: results.length,
+      results: results.slice(0, limit),
+      exact: results.find(r => String(r.username || "").toLowerCase() === q) || null
+    });
   }
 
   if (urlPath === "/api/users/lookup" && req.method === "GET") {
@@ -499,7 +553,13 @@ const server = http.createServer(async (req, res) => {
       const users = ensureUserIds(loadUsers());
       const key = resolveUserKey(users, identifier);
       if (!key) return json(res, 404, { error: "Usuario no encontrado." });
-      return json(res, 200, { user: publicUser(users[key], key) });
+      const sess = getSessionUser(req);
+      return json(res, 200, {
+        user: {
+          ...publicFriendUser(users[key], key),
+          relation: relationBetween(users, sess ? sess.key : null, key)
+        }
+      });
     }
   }
 
@@ -582,6 +642,44 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, { ok: true, user: publicUser(me, sess.key) });
   }
 
+  if (urlPath === "/api/friends/cancel" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const body = await readBody(req);
+    const users = ensureUserIds(sess.users);
+    const targetKey = resolveUserKey(users, safeText(body.id || body.username, "", 80));
+    if (!targetKey) return json(res, 404, { error: "Usuario no encontrado." });
+    const me = users[sess.key];
+    me.outgoingRequests = (me.outgoingRequests || []).filter((k) => k !== targetKey);
+    if (users[targetKey]) {
+      users[targetKey].friendRequests = (users[targetKey].friendRequests || []).filter((k) => k !== sess.key);
+    }
+    users[sess.key] = me; saveUsersDisk(users);
+    return json(res, 200, { ok: true, user: publicUser(me, sess.key) });
+  }
+
+  if (urlPath === "/api/friends/remove" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const body = await readBody(req);
+    const users = ensureUserIds(sess.users);
+    const targetKey = resolveUserKey(users, safeText(body.id || body.username, "", 80));
+    if (!targetKey) return json(res, 404, { error: "Usuario no encontrado." });
+    const me = users[sess.key];
+    me.friends = (me.friends || []).filter((k) => k !== targetKey);
+    me.outgoingRequests = (me.outgoingRequests || []).filter((k) => k !== targetKey);
+    me.friendRequests = (me.friendRequests || []).filter((k) => k !== targetKey);
+    if (users[targetKey]) {
+      const other = users[targetKey];
+      other.friends = (other.friends || []).filter((k) => k !== sess.key);
+      other.outgoingRequests = (other.outgoingRequests || []).filter((k) => k !== sess.key);
+      other.friendRequests = (other.friendRequests || []).filter((k) => k !== sess.key);
+      users[targetKey] = other;
+    }
+    users[sess.key] = me; saveUsersDisk(users);
+    return json(res, 200, { ok: true, user: publicUser(me, sess.key) });
+  }
+
   if (urlPath === "/api/catalog/custom" && req.method === "GET") {
     const items = loadCatalog().filter(item => item.status === "approved");
     return json(res, 200, { items });
@@ -593,8 +691,9 @@ const server = http.createServer(async (req, res) => {
     const body = await readBody(req);
     const name = safeText(body.name, "", 40);
     const description = safeText(body.description, "", 200);
-    const category = ["hats","shirts","pants","gear"].includes(body.category) ? body.category : "gear";
-    const type = body.type === "2d" ? "2d" : "accessory3d";
+    // Solo se publica ROPA 2D (camisas y pantalones). El creador de accesorios 3D fue retirado.
+    const category = ["shirts","pants"].includes(body.category) ? body.category : "shirts";
+    const type = "2d";
     const price = Math.floor(Number(body.price ?? 0));
     if (!Number.isFinite(price) || price < 0 || price > 1000000) return json(res, 400, { error: "El precio debe estar entre 0 y 1.000.000 Sunnys." });
     if (name.length < 2) return json(res, 400, { error: "Pon un nombre al objeto." });
@@ -606,19 +705,21 @@ const server = http.createServer(async (req, res) => {
     }
     const payloadText = JSON.stringify(body.data || {});
     if (payloadText.length > 2500000) return json(res, 413, { error: "El recurso es demasiado grande." });
-    if (type === "2d" && body.data && body.data.imageData && !/^data:image\/(png|jpeg|webp);base64,/i.test(String(body.data.imageData))) {
+    if (!body.data || !body.data.imageData) return json(res, 400, { error: "Falta el diseno de la ropa." });
+    if (!/^data:image\/(png|jpeg|webp);base64,/i.test(String(body.data.imageData))) {
       return json(res, 400, { error: "Formato de imagen no permitido." });
     }
     const items = loadCatalog();
     const item = {
       id: "U-" + Date.now() + "-" + Math.random().toString(36).slice(2,7),
       ownerId: Number(sess.user.userId), owner: sess.user.username, name, description, category, type, price,
-      data: body.data || {}, status: type === "2d" && body.data && body.data.imageData ? "pending" : "approved",
-      createdAt: new Date().toISOString()
+      data: body.data || {}, status: "approved",
+      createdAt: new Date().toISOString(),
+      publishedAt: new Date().toISOString()
     };
-    items.push(item); saveCatalog(items);
-    if (item.status !== "approved") return json(res, 202, { ok: true, pending: true, message: "Ropa subida. Quedo en revision antes de aparecer en el catalogo.", item });
-    return json(res, 200, { ok: true, item, message: "Accesorio publicado en el catalogo." });
+    items.push(item);
+    saveCatalog(items);
+    return json(res, 200, { ok: true, published: true, item, message: "Publicado en el catalogo correctamente." });
   }
 
   if (urlPath === "/api/chat/moderate" && req.method === "POST") {
@@ -638,11 +739,12 @@ const server = http.createServer(async (req, res) => {
   if (urlPath === "/api/friends/list" && req.method === "GET") {
     const sess = getSessionUser(req);
     if (!sess) return json(res, 401, { error: "No autenticado." });
-    const users = sess.users;
-    const me = sess.user;
+    const users = ensureUserIds(sess.users);
+    const me = users[sess.key];
     const friends = (me.friends || []).map((k) => publicFriendUser(users[k], k)).filter(Boolean);
     const requests = (me.friendRequests || []).map((k) => publicFriendUser(users[k], k)).filter(Boolean);
-    return json(res, 200, { friends, requests });
+    const outgoing = (me.outgoingRequests || []).map((k) => publicFriendUser(users[k], k)).filter(Boolean);
+    return json(res, 200, { friends, requests, outgoing });
   }
 
   if (urlPath.startsWith("/perfil/")) {
@@ -725,7 +827,7 @@ function leaveRoom(player) {
 wss.on("connection", (ws) => {
   const player = {
     id: makeId(), ws, roomKey: null, roomName: null, gameId: null,
-    username: "Player", avatar: null, x: 0, y: 0, z: 0, rotation: 0, lastChatAt: 0
+    username: "Player", avatar: null, x: 0, y: 0, z: 0, rotation: 0, lastChatAt: 0, lastEmoteAt: 0
   };
   ws.isAlive = true;
   ws.on("pong", () => { ws.isAlive = true; });
@@ -804,6 +906,16 @@ wss.on("connection", (ws) => {
     if (data.type === "avatar") {
       player.avatar = data.avatar || null;
       broadcast(room, { type: "playerMoved", player: publicPlayer(player) }, ws);
+      return;
+    }
+
+    // EMOTES: /e dance y similares. El servidor solo reenvia el emote a la sala.
+    if (data.type === "emote") {
+      const now = Date.now();
+      if (now - (player.lastEmoteAt || 0) < 700) return;
+      player.lastEmoteAt = now;
+      const name = safeText(data.name, "dance1", 24);
+      broadcast(room, { type: "emote", id: player.id, username: player.username, name, ts: now });
       return;
     }
 
