@@ -41,7 +41,10 @@ body.theme-purple{background:#f4efff;color:#30204d}body.theme-purple .sidebar,bo
 .buy:hover{filter:brightness(1.1)}
 .download-box{background:#fff;padding:30px;border:1px solid #ccc;max-width:650px;border-radius:6px}
 
-.chat{position:fixed;right:30px;bottom:0;width:240px;height:40px;background:#292929;color:#fff;border-radius:7px 7px 0 0;padding:12px 18px;cursor:pointer;z-index:200;font-weight:bold;box-shadow:0 -2px 10px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:space-between}.chat .chat-badge{background:#e53935;color:#fff;font-size:11px;border-radius:10px;padding:1px 7px;margin-left:8px;display:none}.chat-window{display:none;position:fixed;right:30px;bottom:40px;width:340px;height:420px;background:#fff;border:1px solid #bbb;z-index:200;border-radius:8px 8px 0 0;box-shadow:0 5px 25px rgba(0,0,0,0.25);flex-direction:column;overflow:hidden}.chat-window.open{display:flex}.chat-header{background:#292929;color:#fff;padding:12px 14px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}.chat-header .chat-status{font-size:11px;font-weight:normal;color:#86efac}.chat-body{flex:1;overflow-y:auto;padding:12px;color:#333;background:#f7f8fa;display:flex;flex-direction:column;gap:8px}.chat-msg{font-size:13px;line-height:1.35;padding:8px 10px;border-radius:8px;background:#fff;border:1px solid #e5e7eb;word-break:break-word}.chat-msg.system{background:#eef2ff;border-color:#c7d2fe;color:#4338ca;font-style:italic}.chat-msg .chat-user{font-weight:bold;color:#1684e8;margin-right:4px}.chat-msg.system .chat-user{color:#4338ca}.chat-msg .chat-time{float:right;font-size:10px;color:#9ca3af;margin-left:8px}.chat-input-row{display:flex;gap:6px;padding:10px;border-top:1px solid #ddd;background:#fff;flex-shrink:0}.chat-input-row input{flex:1;padding:9px 12px;border:1px solid #ccc;border-radius:6px;font-size:13px;outline:none}.chat-input-row input:focus{border-color:#1684e8}.chat-input-row button{padding:9px 14px;background:#1684e8;color:#fff;border:0;border-radius:6px;font-weight:bold;cursor:pointer}.chat-input-row button:hover{background:#0d5aa7}.ingame-chat{position:absolute;left:12px;bottom:50px;width:min(360px,90%);max-height:180px;overflow-y:auto;pointer-events:none;z-index:50;display:flex;flex-direction:column;gap:4px}.ingame-chat .ig-msg{background:rgba(0,0,0,0.55);color:#fff;padding:5px 10px;border-radius:6px;font-size:12px;backdrop-filter:blur(4px)}.ingame-chat .ig-msg .ig-user{font-weight:bold;color:#7dd3fc;margin-right:4px}.ingame-chat .ig-msg.system{color:#c4b5fd}
+.chat{position:fixed;right:30px;bottom:0;width:240px;height:40px;background:#292929;color:#fff;border-radius:7px 7px 0 0;padding:12px 18px;cursor:pointer;z-index:200;font-weight:bold;box-shadow:0 -2px 10px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:space-between}.chat .chat-badge{background:#e53935;color:#fff;font-size:11px;border-radius:10px;padding:1px 7px;margin-left:8px;display:none}
+.creator-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.creator-card{background:#fff;border:1px solid #ccc;border-radius:8px;padding:16px}.creator-tools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.creator-tools button{border:1px solid #bbb;background:#f5f5f5;border-radius:5px;padding:7px 10px;cursor:pointer}.creator-tools button.active{background:#1684e8;color:#fff;border-color:#1684e8}.creator-viewer{height:430px;background:linear-gradient(#dff1ff,#f6fbff);border:1px solid #ccc;border-radius:8px;overflow:hidden;position:relative}.creator-viewer canvas{width:100%;height:100%;display:block}.creator-cube-list{max-height:180px;overflow:auto;border:1px solid #ddd;border-radius:6px;padding:8px}.creator-cube-row{display:flex;align-items:center;gap:8px;padding:6px;border-bottom:1px solid #eee}.creator-cube-row:last-child{border-bottom:0}.creator-cube-row button{margin-left:auto}.creator-color{width:42px;height:34px;padding:0;border:1px solid #aaa}.creator-2d-preview{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}.creator-2d-canvas{width:320px;height:320px;border:1px solid #bbb;background:#fff;image-rendering:auto;touch-action:none}.creator-small{font-size:12px;color:#666}.moderation-badge{display:inline-flex;gap:6px;align-items:center;background:#fff4cc;color:#775800;border:1px solid #e3c55d;padding:4px 8px;border-radius:12px;font-size:11px;font-weight:bold}.creator-msg{min-height:18px;font-size:12px;margin-top:8px}.creator-msg.ok{color:#188038}.creator-msg.err{color:#c5221f}@media(max-width:900px){.creator-layout{grid-template-columns:1fr}.creator-viewer{height:360px}}
+
+.chat-window{display:none;position:fixed;right:30px;bottom:40px;width:340px;height:420px;background:#fff;border:1px solid #bbb;z-index:200;border-radius:8px 8px 0 0;box-shadow:0 5px 25px rgba(0,0,0,0.25);flex-direction:column;overflow:hidden}.chat-window.open{display:flex}.chat-header{background:#292929;color:#fff;padding:12px 14px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}.chat-header .chat-status{font-size:11px;font-weight:normal;color:#86efac}.chat-body{flex:1;overflow-y:auto;padding:12px;color:#333;background:#f7f8fa;display:flex;flex-direction:column;gap:8px}.chat-msg{font-size:13px;line-height:1.35;padding:8px 10px;border-radius:8px;background:#fff;border:1px solid #e5e7eb;word-break:break-word}.chat-msg.system{background:#eef2ff;border-color:#c7d2fe;color:#4338ca;font-style:italic}.chat-msg .chat-user{font-weight:bold;color:#1684e8;margin-right:4px}.chat-msg.system .chat-user{color:#4338ca}.chat-msg .chat-time{float:right;font-size:10px;color:#9ca3af;margin-left:8px}.chat-input-row{display:flex;gap:6px;padding:10px;border-top:1px solid #ddd;background:#fff;flex-shrink:0}.chat-input-row input{flex:1;padding:9px 12px;border:1px solid #ccc;border-radius:6px;font-size:13px;outline:none}.chat-input-row input:focus{border-color:#1684e8}.chat-input-row button{padding:9px 14px;background:#1684e8;color:#fff;border:0;border-radius:6px;font-weight:bold;cursor:pointer}.chat-input-row button:hover{background:#0d5aa7}.ingame-chat{position:absolute;left:12px;bottom:50px;width:min(360px,90%);max-height:180px;overflow-y:auto;pointer-events:none;z-index:50;display:flex;flex-direction:column;gap:4px}.ingame-chat .ig-msg{background:rgba(0,0,0,0.55);color:#fff;padding:5px 10px;border-radius:6px;font-size:12px;backdrop-filter:blur(4px)}.ingame-chat .ig-msg .ig-user{font-weight:bold;color:#7dd3fc;margin-right:4px}.ingame-chat .ig-msg.system{color:#c4b5fd}
 
 /* ===== Cliente 3D pantalla completa ===== */
 body.in-game .topbar, body.in-game .sidebar, body.in-game .main > .page:not(#webClient), body.in-game > .chat { display: none !important; }
@@ -357,7 +360,57 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 
 <section id="profile" class="page"><h1>Profile</h1><div class="profile-card" style="max-width:500px;margin:auto;"><div id="profileAvatar" class="profile-avatar" style="position:relative;left:auto;top:auto;margin:0 auto 15px;"></div><h2 id="profileName" style="text-align:center;">Player ✓</h2><p id="profileUsername" style="text-align:center;color:#777;">@Player</p><div class="bio-box" style="margin-top:12px;"><h3 style="margin-top:0;">Descripción</h3><p id="profileBio">Sin descripción disponible.</p></div><hr><p>Sunnys: <strong id="profileMoney">500</strong> ☀️</p><button class="section-button" onclick="logout()" style="width:100%;margin-top:10px;">Logout</button></div></section>
 
-<section id="create" class="page"><h1>Create</h1><div class="profile-card"><h2>🛠️ EpicBloxs Studio </h2><p>Make your games!.</p><button class="section-button" onclick="alert('Soon!.')">Open Studio</button></div></section>
+<section id="create" class="page">
+  <h1>Crear accesorios y ropa</h1>
+  <p>Construye accesorios 3D con cubos o crea ropa 2D pintando/subiendo una imagen.</p>
+  <div style="margin-bottom:12px" class="moderation-badge">### Moderacion activa: nombres, descripciones y chat filtrados</div>
+  <div class="creator-layout">
+    <div class="creator-card">
+      <div class="creator-tools">
+        <button id="creatorTab3d" class="active" onclick="creatorSetMode('3d')">🧊 Accesorio 3D</button>
+        <button id="creatorTab2d" onclick="creatorSetMode('2d')">👕 Ropa 2D</button>
+      </div>
+
+      <div id="creator3dPanel">
+        <div class="creator-tools">
+          <button onclick="creatorAddCube()">+ Añadir cubo</button>
+          <button onclick="creatorRemoveCube()">Eliminar seleccionado</button>
+          <label>Color <input id="creatorCubeColor" class="creator-color" type="color" value="#1684e8" onchange="creatorPaintCube(this.value)"></label>
+        </div>
+        <div id="creatorCubeList" class="creator-cube-list"></div>
+      </div>
+
+      <div id="creator2dPanel" style="display:none">
+        <div class="creator-tools">
+          <label>Color <input id="creatorBrushColor" class="creator-color" type="color" value="#1684e8"></label>
+          <label>Tamaño <input id="creatorBrushSize" type="range" min="2" max="60" value="12"></label>
+          <button onclick="creatorClear2D()">Limpiar</button>
+          <label class="section-button" style="display:inline-flex;align-items:center;gap:6px;margin:0;background:#292929">Subir imagen <input id="creatorImageFile" type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="creatorLoadImage(event)"></label>
+        </div>
+        <div class="creator-2d-preview">
+          <canvas id="creator2dCanvas" class="creator-2d-canvas" width="512" height="512"></canvas>
+          <div class="creator-small" style="max-width:260px">Dibuja directamente sobre la plantilla. También puedes subir una imagen para usarla como textura. Las imágenes subidas quedan en revisión antes de aparecer públicamente.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <input id="creatorName" maxlength="40" placeholder="Nombre del objeto" style="width:100%;padding:9px;border:1px solid #bbb;border-radius:5px">
+        <textarea id="creatorDescription" maxlength="200" rows="3" placeholder="Descripción" style="width:100%;margin-top:8px;padding:9px;border:1px solid #bbb;border-radius:5px;resize:vertical"></textarea>
+        <div class="creator-tools">
+          <select id="creatorCategory" style="padding:8px;border:1px solid #bbb;border-radius:5px"><option value="gear">Accesorio / Gear</option><option value="hats">Sombrero</option><option value="shirts">Camisa 2D</option><option value="pants">Pantalón 2D</option></select>
+          <button class="section-button" style="margin:0;background:#1684e8" onclick="creatorPublish()">Publicar en catálogo</button>
+        </div>
+        <div id="creatorMessage" class="creator-msg"></div>
+      </div>
+    </div>
+
+    <div class="creator-card">
+      <h3 style="margin-top:0">Visualizador 3D</h3>
+      <div id="creatorViewer" class="creator-viewer"></div>
+      <p class="creator-small">Arrastra para rotar la cámara. En accesorios 3D puedes seleccionar un cubo y pintarlo.</p>
+    </div>
+  </div>
+</section>
 
 <section id="download" class="page"><h1>Download</h1><div class="download-box"><h2>🖥️ EpicBloxs  Client</h2><p>Fucking ChatGPT dosen't want to make a real download client so is just a web client [comming soon download client].</p><button class="section-button" onclick="launchWebClient('EpicBloxs Universe')">Launch 3D Client</button></div></section>
 
@@ -452,7 +505,7 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 
 <div id="chatWindow" class="chat-window">
   <div class="chat-header">
-    <span>EpicBloxs Chat</span>
+    <span>EpicBloxs Chat <span class="moderation-badge" style="margin-left:5px">###</span></span>
     <span class="chat-status" id="chatConnStatus">● Offline</span>
   </div>
   <div class="chat-body" id="chatBody">
@@ -499,6 +552,71 @@ const catalogDatabase = [
   { id: 'Classic Shades', name: 'Classic Shades', category: 'gear', price: 100, desc: 'Gafas de sol estilizadas' },
   { id: 'Cool Backpack', name: 'Cool Backpack', category: 'gear', price: 180, desc: 'Mochila marrón de aventurero' }
 ];
+
+let creatorMode = '3d';
+let creatorScene, creatorCamera, creatorRenderer, creatorAnim;
+let creatorGroup, creatorSelected = null, creatorCubes = [];
+let creator2dCtx = null, creatorDrawing = false, creatorLastX = 0, creatorLastY = 0, creatorClothingTex = null, creatorOrbit={drag:false,x:0,rx:0,ry:0};
+
+function creatorSetMode(mode){
+  creatorMode = mode;
+  document.getElementById('creator3dPanel').style.display = mode === '3d' ? '' : 'none';
+  document.getElementById('creator2dPanel').style.display = mode === '2d' ? '' : 'none';
+  document.getElementById('creatorTab3d').classList.toggle('active', mode === '3d');
+  document.getElementById('creatorTab2d').classList.toggle('active', mode === '2d');
+  creatorInitViewer();
+}
+
+function creatorInit2D(){
+  const canvas=document.getElementById('creator2dCanvas'); if(!canvas || canvas.dataset.ready) return;
+  creator2dCtx=canvas.getContext('2d');
+  creator2dCtx.fillStyle='#ffffff'; creator2dCtx.fillRect(0,0,canvas.width,canvas.height);
+  const start=e=>{creatorDrawing=true; const r=canvas.getBoundingClientRect(); creatorLastX=(e.clientX-r.left)*canvas.width/r.width; creatorLastY=(e.clientY-r.top)*canvas.height/r.height;};
+  const move=e=>{if(!creatorDrawing)return; const r=canvas.getBoundingClientRect(); const x=(e.clientX-r.left)*canvas.width/r.width, y=(e.clientY-r.top)*canvas.height/r.height; creator2dCtx.strokeStyle=document.getElementById('creatorBrushColor').value; creator2dCtx.lineWidth=Number(document.getElementById('creatorBrushSize').value); creator2dCtx.lineCap='round'; creator2dCtx.beginPath(); creator2dCtx.moveTo(creatorLastX,creatorLastY); creator2dCtx.lineTo(x,y); creator2dCtx.stroke(); if(creatorClothingTex) creatorClothingTex.needsUpdate=true; creatorLastX=x; creatorLastY=y;};
+  canvas.addEventListener('pointerdown',start); canvas.addEventListener('pointermove',move); window.addEventListener('pointerup',()=>creatorDrawing=false); canvas.dataset.ready='1';
+}
+function creatorClear2D(){ const c=document.getElementById('creator2dCanvas'); if(!c)return; creator2dCtx=c.getContext('2d'); creator2dCtx.clearRect(0,0,c.width,c.height); creator2dCtx.fillStyle='#fff'; creator2dCtx.fillRect(0,0,c.width,c.height); if(creatorClothingTex) creatorClothingTex.needsUpdate=true; }
+function creatorLoadImage(ev){ const file=ev.target.files&&ev.target.files[0]; if(!file)return; if(file.size>1500000){return creatorMessage('La imagen es demasiado grande (máximo 1.5 MB).',true);} const img=new Image(); img.onload=()=>{creatorClear2D(); const c=document.getElementById('creator2dCanvas'); const scale=Math.min(c.width/img.width,c.height/img.height); const w=img.width*scale,h=img.height*scale; creator2dCtx.drawImage(img,(c.width-w)/2,(c.height-h)/2,w,h);}; img.src=URL.createObjectURL(file); }
+
+function creatorInitViewer(){
+  const box=document.getElementById('creatorViewer'); if(!box || typeof THREE==='undefined')return;
+  creatorInit2D(); if(creatorRenderer){ while(box.firstChild)box.removeChild(box.firstChild); cancelAnimationFrame(creatorAnim); }
+  creatorScene=new THREE.Scene(); creatorScene.background=new THREE.Color(0xeaf4ff);
+  creatorCamera=new THREE.PerspectiveCamera(45,Math.max(1,box.clientWidth)/Math.max(1,box.clientHeight),0.1,100); creatorCamera.position.set(3.5,2.7,5.5);
+  creatorRenderer=new THREE.WebGLRenderer({antialias:true}); creatorRenderer.setSize(Math.max(1,box.clientWidth),Math.max(1,box.clientHeight)); box.appendChild(creatorRenderer.domElement);
+  creatorScene.add(new THREE.HemisphereLight(0xffffff,0x78909c,1.8)); const dl=new THREE.DirectionalLight(0xffffff,2); dl.position.set(4,6,5); creatorScene.add(dl);
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(12,12),new THREE.MeshLambertMaterial({color:0xdfe7ec})); floor.rotation.x=-Math.PI/2; creatorScene.add(floor);
+  creatorGroup=new THREE.Group(); creatorScene.add(creatorGroup);
+  creatorOrbit={drag:false,x:0,rx:0,ry:0};
+  creatorRenderer.domElement.addEventListener('pointerdown',e=>{creatorOrbit.drag=true;creatorOrbit.x=e.clientX;});
+  window.addEventListener('pointerup',()=>creatorOrbit.drag=false);
+  creatorRenderer.domElement.addEventListener('pointermove',e=>{if(!creatorOrbit.drag)return; creatorOrbit.ry+=(e.clientX-creatorOrbit.x)*0.01; creatorOrbit.x=e.clientX; creatorGroup.rotation.y=creatorOrbit.ry;});
+  if(creatorMode==='2d') creatorAddClothingPreview(); else { creatorCubes=[]; creatorSelected=null; creatorAddCube(true); }
+  creatorAnim=()=>{ if(!creatorRenderer)return; requestAnimationFrame(creatorAnim); creatorRenderer.render(creatorScene,creatorCamera); }; creatorAnim();
+  renderCreatorCubeList();
+}
+function creatorAddClothingPreview(){
+  const body=new THREE.Mesh(new THREE.BoxGeometry(1.6,2.1,0.9),new THREE.MeshLambertMaterial({color:0xf5c928})); body.position.y=1.2; creatorGroup.add(body);
+  const c=document.getElementById('creator2dCanvas'); const tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace;
+  const plane=new THREE.Mesh(new THREE.PlaneGeometry(1.55,1.8),new THREE.MeshBasicMaterial({map:tex,transparent:true})); plane.position.set(0,1.25,0.46); creatorGroup.add(plane);
+}
+function creatorAddCube(first=false){
+  if(!creatorGroup)return; const color=document.getElementById('creatorCubeColor').value||'#1684e8'; const cube=new THREE.Mesh(new THREE.BoxGeometry(.65,.65,.65),new THREE.MeshLambertMaterial({color})); const n=creatorCubes.length; cube.position.set((n%3-1)*.78,1.35+Math.floor(n/3)*.72,0); cube.userData.index=n; cube.userData.color=color; cube.castShadow=true; cube.userData.drag=0; creatorGroup.add(cube); creatorCubes.push(cube); creatorSelected=cube; renderCreatorCubeList(); if(!first) creatorMessage('Cubo añadido.');}
+function creatorSelectCube(i){ creatorSelected=creatorCubes[i]||null; renderCreatorCubeList(); }
+function creatorPaintCube(color){ if(creatorSelected){ creatorSelected.material.color.set(color); creatorSelected.userData.color=color; renderCreatorCubeList(); } }
+function creatorRemoveCube(){ if(!creatorSelected||!creatorGroup)return; creatorGroup.remove(creatorSelected); creatorCubes=creatorCubes.filter(c=>c!==creatorSelected); creatorSelected=creatorCubes[creatorCubes.length-1]||null; renderCreatorCubeList(); }
+function renderCreatorCubeList(){ const box=document.getElementById('creatorCubeList'); if(!box)return; if(!creatorCubes.length){box.innerHTML='<div class="creator-small">No hay cubos.</div>';return;} box.innerHTML=creatorCubes.map((c,i)=>`<div class="creator-cube-row"><span>🧊 Cubo ${i+1}</span><span style="width:18px;height:18px;border-radius:3px;background:${c.userData.color};border:1px solid #999"></span><button onclick="creatorSelectCube(${i})">${creatorSelected===c?'Seleccionado':'Seleccionar'}</button></div>`).join(''); }
+function creatorMessage(text,error=false){ const el=document.getElementById('creatorMessage'); if(!el)return; el.textContent=text; el.className='creator-msg '+(error?'err':'ok'); }
+function creatorPublish(){
+  const c=current(); if(!c)return creatorMessage('Debes iniciar sesión.',true);
+  const name=document.getElementById('creatorName').value.trim(), description=document.getElementById('creatorDescription').value.trim(), category=document.getElementById('creatorCategory').value;
+  if(name.length<2)return creatorMessage('Pon un nombre al objeto.',true);
+  let data={}; let type='accessory3d';
+  if(creatorMode==='3d'){ data={cubes:creatorCubes.map((cube,i)=>({x:cube.position.x,y:cube.position.y,z:cube.position.z,color:cube.userData.color||'#1684e8',scale:[cube.scale.x,cube.scale.y,cube.scale.z]}))}; }
+  else { type='2d'; data={imageData:document.getElementById('creator2dCanvas').toDataURL('image/png')}; }
+  fetch('/api/creator/publish',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},body:JSON.stringify({name,description,category,type,data})}).then(r=>r.json().then(x=>({ok:r.ok,status:r.status,data:x}))).then(({ok,data})=>{ creatorMessage(data.message||data.error||'Listo.',!ok); if(ok){ loadCustomCatalog(); }}).catch(()=>creatorMessage('No se pudo conectar con el servidor.',true));
+}
+function loadCustomCatalog(){ fetch('/api/catalog/custom').then(r=>r.json()).then(data=>{ const custom=data.items||[]; custom.forEach(item=>{ if(!catalogDatabase.some(x=>x.id===item.id)) catalogDatabase.push({id:item.id,name:item.name,category:item.category,price:0,desc:item.description||'Creado por la comunidad',custom:true,data:item.data,type:item.type}); }); if(typeof renderCatalog==='function') renderCatalog('all'); }).catch(()=>{}); }
 
 function startAmbientMusic(gameName) {
   stopAmbientMusic();
@@ -3602,6 +3720,9 @@ function showPage(p){
   if(p==="catalog") {
     renderCatalog('all');
   }
+  if(p==="create") {
+    setTimeout(() => creatorInitViewer(), 80);
+  }
   if(p==="avatar") {
     setTimeout(() => initPreviewRenderer(), 100);
   }
@@ -3669,6 +3790,8 @@ function catalogIconSVG(item) {
   if(item.category === 'faces' && item.id === 'Cool Wink') return `<svg ${common}><circle cx="48" cy="48" r="34" fill="#F5C928" stroke="#9A7B00" stroke-width="4"/><circle cx="35" cy="41" r="4" fill="#222"/><path d="M57 40C63 35 68 40 63 44" stroke="#222" stroke-width="4" stroke-linecap="round"/><path d="M35 56C42 62 53 62 60 55" stroke="#222" stroke-width="4" stroke-linecap="round"/></svg>`;
   if(item.category === 'gear' && item.id === 'Classic Shades') return `<svg ${common}><path d="M14 43C20 37 32 36 45 42V55C31 60 20 58 14 52V43Z" fill="#222" stroke="#111" stroke-width="4"/><path d="M82 43C76 37 64 36 51 42V55C65 60 76 58 82 52V43Z" fill="#222" stroke="#111" stroke-width="4"/><path d="M45 44H51" stroke="#111" stroke-width="5"/></svg>`;
   if(item.category === 'gear' && item.id === 'Cool Backpack') return `<svg ${common}><rect x="25" y="23" width="46" height="55" rx="10" fill="#8D5A32" stroke="#4E2F1A" stroke-width="4"/><path d="M35 24C35 10 61 10 61 24" stroke="#4E2F1A" stroke-width="7" fill="none"/><rect x="31" y="46" width="34" height="17" rx="5" fill="#B77A45" stroke="#4E2F1A" stroke-width="3"/><circle cx="48" cy="54" r="3" fill="#4E2F1A"/></svg>`;
+  if(item.custom && item.type === '2d' && item.data && item.data.imageData) return `<img src=\"${item.data.imageData}\" style=\"max-width:100%;max-height:150px;object-fit:contain\" alt=\"Ropa 2D\">`;
+  if(item.custom && item.type === 'accessory3d') return `<div style=\"font-size:58px\">🧊</div>`;
   return `<svg ${common}><rect x="18" y="18" width="60" height="60" rx="12" fill="#E9EEF3" stroke="#9AA7B2" stroke-width="4"/><path d="M30 50H66" stroke="#1684E8" stroke-width="6" stroke-linecap="round"/></svg>`;
 }
 
@@ -3991,6 +4114,8 @@ function init(){
   makeColorButtons("headColors","head");makeColorButtons("armColors","arms");makeColorButtons("torsoColors","torso");makeColorButtons("legsColors","legs");
   const c=current();if(c)loadCurrentUser();else document.getElementById('authScreen').style.display="flex";
   loadGames();
+  loadCustomCatalog();
+  setTimeout(creatorInitViewer, 250);
 }
 init();
 </script>
