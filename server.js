@@ -25,6 +25,7 @@ const usersPath = path.join(dataDir, "users.json");
 const catalogPath = path.join(dataDir, "catalog.json");
 const sessionsPath = path.join(dataDir, "sessions.json");
 const dmsPath = path.join(dataDir, "dms.json");
+const groupsPath = path.join(dataDir, "groups.json");
 const sessionSecretPath = path.join(dataDir, "session-secret.txt");
 
 function ensureDataDir() {
@@ -170,6 +171,12 @@ function loadDMs() {
 }
 function saveDMs(data) {
   try { ensureDataDir(); fs.writeFileSync(dmsPath, JSON.stringify(data), "utf8"); } catch {}
+}
+function loadGroups() {
+  try { ensureDataDir(); return JSON.parse(fs.readFileSync(groupsPath, "utf8") || "{}"); } catch { return {}; }
+}
+function saveGroups(data) {
+  try { ensureDataDir(); fs.writeFileSync(groupsPath, JSON.stringify(data), "utf8"); } catch {}
 }
 function dmConvKey(a, b) {
   return [String(a), String(b)].sort().join("|");
@@ -370,10 +377,12 @@ function ensureUserIds(users) {
       if (!Array.isArray(user[field])) { user[field] = []; changed = true; }
     }
     if (!Array.isArray(user.avatarInventory)) {
-      user.avatarInventory = Array.isArray(user.inventory) ? user.inventory.slice() : [];
+      user.avatarInventory = Array.isArray(user.inventory) ? user.inventory.slice(0, 20) : [];
       changed = true;
     }
+    if (Array.isArray(user.avatarInventory) && user.avatarInventory.length > 20) { user.avatarInventory = user.avatarInventory.slice(0, 20); changed = true; }
     if (!Array.isArray(user.gameInventory)) { user.gameInventory = []; changed = true; }
+    if (Array.isArray(user.gameInventory) && user.gameInventory.length > 20) { user.gameInventory = user.gameInventory.slice(0, 20); changed = true; }
     if (!user.avatar || typeof user.avatar !== "object") {
       user.avatar = { accessories: [], torsoType: "male", colors: { head: "#f5c928", arms: "#f5c928", torso: "#1477b9", legs: "#8cae45" } };
       changed = true;
@@ -468,8 +477,8 @@ function publicUser(user, key) {
     theme: user.theme || "light",
     sunnys: user.sunnys || 0,
     avatar: user.avatar || {},
-    avatarInventory: user.avatarInventory || user.inventory || [],
-    gameInventory: user.gameInventory || [],
+    avatarInventory: (user.avatarInventory || user.inventory || []).slice(0, 20),
+    gameInventory: (user.gameInventory || []).slice(0, 20),
     inventory: [],
     friends: user.friends || [],
     friendRequests: user.friendRequests || [],
@@ -645,15 +654,13 @@ const server = http.createServer(async (req, res) => {
     const users = sess.users;
     const user = users[sess.key];
     if (body.avatar) user.avatar = body.avatar;
-    if (Array.isArray(body.avatarInventory)) user.avatarInventory = body.avatarInventory;
-    if (Array.isArray(body.gameInventory)) user.gameInventory = body.gameInventory;
+    if (Array.isArray(body.avatarInventory)) user.avatarInventory = body.avatarInventory.slice(0, 20);
+    if (Array.isArray(body.gameInventory)) user.gameInventory = body.gameInventory.slice(0, 20);
     // Compatibilidad con versiones anteriores: nunca vuelve a usarse como inventario de juego.
     user.inventory = [];
     if (typeof body.sunnys === "number") user.sunnys = Math.max(0, Math.min(9999999, body.sunnys));
     if (typeof body.bio === "string") user.bio = safeText(body.bio, user.bio, 200);
     if (typeof body.theme === "string") user.theme = ["light","dark","blue","purple"].includes(body.theme) ? body.theme : (user.theme || "light");
-    if (typeof body.loginStreak === "number") user.loginStreak = Math.max(0, Math.min(9999, body.loginStreak));
-    if (typeof body.lastStreakClaim === "string") user.lastStreakClaim = safeText(body.lastStreakClaim, "", 32);
     if (body.avatar && body.avatar.torsoType) {
       user.avatar = user.avatar || {};
       user.avatar.torsoType = body.avatar.torsoType === "female" ? "female" : "male";
@@ -906,6 +913,105 @@ const server = http.createServer(async (req, res) => {
     items.push(item);
     saveCatalog(items);
     return json(res, 200, { ok: true, published: true, item, message: "Publicado en el catalogo correctamente." });
+  }
+
+  if (urlPath === "/api/streak/claim" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const users = sess.users;
+    const user = users[sess.key];
+    const now = new Date();
+    const today = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+    if (user.lastStreakClaim === today) return json(res, 409, { error: "Ya reclamaste la racha de hoy.", user: publicUser(user, sess.key) });
+    const yesterdayDate = new Date(now);
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterday = yesterdayDate.getFullYear() + "-" + String(yesterdayDate.getMonth() + 1).padStart(2, "0") + "-" + String(yesterdayDate.getDate()).padStart(2, "0");
+    user.loginStreak = user.lastStreakClaim === yesterday ? (Number(user.loginStreak) || 0) + 1 : 1;
+    const reward = Math.min(500, 25 + user.loginStreak * 25);
+    user.sunnys = (Number(user.sunnys) || 0) + reward;
+    user.lastStreakClaim = today;
+    users[sess.key] = user;
+    saveUsersDisk(users);
+    return json(res, 200, { ok: true, reward, user: publicUser(user, sess.key) });
+  }
+
+  // ================= GRUPOS (hasta 20 amigos por grupo) =================
+  if (urlPath === "/api/groups" && req.method === "GET") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const users = sess.users;
+    const groups = loadGroups();
+    const result = Object.values(groups).filter(group => Array.isArray(group.memberKeys) && group.memberKeys.includes(sess.key)).map(group => {
+      const messages = Array.isArray(group.messages) ? group.messages : [];
+      const readAt = (group.readAt || {})[sess.key] || 0;
+      const last = messages[messages.length - 1] || null;
+      return {
+        id: group.id, name: group.name, ownerId: String(users[group.ownerKey] && users[group.ownerKey].userId || ""),
+        members: group.memberKeys.map(key => publicFriendUser(users[key], key)).filter(Boolean),
+        unread: messages.filter(message => message.from !== sess.key && message.ts > readAt).length,
+        lastMessage: last ? { username: users[last.from] && users[last.from].username || "Usuario", text: last.text, ts: last.ts } : null,
+        createdAt: group.createdAt
+      };
+    });
+    result.sort((a, b) => ((b.lastMessage && b.lastMessage.ts) || 0) - ((a.lastMessage && a.lastMessage.ts) || 0));
+    return json(res, 200, { groups: result, unreadTotal: result.reduce((total, group) => total + group.unread, 0) });
+  }
+
+  if (urlPath === "/api/groups" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const body = await readBody(req);
+    const name = safeText(body.name, "", 40);
+    if (name.length < 2) return json(res, 400, { error: "El grupo necesita un nombre." });
+    if (hasBannedTerm(name)) return json(res, 400, { error: "Ese nombre de grupo no esta permitido." });
+    const users = ensureUserIds(sess.users);
+    const me = users[sess.key];
+    const friendSet = new Set(me.friends || []);
+    const requested = Array.isArray(body.memberIds) ? body.memberIds : [];
+    const memberKeys = [...new Set(requested.map(identifier => resolveUserKey(users, identifier)).filter(key => key && key !== sess.key && friendSet.has(key)))].slice(0, 20);
+    if (!memberKeys.length) return json(res, 400, { error: "Selecciona al menos un amigo del grupo." });
+    const group = { id: "G-" + crypto.randomBytes(6).toString("hex"), name, ownerKey: sess.key, memberKeys: [sess.key, ...memberKeys], messages: [], readAt: {}, createdAt: new Date().toISOString() };
+    const groups = loadGroups();
+    groups[group.id] = group;
+    saveGroups(groups);
+    return json(res, 201, { ok: true, group: { id: group.id, name: group.name, members: group.memberKeys.map(key => publicFriendUser(users[key], key)).filter(Boolean), unread: 0, lastMessage: null, createdAt: group.createdAt } });
+  }
+
+  if (urlPath === "/api/groups/thread" && req.method === "GET") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const groupId = safeText(new URL(req.url, "http://x").searchParams.get("id"), "", 80);
+    const groups = loadGroups();
+    const group = groups[groupId];
+    if (!group || !Array.isArray(group.memberKeys) || !group.memberKeys.includes(sess.key)) return json(res, 404, { error: "Grupo no encontrado." });
+    group.readAt = group.readAt || {};
+    group.readAt[sess.key] = Date.now();
+    saveGroups(groups);
+    const users = sess.users;
+    return json(res, 200, { group: { id: group.id, name: group.name, members: group.memberKeys.map(key => publicFriendUser(users[key], key)).filter(Boolean) }, messages: (group.messages || []).slice(-120).map(message => ({ from: message.from === sess.key ? "me" : "them", username: users[message.from] && users[message.from].username || "Usuario", text: message.text, ts: message.ts })) });
+  }
+
+  if (urlPath === "/api/groups/message" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const body = await readBody(req);
+    const groupId = safeText(body.groupId, "", 80);
+    const groups = loadGroups();
+    const group = groups[groupId];
+    if (!group || !Array.isArray(group.memberKeys) || !group.memberKeys.includes(sess.key)) return json(res, 404, { error: "Grupo no encontrado." });
+    const text = censorText(safeText(body.text, "", MAX_CHAT_LEN));
+    if (!text) return json(res, 400, { error: "Escribe un mensaje." });
+    group.messages = Array.isArray(group.messages) ? group.messages : [];
+    const now = Date.now();
+    const last = group.messages[group.messages.length - 1];
+    if (last && last.from === sess.key && now - last.ts < 400) return json(res, 429, { error: "Vas muy rapido, espera un momento." });
+    group.messages.push({ from: sess.key, text, ts: now });
+    if (group.messages.length > 400) group.messages = group.messages.slice(-400);
+    group.readAt = group.readAt || {};
+    group.readAt[sess.key] = now;
+    groups[groupId] = group;
+    saveGroups(groups);
+    return json(res, 200, { ok: true, message: { from: "me", username: sess.user.username, text, ts: now } });
   }
 
   // ================= CHAT DIRECTO (mensajes privados) =================
