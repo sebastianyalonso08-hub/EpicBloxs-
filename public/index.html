@@ -28,7 +28,7 @@
 .cat-tab{background:#ddd;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-weight:bold;font-size:13px}
 .cat-tab.active{background:#1684e8;color:#fff}
 
-.catalog-grid,.inventory-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:15px}
+.catalog-grid,.inventory-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:15px}.inventory-slots{grid-template-columns:repeat(3,1fr)!important;max-width:540px}.inventory-slot{min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;border:2px dashed #ccc;border-radius:8px;padding:10px}.inventory-slot.filled{border-style:solid;border-color:#bbb}.inventory-slot .slot-num{font-size:10px;color:#999;align-self:flex-start}
 .catalog-item,.inventory-item,.profile-card,.settings-card{background:#fff;border:1px solid #ccc;padding:15px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:transform 0.2s,box-shadow 0.2s}
 .catalog-item:hover,.inventory-item:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,0.1)}
 .catalog-item{text-align:center}
@@ -96,7 +96,53 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 
 @media(max-width:1000px){.games{grid-template-columns:repeat(4,1fr)}.catalog-grid,.inventory-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:700px){.sidebar{width:60px}.sidebar-user,.side-item span,.upgrade,.events{display:none}.side-item{justify-content:center}.main{margin-left:60px}.profile-header{padding-left:120px}.profile-avatar{width:105px;height:105px}.games{grid-template-columns:repeat(2,1fr)}.catalog-grid,.inventory-grid{grid-template-columns:repeat(2,1fr)}.top-link{display:none}}
+
+/* Mini Bot setup automatico */
+#epicBot{
+  position:fixed;right:18px;bottom:18px;z-index:10050;
+  width:min(320px,92vw);background:#111827;color:#fff;
+  border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.45);
+  border:1px solid rgba(255,255,255,.12);overflow:hidden;
+  font-family:Arial,sans-serif;display:none;
+}
+#epicBot.open{display:block;animation:botIn .25s ease}
+@keyframes botIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.epic-bot-head{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#0f172a;border-bottom:1px solid rgba(255,255,255,.08)}
+.epic-bot-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#25a9ff,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.epic-bot-title{font-weight:bold;font-size:14px}
+.epic-bot-sub{font-size:11px;color:#94a3b8}
+.epic-bot-body{padding:12px 14px;max-height:220px;overflow-y:auto}
+.epic-bot-step{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#cbd5e1;margin:0 0 8px;line-height:1.35}
+.epic-bot-step .dot{width:8px;height:8px;border-radius:50%;margin-top:4px;background:#475569;flex-shrink:0}
+.epic-bot-step.doing .dot{background:#38bdf8;box-shadow:0 0 0 3px rgba(56,189,248,.25)}
+.epic-bot-step.done .dot{background:#22c55e}
+.epic-bot-step.done{color:#86efac}
+.epic-bot-bar{height:4px;background:#1e293b;margin:0 14px 12px;border-radius:4px;overflow:hidden}
+.epic-bot-bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,#25a9ff,#22c55e);transition:width .35s ease}
+.epic-bot-foot{padding:0 14px 12px;font-size:11px;color:#64748b}
+
+.game-inv-panel{
+  display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(360px,92vw);background:rgba(15,20,30,0.95);color:#fff;
+  border:1px solid rgba(255,255,255,0.18);border-radius:14px;z-index:60;
+  box-shadow:0 16px 50px rgba(0,0,0,0.55);backdrop-filter:blur(10px);
+  padding:12px;
+}
+.game-inv-panel.open{display:block}
+.game-inv-head{display:flex;justify-content:space-between;align-items:center;font-weight:bold;margin-bottom:10px;font-size:15px}
+.game-inv-head button{background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer;line-height:1}
+.game-inv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.game-inv-slot{
+  min-height:88px;border:2px dashed rgba(255,255,255,0.25);border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(255,255,255,0.04);padding:6px;font-size:11px;color:#94a3b8;
+}
+.game-inv-slot.filled{border-style:solid;border-color:rgba(125,211,252,0.45);color:#e2e8f0}
+.game-inv-slot .slot-n{font-size:9px;color:#64748b;align-self:flex-start}
+.game-inv-foot{margin-top:10px;font-size:11px;color:#64748b;text-align:center}
+
 </style>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -104,7 +150,7 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 <div id="authScreen">
   <div class="auth-box">
     <div class="auth-logo">Epic<span>Bloxs</span></div>
-    <div class="auth-sub">Welcome to EpicBloxs An AI Roblox Remake Still in a huge Work in Progress!</div>
+    <div class="auth-sub">Bienvenido a EpicBloxs</div>
     <div class="auth-tabs">
       <button id="loginTab" class="auth-tab active" onclick="switchAuth('login')">Login</button>
       <button id="registerTab" class="auth-tab" onclick="switchAuth('register')">Create Account</button>
@@ -122,7 +168,7 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
       <button class="auth-button">Create Account</button>
       <div id="registerMessage" class="auth-message"></div>
     </form>
-    <div class="auth-info">Modo local de prueba. Las cuentas se guardan en este navegador.</div>
+    <div class="auth-info">Crea tu cuenta e inicia sesion. Usa la web desde tu URL de Render.</div>
   </div>
 </div>
 
@@ -147,6 +193,7 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
   <div class="side-item" onclick="showPage('profile')"><div class="side-icon">♙</div><span>Profile</span></div>
   <div class="side-item" onclick="showPage('avatar')"><div class="side-icon">👕</div><span>Avatar</span></div>
   <div class="side-item" onclick="showPage('inventory')"><div class="side-icon">🎒</div><span>Inventory</span></div>
+  <div class="side-item" onclick="showPage('streak')"><div class="side-icon">🔥</div><span>Racha</span></div>
   <div class="side-item" onclick="showPage('catalog')"><div class="side-icon">🛒</div><span>Catalog</span></div>
   <div class="side-item" onclick="showPage('friends')"><div class="side-icon">👥</div><span>Friends</span></div>
   <div class="side-item" onclick="showPage('settings')"><div class="side-icon">⚙️</div><span>Settings</span></div>
@@ -197,10 +244,20 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 
       <div class="game-fab-bar">
         <button class="game-fab" id="fabChatBtn" onclick="toggleChat()" title="Chat">💬<span class="fab-badge" id="fabChatBadge">0</span></button>
+        <button class="game-fab" id="fabInvBtn" onclick="toggleGameInventory()" title="Inventario">🎒</button>
         <button class="game-fab" id="fabMenuBtn" onclick="toggleGameMenu()" title="Menú">☰</button>
       </div>
 
       <div id="ingameChat" class="ingame-chat"></div>
+
+      <div id="gameInventoryPanel" class="game-inv-panel">
+        <div class="game-inv-head">
+          <span>🎒 Inventario</span>
+          <button type="button" onclick="toggleGameInventory(false)">✕</button>
+        </div>
+        <div id="gameInventoryGrid" class="game-inv-grid"></div>
+        <div class="game-inv-foot">9 slots · Vacío al empezar</div>
+      </div>
 
       <div class="mobile-controls" id="mobileControls">
         <div class="look-zone" id="lookZone"></div>
@@ -216,6 +273,7 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
           <p id="gameMenuSubtitle">EpicBloxs</p>
           <button class="game-menu-btn primary" onclick="toggleGameMenu()">▶ Continuar</button>
           <button class="game-menu-btn secondary" onclick="toggleGameMenu(); toggleChat();">💬 Chat</button>
+          <button class="game-menu-btn secondary" onclick="toggleGameMenu(); toggleGameInventory(true);">🎒 Inventario</button>
           <button class="game-menu-btn danger" onclick="exitWebClient()">🚪 Salir del juego</button>
         </div>
       </div>
@@ -299,6 +357,13 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
         <button class="section-button" onclick="toggleAccessory('normal')">Ninguno</button>
       </div>
 
+      <div class="color-section">
+        <h3>Tipo de Torso</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+          <button type="button" id="torsoTypeMale" class="section-button" style="background:#1684e8" onclick="setTorsoType('male')">♂ Hombre (Default)</button>
+          <button type="button" id="torsoTypeFemale" class="section-button" style="background:#292929" onclick="setTorsoType('female')">♀ Mujer</button>
+        </div>
+      </div>
       <div class="color-section"><h3>Head Color</h3><div id="headColors" class="color-buttons"></div></div>
       <div class="color-section"><h3>Arms Color</h3><div id="armColors" class="color-buttons"></div></div>
       <div class="color-section"><h3>Torso Color</h3><div id="torsoColors" class="color-buttons"></div></div>
@@ -307,7 +372,37 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
   </div>
 </section>
 
-<section id="inventory" class="page"><h1>Inventory</h1><div id="inventoryGrid" class="inventory-grid"></div></section>
+<section id="inventory" class="page">
+  <h1>Inventory</h1>
+  <div class="settings-card" style="max-width:480px">
+    <p style="font-size:15px;color:#444;margin:0 0 8px">El inventario de <b>9 slots</b> está <b>dentro del juego</b>.</p>
+    <p style="font-size:13px;color:#666;margin:0">Entra a un juego y pulsa el botón <b>🎒</b> para abrirlo.</p>
+  </div>
+  <div id="inventoryGrid" style="display:none"></div>
+</section>
+
+<section id="streak" class="page">
+  <h1>☀️ Racha de Sunnys</h1>
+  <div class="settings-card" style="max-width:520px">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+      <div style="font-size:48px">🔥</div>
+      <div>
+        <div style="font-size:13px;color:#666">Racha actual</div>
+        <div id="streakDays" style="font-size:32px;font-weight:900;color:#e67e22">0 días</div>
+      </div>
+    </div>
+    <div class="setting-row"><span>Recompensa de hoy</span><strong id="streakReward">+50 ☀️</strong></div>
+    <div class="setting-row"><span>Próxima recompensa</span><strong id="streakNext">+75 ☀️</strong></div>
+    <div class="setting-row"><span>Última reclamación</span><strong id="streakLast">Nunca</strong></div>
+    <div style="margin-top:14px;background:#f3f4f6;border-radius:8px;height:12px;overflow:hidden">
+      <div id="streakBar" style="height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#ef4444);transition:width .4s"></div>
+    </div>
+    <p style="font-size:12px;color:#666;margin-top:10px">Cada día seguido que entres, la racha sube y recibes más Sunnys.</p>
+    <button class="section-button" style="margin-top:14px;background:linear-gradient(135deg,#f59e0b,#e67e22)" onclick="claimStreakReward()">Reclamar racha de hoy</button>
+    <div id="streakMsg" style="margin-top:10px;font-size:13px;min-height:18px"></div>
+  </div>
+</section>
+
 
 <section id="settings" class="page">
   <h1>Configuración</h1>
@@ -345,6 +440,7 @@ let gameSessionEarnings = 0;
 let currentGameType = "Epic Obby";
 let collectibleCoins = [];
 let activePlatforms = [];
+let solidColliders = [];
 
 let isRightMouseDown = false;
 let mouseXOnMouseDown = 0;
@@ -418,6 +514,87 @@ function stopAmbientMusic() {
   }
   audioCtx = null;
 }
+
+
+// ===== Racha de Sunnys =====
+function streakRewardForDay(day){
+  // dia 1: 50, 2:75, 3:100, ... tope 500
+  const d = Math.max(1, Number(day) || 1);
+  return Math.min(500, 25 + d * 25);
+}
+
+function getTodayKey(){
+  const n = new Date();
+  return n.getFullYear() + "-" + String(n.getMonth()+1).padStart(2,"0") + "-" + String(n.getDate()).padStart(2,"0");
+}
+
+function getYesterdayKey(){
+  const n = new Date();
+  n.setDate(n.getDate() - 1);
+  return n.getFullYear() + "-" + String(n.getMonth()+1).padStart(2,"0") + "-" + String(n.getDate()).padStart(2,"0");
+}
+
+function updateStreakUI(){
+  const c = current();
+  if (!c) return;
+  const u = c.user;
+  const streak = u.loginStreak || 0;
+  const today = getTodayKey();
+  const claimedToday = u.lastStreakClaim === today;
+  const rewardDay = claimedToday ? streak : streak + 1;
+  const reward = streakRewardForDay(Math.max(1, rewardDay));
+  const next = streakRewardForDay(Math.max(1, rewardDay) + 1);
+
+  const elDays = document.getElementById("streakDays");
+  const elReward = document.getElementById("streakReward");
+  const elNext = document.getElementById("streakNext");
+  const elLast = document.getElementById("streakLast");
+  const elBar = document.getElementById("streakBar");
+  const elMsg = document.getElementById("streakMsg");
+
+  if (elDays) elDays.textContent = streak + (streak === 1 ? " día" : " días");
+  if (elReward) elReward.textContent = claimedToday ? "Ya reclamado hoy" : ("+" + reward + " ☀️");
+  if (elNext) elNext.textContent = "+" + next + " ☀️";
+  if (elLast) elLast.textContent = u.lastStreakClaim || "Nunca";
+  if (elBar) elBar.style.width = Math.min(100, (streak % 7) / 7 * 100) + "%";
+  if (elMsg && !elMsg.dataset.locked) elMsg.textContent = "";
+}
+
+function claimStreakReward(){
+  const c = current();
+  if (!c) return;
+  const u = c.user;
+  const today = getTodayKey();
+  const yesterday = getYesterdayKey();
+  const elMsg = document.getElementById("streakMsg");
+
+  if (u.lastStreakClaim === today) {
+    if (elMsg) { elMsg.style.color = "#d93025"; elMsg.textContent = "Ya reclamaste la racha de hoy."; }
+    updateStreakUI();
+    return;
+  }
+
+  if (u.lastStreakClaim === yesterday) {
+    u.loginStreak = (u.loginStreak || 0) + 1;
+  } else {
+    u.loginStreak = 1; // se rompio o primera vez
+  }
+
+  const reward = streakRewardForDay(u.loginStreak);
+  u.sunnys = (u.sunnys || 0) + reward;
+  u.lastStreakClaim = today;
+  setCachedUser(u);
+  const map = getUsers(); map[c.key] = u; saveUsers(map);
+  try { updateUI(u); } catch(e) {}
+  updateStreakUI();
+  if (elMsg) {
+    elMsg.style.color = "#188038";
+    elMsg.textContent = "Racha x" + u.loginStreak + ": +" + reward + " Sunnys!";
+    elMsg.dataset.locked = "1";
+    setTimeout(() => { elMsg.dataset.locked = ""; }, 2000);
+  }
+}
+
 
 function addSunnys(amount) {
   const c = current();
@@ -874,39 +1051,106 @@ function buildAvatar3DModel(userData) {
   const frontFaceMat = new THREE.MeshLambertMaterial({map: faceTexture, color: headCol});
   const headMaterials = [sideHeadMat, sideHeadMat, sideHeadMat, sideHeadMat, frontFaceMat, sideHeadMat];
   
-  // Cabeza apoyada sobre el torso (top torso ~1.75 → centro cabeza 2.2)
+  // Proporciones R6 clásicas (sin solapar torso/piernas)
+  // Torso: bottom y=0.3 · Piernas: top y=0.3 · Cabeza encima del torso
+  const torsoType = (avatarData.torsoType === "female") ? "female" : "male";
+  let armX = 0.9, armY = 1.0, armW = 0.45, armH = 1.4;
+  let torsoMesh;
+
+  if (torsoType === "female") {
+    // Classic Female R6: UNA sola malla con silueta en reloj de arena (como la referencia)
+    // Perfil frontal tipo girl torso: ancha arriba, pinzada al centro, cadera media
+    const shape = new THREE.Shape();
+    // Contorno derecho (luego espejo automatico con shape cerrado)
+    // Coordenadas en plano XY; se extruye en Z
+    // y: +0.7 top ... -0.7 bottom  (altura total 1.4 como el hombre)
+    shape.moveTo(0, 0.70);
+    shape.lineTo(0.56, 0.70);   // hombro exterior
+    shape.lineTo(0.56, 0.28);   // baja recto del pecho
+    shape.lineTo(0.28, 0.02);   // diagonal hacia cintura (recorte triangular)
+    shape.lineTo(0.28, -0.12);  // cintura estrecha
+    shape.lineTo(0.46, -0.42);  // abre hacia cadera
+    shape.lineTo(0.46, -0.70);  // base
+    shape.lineTo(0, -0.70);     // centro inferior
+    shape.lineTo(0, 0.70);      // cierra por el centro (mitad); extrude usa forma completa
+    // Rehacer forma completa simetrica (izquierda + derecha)
+    const full = new THREE.Shape();
+    full.moveTo(-0.56, 0.70);
+    full.lineTo(0.56, 0.70);
+    full.lineTo(0.56, 0.28);
+    full.lineTo(0.28, 0.02);
+    full.lineTo(0.28, -0.12);
+    full.lineTo(0.46, -0.42);
+    full.lineTo(0.46, -0.70);
+    full.lineTo(-0.46, -0.70);
+    full.lineTo(-0.46, -0.42);
+    full.lineTo(-0.28, -0.12);
+    full.lineTo(-0.28, 0.02);
+    full.lineTo(-0.56, 0.28);
+    full.lineTo(-0.56, 0.70);
+
+    const extrudeSettings = {
+      depth: 0.55,
+      bevelEnabled: true,
+      bevelThickness: 0.04,
+      bevelSize: 0.03,
+      bevelSegments: 1
+    };
+    const geo = new THREE.ExtrudeGeometry(full, extrudeSettings);
+    geo.translate(0, 0, -0.275); // centrar en Z
+    // Centrar pivote en Y del bounding box
+    geo.computeBoundingBox();
+    const bb = geo.boundingBox;
+    const cy = (bb.min.y + bb.max.y) / 2;
+    geo.translate(0, -cy, 0);
+
+    torsoMesh = new THREE.Mesh(geo, torsoMat);
+    torsoMesh.name = "torso";
+    torsoMesh.position.set(0, 1.0, 0); // bottom ~0.3, top ~1.7
+    torsoMesh.castShadow = true;
+    torsoMesh.receiveShadow = true;
+
+    armX = 0.80;
+    armY = 1.12; // a la altura de los hombros
+    armW = 0.42;
+    armH = 1.35;
+  } else {
+    // Hombre R6 clásico: bloque 1.2 x 1.4 x 0.6, centro y=1.0
+    torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 0.6), torsoMat);
+    torsoMesh.position.set(0, 1.0, 0);
+    torsoMesh.name = "torso";
+    torsoMesh.castShadow = true;
+    torsoMesh.receiveShadow = true;
+  }
+
+  // Cabeza encima del torso (torso top ~1.7)
   const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), headMaterials);
-  headMesh.position.set(0, 2.2, 0);
+  headMesh.position.set(0, 2.15, 0);
   headMesh.name = "head";
   headMesh.castShadow = true;
   headMesh.receiveShadow = true;
 
-  const torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 0.6), torsoMat);
-  torsoMesh.position.set(0, 1.05, 0);
-  torsoMesh.name = "torso";
-  torsoMesh.castShadow = true;
-  torsoMesh.receiveShadow = true;
-
-  const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.45, 1.4, 0.5), armMat);
-  leftArm.position.set(-0.9, 1.05, 0);
+  const leftArm = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.5), armMat);
+  leftArm.position.set(-armX, armY, 0);
   leftArm.name = "leftArm";
   leftArm.castShadow = true;
   leftArm.receiveShadow = true;
 
-  const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.45, 1.4, 0.5), armMat);
-  rightArm.position.set(0.9, 1.05, 0);
+  const rightArm = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.5), armMat);
+  rightArm.position.set(armX, armY, 0);
   rightArm.name = "rightArm";
   rightArm.castShadow = true;
   rightArm.receiveShadow = true;
 
-  const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.3, 0.55), legMat);
-  leftLeg.position.set(-0.32, -0.15, 0);
+  // Piernas DEBAJO del torso (top de pierna = bottom de torso = 0.3)
+  const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.5), legMat);
+  leftLeg.position.set(-0.3, -0.3, 0);
   leftLeg.name = "leftLeg";
   leftLeg.castShadow = true;
   leftLeg.receiveShadow = true;
 
-  const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.3, 0.55), legMat);
-  rightLeg.position.set(0.32, -0.15, 0);
+  const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.5), legMat);
+  rightLeg.position.set(0.3, -0.3, 0);
   rightLeg.name = "rightLeg";
   rightLeg.castShadow = true;
   rightLeg.receiveShadow = true;
@@ -1068,6 +1312,7 @@ function launchWebClient(gameName) {
 }
 
 function exitWebClient() {
+  try { toggleGameInventory(false); } catch(e) {}
   disconnectMultiplayer();
   epicGameId = null;
   epicServerId = null;
@@ -1398,6 +1643,7 @@ function initGameWebGL(gameName) {
   buildUniqueGameWorld(gameName);
 
   const c = current();
+  clearAllRemotePlayers();
   playerMeshGroup = buildAvatar3DModel(c ? c.user : null);
   playerMeshGroup.position.set(0, 0, 0);
   gameScene.add(playerMeshGroup);
@@ -1406,6 +1652,7 @@ function initGameWebGL(gameName) {
 function buildUniqueGameWorld(gameName) {
   collectibleCoins = [];
   activePlatforms = [];
+  solidColliders = [];
 
   const floorGeo = new THREE.BoxGeometry(100, 1, 100);
   let floorMat = new THREE.MeshLambertMaterial({color: 0x4caf50});
@@ -1436,11 +1683,13 @@ function buildUniqueGameWorld(gameName) {
     for(let i = -3; i <= 3; i += 2) {
       const bMat = new THREE.MeshLambertMaterial({color: 0x6688aa});
       const bHeight = 6 + Math.abs(i) * 3;
+      const bx = i * 5, by = bHeight / 2 - 0.5, bz = -12;
       const b = new THREE.Mesh(new THREE.BoxGeometry(3, bHeight, 3), bMat);
-      b.position.set(i * 5, bHeight / 2 - 0.5, -12);
+      b.position.set(bx, by, bz);
       b.castShadow = true;
       b.receiveShadow = true;
       gameScene.add(b);
+      solidColliders.push({ x: bx, y: by, z: bz, width: 3, height: bHeight, depth: 3 });
     }
   }
 
@@ -1543,8 +1792,27 @@ function startGameLoop() {
       const normalizedX = moveX / moveLength;
       const normalizedZ = moveZ / moveLength;
 
-      playerPos.x += normalizedX * moveSpeed * dt;
-      playerPos.z += normalizedZ * moveSpeed * dt;
+      const tryX = playerPos.x + normalizedX * moveSpeed * dt;
+      const tryZ = playerPos.z + normalizedZ * moveSpeed * dt;
+      // Colision horizontal (anti-noclip) contra solidos
+      const pw = 0.55, pd = 0.55, ph = 1.6; // hitbox jugador
+      const canMove = (nx, nz) => {
+        if (!solidColliders || !solidColliders.length) return true;
+        for (const s of solidColliders) {
+          const halfW = s.width / 2 + pw;
+          const halfD = s.depth / 2 + pd;
+          const minY = s.y - s.height / 2;
+          const maxY = s.y + s.height / 2;
+          // Encima del bloque (caminando arriba): no bloquear movimiento
+          if (playerPos.y >= maxY - 0.2) continue;
+          // Debajo o sin solape vertical
+          if (playerPos.y + ph < minY || playerPos.y > maxY) continue;
+          if (Math.abs(nx - s.x) < halfW && Math.abs(nz - s.z) < halfD) return false;
+        }
+        return true;
+      };
+      if (canMove(tryX, playerPos.z)) playerPos.x = tryX;
+      if (canMove(playerPos.x, tryZ)) playerPos.z = tryZ;
       playerPos.x = Math.max(-48, Math.min(48, playerPos.x));
       playerPos.z = Math.max(-48, Math.min(48, playerPos.z));
 
@@ -1798,9 +2066,22 @@ function openMultiplayerSocket() {
         epicServerId = data.serverId || "SRV-UNKNOWN";
         epicGameId = data.gameId || epicGameId;
         updateIdPanel();
-        setMultiplayerStatus(`👥 ${data.count} jugador(es)`, "#86efac");
+        const acc = (typeof data.accounts === 'number') ? data.accounts : null;
+        setMultiplayerStatus(
+          acc != null
+            ? `👥 ${data.count} en sala · ${acc} cuentas`
+            : `👥 ${data.count} jugador(es)`,
+          "#86efac"
+        );
         setChatConnStatus(true);
-        (data.players || []).forEach(p => addOrUpdateRemotePlayer(p));
+        if (acc != null) {
+          const el = document.getElementById('serverAccountsInfo');
+          if (el) el.textContent = 'Cuentas registradas: ' + acc;
+        }
+        clearAllRemotePlayers();
+        (data.players || []).forEach(p => {
+          if (p && p.id && p.id !== multiplayerId) addOrUpdateRemotePlayer(p);
+        });
         // Chat de la sala
         const body = document.getElementById('chatBody');
         if (body) body.innerHTML = '';
@@ -1820,7 +2101,14 @@ function openMultiplayerSocket() {
       }
 
       if (data.type === "playerLeft") {
-        removeRemotePlayer(data.id);
+        if (data.id) removeRemotePlayer(data.id);
+        // Por si quedo un fantasma con otro id del mismo user
+        if (data.username && gameScene) {
+          Object.keys(remotePlayers).forEach(rid => {
+            const g = remotePlayers[rid];
+            if (g && g.userData && g.userData.username === data.username) removeRemotePlayer(rid);
+          });
+        }
         updateMultiplayerCount(data.count);
         return;
       }
@@ -1869,6 +2157,21 @@ function scheduleMultiplayerReconnect() {
     openMultiplayerSocket();
   }, delay);
 }
+
+function refreshServerStats() {
+  api('/health', {}, 1).then(data => {
+    const accounts = (data && typeof data.users === 'number') ? data.users : null;
+    const players = (data && typeof data.players === 'number') ? data.players : null;
+    if (accounts != null) {
+      const el = document.getElementById('serverAccountsInfo');
+      if (el) el.textContent = 'Cuentas registradas: ' + accounts;
+      // tambien en status multip si no hay sala
+      const st = document.getElementById('multiplayerStatus');
+      if (st && !multiplayerReady) st.textContent = '👥 Cuentas: ' + accounts;
+    }
+  }).catch(()=>{});
+}
+
 function updateMultiplayerCount(count) {
   setMultiplayerStatus(`👥 ${count} jugador(es)`, "#86efac");
 }
@@ -1899,6 +2202,10 @@ function addOrUpdateRemotePlayer(p) {
   const uname = p.username || "Player";
 
   if (!group) {
+    // Quitar fantasmas con el mismo nombre de escena
+    const ghost = gameScene.getObjectByName("remotePlayer_" + p.id);
+    if (ghost) gameScene.remove(ghost);
+
     group = buildAvatar3DModel({
       avatar: p.avatar || {
         colors:{head:"#f5c928",arms:"#f5c928",torso:"#1477b9",legs:"#8cae45"},
@@ -1906,8 +2213,9 @@ function addOrUpdateRemotePlayer(p) {
       }
     });
     group.name = "remotePlayer_" + p.id;
+    group.userData.username = uname;
+    group.userData.playerId = p.id;
     group.add(createNameTag(uname));
-    // Posición inicial inmediata
     if (typeof p.x === "number") group.position.x = p.x;
     if (typeof p.y === "number") group.position.y = p.y + 0.4;
     if (typeof p.z === "number") group.position.z = p.z;
@@ -1948,11 +2256,38 @@ function addOrUpdateRemotePlayer(p) {
   group.userData.username = uname;
 }
 
+
+function clearAllRemotePlayers() {
+  const ids = Object.keys(remotePlayers || {});
+  ids.forEach(id => {
+    try { removeRemotePlayer(id); } catch(e) {}
+  });
+  remotePlayers = {};
+  // Barrido de fantasmas en la escena
+  if (gameScene) {
+    const toRemove = [];
+    gameScene.traverse(obj => {
+      if (obj && obj.name && String(obj.name).indexOf('remotePlayer_') === 0) toRemove.push(obj);
+    });
+    toRemove.forEach(obj => {
+      try { gameScene.remove(obj); } catch(e) {}
+    });
+  }
+}
+
 function removeRemotePlayer(id) {
   const group = remotePlayers[id];
-  if (group && gameScene) gameScene.remove(group);
+  if (group && gameScene) {
+    try { gameScene.remove(group); } catch(e) {}
+  }
+  // Limpiar cualquier fantasma residual
+  if (gameScene) {
+    const ghost = gameScene.getObjectByName("remotePlayer_" + id);
+    if (ghost) try { gameScene.remove(ghost); } catch(e) {}
+  }
   delete remotePlayers[id];
 }
+
 
 let lastMoveSendTime = 0;
 function sendMultiplayerPosition(playerPos) {
@@ -2075,21 +2410,126 @@ function sendAvatarUpdateToMultiplayer() {
 }
 // ================= END EPICBLOXS MULTIPLAYER ====================
 
-const USERS_KEY="epicbloxs_users_3d", SESSION_KEY="epicbloxs_current_user_3d";
 
-function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY)||"{}")}catch(e){return{}}}
-function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u))}
+const SESSION_KEY="epicbloxs_token_global";
+const USER_CACHE_KEY="epicbloxs_user_cache";
+// URL del servidor GLOBAL (Render). Si abres el HTML desde el mismo server, usa el origen actual.
+const GLOBAL_SERVER = "https://epicbloxserversito.onrender.com";
+
+function getApiBase() {
+  try {
+    const host = window.location.hostname || "";
+    // Si la pagina se sirve desde el mismo Node/Render, usar ese origen
+    if (window.location.protocol !== "file:" && host && host !== "null") {
+      // localhost dev
+      if (host === "localhost" || host === "127.0.0.1") {
+        return window.location.origin;
+      }
+      // produccion / cualquier host real
+      return window.location.origin;
+    }
+  } catch (e) {}
+  return GLOBAL_SERVER;
+}
+
+function getToken(){ return localStorage.getItem(SESSION_KEY) || ""; }
+function setToken(t){ if(t) localStorage.setItem(SESSION_KEY,t); else localStorage.removeItem(SESSION_KEY); }
+function getCachedUser(){
+  try { return JSON.parse(localStorage.getItem(USER_CACHE_KEY)||"null"); } catch(e){ return null; }
+}
+function setCachedUser(u){
+  if(u) localStorage.setItem(USER_CACHE_KEY, JSON.stringify(u));
+  else localStorage.removeItem(USER_CACHE_KEY);
+}
+
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+// API global con reintentos (Render free a veces tarda en despertar)
+async function api(path, opts={}, retries=3) {
+  const headers = Object.assign({"Content-Type":"application/json"}, opts.headers||{});
+  const token = getToken();
+  if (token) headers["Authorization"] = "Bearer " + token;
+
+  let lastErr = null;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), attempt === 1 ? 25000 : 20000);
+    try {
+      const res = await fetch(getApiBase() + path, Object.assign({}, opts, {
+        headers,
+        signal: controller.signal,
+        mode: "cors",
+        cache: "no-store"
+      }));
+      clearTimeout(timer);
+      let data = {};
+      const textBody = await res.text();
+      try { data = textBody ? JSON.parse(textBody) : {}; } catch(e) {
+        if (!res.ok) throw new Error("Servidor sin API de cuentas (hay que subir el server.js nuevo).");
+      }
+      if (!res.ok) throw new Error(data.error || ("Error " + res.status));
+      return data;
+    } catch (e) {
+      clearTimeout(timer);
+      lastErr = e;
+      const msg = (e && e.message) ? e.message : String(e);
+      // Reintentar solo errores de red / timeout
+      const retryable = e.name === "AbortError" || /fetch|network|Failed|Load failed|timeout|respond/i.test(msg);
+      if (!retryable || attempt === retries) {
+        if (e.name === "AbortError") throw new Error("El servidor tarda en responder. Espera 30s y vuelve a intentar.");
+        if (/Failed to fetch|NetworkError|Load failed/i.test(msg)) {
+          throw new Error("No hay conexion con el servidor. Abre la web desde la URL de Render (no el archivo HTML) y espera a que el server despierte.");
+        }
+        throw (e instanceof Error ? e : new Error(msg));
+      }
+      // Esperar antes de reintentar (despierta Render)
+      await sleep(1500 * attempt);
+    }
+  }
+  throw lastErr || new Error("Error de conexion");
+}
+
+function persistUser(user) {
+  if (!user || !getToken()) return;
+  setCachedUser(user);
+  api("/api/me", {
+    method: "POST",
+    body: JSON.stringify({
+      avatar: user.avatar,
+      inventory: user.inventory,
+      sunnys: user.sunnys,
+      bio: user.bio,
+      loginStreak: user.loginStreak,
+      lastStreakClaim: user.lastStreakClaim
+    })
+  }, 1).then(data => {
+    if (data.user) setCachedUser(data.user);
+  }).catch(()=>{});
+}
+
+function getUsers(){
+  const u = getCachedUser();
+  if (!u) return {};
+  const key = (u.id || (u.username||"").toLowerCase());
+  return { [key]: u };
+}
+function saveUsers(usersMap) {
+  const c = current();
+  if (c && usersMap && usersMap[c.key]) persistUser(usersMap[c.key]);
+  else if (getCachedUser()) persistUser(getCachedUser());
+}
 
 function switchAuth(type){
-  const loginForm = document.getElementById('loginForm');
-  const registerForm = document.getElementById('registerForm');
-  const loginTab = document.getElementById('loginTab');
-  const registerTab = document.getElementById('registerTab');
-  
-  loginForm.classList.toggle("active",type==="login"); registerForm.classList.toggle("active",type==="register");
-  loginTab.classList.toggle("active",type==="login"); registerTab.classList.toggle("active",type==="register");
-  document.getElementById('loginMessage').textContent="";
-  document.getElementById('registerMessage').textContent="";
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
+  const loginTab = document.getElementById("loginTab");
+  const registerTab = document.getElementById("registerTab");
+  loginForm.classList.toggle("active", type==="login");
+  registerForm.classList.toggle("active", type==="register");
+  loginTab.classList.toggle("active", type==="login");
+  registerTab.classList.toggle("active", type==="register");
+  document.getElementById("loginMessage").textContent = "";
+  document.getElementById("registerMessage").textContent = "";
 }
 
 function hashPassword(p){
@@ -2102,65 +2542,266 @@ function hashPassword(p){
   return "h_" + Math.abs(hash).toString(16) + "_" + btoa(p);
 }
 
+
+
+// ===== EpicBot: hace el setup por el jugador (no solo explica) =====
+const BOT_DONE_KEY = "epicbloxs_bot_done";
+
+function botPanel(){ return document.getElementById("epicBot"); }
+function botBody(){ return document.getElementById("epicBotBody"); }
+
+function botShow(){
+  const p = botPanel();
+  if(!p) return;
+  p.classList.add("open");
+  const body = botBody();
+  if(body) body.innerHTML = "";
+  const bar = document.getElementById("epicBotBar");
+  if(bar) bar.style.width = "0%";
+  const sub = document.getElementById("epicBotSub");
+  if(sub) sub.textContent = "Configurando tu cuenta...";
+  const foot = document.getElementById("epicBotFoot");
+  if(foot) foot.textContent = "Trabajando por ti...";
+}
+
+function botHide(){
+  const p = botPanel();
+  if(p) p.classList.remove("open");
+}
+
+function botAddStep(id, label){
+  const body = botBody();
+  if(!body) return;
+  const div = document.createElement("div");
+  div.className = "epic-bot-step doing";
+  div.id = "botstep-" + id;
+  div.innerHTML = '<span class="dot"></span><span>' + label + "</span>";
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function botDoneStep(id){
+  const el = document.getElementById("botstep-" + id);
+  if(el){ el.classList.remove("doing"); el.classList.add("done"); }
+}
+
+function botProgress(pct){
+  const bar = document.getElementById("epicBotBar");
+  if(bar) bar.style.width = Math.max(0, Math.min(100, pct)) + "%";
+}
+
+function botWait(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+async function runNewAccountBot(username){
+  try {
+    const done = JSON.parse(localStorage.getItem(BOT_DONE_KEY) || "{}");
+    if (done[(username || "").toLowerCase()]) return;
+  } catch(e) {}
+
+  botShow();
+  botAddStep("avatar", "Preparando avatar...");
+  botAddStep("save", "Guardando cuenta...");
+  botProgress(10);
+
+  const c = current();
+  if (!c || !c.user) { botHide(); return; }
+  let u = c.user;
+
+  await botWait(300);
+  u.avatar = u.avatar || {};
+  u.avatar.torsoType = u.avatar.torsoType || "male";
+  u.avatar.colors = u.avatar.colors || { head:"#f5c928", arms:"#f5c928", torso:"#1477b9", legs:"#8cae45" };
+  if (!u.avatar.colors.head) u.avatar.colors.head = "#f5c928";
+  if (!u.avatar.colors.arms) u.avatar.colors.arms = "#f5c928";
+  if (!u.avatar.colors.torso) u.avatar.colors.torso = "#1477b9";
+  if (!u.avatar.colors.legs) u.avatar.colors.legs = "#8cae45";
+  // Inventario vacio, sin equipar nada
+  u.inventory = Array.isArray(u.inventory) ? u.inventory : [];
+  u.avatar.accessories = Array.isArray(u.avatar.accessories) ? u.avatar.accessories : [];
+  if (typeof u.sunnys !== "number") u.sunnys = 500;
+  if (typeof u.loginStreak !== "number") u.loginStreak = 0;
+  if (!u.lastStreakClaim) u.lastStreakClaim = "";
+  botDoneStep("avatar");
+  botProgress(55);
+
+  setCachedUser(u);
+  try { updateUI(u); } catch(e) {}
+  try { initPreviewRenderer(); } catch(e) {}
+  try { updatePreviewAvatar3D(); } catch(e) {}
+
+  await botWait(300);
+  try { persistUser(u); } catch(e) {}
+  botDoneStep("save");
+  botProgress(100);
+
+  const sub = document.getElementById("epicBotSub");
+  if (sub) sub.textContent = "Listo";
+  const foot = document.getElementById("epicBotFoot");
+  if (foot) foot.textContent = "Avatar listo. Inventario vacio.";
+
+  try {
+    const done = JSON.parse(localStorage.getItem(BOT_DONE_KEY) || "{}");
+    done[(username || u.username || "").toLowerCase()] = true;
+    localStorage.setItem(BOT_DONE_KEY, JSON.stringify(done));
+  } catch(e) {}
+
+  await botWait(1200);
+  botHide();
+}
+
+
+
 function register(e){
   e.preventDefault();
-  const username=document.getElementById('registerUsername').value.trim();
-  const password=document.getElementById('registerPassword').value;
-  const confirm=document.getElementById('registerConfirmPassword').value;
-  const regMsg = document.getElementById('registerMessage');
-  
-  regMsg.className="auth-message";
-  if(username.length<3)return msg(regMsg,"El usuario debe tener al menos 3 caracteres.","error");
-  if(password.length<6)return msg(regMsg,"La contraseña debe tener al menos 6 caracteres.","error");
-  if(password!==confirm)return msg(regMsg,"Las contraseñas no coinciden.","error");
-  const users=getUsers(),key=username.toLowerCase();
-  if(users[key])return msg(regMsg,"Ese usuario ya existe.","error");
-  users[key]={username,passwordHash:hashPassword(password),sunnys:500,bio:"Insert Bio.",avatar:{accessories:["Classic Smile","Blue Shirt","Classic Jeans"],colors:{head:"#f5c928",arms:"#f5c928",torso:"#1477b9",legs:"#8cae45"}},inventory:["Classic Smile","Blue Shirt","Classic Jeans"],friends:[],friendRequests:[],outgoingRequests:[],lastDailyLogin:"",createdAt:new Date().toISOString()};
-  saveUsers(users);localStorage.setItem(SESSION_KEY,key);msg(regMsg,"¡Account created!","success");setTimeout(loadCurrentUser,400);
+  const regMsg = document.getElementById("registerMessage");
+  const username = document.getElementById("registerUsername").value.trim();
+  const password = document.getElementById("registerPassword").value;
+  const confirm = document.getElementById("registerConfirmPassword").value;
+  if (username.length < 3) return msg(regMsg, "Minimo 3 caracteres en el usuario.", "error");
+  if (password.length < 6) return msg(regMsg, "Minimo 6 caracteres en la contraseña.", "error");
+  if (password !== confirm) return msg(regMsg, "Las contraseñas no coinciden.", "error");
+
+  // Instantaneo (como local): entrar YA
+  const key = username.toLowerCase();
+  const tempUser = {
+    id: key,
+    username: username,
+    sunnys: 500,
+    bio: "Insert Bio.",
+    avatar: {
+      accessories: [],
+      torsoType: "male",
+      colors: { head: "#f5c928", arms: "#f5c928", torso: "#1477b9", legs: "#8cae45" }
+    },
+    inventory: [],
+    friends: [],
+    friendRequests: [],
+    outgoingRequests: [],
+    loginStreak: 0,
+    lastStreakClaim: "",
+    createdAt: new Date().toISOString()
+  };
+  tempUser.avatar.accessories = [];
+  tempUser.avatar.torsoType = "male";
+  setToken("pending_" + key);
+  setCachedUser(tempUser);
+  // Guardar password temporal solo para reintentar el registro global
+  try { sessionStorage.setItem("eb_pending_pw", password); sessionStorage.setItem("eb_pending_user", username); } catch(e) {}
+  msg(regMsg, "Cuenta creada.", "success");
+  setTimeout(() => {
+    loadCurrentUser();
+    // EpicBot hace el setup por el jugador
+    setTimeout(() => runNewAccountBot(username), 400);
+  }, 50);
+
+  // En paralelo: registrar en el servidor GLOBAL (sin bloquear)
+  syncRegisterGlobal(username, password);
+}
+
+function syncRegisterGlobal(username, password) {
+  const key = username.toLowerCase();
+  api("/api/register", { method: "POST", body: JSON.stringify({ username, password }) }, 4)
+    .then(data => {
+      setToken(data.token);
+      setCachedUser(data.user);
+      try { sessionStorage.removeItem("eb_pending_pw"); sessionStorage.removeItem("eb_pending_user"); } catch(e) {}
+      try { updateUI(data.user); } catch(e) {}
+    })
+    .catch(() => {
+      // Reintentar en 5s (Render despertando)
+      setTimeout(() => {
+        const u = sessionStorage.getItem("eb_pending_user");
+        const p = sessionStorage.getItem("eb_pending_pw");
+        if (u && p) syncRegisterGlobal(u, p);
+      }, 5000);
+    });
 }
 
 function login(e){
   e.preventDefault();
-  const key=document.getElementById('loginUsername').value.trim().toLowerCase();
-  const pass=document.getElementById('loginPassword').value;
-  const logMsg=document.getElementById('loginMessage');
-  const u=getUsers()[key];
-  if(!u)return msg(logMsg,"El usuario o la contraseña son incorrectos.","error");
-  if(hashPassword(pass)!==u.passwordHash)return msg(logMsg,"El usuario o la contraseña son incorrectos.","error");
-  localStorage.setItem(SESSION_KEY,key);loadCurrentUser();
+  const loginMsg = document.getElementById("loginMessage");
+  const username = document.getElementById("loginUsername").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  if (!username || !password) return msg(loginMsg, "Completa usuario y contraseña.", "error");
+
+  msg(loginMsg, "Entrando...", "success");
+
+  // Entrada rapida si ya hay cache del mismo usuario
+  const key = username.toLowerCase();
+  const cached = getCachedUser();
+  if (cached && (cached.id === key || (cached.username || "").toLowerCase() === key)) {
+    setCachedUser(cached);
+    loadCurrentUser();
+  }
+
+  api("/api/login", { method: "POST", body: JSON.stringify({ username, password }) }, 4)
+    .then(data => {
+      setToken(data.token);
+      setCachedUser(data.user);
+      loadCurrentUser();
+    })
+    .catch(err => {
+      // Si ya entro con cache, no molestar
+      if (getToken() && getCachedUser()) return;
+      msg(loginMsg, err.message || "Usuario o contraseña incorrectos.", "error");
+    });
 }
 
 function msg(el,text,type){el.className="auth-message "+type;el.textContent=text}
-function current(){const k=localStorage.getItem(SESSION_KEY),u=getUsers()[k];return u?{key:k,user:u}:null}
+function current(){
+  const u = getCachedUser();
+  if(!u) return null;
+  const key = u.id || (u.username||'').toLowerCase();
+  return { key, user: u };
+}
 
 function loadCurrentUser(){
-  const c=current(); const authScreen = document.getElementById('authScreen');
-  if(!c){authScreen.style.display="flex";return}
+  const authScreen = document.getElementById("authScreen");
+  const token = getToken();
+  const cached = getCachedUser();
+  if (!token && !cached) { authScreen.style.display = "flex"; return; }
 
-  if(!c.user.avatar.accessories) {
-    c.user.avatar.accessories = ["Classic Smile"];
+  const enterApp = (user) => {
+    if (!user) { authScreen.style.display = "flex"; return; }
+    setCachedUser(user);
+    authScreen.style.display = "none";
+    updateUI(user);
+    loadGames();
+    loadInventory();
+    renderCatalog("all");
+    try { initPreviewRenderer(); } catch(e) {}
+    try { renderFriends(); } catch(e) {}
+    try { refreshFriendsFromServer(); } catch(e) {}
+    try { refreshServerStats(); } catch(e) {}
+  };
+
+  // Entrada inmediata (rapida como local)
+  if (cached) enterApp(cached);
+  else if (token) {
+    // sin cache aun: no bloquear pantalla
+    authScreen.style.display = "none";
   }
 
-  let needsSave = false;
-  if(!c.user.friends){ c.user.friends = []; needsSave = true; }
-  if(!c.user.friendRequests){ c.user.friendRequests = []; needsSave = true; }
-  if(!c.user.outgoingRequests){ c.user.outgoingRequests = []; needsSave = true; }
-  if(needsSave){ const u = getUsers(); u[c.key] = c.user; saveUsers(u); }
-
-  const todayStr = new Date().toDateString();
-  if(c.user.lastDailyLogin !== todayStr) {
-    c.user.sunnys = (c.user.sunnys || 500) + 100;
-    c.user.lastDailyLogin = todayStr;
-    const u = getUsers(); u[c.key] = c.user; saveUsers(u);
-    setTimeout(() => alert("☀️ ¡Recompensa diaria! Has ganado 100 Sunnys por entrar hoy."), 500);
+  // Si el token es pendiente, reintentar registro global en background
+  if (String(token).startsWith("pending_")) {
+    try {
+      const u = sessionStorage.getItem("eb_pending_user");
+      const p = sessionStorage.getItem("eb_pending_pw");
+      if (u && p && typeof syncRegisterGlobal === "function") syncRegisterGlobal(u, p);
+    } catch(e) {}
+    return;
   }
 
-  authScreen.style.display="none"; 
-  updateUI(c.user);
-  loadGames();
-  loadInventory();
-  renderCatalog('all');
-  initPreviewRenderer();
+  // Refresco silencioso desde el servidor
+  if (token && !String(token).startsWith("pending_")) {
+    api("/api/me", {}, 2).then(data => {
+      enterApp(data.user);
+    }).catch(() => {
+      if (!cached) {
+        // no sacar al usuario si ya entro
+      }
+    });
+  }
 }
 
 function updateUI(u){
@@ -2266,60 +2907,37 @@ function renderTopAvatarMini(u) {
   }
 }
 
+
+let _friendsCache = [];
+let _requestsCache = [];
+
 function getMyFriends(){
-  const c = current();
-  if(!c) return [];
-  const users = getUsers();
-  const friendsKeys = c.user.friends || [];
-  let friendList = [];
-  friendsKeys.forEach(key => {
-    if(users[key]) friendList.push({ ...users[key], _key: key });
-  });
-  return friendList;
+  return _friendsCache.slice();
+}
+
+async function refreshFriendsFromServer() {
+  if (!getToken()) return;
+  try {
+    const data = await api('/api/friends/list');
+    _friendsCache = (data.friends || []).map(u => ({ ...u, _key: u.id }));
+    _requestsCache = (data.requests || []).map(u => ({ ...u, _key: u.id }));
+    // merge into current user cache
+    const me = getCachedUser();
+    if (me) {
+      me.friends = (data.friends || []).map(u => u.id);
+      me.friendRequests = (data.requests || []).map(u => u.id);
+      setCachedUser(me);
+    }
+    renderFriends();
+    renderFriendsPage();
+  } catch (e) {
+    console.warn('friends refresh', e);
+  }
 }
 
 function findUserByNameOrId(query) {
-  const q = String(query || '').trim();
-  if (!q) return null;
-  const users = getUsers();
-  const qLower = q.toLowerCase();
-
-  // 1) Coincidencia exacta de ID/key
-  if (users[qLower]) return { key: qLower, user: users[qLower] };
-
-  // 2) Coincidencia exacta de username (case-insensitive)
-  const exact = [];
-  for (const [key, user] of Object.entries(users)) {
-    if ((user.username || '').toLowerCase() === qLower) {
-      exact.push({ key, user });
-    }
-  }
-  if (exact.length === 1) return exact[0];
-  if (exact.length > 1) return exact[0];
-
-  // 3) Coincidencia parcial de username
-  const partial = [];
-  for (const [key, user] of Object.entries(users)) {
-    const uname = (user.username || '').toLowerCase();
-    if (uname.includes(qLower) || key.includes(qLower)) {
-      partial.push({ key, user });
-    }
-  }
-  if (partial.length === 1) return partial[0];
-  if (partial.length > 1) {
-    // preferir el que empieza igual
-    const starts = partial.filter(p => (p.user.username || '').toLowerCase().startsWith(qLower));
-    if (starts.length === 1) return starts[0];
-    return { multiple: partial };
-  }
+  // usado solo como fallback sincrono - la busqueda real es async
   return null;
-}
-
-function ensureFriendFields(user) {
-  if (!user.friends) user.friends = [];
-  if (!user.friendRequests) user.friendRequests = []; // solicitudes recibidas (keys)
-  if (!user.outgoingRequests) user.outgoingRequests = []; // solicitudes enviadas (keys)
-  return user;
 }
 
 function renderFriends(){
@@ -2331,7 +2949,7 @@ function renderFriends(){
   if(friendsTitle) friendsTitle.textContent = `Friends (${list.length})`;
 
   if(list.length === 0){
-    friendsBox.innerHTML = "<p style='color:#777;font-size:13px;padding-left:10px'>Aún no tienes amigos. Ve a la pestaña Friends para buscar usuarios.</p>";
+    friendsBox.innerHTML = "<p style='color:#777;font-size:13px;padding-left:10px'>Aún no tienes amigos. Ve a Friends para buscar jugadores globales.</p>";
     return;
   }
 
@@ -2346,34 +2964,27 @@ function renderFriends(){
 function renderFriendsPage(){
   const grid = document.getElementById('friendsListGrid');
   if(!grid) return;
-  const c = current();
   const list = getMyFriends();
-  const users = getUsers();
+  const incoming = _requestsCache || [];
 
   let html = '';
 
-  // Solicitudes recibidas
-  if (c) {
-    ensureFriendFields(c.user);
-    const incoming = (c.user.friendRequests || []).filter(k => users[k]);
-    if (incoming.length) {
-      html += `<div style="grid-column:1/-1;margin-bottom:8px"><h3 style="margin:0 0 10px;font-size:16px;color:#555">Solicitudes recibidas (${incoming.length})</h3></div>`;
-      incoming.forEach(k => {
-        const u = users[k];
-        html += `<div class="friend-card" style="border-color:#1684e8">
-          <div class="friend-card-avatar">${avatarPortraitHTML(u, 110)}</div>
-          <div class="friend-name" style="font-size:15px;font-weight:bold;margin-top:8px">${escapeHTML(u.username)}</div>
-          <div style="display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap">
-            <button class="section-button" style="background:#188038;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPropagation();acceptFriendRequest('${escapeHTML(k)}')">Aceptar</button>
-            <button class="section-button" style="background:#d93025;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPropagation();rejectFriendRequest('${escapeHTML(k)}')">Rechazar</button>
-          </div>
-        </div>`;
-      });
-    }
+  if (incoming.length) {
+    html += `<div style="grid-column:1/-1;margin-bottom:8px"><h3 style="margin:0 0 10px;font-size:16px;color:#555">Solicitudes recibidas (${incoming.length})</h3></div>`;
+    incoming.forEach(u => {
+      html += `<div class="friend-card" style="border-color:#1684e8">
+        <div class="friend-card-avatar">${avatarPortraitHTML(u, 110)}</div>
+        <div class="friend-name" style="font-size:15px;font-weight:bold;margin-top:8px">${escapeHTML(u.username)}</div>
+        <div style="display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap">
+          <button class="section-button" style="background:#188038;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPropagation();acceptFriendRequest('${escapeHTML(u.id)}')">Aceptar</button>
+          <button class="section-button" style="background:#d93025;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPropagation();rejectFriendRequest('${escapeHTML(u.id)}')">Rechazar</button>
+        </div>
+      </div>`;
+    });
   }
 
   if(list.length === 0 && !html){
-    grid.innerHTML = "<p style='color:#777;'>Tu lista está vacía. Busca un usuario arriba para enviar una solicitud.</p>";
+    grid.innerHTML = "<p style='color:#777;'>Tu lista está vacía. Busca un usuario global arriba para enviar una solicitud.</p>";
     return;
   }
 
@@ -2383,7 +2994,7 @@ function renderFriendsPage(){
       <div class="friend-card" onclick="viewFriendProfile('${escapeHTML(f.username)}')">
         <div class="friend-card-avatar">${avatarPortraitHTML(f, 110)}</div>
         <div class="friend-name" style="font-size:15px;font-weight:bold;margin-top:8px">${escapeHTML(f.username)}</div>
-        <div style="font-size:11px;color:#777;margin-top:4px">Amigo</div>
+        <div style="font-size:11px;color:#777;margin-top:4px">Amigo global</div>
       </div>
     `).join('');
   }
@@ -2394,120 +3005,82 @@ function renderFriendsPage(){
 function addFriendFromInput(){
   const input = document.getElementById('addFriendInput');
   const name = input ? input.value.trim() : "";
-  if(!name) return alert("Escribe un nombre de usuario o ID.");
+  if(!name) return alert("Escribe un nombre de usuario.");
+  if(!getToken()) return alert("Debes iniciar sesión.");
 
-  const c = current();
-  if(!c) return alert("Debes iniciar sesión.");
-
-  ensureFriendFields(c.user);
-  const users = getUsers();
-  const found = findUserByNameOrId(name);
-
-  if (!found) {
-    // Mostrar ayuda: listar algunos usuarios registrados
-    const names = Object.values(users).map(u => u.username).filter(Boolean).slice(0, 8);
-    const hint = names.length ? `\n\nUsuarios registrados: ${names.join(', ')}` : '';
-    return alert(`No se encontró ningún usuario con "${name}".${hint}`);
-  }
-
-  if (found.multiple) {
-    const opts = found.multiple.map(p => p.user.username).join(', ');
-    return alert(`Varios usuarios coinciden. Sé más específico:\n${opts}`);
-  }
-
-  const { key: targetKey, user: targetUser } = found;
-  if (targetKey === c.key) return alert("No puedes agregarte a ti mismo.");
-
-  ensureFriendFields(targetUser);
-
-  if ((c.user.friends || []).includes(targetKey)) {
-    return alert(`¡Ya eres amigo de ${targetUser.username}!`);
-  }
-
-  // Si el otro ya me envió solicitud → aceptar automáticamente
-  if ((c.user.friendRequests || []).includes(targetKey)) {
-    acceptFriendRequest(targetKey);
-    if (input) input.value = "";
-    return;
-  }
-
-  // Si ya le envié solicitud
-  if ((c.user.outgoingRequests || []).includes(targetKey)) {
-    return alert(`Ya enviaste una solicitud a ${targetUser.username}. Espera a que la acepte.`);
-  }
-
-  // Enviar solicitud
-  if (!targetUser.friendRequests.includes(c.key)) {
-    targetUser.friendRequests.push(c.key);
-  }
-  if (!c.user.outgoingRequests.includes(targetKey)) {
-    c.user.outgoingRequests.push(targetKey);
-  }
-
-  users[c.key] = c.user;
-  users[targetKey] = targetUser;
-  saveUsers(users);
-
-  if (input) input.value = "";
-  renderFriends();
-  renderFriendsPage();
-  alert(`📨 Solicitud de amistad enviada a ${targetUser.username}.`);
+  api('/api/friends/request', { method:'POST', body: JSON.stringify({ username: name }) })
+    .then(data => {
+      if (data.user) setCachedUser(data.user);
+      if (input) input.value = "";
+      refreshFriendsFromServer();
+      if (data.accepted) alert("✅ Solicitud aceptada. ¡Ahora son amigos globales!");
+      else alert("📨 Solicitud de amistad enviada (global).");
+    })
+    .catch(err => {
+      // Intentar buscar
+      api('/api/users/search?q=' + encodeURIComponent(name))
+        .then(s => {
+          if (!s.results || !s.results.length) return alert(err.message || "Usuario no encontrado en el servidor global.");
+          const names = s.results.map(r => r.username).join(', ');
+          alert((err.message || "Error") + "\n\nCoincidencias: " + names);
+        })
+        .catch(() => alert(err.message || "Usuario no encontrado."));
+    });
 }
 
 function acceptFriendRequest(fromKey) {
-  const c = current();
-  if (!c) return;
-  const users = getUsers();
-  if (!users[fromKey]) return alert("Ese usuario ya no existe.");
-
-  ensureFriendFields(c.user);
-  ensureFriendFields(users[fromKey]);
-
-  // Quitar de solicitudes
-  c.user.friendRequests = (c.user.friendRequests || []).filter(k => k !== fromKey);
-  users[fromKey].outgoingRequests = (users[fromKey].outgoingRequests || []).filter(k => k !== c.key);
-
-  // Añadir como amigos mutuamente
-  if (!c.user.friends.includes(fromKey)) c.user.friends.push(fromKey);
-  if (!users[fromKey].friends.includes(c.key)) users[fromKey].friends.push(c.key);
-
-  users[c.key] = c.user;
-  saveUsers(users);
-  renderFriends();
-  renderFriendsPage();
-  alert(`✅ Ahora eres amigo de ${users[fromKey].username}.`);
+  api('/api/friends/accept', { method:'POST', body: JSON.stringify({ id: fromKey }) })
+    .then(data => {
+      if (data.user) setCachedUser(data.user);
+      refreshFriendsFromServer();
+      alert("✅ Amigo agregado globalmente.");
+    })
+    .catch(err => alert(err.message || "Error"));
 }
 
 function rejectFriendRequest(fromKey) {
-  const c = current();
-  if (!c) return;
-  const users = getUsers();
-  ensureFriendFields(c.user);
-  c.user.friendRequests = (c.user.friendRequests || []).filter(k => k !== fromKey);
-  if (users[fromKey]) {
-    ensureFriendFields(users[fromKey]);
-    users[fromKey].outgoingRequests = (users[fromKey].outgoingRequests || []).filter(k => k !== c.key);
-  }
-  users[c.key] = c.user;
-  saveUsers(users);
-  renderFriendsPage();
+  api('/api/friends/reject', { method:'POST', body: JSON.stringify({ id: fromKey }) })
+    .then(() => refreshFriendsFromServer())
+    .catch(err => alert(err.message || "Error"));
 }
 
 function viewFriendProfile(username){
-  const found = findUserByNameOrId(username);
-  if (!found || found.multiple) return;
-
-  const friend = found.user;
-  document.getElementById('friendProfileName').textContent = friend.username + " ✓";
-  document.getElementById('friendProfileUsername').textContent = "@" + friend.username;
-  document.getElementById('friendProfileBio').textContent = friend.bio || "Sin descripción disponible.";
-  const avEl = document.getElementById('friendProfileAvatar');
-  if (avEl) {
-    avEl.style.background = 'transparent';
-    avEl.innerHTML = avatarPortraitHTML(friend, 260);
-  }
-
-  showPage('friendProfile');
+  api('/api/users/' + encodeURIComponent(username.toLowerCase()))
+    .then(data => {
+      const friend = data.user;
+      document.getElementById('friendProfileName').textContent = friend.username + " ✓";
+      document.getElementById('friendProfileUsername').textContent = "@" + friend.username;
+      document.getElementById('friendProfileBio').textContent = friend.bio || "Sin descripción disponible.";
+      const avEl = document.getElementById('friendProfileAvatar');
+      if (avEl) {
+        avEl.style.background = 'transparent';
+        avEl.innerHTML = avatarPortraitHTML(friend, 260);
+      }
+      showPage('friendProfile');
+    })
+    .catch(() => {
+      // buscar por nombre
+      api('/api/users/search?q=' + encodeURIComponent(username))
+        .then(s => {
+          const hit = (s.results||[]).find(r => r.username.toLowerCase() === username.toLowerCase()) || (s.results||[])[0];
+          if (!hit) return alert("Usuario no encontrado.");
+          return api('/api/users/' + encodeURIComponent(hit.id));
+        })
+        .then(data => {
+          if (!data || !data.user) return;
+          const friend = data.user;
+          document.getElementById('friendProfileName').textContent = friend.username + " ✓";
+          document.getElementById('friendProfileUsername').textContent = "@" + friend.username;
+          document.getElementById('friendProfileBio').textContent = friend.bio || "Sin descripción disponible.";
+          const avEl = document.getElementById('friendProfileAvatar');
+          if (avEl) {
+            avEl.style.background = 'transparent';
+            avEl.innerHTML = avatarPortraitHTML(friend, 260);
+          }
+          showPage('friendProfile');
+        })
+        .catch(() => alert("Usuario no encontrado en el servidor global."));
+    });
 }
 
 function escapeHTML(s){if(!s)return"";const d=document.createElement("div");d.textContent=s;return d.innerHTML}
@@ -2515,7 +3088,8 @@ function logout(){
   disconnectMultiplayer();
   if(gameAnimId) cancelAnimationFrame(gameAnimId);
   stopAmbientMusic();
-  localStorage.removeItem(SESSION_KEY);
+  setToken('');
+  setCachedUser(null);
   document.getElementById('authScreen').style.display="flex";
   switchAuth("login");
 }
@@ -2532,8 +3106,10 @@ function showPage(p){
     target.classList.add("active");
   }
   if(p==="inventory") loadInventory();
+  if(p==="streak") updateStreakUI();
+  if(p==="avatar") { try { const t=(current()&&current().user.avatar&&current().user.avatar.torsoType)||"male"; const mb=document.getElementById("torsoTypeMale"); const fb=document.getElementById("torsoTypeFemale"); if(mb) mb.style.background=t==="male"?"#1684e8":"#292929"; if(fb) fb.style.background=t==="female"?"#e91e8c":"#292929"; } catch(e){} }
   if(p==="games") loadGames();
-  if(p==="friends") renderFriendsPage();
+  if(p==="friends") { refreshFriendsFromServer(); renderFriendsPage(); }
   if(p==="catalog") {
     renderCatalog('all');
   }
@@ -2606,7 +3182,9 @@ function renderCatalog(category) {
 function buy(item,price){
   const c=current();if(!c)return alert("Debes iniciar sesión.");
   c.user.inventory = c.user.inventory || [];
+  c.user.inventory = c.user.inventory || [];
   if(c.user.inventory.includes(item))return alert("Ya tienes este artículo.");
+  if(c.user.inventory.length >= 9)return alert("Inventario lleno (9 slots).");
   if((c.user.sunnys || 0) < price)return alert("❌ No tienes suficientes Sunnys.");
   c.user.sunnys -= price;
   c.user.inventory.push(item);
@@ -2661,19 +3239,81 @@ function updateAccessoryButtons(u){
   accContainer.innerHTML = html;
 }
 
+
+function toggleGameInventory(force){
+  const panel = document.getElementById('gameInventoryPanel');
+  if(!panel) return;
+  const open = (typeof force === 'boolean') ? force : !panel.classList.contains('open');
+  if(open){
+    renderGameInventory();
+    panel.classList.add('open');
+    // cerrar menu si esta abierto
+    const menu = document.getElementById('gameMenuOverlay');
+    if(menu) menu.classList.remove('open');
+  } else {
+    panel.classList.remove('open');
+  }
+}
+
+function renderGameInventory(){
+  const grid = document.getElementById('gameInventoryGrid');
+  if(!grid) return;
+  const c = current();
+  const inv = (c && c.user && Array.isArray(c.user.inventory)) ? c.user.inventory : [];
+  let html = '';
+  for(let i=0;i<9;i++){
+    const itemId = inv[i];
+    if(itemId){
+      const item = (typeof catalogDatabase !== 'undefined') ? catalogDatabase.find(it => it.id === itemId) : null;
+      const name = item ? item.name : itemId;
+      html += `<div class="game-inv-slot filled"><div class="slot-n">${i+1}</div><div style="font-size:22px;line-height:1">📦</div><div style="margin-top:4px;text-align:center;font-size:11px;font-weight:bold">${name}</div></div>`;
+    } else {
+      html += `<div class="game-inv-slot"><div class="slot-n">${i+1}</div><div>Vacío</div></div>`;
+    }
+  }
+  grid.innerHTML = html;
+}
+
+
 function loadInventory(){
-  const c=current();const inventoryGrid = document.getElementById('inventoryGrid');
-  if(!c){inventoryGrid.innerHTML="";return}
-  const inv = c.user.inventory || [];
-  inventoryGrid.innerHTML=inv.length?inv.map(i=>{
-    const item = catalogDatabase.find(it => it.id === i);
-    const icon = item ? catalogIconSVG(item) : `<span style="font-weight:bold;font-size:13px;color:#333">${i}</span>`;
-    return `<div class="inventory-item"><div class="catalog-image">${icon}</div><h3 style="margin:5px 0 0 0;font-size:15px;text-align:center;">${i}</h3></div>`;
-  }).join(""):"<p>Tu inventario está vacío. Ve al Catálogo para obtener accesorios.</p>";
+  const c=current();
+  const inventoryGrid = document.getElementById('inventoryGrid');
+  if(!inventoryGrid) return;
+  if(!c){ inventoryGrid.innerHTML=""; return; }
+  const inv = Array.isArray(c.user.inventory) ? c.user.inventory : [];
+  // 9 slots fijos
+  let html = "";
+  for (let i = 0; i < 9; i++) {
+    const itemId = inv[i];
+    if (itemId) {
+      const item = (typeof catalogDatabase !== 'undefined') ? catalogDatabase.find(it => it.id === itemId) : null;
+      const icon = item ? catalogIconSVG(item) : `<span style="font-weight:bold;font-size:13px;color:#333">${itemId}</span>`;
+      html += `<div class="inventory-slot filled inventory-item"><div class="slot-num">Slot ${i+1}</div><div class="catalog-image">${icon}</div><h3 style="margin:5px 0 0 0;font-size:13px;text-align:center;">${itemId}</h3></div>`;
+    } else {
+      html += `<div class="inventory-slot"><div class="slot-num">Slot ${i+1}</div><div style="color:#bbb;font-size:12px">Vacío</div></div>`;
+    }
+  }
+  inventoryGrid.innerHTML = html;
 }
 
 const colors=["#f5c928","#ff0000","#00aaff","#00cc66","#ffffff","#222222","#ff8c42","#9b59b6","#ff69b4"];
 function makeColorButtons(id,part){document.getElementById(id).innerHTML=colors.map(c=>`<button class="color-button" style="background:${c}" onclick="setBodyColor('${part}','${c}')"></button>`).join("")}
+
+function setTorsoType(type){
+  const c=current(); if(!c) return;
+  c.user.avatar = c.user.avatar || {accessories:[], colors:{}};
+  c.user.avatar.torsoType = (type === 'female') ? 'female' : 'male';
+  const u=getUsers(); u[c.key]=c.user; saveUsers(u);
+  setCachedUser(c.user);
+  try {
+    const maleBtn = document.getElementById('torsoTypeMale');
+    const femaleBtn = document.getElementById('torsoTypeFemale');
+    if (maleBtn) maleBtn.style.background = type==='male' ? '#1684e8' : '#292929';
+    if (femaleBtn) femaleBtn.style.background = type==='female' ? '#e91e8c' : '#292929';
+  } catch(e) {}
+  try { updatePreviewAvatar3D(); } catch(e) {}
+  try { Object.keys(_portraitCache).forEach(k=>delete _portraitCache[k]); } catch(e) {}
+}
 
 function setBodyColor(part,color){
   const c=current();if(!c)return;
@@ -2838,7 +3478,7 @@ function sendChatMessage() {
   }
 }
 
-function resetLocalData(){if(confirm("¿Borrar todas las cuentas locales de este navegador?")){localStorage.removeItem(USERS_KEY);localStorage.removeItem(SESSION_KEY);location.reload()}}
+function resetLocalData(){if(confirm("¿Cerrar sesión y borrar cache local?")){setToken('');setCachedUser(null);location.reload()}}
 
 function init(){
   makeColorButtons("headColors","head");makeColorButtons("armColors","arms");makeColorButtons("torsoColors","torso");makeColorButtons("legsColors","legs");
@@ -2847,5 +3487,19 @@ function init(){
 }
 init();
 </script>
+
+<div id="epicBot" aria-live="polite">
+  <div class="epic-bot-head">
+    <div class="epic-bot-avatar">🤖</div>
+    <div>
+      <div class="epic-bot-title">EpicBot</div>
+      <div class="epic-bot-sub" id="epicBotSub">Configurando tu cuenta...</div>
+    </div>
+  </div>
+  <div class="epic-bot-bar"><i id="epicBotBar"></i></div>
+  <div class="epic-bot-body" id="epicBotBody"></div>
+  <div class="epic-bot-foot" id="epicBotFoot">Trabajando por ti...</div>
+</div>
+
 </body>
 </html>
