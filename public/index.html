@@ -6,6 +6,9 @@
 <title>EpicBloxs</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#e5e5e5;color:#222}
+body.theme-dark{background:#171717;color:#f3f3f3}body.theme-dark .sidebar,body.theme-dark .settings-card,body.theme-dark .friends-actions,body.theme-dark .friends-box,body.theme-dark .friend-card,body.theme-dark .catalog-item,body.theme-dark .inventory-item,body.theme-dark .profile-card,body.theme-dark .bio-box{background:#222;color:#eee;border-color:#444}body.theme-dark .side-item:hover,body.theme-dark .friend:hover{background:#333}body.theme-dark .setting-row{border-color:#444}body.theme-dark input,body.theme-dark textarea,body.theme-dark select{background:#2b2b2b;color:#fff;border-color:#555}
+body.theme-blue{background:#eaf4ff;color:#17324d}body.theme-blue .sidebar,body.theme-blue .settings-card,body.theme-blue .friends-actions,body.theme-blue .friends-box,body.theme-blue .friend-card,body.theme-blue .catalog-item,body.theme-blue .inventory-item,body.theme-blue .profile-card,body.theme-blue .bio-box{background:#fff;border-color:#b9d7f5}
+body.theme-purple{background:#f4efff;color:#30204d}body.theme-purple .sidebar,body.theme-purple .settings-card,body.theme-purple .friends-actions,body.theme-purple .friends-box,body.theme-purple .friend-card,body.theme-purple .catalog-item,body.theme-purple .inventory-item,body.theme-purple .profile-card,body.theme-purple .bio-box{background:#fff;border-color:#d5c3f3}
 .topbar{height:44px;background:#252525;color:#fff;display:flex;align-items:center;gap:20px;padding:0 10px;position:fixed;inset:0 0 auto;z-index:100}
 .brand{font-size:23px;font-weight:900;width:45px;text-align:center}.brand span{color:#25a9ff}.top-link{color:#fff;cursor:pointer;font-size:14px;padding:14px 7px}.top-link:hover{background:#333}
 .search-container{position:relative;flex:1;max-width:430px}.search{height:28px;width:100%;padding:5px 35px 5px 12px;border-radius:3px;border:none}.search-icon{position:absolute;right:10px;top:5px;color:#222}.top-user{margin-left:auto;font-size:12px}.top-avatar{width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#333;border-radius:4px}
@@ -17,6 +20,7 @@
 .friend-avatar{width:82px;height:82px;margin:auto;display:flex;align-items:center;justify-content:center;background:#e9ecef;border-radius:6px;position:relative;box-shadow:inset 0 2px 4px rgba(0,0,0,0.05)}
 .friends-actions{display:flex;gap:10px;margin-bottom:20px;background:#fff;padding:15px;border:1px solid #ccc;border-radius:6px}.friends-actions input{flex:1;padding:8px 12px;border:1px solid #ccc;border-radius:3px;font-size:14px}
 .friends-list-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px;margin-top:15px}
+.presence-dot{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#666;margin-top:4px}.presence-dot .dot{width:8px;height:8px;border-radius:50%;display:inline-block}.presence-online .dot{background:#22c55e}.presence-playing .dot{background:#3b82f6}.presence-offline .dot{background:#9ca3af}.presence-actions{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:9px}.presence-actions button{padding:5px 9px;border:0;border-radius:5px;cursor:pointer;font-size:11px;font-weight:bold}.presence-actions .join{background:#1684e8;color:#fff}.presence-actions .join:disabled{opacity:.5;cursor:not-allowed}
 .friend-card{background:#fff;border:1px solid #ccc;padding:15px;border-radius:6px;text-align:center;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s}.friend-card:hover{transform:translateY(-3px);box-shadow:0 4px 12px rgba(0,0,0,0.15)}
 .friend-card-avatar{width:110px;height:110px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f8f9fa,#e9ecef);border-radius:6px;position:relative;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
 .profile-avatar-large{width:260px;height:340px;margin:0 auto 15px;background:linear-gradient(#bde7ff 0 72%,#7bb957 72%);border:2px solid #999;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 6px 15px rgba(0,0,0,0.15)}
@@ -60,6 +64,14 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 .game-fab:active, .game-fab:hover { transform: scale(1.08); background: rgba(22,132,232,0.85); }
 .game-fab .fab-badge { position: absolute; top: -2px; right: -2px; background: #e53935; color: #fff; font-size: 10px; border-radius: 10px; padding: 1px 5px; display: none; font-weight: bold; min-width: 16px; text-align: center; }
 
+/* Pantalla de muerte por caída al vacío */
+.void-death-overlay { display:none; position:absolute; inset:0; background:rgba(0,0,0,0.82); z-index:80; align-items:center; justify-content:center; text-align:center; backdrop-filter:blur(5px); }
+.void-death-overlay.open { display:flex; }
+.void-death-box { width:min(360px,90vw); background:#171717; border:1px solid rgba(255,255,255,0.14); border-radius:16px; padding:30px 24px; box-shadow:0 20px 60px rgba(0,0,0,0.65); }
+.void-death-box h2 { margin:0 0 8px; color:#fff; font-size:28px; }
+.void-death-box p { margin:0 0 20px; color:#aaa; font-size:13px; }
+.void-death-btn { width:100%; padding:13px 16px; border:0; border-radius:10px; background:#1684e8; color:#fff; font-weight:bold; font-size:15px; cursor:pointer; }
+.void-death-btn:hover { background:#0d6efd; }
 .game-menu-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.72); z-index: 40; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 .game-menu-overlay.open { display: flex; }
 .game-menu-box { background: #1e1e2e; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 28px 32px; min-width: min(300px,90vw); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
@@ -256,7 +268,7 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
           <button type="button" onclick="toggleGameInventory(false)">✕</button>
         </div>
         <div id="gameInventoryGrid" class="game-inv-grid"></div>
-        <div class="game-inv-foot">9 slots · Vacío al empezar</div>
+        <div class="game-inv-foot">9 slots · Solo objetos del juego</div>
       </div>
 
       <div class="mobile-controls" id="mobileControls">
@@ -265,6 +277,14 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
           <div class="joystick-knob" id="joystickKnob"></div>
         </div>
         <div class="jump-btn" id="jumpBtn">SALTO</div>
+      </div>
+
+      <div class="void-death-overlay" id="voidDeathOverlay">
+        <div class="void-death-box">
+          <h2>💀 Caíste al vacío</h2>
+          <p>El personaje cayó fuera del mapa.</p>
+          <button class="void-death-btn" onclick="respawnAfterVoid()">↻ Volver a aparecer</button>
+        </div>
       </div>
 
       <div class="game-menu-overlay" id="gameMenuOverlay">
@@ -289,6 +309,7 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
     <input id="addFriendInput" placeholder="Buscar por nombre de usuario o ID..." onkeydown="if(event.key==='Enter')addFriendFromInput()">
     <button class="section-button" onclick="addFriendFromInput()">+ Enviar solicitud</button>
   </div>
+  <div id="incomingRequestsBox" style="margin:0 0 18px 0"></div>
 
   <div id="friendsListGrid" class="friends-list-grid"></div>
 </section>
@@ -307,7 +328,7 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
       <p id="friendProfileBio">Sin descripción disponible.</p>
     </div>
     <div style="margin-top:20px;display:flex;gap:10px">
-      <button class="buy" style="flex:1" onclick="launchWebClient('Servidor de Amigo')">Unirse al Juego 3D</button>
+      <button id="friendProfileJoinBtn" class="buy" style="flex:1" disabled>Unirse al Juego</button>
       <button class="section-button" style="flex:1;margin:0" onclick="alert('💬 Mensajería directa en desarrollo.')">Enviar Mensaje</button>
     </div>
   </div>
@@ -333,7 +354,7 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
   </div>
 </section>
 
-<section id="profile" class="page"><h1>Profile</h1><div class="profile-card" style="max-width:500px;margin:auto;"><div id="profileAvatar" class="profile-avatar" style="position:relative;left:auto;top:auto;margin:0 auto 15px;"></div><h2 id="profileName" style="text-align:center;">Player ✓</h2><p id="profileUsername" style="text-align:center;color:#777;">@Player</p><p style="text-align:center;">Welcome to EpicBloxs 3D Real!</p><hr><p>Sunnys: <strong id="profileMoney">500</strong> ☀️</p><button class="section-button" onclick="logout()" style="width:100%;margin-top:10px;">Logout</button></div></section>
+<section id="profile" class="page"><h1>Profile</h1><div class="profile-card" style="max-width:500px;margin:auto;"><div id="profileAvatar" class="profile-avatar" style="position:relative;left:auto;top:auto;margin:0 auto 15px;"></div><h2 id="profileName" style="text-align:center;">Player ✓</h2><p id="profileUsername" style="text-align:center;color:#777;">@Player</p><div class="bio-box" style="margin-top:12px;"><h3 style="margin-top:0;">Descripción</h3><p id="profileBio">Sin descripción disponible.</p></div><hr><p>Sunnys: <strong id="profileMoney">500</strong> ☀️</p><button class="section-button" onclick="logout()" style="width:100%;margin-top:10px;">Logout</button></div></section>
 
 <section id="create" class="page"><h1>Create</h1><div class="profile-card"><h2>🛠️ EpicBloxs Studio </h2><p>Make your games!.</p><button class="section-button" onclick="alert('Soon!.')">Open Studio</button></div></section>
 
@@ -374,11 +395,11 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 
 <section id="inventory" class="page">
   <h1>Inventory</h1>
-  <div class="settings-card" style="max-width:480px">
-    <p style="font-size:15px;color:#444;margin:0 0 8px">El inventario de <b>9 slots</b> está <b>dentro del juego</b>.</p>
-    <p style="font-size:13px;color:#666;margin:0">Entra a un juego y pulsa el botón <b>🎒</b> para abrirlo.</p>
+  <div class="settings-card" style="max-width:720px">
+    <p style="font-size:15px;color:#444;margin:0 0 8px">Aquí están tus <b>ropa, accesorios, caras y demás objetos del avatar</b>.</p>
+    <p style="font-size:13px;color:#666;margin:0">Los objetos de una partida aparecen <b>solo dentro del juego</b> y no se mezclan con este inventario.</p>
   </div>
-  <div id="inventoryGrid" style="display:none"></div>
+  <div id="inventoryGrid" class="inventory-grid" style="margin-top:15px"></div>
 </section>
 
 <section id="streak" class="page">
@@ -406,11 +427,23 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 
 <section id="settings" class="page">
   <h1>Configuración</h1>
-  <div class="settings-card" style="max-width:500px;">
+  <div class="settings-card" style="max-width:620px;">
     <div class="setting-row"><span>Account</span><strong id="settingsUser">Player</strong></div>
     <div class="setting-row"><span>Sunnys</span><strong id="settingsMoney">500</strong> ☀️</div>
     <div class="setting-row"><span>Avatar</span><button class="section-button" onclick="showPage('avatar')" style="margin:0;">Editar</button></div>
-    <div class="setting-row"><span>Reset local data</span><button class="section-button" onclick="resetLocalData()" style="margin:0;background:#d93025;">Reset</button></div>
+    <div style="margin-top:18px;padding-top:15px;border-top:1px solid #ddd">
+      <h3 style="margin:0 0 10px">Temas</h3>
+      <select id="themeSelect" onchange="changeTheme(this.value)" style="padding:9px;width:100%;border:1px solid #ccc;border-radius:5px">
+        <option value="light">Claro</option><option value="dark">Oscuro</option><option value="blue">Azul</option><option value="purple">Morado</option>
+      </select>
+    </div>
+    <div style="margin-top:18px;padding-top:15px;border-top:1px solid #ddd">
+      <h3 style="margin:0 0 10px">Descripción</h3>
+      <textarea id="bioEditor" maxlength="200" rows="4" placeholder="Escribe una descripción sobre ti..." style="width:100%;resize:vertical;padding:10px;border:1px solid #ccc;border-radius:5px;font-family:Arial,sans-serif"></textarea>
+      <button class="section-button" onclick="saveDescription()" style="margin-top:8px;background:#1684e8">Guardar descripción</button>
+      <div id="bioSaveMsg" style="font-size:12px;margin-top:7px;min-height:16px"></div>
+    </div>
+    <div class="setting-row" style="margin-top:18px"><span>Reset local data</span><button class="section-button" onclick="resetLocalData()" style="margin:0;background:#d93025;">Reset</button></div>
   </div>
 </section>
 
@@ -1255,7 +1288,7 @@ function updatePreviewAvatar3D() {
   const c = current();
   const avatarGroup = buildAvatar3DModel(c ? c.user : null);
   avatarGroup.name = "playerAvatar3D";
-  avatarGroup.position.set(0, -0.3, 0);
+  avatarGroup.position.set(0, 0.04, 0);
   previewScene.add(avatarGroup);
 }
 
@@ -1287,6 +1320,10 @@ function launchWebClient(gameName) {
   document.getElementById('clientBarFill').style.width = '0%';
   const menu = document.getElementById('gameMenuOverlay');
   if(menu) menu.classList.remove('open');
+  const deathOverlay = document.getElementById('voidDeathOverlay');
+  if(deathOverlay) deathOverlay.classList.remove('open');
+  voidDeathActive = false;
+  voidRespawnFn = null;
   
   gameSessionEarnings = 0;
   const earnLbl = document.getElementById('clientEarnings');
@@ -1304,6 +1341,7 @@ function launchWebClient(gameName) {
     updateIdPanel();
     initGameWebGL(gameName);
     connectMultiplayer(gameName);
+    sendPresence(true, { gameId: epicGameId, gameName: gameName, roomName: gameName, serverId: epicServerId });
     startGameLoop();
     setupMobileControls();
     // Ajustar tamaño tras layout fullscreen
@@ -1323,8 +1361,13 @@ function exitWebClient() {
   joystickInput = {x:0, z:0};
   stopAmbientMusic();
   document.body.classList.remove('in-game');
+  sendPresence(false);
   const menu = document.getElementById('gameMenuOverlay');
   if(menu) menu.classList.remove('open');
+  const deathOverlay = document.getElementById('voidDeathOverlay');
+  if(deathOverlay) deathOverlay.classList.remove('open');
+  voidDeathActive = false;
+  voidRespawnFn = null;
   showPage('home');
 }
 
@@ -1665,6 +1708,9 @@ function buildUniqueGameWorld(gameName) {
   floor.position.set(0, -0.5, 0);
   floor.receiveShadow = true;
   gameScene.add(floor);
+  // El suelo tambien es un solido: se registra para que la comprobacion
+  // de movimiento use exactamente el mismo volumen que vemos en pantalla.
+  solidColliders.push({ x: 0, y: -0.5, z: 0, width: 100, height: 1, depth: 100 });
 
   if(gameName.includes("Obby")) {
     for(let i = 1; i <= 10; i++) {
@@ -1678,6 +1724,8 @@ function buildUniqueGameWorld(gameName) {
       plat.receiveShadow = true;
       gameScene.add(plat);
       activePlatforms.push({ x: platX, y: platY, z: platZ, width: 4, height: 0.6, depth: 4 });
+      // Los bloques/plataformas tambien deben bloquear el cuerpo lateralmente.
+      solidColliders.push({ x: platX, y: platY, z: platZ, width: 4, height: 0.6, depth: 4 });
     }
   } else if(gameName.includes("City")) {
     for(let i = -3; i <= 3; i += 2) {
@@ -1703,6 +1751,25 @@ function buildUniqueGameWorld(gameName) {
     gameScene.add(coin);
     collectibleCoins.push(coin);
   }
+}
+
+let voidDeathActive = false;
+let voidRespawnFn = null;
+
+function showVoidDeath(respawnFn) {
+  voidDeathActive = true;
+  voidRespawnFn = respawnFn;
+  Object.keys(keysPressed).forEach(key => keysPressed[key] = false);
+  const overlay = document.getElementById('voidDeathOverlay');
+  if(overlay) overlay.classList.add('open');
+}
+
+function respawnAfterVoid() {
+  if(typeof voidRespawnFn === 'function') voidRespawnFn();
+  voidDeathActive = false;
+  voidRespawnFn = null;
+  const overlay = document.getElementById('voidDeathOverlay');
+  if(overlay) overlay.classList.remove('open');
 }
 
 function startGameLoop() {
@@ -1732,13 +1799,44 @@ function startGameLoop() {
       inputZ += joystickInput.z;
     }
 
-    if(keysPressed['Space'] && isGrounded) {
+    if(!voidDeathActive && keysPressed['Space'] && isGrounded) {
       velocityY = jumpForce;
       isGrounded = false;
     }
 
-    velocityY -= gravity * dt;
+    // Gravedad con salto variable: soltar ESPACIO reduce el impulso y
+    // permite hacer saltos cortos o altos según cuánto se mantenga pulsado.
+    const gravityNow = velocityY > 0
+      ? (keysPressed['Space'] ? gravity : gravity * 1.9)
+      : gravity * 1.25;
+    velocityY -= gravityNow * dt;
+    const previousY = playerPos.y;
     playerPos.y += velocityY * dt;
+
+    // TECHO: si el jugador sube y cruza la cara inferior de un bloque,
+    // se detiene justo debajo del techo. La colision horizontal no afecta a esta comprobacion.
+    if(velocityY > 0 && solidColliders && solidColliders.length) {
+      const ph = 1.50;
+      const playerTop = playerPos.y + ph;
+      const previousTop = previousY + ph;
+      const playerHalfW = 0.34;
+      const playerHalfD = 0.34;
+
+      for(const s of solidColliders) {
+        const minY = s.y - s.height / 2;
+        const halfW = s.width / 2 + playerHalfW;
+        const halfD = s.depth / 2 + playerHalfD;
+
+        const insideX = Math.abs(playerPos.x - s.x) < halfW;
+        const insideZ = Math.abs(playerPos.z - s.z) < halfD;
+
+        if(insideX && insideZ && previousTop <= minY && playerTop >= minY) {
+          playerPos.y = minY - ph;
+          velocityY = 0;
+          break;
+        }
+      }
+    }
 
     let landingY = 0;
     let foundGround = false;
@@ -1767,13 +1865,22 @@ function startGameLoop() {
       isGrounded = true;
     } else {
       isGrounded = false;
-      if(playerPos.y < -10) {
-        playerPos.x = 0;
-        playerPos.y = 0;
-        playerPos.z = 0;
-        velocityY = 0;
-        isGrounded = true;
+      if(playerPos.y < -10 && !voidDeathActive) {
+        showVoidDeath(() => {
+          playerPos.x = 0;
+          playerPos.y = 0;
+          playerPos.z = 0;
+          velocityY = 0;
+          isGrounded = true;
+          lastTime = performance.now();
+        });
       }
+    }
+
+    if(voidDeathActive) {
+      inputX = 0;
+      inputZ = 0;
+      velocityY = 0;
     }
 
     if(inputX !== 0 || inputZ !== 0) {
@@ -1794,25 +1901,36 @@ function startGameLoop() {
 
       const tryX = playerPos.x + normalizedX * moveSpeed * dt;
       const tryZ = playerPos.z + normalizedZ * moveSpeed * dt;
-      // Colision horizontal (anti-noclip) contra solidos
-      const pw = 0.55, pd = 0.55, ph = 1.6; // hitbox jugador
-      const canMove = (nx, nz) => {
+      // COLISION HORIZONTAL: solo las paredes/bloques laterales bloquean el movimiento.
+      // La hitbox se ajusta al avatar real para que no choque desde lejos.
+      const pw = 0.34, pd = 0.34, ph = 1.50;
+      const skin = 0.015;
+      const canMoveHorizontal = (nx, nz) => {
         if (!solidColliders || !solidColliders.length) return true;
+
+        const playerBottom = playerPos.y;
+        const playerTop = playerPos.y + ph;
+
         for (const s of solidColliders) {
-          const halfW = s.width / 2 + pw;
-          const halfD = s.depth / 2 + pd;
+          const halfW = s.width / 2 + pw + skin;
+          const halfD = s.depth / 2 + pd + skin;
           const minY = s.y - s.height / 2;
           const maxY = s.y + s.height / 2;
-          // Encima del bloque (caminando arriba): no bloquear movimiento
-          if (playerPos.y >= maxY - 0.2) continue;
-          // Debajo o sin solape vertical
-          if (playerPos.y + ph < minY || playerPos.y > maxY) continue;
-          if (Math.abs(nx - s.x) < halfW && Math.abs(nz - s.z) < halfD) return false;
+
+          // Si no hay solape vertical, este bloque no puede bloquear lateralmente.
+          if (playerTop <= minY || playerBottom >= maxY) continue;
+
+          // Solo comprobamos X/Z aqui: esta es exclusivamente la colision horizontal.
+          if (Math.abs(nx - s.x) < halfW && Math.abs(nz - s.z) < halfD) {
+            return false;
+          }
         }
         return true;
       };
-      if (canMove(tryX, playerPos.z)) playerPos.x = tryX;
-      if (canMove(playerPos.x, tryZ)) playerPos.z = tryZ;
+
+      // Resolver cada eje por separado evita atravesar esquinas en diagonal.
+      if (canMoveHorizontal(tryX, playerPos.z)) playerPos.x = tryX;
+      if (canMoveHorizontal(playerPos.x, tryZ)) playerPos.z = tryZ;
       playerPos.x = Math.max(-48, Math.min(48, playerPos.x));
       playerPos.z = Math.max(-48, Math.min(48, playerPos.z));
 
@@ -2489,22 +2607,31 @@ async function api(path, opts={}, retries=3) {
   throw lastErr || new Error("Error de conexion");
 }
 
-function persistUser(user) {
-  if (!user || !getToken()) return;
+async function persistUser(user) {
+  if (!user || !getToken()) return null;
   setCachedUser(user);
-  api("/api/me", {
-    method: "POST",
-    body: JSON.stringify({
-      avatar: user.avatar,
-      inventory: user.inventory,
-      sunnys: user.sunnys,
-      bio: user.bio,
-      loginStreak: user.loginStreak,
-      lastStreakClaim: user.lastStreakClaim
-    })
-  }, 1).then(data => {
-    if (data.user) setCachedUser(data.user);
-  }).catch(()=>{});
+  try {
+    const data = await api("/api/me", {
+      method: "POST",
+      body: JSON.stringify({
+        avatar: user.avatar,
+        avatarInventory: user.avatarInventory,
+        gameInventory: user.gameInventory,
+        sunnys: user.sunnys,
+        bio: user.bio,
+        theme: user.theme || "light",
+        loginStreak: user.loginStreak,
+        lastStreakClaim: user.lastStreakClaim
+      })
+    }, 3);
+    if (data.user) {
+      setCachedUser(data.user);
+      return data.user;
+    }
+  } catch(e) {
+    throw e;
+  }
+  return user;
 }
 
 function getUsers(){
@@ -2615,8 +2742,11 @@ async function runNewAccountBot(username){
   if (!u.avatar.colors.arms) u.avatar.colors.arms = "#f5c928";
   if (!u.avatar.colors.torso) u.avatar.colors.torso = "#1477b9";
   if (!u.avatar.colors.legs) u.avatar.colors.legs = "#8cae45";
-  // Inventario vacio, sin equipar nada
-  u.inventory = Array.isArray(u.inventory) ? u.inventory : [];
+  // Separar inventario del avatar del inventario de juego.
+  // Compatibilidad: lo comprado anteriormente pasa a avatarInventory.
+  u.avatarInventory = Array.isArray(u.avatarInventory) ? u.avatarInventory : (Array.isArray(u.inventory) ? u.inventory.slice() : []);
+  u.gameInventory = Array.isArray(u.gameInventory) ? u.gameInventory : [];
+  u.inventory = [];
   u.avatar.accessories = Array.isArray(u.avatar.accessories) ? u.avatar.accessories : [];
   if (typeof u.sunnys !== "number") u.sunnys = 500;
   if (typeof u.loginStreak !== "number") u.loginStreak = 0;
@@ -2637,7 +2767,7 @@ async function runNewAccountBot(username){
   const sub = document.getElementById("epicBotSub");
   if (sub) sub.textContent = "Listo";
   const foot = document.getElementById("epicBotFoot");
-  if (foot) foot.textContent = "Avatar listo. Inventario vacio.";
+  if (foot) foot.textContent = "Avatar listo. Inventario de ropa y accesorios separado.";
 
   try {
     const done = JSON.parse(localStorage.getItem(BOT_DONE_KEY) || "{}");
@@ -2668,11 +2798,14 @@ function register(e){
     username: username,
     sunnys: 500,
     bio: "Insert Bio.",
+    theme: "light",
     avatar: {
       accessories: [],
       torsoType: "male",
       colors: { head: "#f5c928", arms: "#f5c928", torso: "#1477b9", legs: "#8cae45" }
     },
+    avatarInventory: [],
+    gameInventory: [],
     inventory: [],
     friends: [],
     friendRequests: [],
@@ -2748,9 +2881,19 @@ function login(e){
 }
 
 function msg(el,text,type){el.className="auth-message "+type;el.textContent=text}
+function normalizeInventories(user){
+  if(!user) return user;
+  if(!Array.isArray(user.avatarInventory)) user.avatarInventory = Array.isArray(user.inventory) ? user.inventory.slice() : [];
+  if(!Array.isArray(user.gameInventory)) user.gameInventory = [];
+  // Los artículos de avatar no deben entrar al inventario de la partida.
+  user.inventory = [];
+  return user;
+}
+
 function current(){
   const u = getCachedUser();
   if(!u) return null;
+  normalizeInventories(u);
   const key = u.id || (u.username||'').toLowerCase();
   return { key, user: u };
 }
@@ -2763,6 +2906,7 @@ function loadCurrentUser(){
 
   const enterApp = (user) => {
     if (!user) { authScreen.style.display = "flex"; return; }
+    normalizeInventories(user);
     setCachedUser(user);
     authScreen.style.display = "none";
     updateUI(user);
@@ -2773,6 +2917,8 @@ function loadCurrentUser(){
     try { renderFriends(); } catch(e) {}
     try { refreshFriendsFromServer(); } catch(e) {}
     try { refreshServerStats(); } catch(e) {}
+    try { startPresenceHeartbeat(); } catch(e) {}
+    try { startGameStatsHeartbeat(); } catch(e) {}
   };
 
   // Entrada inmediata (rapida como local)
@@ -2804,12 +2950,49 @@ function loadCurrentUser(){
   }
 }
 
+function applyTheme(theme){
+  theme=["light","dark","blue","purple"].includes(theme)?theme:"light";
+  document.body.classList.remove("theme-dark","theme-blue","theme-purple");
+  if(theme!=="light") document.body.classList.add("theme-"+theme);
+  const sel=document.getElementById("themeSelect"); if(sel) sel.value=theme;
+}
+function changeTheme(theme){
+  const u=getCachedUser(); if(!u) return;
+  u.theme=theme; setCachedUser(u); applyTheme(theme); persistUser(u);
+}
+async function saveDescription(){
+  const u=getCachedUser(), input=document.getElementById("bioEditor"), m=document.getElementById("bioSaveMsg");
+  if(!u||!input) return;
+  u.bio=(input.value||"").trim().slice(0,200);
+  if(m){m.textContent="Guardando...";m.style.color="#666";}
+  try {
+    const saved=await persistUser(u);
+    const finalUser=saved || u;
+    setCachedUser(finalUser);
+    const profileBio=document.getElementById("profileBio");
+    if(profileBio) profileBio.textContent=finalUser.bio || "Sin descripción disponible.";
+    if(m){m.textContent="✅ Descripción guardada.";m.style.color="#188038";setTimeout(()=>m.textContent="",2200);}
+  } catch(e) {
+    setCachedUser(u);
+    if(m){m.textContent="❌ No se pudo guardar en el servidor.";m.style.color="#c62828";}
+  }
+}
+function refreshSettings(){
+  const u=getCachedUser(); if(!u) return;
+  const b=document.getElementById("bioEditor"); if(b)b.value=u.bio||"";
+  const profileBio=document.getElementById("profileBio"); if(profileBio) profileBio.textContent=u.bio||"Sin descripción disponible.";
+  applyTheme(u.theme||"light");
+}
+
 function updateUI(u){
+  applyTheme(u && u.theme ? u.theme : "light");
   document.getElementById('topUser').textContent=u.username;
   document.getElementById('sideUsername').textContent=u.username;
   document.getElementById('welcomeTitle').innerHTML=`Hello Epic, ${escapeHTML(u.username)}! <span class="check">✓</span>`;
   document.getElementById('profileName').textContent=u.username+" ✓";
   document.getElementById('profileUsername').textContent="@"+u.username;
+  const profileBio=document.getElementById('profileBio');
+  if(profileBio) profileBio.textContent=u.bio || "Sin descripción disponible.";
   document.getElementById('profileMoney').textContent=u.sunnys || 0;
   document.getElementById('moneyDisplay').textContent="☀️ "+(u.sunnys || 0);
   document.getElementById('settingsUser').textContent=u.username;
@@ -2910,6 +3093,9 @@ function renderTopAvatarMini(u) {
 
 let _friendsCache = [];
 let _requestsCache = [];
+let _presenceTimer = null;
+let _gameStatsTimer = null;
+let _gameStats = {};
 
 function getMyFriends(){
   return _friendsCache.slice();
@@ -2953,12 +3139,17 @@ function renderFriends(){
     return;
   }
 
-  friendsBox.innerHTML = list.map(f => `
+  friendsBox.innerHTML = list.map(f => {
+    const p = f.presence || {};
+    const cls = p.playing ? 'presence-playing' : (p.online ? 'presence-online' : 'presence-offline');
+    const label = p.playing ? `🎮 Jugando: ${escapeHTML(p.gameName || 'un juego')}` : (p.online ? '🟢 En línea' : '⚪ Desconectado');
+    return `
     <div class="friend" onclick="viewFriendProfile('${escapeHTML(f.username)}')">
       <div class="friend-avatar">${avatarPortraitHTML(f, 82)}</div>
       <div class="friend-name" style="font-size:12px;font-weight:bold;margin-top:4px">${escapeHTML(f.username)}</div>
-    </div>
-  `).join('');
+      <div class="presence-dot ${cls}"><span class="dot"></span>${label}</div>
+    </div>`;
+  }).join('');
 }
 
 function renderFriendsPage(){
@@ -2966,66 +3157,53 @@ function renderFriendsPage(){
   if(!grid) return;
   const list = getMyFriends();
   const incoming = _requestsCache || [];
-
-  let html = '';
-
-  if (incoming.length) {
-    html += `<div style="grid-column:1/-1;margin-bottom:8px"><h3 style="margin:0 0 10px;font-size:16px;color:#555">Solicitudes recibidas (${incoming.length})</h3></div>`;
-    incoming.forEach(u => {
-      html += `<div class="friend-card" style="border-color:#1684e8">
-        <div class="friend-card-avatar">${avatarPortraitHTML(u, 110)}</div>
-        <div class="friend-name" style="font-size:15px;font-weight:bold;margin-top:8px">${escapeHTML(u.username)}</div>
-        <div style="display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap">
-          <button class="section-button" style="background:#188038;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPropagation();acceptFriendRequest('${escapeHTML(u.id)}')">Aceptar</button>
-          <button class="section-button" style="background:#d93025;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPropagation();rejectFriendRequest('${escapeHTML(u.id)}')">Rechazar</button>
-        </div>
-      </div>`;
-    });
+  const box = document.getElementById('incomingRequestsBox');
+  if(box){
+    if(incoming.length){
+      let h=`<div class="settings-card" style="padding:12px;border-color:#1684e8"><h3 style="margin:0 0 10px;font-size:16px;color:#555">Solicitudes recibidas (${incoming.length})</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">`;
+      incoming.forEach(u=>{h+=`<div class="friend-card" style="border-color:#1684e8;cursor:default"><div class="friend-card-avatar">${avatarPortraitHTML(u,90)}</div><div style="font-size:14px;font-weight:bold;margin-top:8px">${escapeHTML(u.username)}</div><div style="display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap"><button class="section-button" style="background:#188038;margin:0;padding:6px 12px;font-size:12px" onclick="acceptFriendRequest('${escapeHTML(u.id)}')">Aceptar</button><button class="section-button" style="background:#d93025;margin:0;padding:6px 12px;font-size:12px" onclick="rejectFriendRequest('${escapeHTML(u.id)}')">Rechazar</button></div></div>`});
+      h+='</div></div>'; box.innerHTML=h;
+    }else box.innerHTML='';
   }
-
-  if(list.length === 0 && !html){
-    grid.innerHTML = "<p style='color:#777;'>Tu lista está vacía. Busca un usuario global arriba para enviar una solicitud.</p>";
-    return;
-  }
-
+  let html='';
+  if(list.length===0){grid.innerHTML="<p style='color:#777;'>Tu lista está vacía. Busca un usuario global arriba para enviar una solicitud.</p>";return;}
   if (list.length) {
     html += `<div style="grid-column:1/-1;margin:12px 0 8px"><h3 style="margin:0;font-size:16px;color:#555">Amigos (${list.length})</h3></div>`;
-    html += list.map(f => `
+    html += list.map(f => {
+      const p = f.presence || {};
+      const cls = p.playing ? 'presence-playing' : (p.online ? 'presence-online' : 'presence-offline');
+      const label = p.playing ? `🎮 Jugando ${escapeHTML(p.gameName || 'un juego')}` : (p.online ? '🟢 En línea' : '⚪ Desconectado');
+      const join = p.playing ? `<button class="join" onclick="event.stopPropagation();joinFriendGame('${escapeHTML(f.id)}')">▶ Unirse</button>` : '';
+      return `
       <div class="friend-card" onclick="viewFriendProfile('${escapeHTML(f.username)}')">
         <div class="friend-card-avatar">${avatarPortraitHTML(f, 110)}</div>
         <div class="friend-name" style="font-size:15px;font-weight:bold;margin-top:8px">${escapeHTML(f.username)}</div>
-        <div style="font-size:11px;color:#777;margin-top:4px">Amigo global</div>
-      </div>
-    `).join('');
+        <div class="presence-dot ${cls}"><span class="dot"></span>${label}</div>
+        <div class="presence-actions">${join}</div>
+      </div>`;
+    }).join('');
   }
 
   grid.innerHTML = html;
 }
 
 function addFriendFromInput(){
-  const input = document.getElementById('addFriendInput');
-  const name = input ? input.value.trim() : "";
+  const input=document.getElementById('addFriendInput');
+  const name=input?input.value.trim():"";
   if(!name) return alert("Escribe un nombre de usuario.");
-  if(!getToken()) return alert("Debes iniciar sesión.");
-
-  api('/api/friends/request', { method:'POST', body: JSON.stringify({ username: name }) })
-    .then(data => {
-      if (data.user) setCachedUser(data.user);
-      if (input) input.value = "";
-      refreshFriendsFromServer();
-      if (data.accepted) alert("✅ Solicitud aceptada. ¡Ahora son amigos globales!");
-      else alert("📨 Solicitud de amistad enviada (global).");
+  const token=getToken();
+  if(!token) return alert("Debes iniciar sesión.");
+  if(String(token).startsWith("pending_")) return alert("Tu cuenta todavía se está conectando al servidor. Inténtalo de nuevo en unos segundos.");
+  api('/api/users/search?q='+encodeURIComponent(name),{},2)
+    .then(search=>{
+      const rs=search.results||[];
+      const target=rs.find(r=>(r.username||'').toLowerCase()===name.toLowerCase()||(r.id||'').toLowerCase()===name.toLowerCase()) || (rs.length===1?rs[0]:null);
+      if(!target) throw new Error(rs.length?"Escribe el nombre exacto del usuario.":"Usuario no encontrado.");
+      return api('/api/friends/request',{method:'POST',body:JSON.stringify({id:target.id})},2);
     })
-    .catch(err => {
-      // Intentar buscar
-      api('/api/users/search?q=' + encodeURIComponent(name))
-        .then(s => {
-          if (!s.results || !s.results.length) return alert(err.message || "Usuario no encontrado en el servidor global.");
-          const names = s.results.map(r => r.username).join(', ');
-          alert((err.message || "Error") + "\n\nCoincidencias: " + names);
-        })
-        .catch(() => alert(err.message || "Usuario no encontrado."));
-    });
+    .then(data=>{if(data.user)setCachedUser(data.user);if(input)input.value="";return refreshFriendsFromServer();})
+    .then(()=>alert("📨 Solicitud de amistad enviada."))
+    .catch(err=>alert(err.message||"No se pudo enviar la solicitud."));
 }
 
 function acceptFriendRequest(fromKey) {
@@ -3044,6 +3222,41 @@ function rejectFriendRequest(fromKey) {
     .catch(err => alert(err.message || "Error"));
 }
 
+async function sendPresence(playing = false, extra = {}) {
+  const token = getToken();
+  if (!token || String(token).startsWith('pending_')) return;
+  try {
+    await api('/api/presence', {
+      method:'POST',
+      body:JSON.stringify({
+        playing: !!playing,
+        gameId: extra.gameId || (playing ? epicGameId : ''),
+        gameName: extra.gameName || (playing ? currentGameType : ''),
+        roomName: extra.roomName || (playing ? multiplayerRoom || currentGameType : ''),
+        serverId: extra.serverId || (playing ? epicServerId : '')
+      })
+    }, 1);
+  } catch(e) {}
+}
+
+function startPresenceHeartbeat(){
+  if (_presenceTimer) clearInterval(_presenceTimer);
+  sendPresence(false);
+  _presenceTimer = setInterval(() => {
+    const inGame = document.body.classList.contains('in-game') && !!currentGameType;
+    sendPresence(inGame, inGame ? { gameId:epicGameId, gameName:currentGameType, roomName:multiplayerRoom, serverId:epicServerId } : {});
+    if (document.getElementById('friends')?.classList.contains('active') || document.getElementById('home')?.classList.contains('active')) refreshFriendsFromServer();
+  }, 8000);
+}
+
+function joinFriendGame(friendId){
+  const friend = getMyFriends().find(f => String(f.id) === String(friendId));
+  const p = friend && friend.presence;
+  if (!friend || !p || !p.playing || !p.gameName) return alert('Ese amigo ya no está jugando.');
+  showPage('home');
+  setTimeout(() => launchWebClient(p.gameName), 50);
+}
+
 function viewFriendProfile(username){
   api('/api/users/' + encodeURIComponent(username.toLowerCase()))
     .then(data => {
@@ -3051,6 +3264,18 @@ function viewFriendProfile(username){
       document.getElementById('friendProfileName').textContent = friend.username + " ✓";
       document.getElementById('friendProfileUsername').textContent = "@" + friend.username;
       document.getElementById('friendProfileBio').textContent = friend.bio || "Sin descripción disponible.";
+      const cachedFriend = getMyFriends().find(f => (f.id || '').toLowerCase() === (friend.id || '').toLowerCase() || (f.username || '').toLowerCase() === (friend.username || '').toLowerCase());
+      const presence = (cachedFriend && cachedFriend.presence) || { online:false, playing:false };
+      const presenceEl = document.getElementById('friendProfilePresence');
+      const joinBtn = document.getElementById('friendProfileJoinBtn');
+      if (presenceEl) {
+        presenceEl.innerHTML = presence.playing ? `<span style="background:#e8f0ff;color:#1d4ed8;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">🎮 Jugando: ${escapeHTML(presence.gameName || 'un juego')}</span>` : (presence.online ? `<span style="background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">🟢 En línea</span>` : `<span style="background:#f1f3f4;color:#666;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">⚪ Desconectado</span>`);
+      }
+      if (joinBtn) {
+        joinBtn.disabled = !presence.playing;
+        joinBtn.textContent = presence.playing ? '▶ Unirse al Juego' : 'Unirse al Juego';
+        joinBtn.onclick = presence.playing ? () => joinFriendGame(friend.id) : null;
+      }
       const avEl = document.getElementById('friendProfileAvatar');
       if (avEl) {
         avEl.style.background = 'transparent';
@@ -3110,6 +3335,7 @@ function showPage(p){
   if(p==="avatar") { try { const t=(current()&&current().user.avatar&&current().user.avatar.torsoType)||"male"; const mb=document.getElementById("torsoTypeMale"); const fb=document.getElementById("torsoTypeFemale"); if(mb) mb.style.background=t==="male"?"#1684e8":"#292929"; if(fb) fb.style.background=t==="female"?"#e91e8c":"#292929"; } catch(e){} }
   if(p==="games") loadGames();
   if(p==="friends") { refreshFriendsFromServer(); renderFriendsPage(); }
+  if(p==="settings") { refreshSettings(); }
   if(p==="catalog") {
     renderCatalog('all');
   }
@@ -3129,9 +3355,30 @@ const games=[
 ];
 
 function loadGames(list=games){
-  const render=(arr)=>arr.map(g=>`<div class="game" onclick="launchWebClient('${g[0]}')"><div class="game-image">3D</div><div class="game-info"><div class="game-name">${g[0]}</div><div class="game-players">${g[1]}</div><button class="play-button">▶ Jugar en 3D</button></div></div>`).join("");
-  document.getElementById('gamesGrid').innerHTML=render(list);
-  document.getElementById('recentGames').innerHTML=render(list.slice(0,6));
+  const render=(arr)=>arr.map(g=>{
+    const gid=getGameId(g[0]);
+    const count=Number(_gameStats[gid]||0);
+    return `<div class="game" onclick="launchWebClient('${g[0]}')"><div class="game-image">3D</div><div class="game-info"><div class="game-name">${g[0]}</div><div class="game-players">${g[1]}<br><b>👥 ${count} jugador(es) jugando</b></div><button class="play-button">▶ Jugar en 3D</button></div></div>`;
+  }).join("");
+  const grid=document.getElementById('gamesGrid');
+  const recent=document.getElementById('recentGames');
+  if(grid) grid.innerHTML=render(list);
+  if(recent) recent.innerHTML=render(list.slice(0,6));
+}
+
+async function refreshGameStats(){
+  try {
+    const data=await api('/api/games/stats',{},1);
+    _gameStats=(data&&data.stats)||{};
+    const page=document.getElementById('games');
+    loadGames(page && page.classList.contains('active') ? games : games);
+  } catch(e) {}
+}
+
+function startGameStatsHeartbeat(){
+  if(_gameStatsTimer) clearInterval(_gameStatsTimer);
+  refreshGameStats();
+  _gameStatsTimer=setInterval(refreshGameStats,8000);
 }
 
 function searchGames(t){
@@ -3181,19 +3428,18 @@ function renderCatalog(category) {
 
 function buy(item,price){
   const c=current();if(!c)return alert("Debes iniciar sesión.");
-  c.user.inventory = c.user.inventory || [];
-  c.user.inventory = c.user.inventory || [];
-  if(c.user.inventory.includes(item))return alert("Ya tienes este artículo.");
-  if(c.user.inventory.length >= 9)return alert("Inventario lleno (9 slots).");
+  c.user.avatarInventory = Array.isArray(c.user.avatarInventory) ? c.user.avatarInventory : (Array.isArray(c.user.inventory) ? c.user.inventory.slice() : []);
+  c.user.inventory = [];
+  if(c.user.avatarInventory.includes(item))return alert("Ya tienes este artículo.");
   if((c.user.sunnys || 0) < price)return alert("❌ No tienes suficientes Sunnys.");
   c.user.sunnys -= price;
-  c.user.inventory.push(item);
+  c.user.avatarInventory.push(item);
   const u=getUsers();u[c.key]=c.user;saveUsers(u);
   updateUI(c.user);loadInventory();renderCatalog(document.querySelector('.cat-tab.active')?.textContent.includes('Sombreros') ? 'hats' : 'all');alert("✅ Compraste "+item+"!");
 }
 
 function updateCatalogButtons(u){
-  const inv = (u && u.inventory) || [];
+  const inv = (u && (u.avatarInventory || u.inventory)) || [];
   catalogDatabase.forEach(item => {
     const btn = document.getElementById(`cat-btn-${item.id}`);
     if(btn){
@@ -3217,7 +3463,7 @@ function updateCatalogButtons(u){
 function updateAccessoryButtons(u){
   const accContainer = document.getElementById('accessoryButtons');
   if(!accContainer) return;
-  const inv = (u && u.inventory) || [];
+  const inv = (u && (u.avatarInventory || u.inventory)) || [];
   const equipped = (u && u.avatar && u.avatar.accessories) || [];
   
   let html = `<p style="font-size:12px;color:#555;margin:0 0 8px;">Haz clic para equipar o desequipar múltiples ítems y ropa 2D:</p>`;
@@ -3259,7 +3505,7 @@ function renderGameInventory(){
   const grid = document.getElementById('gameInventoryGrid');
   if(!grid) return;
   const c = current();
-  const inv = (c && c.user && Array.isArray(c.user.inventory)) ? c.user.inventory : [];
+  const inv = (c && c.user && Array.isArray(c.user.gameInventory)) ? c.user.gameInventory : [];
   let html = '';
   for(let i=0;i<9;i++){
     const itemId = inv[i];
@@ -3280,18 +3526,16 @@ function loadInventory(){
   const inventoryGrid = document.getElementById('inventoryGrid');
   if(!inventoryGrid) return;
   if(!c){ inventoryGrid.innerHTML=""; return; }
-  const inv = Array.isArray(c.user.inventory) ? c.user.inventory : [];
-  // 9 slots fijos
+  const inv = Array.isArray(c.user.avatarInventory) ? c.user.avatarInventory : (Array.isArray(c.user.inventory) ? c.user.inventory : []);
   let html = "";
-  for (let i = 0; i < 9; i++) {
-    const itemId = inv[i];
-    if (itemId) {
+  if(!inv.length){
+    html = `<div class="settings-card" style="grid-column:1/-1;text-align:center;color:#777">Todavía no tienes ropa ni accesorios. Visita el Catálogo.</div>`;
+  } else {
+    inv.forEach((itemId) => {
       const item = (typeof catalogDatabase !== 'undefined') ? catalogDatabase.find(it => it.id === itemId) : null;
       const icon = item ? catalogIconSVG(item) : `<span style="font-weight:bold;font-size:13px;color:#333">${itemId}</span>`;
-      html += `<div class="inventory-slot filled inventory-item"><div class="slot-num">Slot ${i+1}</div><div class="catalog-image">${icon}</div><h3 style="margin:5px 0 0 0;font-size:13px;text-align:center;">${itemId}</h3></div>`;
-    } else {
-      html += `<div class="inventory-slot"><div class="slot-num">Slot ${i+1}</div><div style="color:#bbb;font-size:12px">Vacío</div></div>`;
-    }
+      html += `<div class="catalog-item inventory-item"><div class="catalog-image">${icon}</div><h3 style="margin:5px 0 0 0;font-size:13px;text-align:center;">${item ? item.name : itemId}</h3><p style="color:#666;font-size:11px;margin:5px 0;text-align:center">${item ? item.desc : 'Objeto del avatar'}</p></div>`;
+    });
   }
   inventoryGrid.innerHTML = html;
 }
