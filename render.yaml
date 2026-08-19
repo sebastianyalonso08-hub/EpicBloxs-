@@ -6,3 +6,10 @@ services:
     startCommand: npm start
     healthCheckPath: /health
     autoDeploy: true
+    envVars:
+      - key: EPICBLOXS_DATA_DIR
+        value: /var/data
+    disk:
+      name: epicbloxs-data
+      mountPath: /var/data
+      sizeGB: 1

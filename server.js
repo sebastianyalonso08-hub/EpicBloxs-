@@ -18,11 +18,14 @@ const PRESENCE_TTL_MS = 25000;
 
 const publicDir = path.join(__dirname, "public");
 const indexPath = path.join(publicDir, "index.html");
-const dataDir = path.join(__dirname, "data");
+const dataDir = process.env.EPICBLOXS_DATA_DIR
+  ? path.resolve(process.env.EPICBLOXS_DATA_DIR)
+  : (process.env.RENDER ? "/var/data" : path.join(__dirname, "data"));
 const usersPath = path.join(dataDir, "users.json");
 const catalogPath = path.join(dataDir, "catalog.json");
 const sessionsPath = path.join(dataDir, "sessions.json");
 const dmsPath = path.join(dataDir, "dms.json");
+const sessionSecretPath = path.join(dataDir, "session-secret.txt");
 
 function ensureDataDir() {
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
@@ -30,18 +33,99 @@ function ensureDataDir() {
   if (!fs.existsSync(catalogPath)) fs.writeFileSync(catalogPath, "[]", "utf8");
 }
 
-function loadUsers() {
+function getPersistentSessionSecret() {
+  ensureDataDir();
+  if (process.env.SESSION_SECRET) return String(process.env.SESSION_SECRET);
   try {
-    ensureDataDir();
-    return JSON.parse(fs.readFileSync(usersPath, "utf8") || "{}");
+    if (fs.existsSync(sessionSecretPath)) {
+      const existing = fs.readFileSync(sessionSecretPath, "utf8").trim();
+      if (existing) return existing;
+    }
+    const generated = crypto.randomBytes(32).toString("hex");
+    fs.writeFileSync(sessionSecretPath, generated, "utf8");
+    return generated;
+  } catch {
+    // Fallback for local read-only environments.
+    return "epicbloxs-session-key-v1";
+  }
+}
+
+function readJsonObject(file) {
+  try {
+    if (!fs.existsSync(file)) return {};
+    const raw = fs.readFileSync(file, "utf8");
+    const data = JSON.parse(raw || "{}");
+    return data && typeof data === "object" && !Array.isArray(data) ? data : {};
   } catch {
     return {};
   }
 }
 
+function mergeUserStores(target, source) {
+  let changed = false;
+  for (const [key, value] of Object.entries(source || {})) {
+    if (!value || typeof value !== "object") continue;
+    const normalizedKey = String(key).trim().toLowerCase();
+    if (!normalizedKey) continue;
+    // El archivo principal siempre gana. Los backups/archivos antiguos solo
+    // recuperan cuentas que ya no estén en el registro actual.
+    if (!target[normalizedKey]) {
+      target[normalizedKey] = value;
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+function loadUsers() {
+  ensureDataDir();
+  const users = readJsonObject(usersPath);
+  let changed = false;
+
+  // El proyecto traía una cuenta de prueba llamada SebUser. No es una cuenta
+  // real y nunca debe volver a aparecer en el buscador. Solo eliminamos esa
+  // semilla exacta; cualquier otra cuenta se conserva.
+  const fakeSeedHash = "ca7afd6a5b83ee0bc412d15c060f8388fa35e192e7d9086fa8bb4ebe88695166";
+  for (const [key, value] of Object.entries(users)) {
+    if (String(key).toLowerCase() === "sebuser" && value && value.passwordHash === fakeSeedHash && Number(value.userId) === 1001) {
+      delete users[key];
+      changed = true;
+    }
+  }
+
+  // Recuperación automática de cuentas antiguas. Esto permite actualizar el
+  // servidor sin perder cuentas que estaban en una versión anterior.
+  const legacyFiles = [
+    path.join(dataDir, "users.backup.json"),
+    path.join(dataDir, "users.legacy.json"),
+    path.join(dataDir, "accounts.json"),
+    path.join(dataDir, "accounts.backup.json"),
+    path.join(dataDir, "old_users.json")
+  ];
+  for (const file of legacyFiles) changed = mergeUserStores(users, readJsonObject(file)) || changed;
+
+  if (changed) saveUsersDisk(users);
+  return users;
+}
+
 function saveUsersDisk(users) {
   ensureDataDir();
-  fs.writeFileSync(usersPath, JSON.stringify(users, null, 2), "utf8");
+  const clean = users && typeof users === "object" ? users : {};
+  const tempPath = usersPath + ".tmp";
+  const backupPath = path.join(dataDir, "users.backup.json");
+  try {
+    // Backup antes de cada escritura: si una actualización falla, las cuentas
+    // antiguas siguen disponibles para la recuperación automática.
+    if (fs.existsSync(usersPath)) {
+      try { fs.copyFileSync(usersPath, backupPath); } catch {}
+    }
+    fs.writeFileSync(tempPath, JSON.stringify(clean, null, 2), "utf8");
+    fs.renameSync(tempPath, usersPath);
+  } catch (err) {
+    try { if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath); } catch {}
+    console.error("No se pudo guardar users.json:", err.message);
+    throw err;
+  }
 }
 
 // Las sesiones se guardan en disco para que el token siga sirviendo aunque
@@ -217,9 +301,10 @@ function hashPassword(password) {
   return crypto.createHash("sha256").update(String(password) + "|epicbloxs").digest("hex");
 }
 
-// Secreto de firma: fijo (o via variable de entorno SESSION_SECRET) para que los
-// tokens sigan siendo validos incluso si el disco se borra en un redeploy.
-const SESSION_SECRET = process.env.SESSION_SECRET || "epicbloxs-session-key-v1";
+// Secreto de firma persistente. En Render se guarda dentro del disco de datos,
+// así un redeploy no invalida los tokens existentes. SESSION_SECRET sigue
+// teniendo prioridad si el propietario del servidor la configuró.
+const SESSION_SECRET = getPersistentSessionSecret();
 
 function signSession(payload) {
   return crypto.createHmac("sha256", SESSION_SECRET).update(payload).digest("hex").slice(0, 32);
@@ -307,6 +392,13 @@ function ensureUserIds(users) {
   return users;
 }
 
+// Registro global: cada cuenta que se crea queda en users.json y las cuentas
+// antiguas se normalizan sin borrarse. Se ejecuta al arrancar y en cada
+// operación que depende del registro.
+function syncUserRegistry() {
+  return ensureUserIds(loadUsers());
+}
+
 // Relacion entre la cuenta que consulta y otra cuenta cualquiera.
 function relationBetween(users, myKey, otherKey) {
   if (!myKey || !otherKey) return "none";
@@ -388,17 +480,28 @@ function publicUser(user, key) {
 
 function getSessionUser(req) {
   const auth = req.headers["authorization"] || "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  if (!token) return null;
+  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  if (!token || token.length < 20) return null;
+
+  // Primero usamos la tabla de sesiones persistida. Si el servidor se reinició,
+  // también podemos reconstruir una sesión desde el token firmado.
   let key = sessions.get(token);
   if (!key) {
     key = keyFromSignedToken(token);
     if (!key) return null;
-    registerSession(token, key); // sesion recuperada por firma, sigue viva
+    const users = ensureUserIds(loadUsers());
+    if (!users[key]) return null;
+    registerSession(token, key);
   }
+
   sessionStamps.set(token, Date.now());
   const users = ensureUserIds(loadUsers());
-  if (!users[key]) return null;
+  if (!users[key]) {
+    sessions.delete(token);
+    sessionStamps.delete(token);
+    saveSessionsDisk();
+    return null;
+  }
   return { token, key, user: users[key], users };
 }
 
@@ -477,7 +580,7 @@ const server = http.createServer(async (req, res) => {
 
   if (urlPath === "/health") {
     const players = [...rooms.values()].reduce((n, room) => n + room.players.size, 0);
-    const accounts = Object.keys(loadUsers()).length;
+    const accounts = Object.keys(syncUserRegistry()).length;
     const online = [...rooms.values()].reduce((n, room) => n + room.players.size, 0);
     return json(res, 200, {
       ok: true,
@@ -498,7 +601,7 @@ const server = http.createServer(async (req, res) => {
     if (hasBannedTerm(username)) return json(res, 400, { error: "Ese nombre de usuario no esta permitido." });
     if (password.length < 6) return json(res, 400, { error: "Contrasena minimo 6 caracteres." });
     const key = username.toLowerCase();
-    const users = ensureUserIds(loadUsers());
+    const users = syncUserRegistry();
     if (users[key]) return json(res, 409, { error: "Ese usuario ya existe." });
     users[key] = defaultUser(username, hashPassword(password), nextNumericUserId(users));
     saveUsersDisk(users);
@@ -511,7 +614,7 @@ const server = http.createServer(async (req, res) => {
     const body = await readBody(req);
     const key = safeText(body.username, "", 20).toLowerCase();
     const password = String(body.password || "");
-    const users = ensureUserIds(loadUsers());
+    const users = syncUserRegistry();
     const user = users[key];
     if (user && hasBannedTerm(user.username)) return json(res, 403, { error: "Esta cuenta no puede iniciar sesion por el nombre de usuario." });
     if (!user || user.passwordHash !== hashPassword(password)) {
@@ -565,7 +668,7 @@ const server = http.createServer(async (req, res) => {
     const rawQuery = safeText(params.get("q"), "", 40);
     const q = rawQuery.toLowerCase();
     const limit = Math.max(1, Math.min(5000, Number(params.get("limit")) || 500));
-    const users = ensureUserIds(loadUsers());
+    const users = syncUserRegistry();
     const sess = getSessionUser(req);
     const myKey = sess ? sess.key : null;
     const results = [];
@@ -923,7 +1026,7 @@ const server = http.createServer(async (req, res) => {
 
   if (urlPath.startsWith("/perfil/")) {
     const identifier = decodeURIComponent(urlPath.replace("/perfil/", ""));
-    const users = ensureUserIds(loadUsers());
+    const users = syncUserRegistry();
     const key = resolveUserKey(users, identifier);
     if (!key) return json(res, 404, { error: "Perfil no encontrado." });
     fs.readFile(indexPath, (err, data) => {
@@ -1137,6 +1240,7 @@ process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
 
 ensureDataDir();
+syncUserRegistry();
 server.listen(PORT, HOST, () => {
   console.log("EpicBloxs GLOBAL server on http://" + HOST + ":" + PORT);
   console.log("Users file: " + usersPath);

@@ -23,3 +23,8 @@ El cliente detecta HTTPS y usa WebSocket seguro (`wss://`) automáticamente.
 
 ## Prueba
 Abre la URL en dos navegadores/cuentas y entra al mismo juego. Ambos deben tener el mismo Game ID y Server ID, y cada jugador tendrá un Player ID distinto.
+
+
+## Registro global de cuentas
+
+Las cuentas reales se guardan en `users.json`. En Render se recomienda usar el disco persistente montado en `/var/data`; el servidor detecta Render automáticamente y usa ese directorio. La cuenta de prueba `SebUser` ya no se crea.
