@@ -11,6 +11,8 @@ const MAX_CHAT_LEN = 200;
 const SERVER_ID = "SRV-" + crypto.randomBytes(3).toString("hex").toUpperCase();
 const rooms = new Map();
 const sessions = new Map();
+const sessionStamps = new Map();
+const SESSION_TTL_MS = Infinity; // las sesiones NO caducan nunca
 const presence = new Map();
 const PRESENCE_TTL_MS = 25000;
 
@@ -19,6 +21,8 @@ const indexPath = path.join(publicDir, "index.html");
 const dataDir = path.join(__dirname, "data");
 const usersPath = path.join(dataDir, "users.json");
 const catalogPath = path.join(dataDir, "catalog.json");
+const sessionsPath = path.join(dataDir, "sessions.json");
+const dmsPath = path.join(dataDir, "dms.json");
 
 function ensureDataDir() {
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
@@ -38,6 +42,53 @@ function loadUsers() {
 function saveUsersDisk(users) {
   ensureDataDir();
   fs.writeFileSync(usersPath, JSON.stringify(users, null, 2), "utf8");
+}
+
+// Las sesiones se guardan en disco para que el token siga sirviendo aunque
+// el servidor se reinicie o se duerma (antes daba "No autenticado.").
+function loadSessionsDisk() {
+  try {
+    ensureDataDir();
+    const raw = JSON.parse(fs.readFileSync(sessionsPath, "utf8") || "{}");
+    const now = Date.now();
+    let changed = false;
+    for (const [token, entry] of Object.entries(raw)) {
+      const key = typeof entry === "string" ? entry : entry && entry.key;
+      const ts = (entry && entry.ts) || now;
+      if (!key) { changed = true; continue; } // nunca se descartan por tiempo
+      sessions.set(token, key);
+      sessionStamps.set(token, ts);
+    }
+    if (changed) saveSessionsDisk();
+  } catch {}
+}
+
+function saveSessionsDisk() {
+  try {
+    ensureDataDir();
+    const out = {};
+    for (const [token, key] of sessions.entries()) {
+      out[token] = { key, ts: sessionStamps.get(token) || Date.now() };
+    }
+    fs.writeFileSync(sessionsPath, JSON.stringify(out), "utf8");
+  } catch {}
+}
+
+function registerSession(token, key) {
+  sessions.set(token, key);
+  sessionStamps.set(token, Date.now());
+  saveSessionsDisk();
+}
+
+// ---- Mensajes directos (chat privado) ----
+function loadDMs() {
+  try { ensureDataDir(); return JSON.parse(fs.readFileSync(dmsPath, "utf8") || "{}"); } catch { return {}; }
+}
+function saveDMs(data) {
+  try { ensureDataDir(); fs.writeFileSync(dmsPath, JSON.stringify(data), "utf8"); } catch {}
+}
+function dmConvKey(a, b) {
+  return [String(a), String(b)].sort().join("|");
 }
 
 function loadCatalog() {
@@ -166,8 +217,30 @@ function hashPassword(password) {
   return crypto.createHash("sha256").update(String(password) + "|epicbloxs").digest("hex");
 }
 
-function makeToken() {
+// Secreto de firma: fijo (o via variable de entorno SESSION_SECRET) para que los
+// tokens sigan siendo validos incluso si el disco se borra en un redeploy.
+const SESSION_SECRET = process.env.SESSION_SECRET || "epicbloxs-session-key-v1";
+
+function signSession(payload) {
+  return crypto.createHmac("sha256", SESSION_SECRET).update(payload).digest("hex").slice(0, 32);
+}
+
+function makeToken(key) {
+  // Token firmado y SIN caducidad: se puede validar sin guardar nada.
+  if (key) {
+    const payload = Buffer.from(String(key), "utf8").toString("base64url") + "." + crypto.randomBytes(6).toString("hex");
+    return payload + "." + signSession(payload);
+  }
   return crypto.randomBytes(24).toString("hex");
+}
+
+// Si el token no esta en memoria ni en disco, se acepta cuando la firma es valida.
+function keyFromSignedToken(token) {
+  const parts = String(token || "").split(".");
+  if (parts.length !== 3) return null;
+  const payload = parts[0] + "." + parts[1];
+  if (signSession(payload) !== parts[2]) return null;
+  try { return Buffer.from(parts[0], "base64url").toString("utf8") || null; } catch { return null; }
 }
 
 function makeId() {
@@ -316,8 +389,14 @@ function publicUser(user, key) {
 function getSessionUser(req) {
   const auth = req.headers["authorization"] || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  if (!token || !sessions.has(token)) return null;
-  const key = sessions.get(token);
+  if (!token) return null;
+  let key = sessions.get(token);
+  if (!key) {
+    key = keyFromSignedToken(token);
+    if (!key) return null;
+    registerSession(token, key); // sesion recuperada por firma, sigue viva
+  }
+  sessionStamps.set(token, Date.now());
   const users = ensureUserIds(loadUsers());
   if (!users[key]) return null;
   return { token, key, user: users[key], users };
@@ -423,8 +502,8 @@ const server = http.createServer(async (req, res) => {
     if (users[key]) return json(res, 409, { error: "Ese usuario ya existe." });
     users[key] = defaultUser(username, hashPassword(password), nextNumericUserId(users));
     saveUsersDisk(users);
-    const token = makeToken();
-    sessions.set(token, key);
+    const token = makeToken(key);
+    registerSession(token, key);
     return json(res, 200, { token, user: publicUser(users[key], key) });
   }
 
@@ -445,8 +524,8 @@ const server = http.createServer(async (req, res) => {
       users[key] = user;
       saveUsersDisk(users);
     }
-    const token = makeToken();
-    sessions.set(token, key);
+    const token = makeToken(key);
+    registerSession(token, key);
     return json(res, 200, { token, user: publicUser(user, key) });
   }
 
@@ -485,7 +564,7 @@ const server = http.createServer(async (req, res) => {
     const params = new URL(req.url, "http://x").searchParams;
     const rawQuery = safeText(params.get("q"), "", 40);
     const q = rawQuery.toLowerCase();
-    const limit = Math.max(1, Math.min(300, Number(params.get("limit")) || 120));
+    const limit = Math.max(1, Math.min(5000, Number(params.get("limit")) || 500));
     const users = ensureUserIds(loadUsers());
     const sess = getSessionUser(req);
     const myKey = sess ? sess.key : null;
@@ -722,6 +801,97 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, { ok: true, published: true, item, message: "Publicado en el catalogo correctamente." });
   }
 
+  // ================= CHAT DIRECTO (mensajes privados) =================
+  if (urlPath === "/api/dm/inbox" && req.method === "GET") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const users = sess.users;
+    const dms = loadDMs();
+    const list = [];
+    for (const [conv, data] of Object.entries(dms)) {
+      const parts = conv.split("|");
+      if (!parts.includes(sess.key)) continue;
+      const otherKey = parts[0] === sess.key ? parts[1] : parts[0];
+      const other = users[otherKey];
+      if (!other) continue;
+      const msgs = (data && data.messages) || [];
+      const last = msgs[msgs.length - 1] || null;
+      const readAt = ((data && data.readAt) || {})[sess.key] || 0;
+      const unread = msgs.filter(m => m.from !== sess.key && m.ts > readAt).length;
+      list.push({
+        id: String(other.userId),
+        username: other.username,
+        avatar: other.avatar || {},
+        presence: getPresence(otherKey),
+        unread,
+        lastMessage: last ? { from: last.from === sess.key ? "me" : "them", text: last.text, ts: last.ts } : null
+      });
+    }
+    list.sort((a, b) => ((b.lastMessage && b.lastMessage.ts) || 0) - ((a.lastMessage && a.lastMessage.ts) || 0));
+    return json(res, 200, { conversations: list, unreadTotal: list.reduce((n, c) => n + c.unread, 0) });
+  }
+
+  if (urlPath === "/api/dm/thread" && req.method === "GET") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const params = new URL(req.url, "http://x").searchParams;
+    const otherKey = resolveUserKey(sess.users, safeText(params.get("id"), "", 40));
+    if (!otherKey) return json(res, 404, { error: "Usuario no encontrado." });
+    const conv = dmConvKey(sess.key, otherKey);
+    const dms = loadDMs();
+    const data = dms[conv] || { messages: [], readAt: {} };
+    data.readAt = data.readAt || {};
+    data.readAt[sess.key] = Date.now();
+    dms[conv] = data;
+    saveDMs(dms);
+    const other = sess.users[otherKey];
+    return json(res, 200, {
+      user: { ...publicFriendUser(other, otherKey), relation: relationBetween(sess.users, sess.key, otherKey) },
+      messages: (data.messages || []).slice(-120).map(m => ({
+        from: m.from === sess.key ? "me" : "them",
+        username: m.from === sess.key ? sess.user.username : other.username,
+        text: m.text,
+        ts: m.ts
+      }))
+    });
+  }
+
+  if (urlPath === "/api/dm/send" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const body = await readBody(req);
+    const otherKey = resolveUserKey(sess.users, safeText(body.id, "", 40));
+    if (!otherKey) return json(res, 404, { error: "Usuario no encontrado." });
+    if (otherKey === sess.key) return json(res, 400, { error: "No puedes escribirte a ti mismo." });
+    const text = censorText(safeText(body.text, "", 300)).trim();
+    if (!text) return json(res, 400, { error: "Escribe un mensaje." });
+    const conv = dmConvKey(sess.key, otherKey);
+    const dms = loadDMs();
+    const data = dms[conv] || { messages: [], readAt: {} };
+    data.messages = data.messages || [];
+    const last = data.messages[data.messages.length - 1];
+    if (last && last.from === sess.key && Date.now() - last.ts < 400) {
+      return json(res, 429, { error: "Vas muy rapido, espera un momento." });
+    }
+    data.messages.push({ from: sess.key, text, ts: Date.now() });
+    if (data.messages.length > 400) data.messages = data.messages.slice(-400);
+    data.readAt = data.readAt || {};
+    data.readAt[sess.key] = Date.now();
+    dms[conv] = data;
+    saveDMs(dms);
+    // Aviso instantaneo si el destinatario esta conectado por WebSocket.
+    try {
+      for (const room of rooms.values()) {
+        for (const p of room.players.values()) {
+          if (p.username && p.username.toLowerCase() === otherKey && p.ws && p.ws.readyState === 1) {
+            p.ws.send(JSON.stringify({ type: "dm", from: String(sess.user.userId), username: sess.user.username, text, ts: Date.now() }));
+          }
+        }
+      }
+    } catch (e) {}
+    return json(res, 200, { ok: true, message: { from: "me", text, ts: Date.now() } });
+  }
+
   if (urlPath === "/api/chat/moderate" && req.method === "POST") {
     const body = await readBody(req);
     return json(res, 200, { message: censorText(safeText(body.message, "", 200)) });
@@ -823,6 +993,8 @@ function leaveRoom(player) {
   if (player.username) clearPlaying(player.username.toLowerCase());
   if (room.players.size === 0) rooms.delete(oldKey);
 }
+
+loadSessionsDisk();
 
 wss.on("connection", (ws) => {
   const player = {
