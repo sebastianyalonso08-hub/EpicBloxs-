@@ -1314,7 +1314,17 @@ function launchWebClient(gameName) {
   showPage('webClient');
   document.getElementById('clientGameTitle').textContent = `Jugando: ${gameName}`;
   document.getElementById('activeGameHeader').textContent = gameName;
-  const hint=document.getElementById('gameHint'); if(hint) hint.textContent = gameName.trim()==='Battle Arena' ? 'F = Ataque' : (gameName.trim()==='Pet World' ? '🐾 Tus mascotas te siguen' : (gameName.trim()==='Speed Race' ? '🏁 Llega a la meta y pasa checkpoints' : ''));
+  const hint=document.getElementById('gameHint');
+  if(hint){
+    const n=gameName.trim();
+    hint.textContent =
+      n==='Battle Arena' ? '⚔️ F = atacar · 3 golpes derriban al objetivo' :
+      n==='Pet World' ? '🐾 Tus mascotas te siguen · explora huevos, lago y parque' :
+      n==='Speed Race' ? '🏁 Pasa los 6 checkpoints y llega a la meta' :
+      n==='Epic Obby' ? '🏃 Salta, toca checkpoints y llega a la meta' :
+      n==='Sky Islands' ? '☁️ Salta entre islas y recoge monedas' :
+      n==='Bloxs City' ? '🏙️ Explora los barrios, parque y lago' : '';
+  }
   const sub = document.getElementById('gameMenuSubtitle');
   if(sub) sub.textContent = gameName;
   document.getElementById('clientLoading').style.display = 'flex';
@@ -1618,12 +1628,15 @@ let fightTargets = [];
 let raceCheckpoints = [];
 let activeCheckpoint = 0;
 let gameActionCooldown = 0;
+let raceFinished = false;
+let raceStartTime = 0;
+let obbyBestCheckpoint = 0;
 
 function clearGameExtras(){
   const all = [...gameDecorations, ...petFollowers, ...fightTargets, ...raceCheckpoints];
   for(const obj of all){ try{ gameScene.remove(obj); }catch(e){} }
   gameDecorations=[]; petFollowers=[]; fightTargets=[]; raceCheckpoints=[]; activeCheckpoint=0;
-  swordMesh=null; gameActionCooldown=0;
+  swordMesh=null; gameActionCooldown=0; raceFinished=false; raceStartTime=performance.now(); obbyBestCheckpoint=0;
 }
 
 function addBox(x,y,z,w,h,d,color,opts={}){
@@ -1669,67 +1682,78 @@ function addSwordToPlayer(){
 }
 function buildGameSpecificWorld(gameName){
   const n=gameName.trim();
+
   if(n==='Epic Obby'){
-    // Escenario largo con plataformas, rampas, muros, saltos y zonas de peligro visuales.
+    addBox(0,0,1,7,0.6,7,0x3b82f6,{solid:true});
+    addBox(0,1.0,-4,5.5,0.6,4.5,0x22c55e,{solid:true});
     for(let i=0;i<22;i++){
-      const lane=i%3-1, x=lane*4.2 + (Math.floor(i/3)%2?1.5:-1.5), z=-6-i*5.2, y=1.2+i*0.75;
-      const w=3.2+(i%4===0?1.6:0), d=3.4;
-      addBox(x,y,z,w,0.55,d,[0x4f8df7,0xf14f63,0x38b48a,0xf5b942][i%4]);
-      if(i%5===2) addBox(x+1.8,y+0.7,z,0.65,1.4,0.65,0xff7a00,{solid:true});
-      addCoinAt(x,y+0.65,z);
+      const lane=i%3-1;
+      const x=lane*4.2 + (Math.floor(i/3)%2?1.6:-1.6);
+      const z=-9-i*5.1;
+      const y=1.7+i*0.78;
+      const w=3.2+(i%4===0?1.2:0), d=3.3;
+      addBox(x,y,z,w,0.6,d,[0x4f8df7,0xf14f63,0x38b48a,0xf5b942][i%4],{solid:true});
+      if(i%4===1) addBox(x+(i%2?1.3:-1.3),y+0.8,z,0.7,1.6,0.7,0xf97316,{solid:true});
+      if(i%5===2) addBox(x,y+0.45,z+1.3,1.2,0.9,0.65,0x111827,{solid:true});
+      addCoinAt(x,y+0.75,z);
     }
-    // Paredes y arco de meta
-    addBox(0,2.4,-125,16,4,1,0x28344d);
-    addBox(-8,5,-125,1,10,1,0xf1c40f); addBox(8,5,-125,1,10,1,0xf1c40f); addBox(0,9.5,-125,17,1,1,0xf1c40f);
+    addBox(0,19.0,-126,18,0.7,1.2,0x22c55e,{solid:true});
+    addBox(-8,23,-126,1,9,1,0xf1c40f); addBox(8,23,-126,1,9,1,0xf1c40f); addBox(0,27,-126,17,1,1,0xf1c40f);
   } else if(n==='Bloxs City'){
-    // Red vial + varios barrios, parque, plaza, edificios y lago.
-    for(let z=-36;z<=36;z+=12){ addBox(0,0.03,z,100,0.06,5,0x2a2f38,{solid:false}); }
-    for(let x=-36;x<=36;x+=12){ addBox(x,0.03,0,5,0.06,100,0x2a2f38,{solid:false}); }
-    for(let i=-4;i<=4;i++) addLamp(i*9, i%2?10:-10);
-    const colors=[0x6baed6,0x9ecae1,0xfd8d3c,0x74c476,0xbc80bd,0xffd92f];
-    for(let bx=-4;bx<=4;bx+=2){ for(let bz=-4;bz<=4;bz+=2){ if(Math.abs(bx)+Math.abs(bz)<3) continue; const h=5+((bx*bz+20)%5); addBox(bx*6,h/2-0.5,bz*6,4.5,h,4.5,colors[(bx+bz+20)%colors.length]); addBox(bx*6, h-0.9, bz*6-2.3,1.1,1.3,0.08,0x1e293b,{solid:false,decorate:true}); }}
-    // Parque central
-    addBox(0,-0.1,0,18,0.2,18,0x55b879,{solid:false});
-    for(const p of [[-6,-6],[6,-6],[-6,6],[6,6],[0,-6],[0,6],[-6,0],[6,0]]) addTree(p[0],p[1],0.8);
-    // Lago y muelle
-    addBox(0,-0.08,24,24,0.16,12,0x4aa8ff,{solid:false}); addBox(0,0.12,18,8,0.24,12,0xb58b52,{solid:false});
-    // Tiendas
-    addBox(-24,2,-18,8,4,6,0xef5350); addBox(-24,4.4,-18,8,0.8,6,0xffd54f,{solid:false});
-    addBox(24,2,18,8,4,6,0x42a5f5); addBox(24,4.4,18,8,0.8,6,0xffffff,{solid:false});
+    for(let z=-48;z<=48;z+=12) addBox(0,0.03,z,100,0.06,5,0x2a2f38,{solid:false});
+    for(let x=-48;x<=48;x+=12) addBox(x,0.03,0,5,0.06,100,0x2a2f38,{solid:false});
+    for(let x=-42;x<=42;x+=12) for(let z=-42;z<=42;z+=12){
+      if(Math.abs(x)<=18&&Math.abs(z)<=18) continue;
+      addBox(x,0.07,z,7.0,0.14,7.0,0x8a8f98,{solid:false});
+    }
+    const colors=[0x6baed6,0x9ecae1,0xfd8d3c,0x74c476,0xbc80bd,0xffd92f,0x90caf9,0xef9a9a];
+    for(let bx=-4;bx<=4;bx+=2) for(let bz=-4;bz<=4;bz+=2){
+      if(Math.abs(bx)+Math.abs(bz)<3) continue;
+      const h=5+((Math.abs(bx*3+bz*2)+2)%6), x=bx*7, z=bz*7;
+      addBox(x,h/2-0.5,z,5.2,h,5.2,colors[(Math.abs(bx+bz)+20)%colors.length],{solid:true});
+      addBox(x,h-0.9,z-2.66,1.4,1.5,0.1,0x172033,{solid:false});
+    }
+    addBox(0,-0.1,0,24,0.2,24,0x55b879,{solid:false});
+    for(const p of [[-9,-9],[9,-9],[-9,9],[9,9],[0,-9],[0,9],[-9,0],[9,0]]) addTree(p[0],p[1],0.9);
+    addBox(0,-0.08,27,26,0.16,14,0x4aa8ff,{solid:false});
+    addBox(0,0.15,19,10,0.3,12,0xb58b52,{solid:false});
+    addBox(-30,2,-18,9,4,7,0xef5350); addBox(30,2,18,9,4,7,0x42a5f5);
+    addBox(-30,2,18,9,4,7,0x8e44ad); addBox(30,2,-18,9,4,7,0x26a69a);
+    for(const [x,z] of [[-30,-18],[30,-18],[-30,18],[30,18]]) addLamp(x,z);
   } else if(n==='Pet World'){
-    // Mundo de mascotas: plaza, parque, lago, árboles y zonas de huevos.
-    addBox(0,-0.1,0,55,0.2,55,0x8bcf7b,{solid:false});
-    addBox(0,0.05,0,14,0.12,40,0xd8c39f,{solid:false}); addBox(0,0.05,0,40,0.12,14,0xd8c39f,{solid:false});
-    for(let i=0;i<22;i++){ const x=((i*17)%44)-22, z=((i*29)%44)-22; if(Math.abs(x)<8&&Math.abs(z)<8) continue; addTree(x,z,0.75+(i%3)*0.1); }
-    addBox(0,-0.08,-18,18,0.16,10,0x53b7ff,{solid:false});
-    // Zona de huevos: pedestales y huevos gigantes.
-    for(let i=-3;i<=3;i+=3){ addCylinder(i*2.4,0.6,10,1.0,1.2,0xc08c5a); const egg=new THREE.Mesh(new THREE.SphereGeometry(0.85,18,18),new THREE.MeshLambertMaterial({color:[0xffb3c1,0xb8e1ff,0xc7a7ff][(i+6)%3]})); egg.scale.y=1.2; egg.position.set(i*2.4,1.7,10); gameScene.add(egg); gameDecorations.push(egg); }
+    addBox(0,-0.1,0,70,0.2,70,0x8bcf7b,{solid:false});
+    addBox(0,0.05,0,14,0.12,52,0xd8c39f,{solid:false}); addBox(0,0.05,0,52,0.12,14,0xd8c39f,{solid:false});
+    for(let i=0;i<28;i++){ const x=((i*17)%56)-28,z=((i*29)%56)-28; if(Math.abs(x)<9&&Math.abs(z)<9) continue; addTree(x,z,0.75+(i%3)*0.1); }
+    addBox(0,-0.08,-22,20,0.16,12,0x53b7ff,{solid:false});
+    addBox(-20,-0.08,20,14,0.16,14,0xf0c27b,{solid:false});
+    addBox(0,0.12,17,24,0.24,12,0xe5e7eb,{solid:false});
+    addBox(-8,1.1,17,1,2,1,0xf43f5e); addBox(8,1.1,17,1,2,1,0x60a5fa); addBox(-8,2.0,18,16,0.35,0.5,0xf59e0b,{solid:false});
+    for(let i=-3;i<=3;i++){ addCylinder(i*2.2,0.6,9,0.9,1.2,0xc08c5a); const egg=new THREE.Mesh(new THREE.SphereGeometry(0.82,18,18),new THREE.MeshLambertMaterial({color:[0xffb3c1,0xb8e1ff,0xc7a7ff,0xffe59a][(i+3)%4]})); egg.scale.y=1.2; egg.position.set(i*2.2,1.7,9); gameScene.add(egg); gameDecorations.push(egg); }
+    addBox(-17,2,-2,8,4,6,0x8e44ad); addBox(17,2,-2,8,4,6,0x16a085);
     addPetFollowers();
   } else if(n==='Battle Arena'){
-    // Arena de combate con muros, plataformas, cofres y objetivos de entrenamiento.
     addBox(0,0,0,44,1,44,0x6b2e2e,{solid:true});
     addBox(-21,3,0,1,6,44,0x3a1d1d); addBox(21,3,0,1,6,44,0x3a1d1d); addBox(0,3,-21,44,6,1,0x3a1d1d); addBox(0,3,21,44,6,1,0x3a1d1d);
-    for(const [x,z] of [[-10,-10],[10,-10],[-10,10],[10,10],[0,0]]) addBox(x,1.5,z,4,3,4,0x8d5a3c);
-    for(const [x,z] of [[-14,0],[14,0],[0,-14],[0,14]]) { addBox(x,1.2,z,3,2.4,3,0xd39c43); }
+    for(const [x,z,h] of [[-11,-11,3],[11,-11,3],[-11,11,3],[11,11,3],[0,0,4],[0,-10,2],[0,10,2]]) addBox(x,h/2,z,4,h,4,0x8d5a3c,{solid:true});
+    for(const [x,z] of [[-15,0],[15,0],[0,-15],[0,15]]) addBox(x,1.1,z,3,2.2,3,0xd39c43,{solid:true});
     addSwordToPlayer();
-    // maniquíes con tres puntos de vida visuales
-    for(const [x,z] of [[-8,0],[8,0],[0,-8],[0,8]]){
-      const g=new THREE.Group(); const body=new THREE.Mesh(new THREE.BoxGeometry(0.9,1.6,0.5),new THREE.MeshLambertMaterial({color:0xf0a05a})); body.position.y=0.8; g.add(body);
-      const head=new THREE.Mesh(new THREE.SphereGeometry(0.4,12,12),new THREE.MeshLambertMaterial({color:0xffd39a})); head.position.y=1.9; g.add(head); g.position.set(x,0,z); gameScene.add(g); fightTargets.push(g);
+    for(const [x,z] of [[-8,0],[8,0],[0,-8],[0,8],[-8,8],[8,-8]]){
+      const g=new THREE.Group();
+      const body=new THREE.Mesh(new THREE.BoxGeometry(0.9,1.6,0.5),new THREE.MeshLambertMaterial({color:0xf0a05a})); body.position.y=0.8; g.add(body);
+      const head=new THREE.Mesh(new THREE.SphereGeometry(0.4,12,12),new THREE.MeshLambertMaterial({color:0xffd39a})); head.position.y=1.9; g.add(head);
+      g.position.set(x,0,z); g.userData.hp=3; g.userData.respawnAt=0; gameScene.add(g); fightTargets.push(g);
     }
   } else if(n==='Speed Race'){
-    // Pista con curvas, rampas y checkpoints.
-    addBox(0,-0.1,-20,16,0.2,90,0x3c424a,{solid:false});
-    addBox(-22,-0.1,-20,16,0.2,90,0x3c424a,{solid:false});
-    addBox(22,-0.1,-20,16,0.2,90,0x3c424a,{solid:false});
-    for(let z=-60;z<=20;z+=10){ addBox(0,0.05,z,50,0.06,1,0xffffff,{solid:false}); }
-    for(let z=-50;z<=10;z+=12){ addBox(0,2,z,18,4,2,0x36c2ff); }
-    for(let i=0;i<5;i++){ const z=10-i*18; const line=addBox(0,0.1,z,48,0.12,1.4,i===4?0x2ecc71:0xffd54f,{solid:false}); raceCheckpoints.push(line); }
-    addBox(0,0.8,38,10,1.6,10,0xf1c40f); addBox(0,1.6,43,10,1.2,1,0x2ecc71,{solid:false});
+    addBox(0,-0.1,-20,74,0.2,110,0x1f2937,{solid:true});
+    for(const x of [-18,0,18]) addBox(x,0,-22,12,0.08,78,0x374151,{solid:false});
+    for(const z of [-48,-24,0,24]) addBox(0,1.5,z,18,3,2.5,0x36c2ff,{solid:true});
+    for(const z of [-60,-36,-12,12,36]){ addBox(-27,1.5,z,1,3,10,0xf59e0b,{solid:true}); addBox(27,1.5,z,1,3,10,0xf59e0b,{solid:true}); }
+    for(let i=0;i<6;i++){ const z=28-i*17; const line=addBox(0,0.1,z,52,0.12,1.5,i===5?0x2ecc71:0xffd54f,{solid:false}); line.userData.checkpointIndex=i; raceCheckpoints.push(line); }
+    addBox(0,0.8,44,12,1.6,10,0xf1c40f,{solid:true}); addBox(0,1.7,50,12,1.2,1,0x2ecc71,{solid:false});
+    raceStartTime=performance.now();
   } else if(n==='Sky Islands'){
-    // Varias islas conectadas por puentes, torres y monedas aéreas.
-    addBox(0,-0.5,0,18,1,18,0x79b96b); addBox(-20,-2,-12,14,1,14,0x6ea85e); addBox(20,-3,-6,12,1,12,0x8fbd73); addBox(8,-4,18,16,1,16,0x6da96d);
-    addBox(-10,-1, -6, 8,0.8,3,0xa47c48,{solid:true}); addBox(10,-1,6,8,0.8,3,0xa47c48,{solid:true}); addBox(0,-2,10,3,0.8,10,0xa47c48,{solid:true});
+    addBox(0,-0.5,0,20,1,20,0x79b96b,{solid:true}); addBox(-20,-2,-12,15,1,15,0x6ea85e,{solid:true}); addBox(20,-3,-6,13,1,13,0x8fbd73,{solid:true}); addBox(8,-4,18,16,1,16,0x6da96d,{solid:true});
+    addBox(-10,-1,-6,8,0.8,3,0xa47c48,{solid:true}); addBox(10,-1,6,8,0.8,3,0xa47c48,{solid:true}); addBox(0,-2,10,3,0.8,10,0xa47c48,{solid:true});
     for(const [x,z] of [[-5,-5],[-20,-12],[20,-6],[8,18],[0,0]]) addTree(x,z,0.8);
     for(let i=0;i<16;i++) addCoinAt((i%4-1.5)*5,2+Math.floor(i/4)*1.1,-(i*7)%30);
   }
@@ -1835,12 +1859,12 @@ function buildUniqueGameWorld(gameName) {
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.position.set(0, -0.5, 0);
   floor.receiveShadow = true;
+  const noGlobalFloor = ['Epic Obby','Sky Islands'].includes(gameName.trim());
+  floor.visible = !noGlobalFloor;
   gameScene.add(floor);
-  // El suelo tambien es un solido: se registra para que la comprobacion
-  // de movimiento use exactamente el mismo volumen que vemos en pantalla.
-  solidColliders.push({ x: 0, y: -0.5, z: 0, width: 100, height: 1, depth: 100 });
+  if(!noGlobalFloor) solidColliders.push({ x: 0, y: -0.5, z: 0, width: 100, height: 1, depth: 100 });
 
-  if(gameName.includes("Obby")) {
+  if(false) {
     for(let i = 1; i <= 10; i++) {
       const platMat = new THREE.MeshLambertMaterial({color: i % 2 === 0 ? 0xff5555 : 0x5555ff});
       const platX = (i % 2 === 0 ? 3 : -3);
@@ -1903,7 +1927,7 @@ function respawnAfterVoid() {
 function startGameLoop() {
   if(gameAnimId) cancelAnimationFrame(gameAnimId);
 
-  let playerPos = { x: 0, y: 0, z: 0 };
+  let playerPos = { x: 0, y: 0, z: currentGameType.trim()==='Speed Race' ? 35 : 0 };
   let velocityY = 0;
   const gravity = 18;
   const jumpForce = 9.5;
@@ -1933,10 +1957,24 @@ function startGameLoop() {
       gameActionCooldown = 0.45; attackFlash = 0.22;
       const px=playerPos.x, pz=playerPos.z;
       for(const target of fightTargets){
+        if(target.userData.respawnAt && performance.now()<target.userData.respawnAt) continue;
         const dx=target.position.x-px, dz=target.position.z-pz;
-        if(Math.hypot(dx,dz)<4.0) { target.scale.set(1.3,0.8,1.3); setTimeout(()=>{try{target.scale.set(1,1,1);}catch(e){}},180); }
+        if(Math.hypot(dx,dz)<4.5) {
+          target.userData.hp=Math.max(0,(target.userData.hp||3)-1);
+          target.scale.set(1.25,0.8,1.25);
+          setTimeout(()=>{try{target.scale.set(1,1,1);}catch(e){}},140);
+          if(target.userData.hp<=0){ target.visible=false; target.userData.respawnAt=performance.now()+2500; }
+        }
       }
     }
+    if(currentGameType.trim() === 'Battle Arena'){
+      for(const target of fightTargets){
+        if(!target.visible && target.userData.respawnAt && performance.now()>=target.userData.respawnAt){
+          target.visible=true; target.userData.hp=3; target.userData.respawnAt=0; target.scale.set(1,1,1);
+        }
+      }
+    }
+
     if(currentGameType.trim() === 'Battle Arena' && swordMesh){
       if(attackFlash>0){ attackFlash -= dt; swordMesh.rotation.z = -1.45; }
       else swordMesh.rotation.z = -0.35;
@@ -1992,7 +2030,8 @@ function startGameLoop() {
 
     let landingY = 0;
     let foundGround = false;
-    if(playerPos.y <= 0) {
+    const voidStartGame = ['Epic Obby','Sky Islands'].includes(currentGameType.trim());
+    if(!voidStartGame && playerPos.y <= 0) {
       landingY = 0;
       foundGround = true;
     }
@@ -2011,10 +2050,12 @@ function startGameLoop() {
       });
     }
 
-    if(['Sky Islands','Battle Arena','Bloxs City','Pet World','Speed Race'].includes(currentGameType.trim())) {
+    if(['Epic Obby','Sky Islands','Battle Arena','Bloxs City','Pet World','Speed Race'].includes(currentGameType.trim())) {
       for(const s of solidColliders){
         const topY=s.y+s.height/2; const halfW=s.width/2, halfD=s.depth/2;
-        if(playerPos.x>=s.x-halfW && playerPos.x<=s.x+halfW && playerPos.z>=s.z-halfD && playerPos.z<=s.z+halfD && playerPos.y<=topY && playerPos.y>=topY-0.7 && velocityY<=0 && topY>=landingY){ landingY=topY; foundGround=true; }
+        if(playerPos.x>=s.x-halfW && playerPos.x<=s.x+halfW && playerPos.z>=s.z-halfD && playerPos.z<=s.z+halfD && playerPos.y<=topY && playerPos.y>=topY-0.75 && velocityY<=0 && topY>=landingY){
+          landingY=topY; foundGround=true;
+        }
       }
     }
 
@@ -2026,9 +2067,11 @@ function startGameLoop() {
       isGrounded = false;
       if(playerPos.y < -10 && !voidDeathActive) {
         showVoidDeath(() => {
-          playerPos.x = 0;
-          playerPos.y = 0;
-          playerPos.z = 0;
+          if(currentGameType.trim()==='Epic Obby' && obbyBestCheckpoint>0){
+            playerPos.x=0; playerPos.z=-9-(obbyBestCheckpoint*5.1); playerPos.y=1.7+(obbyBestCheckpoint*0.78);
+          } else {
+            playerPos.x=0; playerPos.y=(currentGameType.trim()==='Sky Islands'?1:0); playerPos.z=0;
+          }
           velocityY = 0;
           isGrounded = true;
           lastTime = performance.now();
@@ -2122,6 +2165,33 @@ function startGameLoop() {
       if(rightArm) rightArm.rotation.x *= damp;
       if(leftLeg) leftLeg.rotation.x *= damp;
       if(rightLeg) rightLeg.rotation.x *= damp;
+    }
+
+    if(currentGameType.trim()==='Epic Obby' && foundGround){
+      const checkpoint=Math.max(0,Math.min(22,Math.floor(Math.max(0,-playerPos.z-8)/5.1)));
+      if(checkpoint>obbyBestCheckpoint){
+        obbyBestCheckpoint=checkpoint;
+        const hint=document.getElementById('gameHint');
+        if(hint) hint.textContent=`🏁 Checkpoint ${checkpoint}/22`;
+      }
+    }
+
+    if(currentGameType.trim()==='Speed Race' && !raceFinished){
+      const cp=raceCheckpoints.find(r=>r.userData.checkpointIndex===activeCheckpoint);
+      if(cp){
+        const dx=playerPos.x-cp.position.x, dz=playerPos.z-cp.position.z;
+        if(Math.hypot(dx,dz)<7){
+          activeCheckpoint++;
+          const hint=document.getElementById('gameHint');
+          if(hint) hint.textContent=activeCheckpoint>=6?'🏆 ¡Meta!':`🏁 Checkpoint ${activeCheckpoint}/6`;
+        }
+      }
+      if(activeCheckpoint>=6 && playerPos.z < -58){
+        raceFinished=true;
+        const seconds=((performance.now()-raceStartTime)/1000).toFixed(2);
+        const hint=document.getElementById('gameHint');
+        if(hint) hint.textContent=`🏆 ¡Ganaste la carrera en ${seconds}s!`;
+      }
     }
 
     if(!isGrounded) {
