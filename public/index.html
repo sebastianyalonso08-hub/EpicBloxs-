@@ -618,6 +618,7 @@ body.theme-dark .admin-card{background:#292929;border-color:#444}
 <script>
 let previewRenderer = null, previewScene = null, previewCamera = null, previewAnimId = null;
 let gameRenderer = null, gameScene = null, gameCamera = null, gameAnimId = null;
+let gameSun = null;
 let keysPressed = {};
 let playerMeshGroup = null;
 let gameSessionEarnings = 0;
@@ -1757,6 +1758,29 @@ function startPreviewAnimation() {
   animate();
 }
 
+function configureGameShadows(root) {
+  if (!root) return;
+  root.traverse((obj) => {
+    if (!obj.isMesh) return;
+    // Todo objeto físico/visible del mapa participa en las sombras.
+    obj.castShadow = true;
+    obj.receiveShadow = true;
+    if (obj.material && !Array.isArray(obj.material)) obj.material.needsUpdate = true;
+    if (Array.isArray(obj.material)) obj.material.forEach(mat => { if (mat) mat.needsUpdate = true; });
+  });
+}
+
+function updateGameSunShadowFollow() {
+  if (!gameSun || !playerMeshGroup || !gameSun.shadow || !gameSun.shadow.camera) return;
+  const p = playerMeshGroup.position;
+  // Mantener el mapa de sombras centrado en el jugador evita que las sombras
+  // desaparezcan cuando el jugador se aleja del spawn (p. ej. en Epic Obby).
+  gameSun.position.set(p.x + 28, p.y + 45, p.z + 24);
+  gameSun.target.position.set(p.x, p.y, p.z);
+  gameSun.target.updateMatrixWorld();
+  gameSun.shadow.camera.updateMatrixWorld();
+}
+
 function launchWebClient(gameName) {
   currentGameType = gameName;
   document.body.classList.add('in-game');
@@ -2057,7 +2081,8 @@ function setupMobileControls() {
           lookLastY = t.clientY;
           cameraAngleX -= dx * 0.008;
           cameraAngleY += dy * 0.008;
-          if (cameraAngleY > 1.4) cameraAngleY = 1.4;
+          // Permite mirar completamente hacia arriba y hacia abajo sin bloquear la cámara.
+          if (cameraAngleY > 1.52) cameraAngleY = 1.52;
           if (cameraAngleY < -0.2) cameraAngleY = -0.2;
         }
       }
@@ -2240,7 +2265,40 @@ function buildGameSpecificWorld(gameName){
       if(Math.abs(bx)+Math.abs(bz)<3) continue;
       const h=5+((Math.abs(bx*3+bz*2)+2)%6), x=bx*7, z=bz*7;
       addBox(x,h/2-0.5,z,5.2,h,5.2,colors[(Math.abs(bx+bz)+20)%colors.length],{solid:true});
-      addBox(x,h-0.9,z-2.66,1.4,1.5,0.1,0x172033,{solid:false});
+
+      // Ventanas: cada edificio tiene varias ventanas repartidas por sus pisos
+      // y en varias fachadas, en lugar de una sola ventana central.
+      const windowMat = new THREE.MeshLambertMaterial({
+        color: 0x6fc8ff,
+        emissive: 0x18384a,
+        emissiveIntensity: 0.35
+      });
+      const floors = Math.max(1, Math.floor((h - 0.7) / 1.35));
+      for(let f=0; f<floors; f++){
+        const wy = 0.65 + f * 1.35;
+        if(wy > h - 0.45) continue;
+        // Fachadas delantera y trasera: dos ventanas por piso.
+        for(const wx of [x-1.45, x+1.45]){
+          for(const wz of [z-2.661, z+2.661]){
+            const win = new THREE.Mesh(new THREE.BoxGeometry(0.72,0.78,0.08), windowMat);
+            win.position.set(wx, wy, wz);
+            win.castShadow = true;
+            win.receiveShadow = true;
+            gameScene.add(win);
+            gameDecorations.push(win);
+          }
+        }
+        // Fachadas laterales: una ventana por lado y piso, alternadas ligeramente.
+        const sideZ = f % 2 === 0 ? z-1.35 : z+1.35;
+        for(const sx of [x-2.661, x+2.661]){
+          const win = new THREE.Mesh(new THREE.BoxGeometry(0.08,0.78,0.72), windowMat);
+          win.position.set(sx, wy, sideZ);
+          win.castShadow = true;
+          win.receiveShadow = true;
+          gameScene.add(win);
+          gameDecorations.push(win);
+        }
+      }
     }
     // La plaza verde central flotaba a la misma altura exacta que el piso base
     // gris de la ciudad: parpadeaba en toda esa zona. Se sube 1cm.
@@ -2337,8 +2395,9 @@ function initGameWebGL(gameName) {
       mouseYOnMouseDown = e.clientY;
       cameraAngleX -= deltaX * 0.005;
       cameraAngleY += deltaY * 0.005;
-      if (cameraAngleY > 1.4) cameraAngleY = 1.4;
-      if (cameraAngleY < -0.2) cameraAngleY = -0.2;
+          // Permite mirar completamente hacia arriba y hacia abajo sin bloquear la cámara.
+          if (cameraAngleY > 1.52) cameraAngleY = 1.52;
+          if (cameraAngleY < -0.2) cameraAngleY = -0.2;
     }
   });
 
@@ -2352,19 +2411,22 @@ function initGameWebGL(gameName) {
   gameScene.add(ambient);
 
   const sun = new THREE.DirectionalLight(0xfff5e6, 1.0);
-  sun.position.set(12, 25, 10);
+  sun.position.set(28, 45, 24);
   sun.castShadow = true;
   sun.shadow.mapSize.width = 2048;
   sun.shadow.mapSize.height = 2048;
+  // El volumen de sombra es amplio y luego se desplaza con el jugador.
   sun.shadow.camera.near = 1;
-  sun.shadow.camera.far = 80;
-  sun.shadow.camera.left = -30;
-  sun.shadow.camera.right = 30;
-  sun.shadow.camera.top = 30;
-  sun.shadow.camera.bottom = -30;
+  sun.shadow.camera.far = 180;
+  sun.shadow.camera.left = -60;
+  sun.shadow.camera.right = 60;
+  sun.shadow.camera.top = 60;
+  sun.shadow.camera.bottom = -60;
   sun.shadow.bias = -0.0015;
+  sun.shadow.normalBias = 0.02;
   sun.shadow.radius = 2.5;
   gameScene.add(sun);
+  gameSun = sun;
 
   // Luz de relleno (sin sombras) para suavizar
   const fill = new THREE.DirectionalLight(0xa0d8ff, 0.3);
@@ -2375,6 +2437,7 @@ function initGameWebGL(gameName) {
   buildUniqueGameWorld(gameName);
   buildGameSpecificWorld(gameName);
   registerSpawnPoints(gameName);
+  configureGameShadows(gameScene);
 
   const c = current();
   clearAllRemotePlayers();
@@ -2910,6 +2973,7 @@ function startGameLoop() {
     }
 
     if(playerMeshGroup) playerMeshGroup.position.set(playerPos.x, playerPos.y + 0.4, playerPos.z);
+    updateGameSunShadowFollow();
 
     // EMOTES: baile del jugador local (se corta si se mueve o salta).
     if (isLocalEmoteActive() && playerMeshGroup) {
