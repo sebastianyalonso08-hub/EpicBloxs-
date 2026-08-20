@@ -71,7 +71,7 @@ function getPersistentSessionSecret() {
     return generated;
   } catch {
     // Fallback for local read-only environments.
-    return "epicbloxs-session-key-v1";
+    return "epicbloxs-session-key-v2-stable";
   }
 }
 
@@ -363,12 +363,9 @@ function isAdminUser(user, key) {
 }
 
 function isCreatorUser(user, key) {
-  if (!user) return false;
-  const configured = loadCreators();
-  const envValues = String(process.env.CREATOR_USER_IDS || process.env.EPICBLOXS_CREATORS || "")
-    .split(",").map(v => v.trim()).filter(Boolean);
-  configured.push(...envValues);
-  return matchesConfiguredUser(user, key, configured) || isAdminUser(user, key);
+  // En EpicBloxs cualquier cuenta puede crear y publicar ropa.
+  // La moderación del contenido sigue aplicándose en la ruta de publicación.
+  return !!user;
 }
 
 function banRemainingMs(user) {
@@ -943,7 +940,27 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { ok: true, status: "cancelled" });
     }
 
+    if (action === "offer") {
+      if (sess.key !== trade.to) return json(res, 403, { error: "Solo quien recibe el intercambio puede preparar su parte." });
+      const toItems = normalizeTradeItems(body.items);
+      const toSunnys = Number(body.sunnys || 0);
+      const err = validateTradeOffer(users[sess.key], toItems, toSunnys);
+      if (err) return json(res, 400, { error: err });
+      const overlap = new Set(trade.fromItems);
+      for (const id of toItems) if (overlap.has(id)) return json(res, 400, { error: "No se puede ofrecer el mismo artículo en ambos lados." });
+      trade.toItems = toItems;
+      trade.toSunnys = toSunnys;
+      trade.accepted[trade.from] = false;
+      trade.accepted[trade.to] = false;
+      return json(res, 200, { ok: true, status: "pending", trade: tradeSummaryForUser(trade, sess.key, users) });
+    }
+
     if (action === "accept") {
+      // Aceptar exige que ambos lados hayan definido su intercambio.
+      if (sess.key === trade.to && !Array.isArray(trade.toItems)) trade.toItems = [];
+      if (trade.toItems.length === 0 && trade.toSunnys === 0 && sess.key === trade.to) {
+        // Se permite recibir sin entregar objetos ni Sunnys.
+      }
       trade.accepted[sess.key] = true;
       if (trade.accepted[trade.from] && trade.accepted[trade.to]) {
         try { finishTrade(trade, users); }
@@ -1175,9 +1192,6 @@ const server = http.createServer(async (req, res) => {
   if (urlPath === "/api/creator/publish" && req.method === "POST") {
     const sess = getSessionUser(req);
     if (!sess) return json(res, 401, { error: "No autenticado." });
-    if (!isCreatorUser(sess.user, sess.key)) {
-      return json(res, 403, { error: "Solo los creadores autorizados pueden publicar ropa." });
-    }
     const body = await readBody(req);
     const name = safeText(body.name, "", 40);
     const description = safeText(body.description, "", 200);
