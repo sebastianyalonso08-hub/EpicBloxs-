@@ -2,10 +2,14 @@ services:
   - type: web
     name: epicbloxs
     runtime: node
-    buildCommand: npm install
-    startCommand: npm start
+    # Persistent disk = obligatorio para conservar users.json/catalog.json entre deploys.
+    # Render solo permite persistent disks en planes de pago.
+    plan: starter
+    buildCommand: npm ci --omit=dev
+    startCommand: node server.js
     healthCheckPath: /health
     autoDeploy: true
+    numInstances: 1
     envVars:
       - key: EPICBLOXS_DATA_DIR
         value: /var/data

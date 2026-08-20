@@ -14,6 +14,10 @@ const sessions = new Map();
 const sessionStamps = new Map();
 const SESSION_TTL_MS = Infinity; // las sesiones NO caducan nunca
 const presence = new Map();
+const trades = new Map();
+const tradeByUser = new Map();
+const MAX_TRADE_ITEMS = 20;
+const MAX_TRADE_SUNNYS = 9999999;
 const PRESENCE_TTL_MS = 25000;
 
 const publicDir = path.join(__dirname, "public");
@@ -27,11 +31,31 @@ const sessionsPath = path.join(dataDir, "sessions.json");
 const dmsPath = path.join(dataDir, "dms.json");
 const groupsPath = path.join(dataDir, "groups.json");
 const sessionSecretPath = path.join(dataDir, "session-secret.txt");
+const adminsPath = path.join(dataDir, "admins.json");
 
 function ensureDataDir() {
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
   if (!fs.existsSync(usersPath)) fs.writeFileSync(usersPath, "{}", "utf8");
   if (!fs.existsSync(catalogPath)) fs.writeFileSync(catalogPath, "[]", "utf8");
+  if (!fs.existsSync(adminsPath)) fs.writeFileSync(adminsPath, "[]", "utf8");
+
+  // Si usamos /var/data en Render y el disco persistente se acaba de crear,
+  // copia una base inicial del repositorio SOLO si el almacenamiento persistente
+  // todavía está vacío. Nunca sobrescribe cuentas existentes.
+  try {
+    const repoUsers = path.join(__dirname, "data", "users.json");
+    const repoCatalog = path.join(__dirname, "data", "catalog.json");
+    const currentUsers = readJsonObject(usersPath);
+    if (Object.keys(currentUsers).length === 0 && fs.existsSync(repoUsers)) {
+      const seedUsers = readJsonObject(repoUsers);
+      if (Object.keys(seedUsers).length) fs.writeFileSync(usersPath, JSON.stringify(seedUsers, null, 2), "utf8");
+    }
+    const currentCatalog = (() => { try { return JSON.parse(fs.readFileSync(catalogPath, "utf8") || "[]"); } catch { return []; } })();
+    if (!currentCatalog.length && fs.existsSync(repoCatalog)) {
+      const seedCatalog = (() => { try { return JSON.parse(fs.readFileSync(repoCatalog, "utf8") || "[]"); } catch { return []; } })();
+      if (Array.isArray(seedCatalog) && seedCatalog.length) fs.writeFileSync(catalogPath, JSON.stringify(seedCatalog, null, 2), "utf8");
+    }
+  } catch {}
 }
 
 function getPersistentSessionSecret() {
@@ -181,6 +205,108 @@ function saveGroups(data) {
 function dmConvKey(a, b) {
   return [String(a), String(b)].sort().join("|");
 }
+function tradeId() {
+  return "TRD-" + crypto.randomBytes(8).toString("hex");
+}
+
+function normalizeTradeItems(items) {
+  if (!Array.isArray(items)) return [];
+  const out = [];
+  const seen = new Set();
+  for (const raw of items.slice(0, MAX_TRADE_ITEMS)) {
+    const id = String(raw ?? "").trim().slice(0, 160);
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+  }
+  return out;
+}
+
+function removeTradeIndexesForUser(key, tradeIdValue) {
+  if (tradeByUser.get(key) === tradeIdValue) tradeByUser.delete(key);
+}
+
+function friendPair(users, aKey, bKey) {
+  const a = users[aKey], b = users[bKey];
+  return !!(a && b && aKey !== bKey && Array.isArray(a.friends) && a.friends.includes(bKey) && Array.isArray(b.friends) && b.friends.includes(aKey));
+}
+
+function tradeSummaryForUser(trade, viewerKey, users) {
+  const fromUser = users[trade.from], toUser = users[trade.to];
+  const from = trade.from === viewerKey ? fromUser : toUser;
+  const other = trade.from === viewerKey ? toUser : fromUser;
+  return {
+    id: trade.id,
+    status: trade.status,
+    createdAt: trade.createdAt,
+    from: { id: String(fromUser.userId), username: fromUser.username },
+    to: { id: String(toUser.userId), username: toUser.username },
+    other: { id: String(other.userId), username: other.username },
+    youOffer: trade.from === viewerKey ? { sunnys: trade.fromSunnys, items: trade.fromItems } : { sunnys: trade.toSunnys, items: trade.toItems },
+    theyOffer: trade.from === viewerKey ? { sunnys: trade.toSunnys, items: trade.toItems } : { sunnys: trade.fromSunnys, items: trade.fromItems },
+    accepted: trade.accepted
+  };
+}
+
+function collectTradeState(viewerKey, users) {
+  const incoming = [], outgoing = [];
+  for (const trade of trades.values()) {
+    if (trade.status !== "pending") continue;
+    if (trade.to === viewerKey) incoming.push(tradeSummaryForUser(trade, viewerKey, users));
+    if (trade.from === viewerKey) outgoing.push(tradeSummaryForUser(trade, viewerKey, users));
+  }
+  incoming.sort((a,b)=>b.createdAt-a.createdAt);
+  outgoing.sort((a,b)=>b.createdAt-a.createdAt);
+  return { incoming, outgoing };
+}
+
+function validateTradeOffer(user, items, sunnys) {
+  const inv = Array.isArray(user.avatarInventory) ? user.avatarInventory : [];
+  const counts = new Map();
+  for (const id of inv) counts.set(id, (counts.get(id) || 0) + 1);
+  for (const id of items) {
+    if ((counts.get(id) || 0) !== 1) return `No puedes intercambiar ${id}: el artículo no está en una cantidad segura. Vacía/repara tu inventario antes de comerciar.`;
+  }
+  if (!Number.isSafeInteger(sunnys) || sunnys < 0 || sunnys > MAX_TRADE_SUNNYS) return "Cantidad de Sunnys inválida.";
+  if (sunnys > Number(user.sunnys || 0)) return "No tienes suficientes Sunnys para esa oferta.";
+  return null;
+}
+
+function finishTrade(trade, users) {
+  const a = users[trade.from], b = users[trade.to];
+  if (!a || !b) throw new Error("Una de las cuentas ya no existe.");
+  if (!friendPair(users, trade.from, trade.to)) throw new Error("Ya no son amigos. El Trade fue cancelado.");
+
+  const aErr = validateTradeOffer(a, trade.fromItems, trade.fromSunnys);
+  if (aErr) throw new Error("La oferta de " + a.username + " ya no es válida: " + aErr);
+  const bErr = validateTradeOffer(b, trade.toItems, trade.toSunnys);
+  if (bErr) throw new Error("La oferta de " + b.username + " ya no es válida: " + bErr);
+
+  const overlap = new Set(trade.fromItems);
+  for (const id of trade.toItems) if (overlap.has(id)) throw new Error("No se puede intercambiar el mismo artículo en ambos lados.");
+
+  const bInv = Array.isArray(b.avatarInventory) ? b.avatarInventory : [];
+  const aInv = Array.isArray(a.avatarInventory) ? a.avatarInventory : [];
+  for (const id of trade.fromItems) if (bInv.includes(id)) throw new Error(`${b.username} ya posee ${id}.`);
+  for (const id of trade.toItems) if (aInv.includes(id)) throw new Error(`${a.username} ya posee ${id}.`);
+
+  a.avatarInventory = aInv.filter(id => !trade.fromItems.includes(id));
+  b.avatarInventory = bInv.filter(id => !trade.toItems.includes(id));
+  a.avatarInventory.push(...trade.toItems);
+  b.avatarInventory.push(...trade.fromItems);
+  a.sunnys = Number(a.sunnys || 0) - trade.fromSunnys + trade.toSunnys;
+  b.sunnys = Number(b.sunnys || 0) - trade.toSunnys + trade.fromSunnys;
+  a.inventory = []; b.inventory = [];
+
+  const fromSet = new Set(trade.fromItems);
+  const toSet = new Set(trade.toItems);
+  a.avatar.accessories = (Array.isArray(a.avatar && a.avatar.accessories) ? a.avatar.accessories : []).filter(id => !fromSet.has(id));
+  b.avatar.accessories = (Array.isArray(b.avatar && b.avatar.accessories) ? b.avatar.accessories : []).filter(id => !toSet.has(id));
+
+  users[trade.from] = a; users[trade.to] = b;
+  saveUsersDisk(users);
+}
+
 
 function loadCatalog() {
   try { ensureDataDir(); return JSON.parse(fs.readFileSync(catalogPath, "utf8") || "[]"); } catch { return []; }
@@ -188,6 +314,82 @@ function loadCatalog() {
 function saveCatalog(items) {
   ensureDataDir();
   fs.writeFileSync(catalogPath, JSON.stringify(items, null, 2), "utf8");
+}
+
+function loadAccessConfig() {
+  ensureDataDir();
+  try {
+    const raw = JSON.parse(fs.readFileSync(adminsPath, "utf8") || "[]");
+    // Compatibilidad: la versión anterior usaba simplemente ["User1","User2"].
+    if (Array.isArray(raw)) return { admins: raw, creators: [] };
+    if (raw && typeof raw === "object") {
+      return {
+        admins: Array.isArray(raw.admins) ? raw.admins : [],
+        creators: Array.isArray(raw.creators) ? raw.creators : []
+      };
+    }
+  } catch {}
+  return { admins: [], creators: [] };
+}
+
+function loadAdmins() {
+  return loadAccessConfig().admins
+    .map(v => String(v).trim())
+    .filter(Boolean);
+}
+
+function loadCreators() {
+  return loadAccessConfig().creators
+    .map(v => String(v).trim())
+    .filter(Boolean);
+}
+
+function matchesConfiguredUser(user, key, values) {
+  const configured = new Set(values.map(v => String(v).trim().toLowerCase()).filter(Boolean));
+  return configured.has(String(key || "").toLowerCase())
+    || configured.has(String(user?.username || "").trim().toLowerCase())
+    || configured.has(String(user?.userId || "").trim().toLowerCase());
+}
+
+function isAdminUser(user, key) {
+  if (!user) return false;
+  const configured = loadAdmins();
+  const envValues = String(process.env.ADMIN_USER_IDS || process.env.EPICBLOXS_ADMIN_USERS || "")
+    .split(",").map(v => v.trim()).filter(Boolean);
+  configured.push(...envValues);
+  const owner = String(process.env.EPICBLOXS_OWNER_USERNAME || "").trim();
+  if (owner) configured.push(owner);
+  return matchesConfiguredUser(user, key, configured);
+}
+
+function isCreatorUser(user, key) {
+  if (!user) return false;
+  const configured = loadCreators();
+  const envValues = String(process.env.CREATOR_USER_IDS || process.env.EPICBLOXS_CREATORS || "")
+    .split(",").map(v => v.trim()).filter(Boolean);
+  configured.push(...envValues);
+  return matchesConfiguredUser(user, key, configured) || isAdminUser(user, key);
+}
+
+function banRemainingMs(user) {
+  const until = Number(user && user.banUntil || 0);
+  return Number.isFinite(until) && until > Date.now() ? until - Date.now() : 0;
+}
+
+function banMessage(user) {
+  const remaining = banRemainingMs(user);
+  if (!remaining) return "";
+  const days = Math.max(1, Math.ceil(remaining / 86400000));
+  return `Esta cuenta esta baneada por ${days} dia(s).${user.banReason ? " Motivo: " + user.banReason : ""}`;
+}
+
+function normalizeAvatarData(user) {
+  if (!user || typeof user !== "object") return;
+  user.avatar = user.avatar && typeof user.avatar === "object" ? user.avatar : {};
+  if (!Array.isArray(user.avatar.accessories)) user.avatar.accessories = [];
+  user.avatar.colors = user.avatar.colors && typeof user.avatar.colors === "object"
+    ? user.avatar.colors : { head:"#f5c928", arms:"#f5c928", torso:"#1477b9", legs:"#8cae45" };
+  if (!user.avatar.torsoType) user.avatar.torsoType = "male";
 }
 
 const BANNED_TERMS = [
@@ -388,6 +590,8 @@ function ensureUserIds(users) {
       changed = true;
     }
     if (!Array.isArray(user.avatar.accessories)) { user.avatar.accessories = []; changed = true; }
+    if (typeof user.banUntil !== "number") { user.banUntil = 0; changed = true; }
+    if (typeof user.banReason !== "string") { user.banReason = ""; changed = true; }
     if (!user.avatar.colors || typeof user.avatar.colors !== "object") {
       user.avatar.colors = { head: "#f5c928", arms: "#f5c928", torso: "#1477b9", legs: "#8cae45" };
       changed = true;
@@ -462,6 +666,8 @@ function defaultUser(username, passwordHash, userId) {
     friendRequests: [],
     outgoingRequests: [],
     lastDailyLogin: "",
+    banUntil: 0,
+    banReason: "",
     createdAt: new Date().toISOString()
   };
 }
@@ -483,6 +689,9 @@ function publicUser(user, key) {
     friends: user.friends || [],
     friendRequests: user.friendRequests || [],
     outgoingRequests: user.outgoingRequests || [],
+    bannedUntil: Number(user.banUntil || 0),
+    isAdmin: isAdminUser(user, key),
+    isCreator: isCreatorUser(user, key),
     createdAt: user.createdAt
   };
 }
@@ -506,6 +715,12 @@ function getSessionUser(req) {
   sessionStamps.set(token, Date.now());
   const users = ensureUserIds(loadUsers());
   if (!users[key]) {
+    sessions.delete(token);
+    sessionStamps.delete(token);
+    saveSessionsDisk();
+    return null;
+  }
+  if (banRemainingMs(users[key]) > 0 && !isAdminUser(users[key], key)) {
     sessions.delete(token);
     sessionStamps.delete(token);
     saveSessionsDisk();
@@ -588,9 +803,11 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "OPTIONS") return json(res, 204, {});
 
   if (urlPath === "/health") {
-    const players = [...rooms.values()].reduce((n, room) => n + room.players.size, 0);
-    const accounts = Object.keys(syncUserRegistry()).length;
     const online = [...rooms.values()].reduce((n, room) => n + room.players.size, 0);
+    let accounts = 0;
+    try { accounts = Object.keys(syncUserRegistry()).length; } catch (err) {
+      console.error("Health datastore warning:", err.message);
+    }
     return json(res, 200, {
       ok: true,
       service: "EpicBloxs Global",
@@ -625,6 +842,7 @@ const server = http.createServer(async (req, res) => {
     const password = String(body.password || "");
     const users = syncUserRegistry();
     const user = users[key];
+    if (user && banRemainingMs(user) > 0) return json(res, 403, { error: banMessage(user) });
     if (user && hasBannedTerm(user.username)) return json(res, 403, { error: "Esta cuenta no puede iniciar sesion por el nombre de usuario." });
     if (!user || user.passwordHash !== hashPassword(password)) {
       return json(res, 401, { error: "Usuario o contrasena incorrectos." });
@@ -655,6 +873,14 @@ const server = http.createServer(async (req, res) => {
     const user = users[sess.key];
     if (body.avatar) user.avatar = body.avatar;
     if (Array.isArray(body.avatarInventory)) user.avatarInventory = body.avatarInventory.slice(0, 20);
+    normalizeAvatarData(user);
+    // Nunca permitas equipar un objeto que la cuenta no posee.
+    // Esto tambien repara cuentas antiguas que perdieron la separacion entre inventario y equipamiento.
+    const ownedAvatarItems = new Set(Array.isArray(user.avatarInventory) ? user.avatarInventory : []);
+    user.avatar.accessories = user.avatar.accessories
+      .map(id => String(id))
+      .filter((id, i, arr) => arr.indexOf(id) === i && ownedAvatarItems.has(id))
+      .slice(0, 20);
     if (Array.isArray(body.gameInventory)) user.gameInventory = body.gameInventory.slice(0, 20);
     // Compatibilidad con versiones anteriores: nunca vuelve a usarse como inventario de juego.
     user.inventory = [];
@@ -668,6 +894,74 @@ const server = http.createServer(async (req, res) => {
     users[sess.key] = user;
     saveUsersDisk(users);
     return json(res, 200, { user: publicUser(user, sess.key) });
+  }
+
+
+  if (urlPath === "/api/trade/state" && req.method === "GET") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const users = syncUserRegistry();
+    return json(res, 200, collectTradeState(sess.key, users));
+  }
+
+  if (urlPath === "/api/trade/offer" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const users = syncUserRegistry();
+    const me = users[sess.key];
+    const body = await readBody(req);
+    const targetKey = resolveUserKey(users, body.id ?? body.username ?? "");
+    if (!targetKey || targetKey === sess.key) return json(res, 400, { error: "Amigo no encontrado." });
+    if (!friendPair(users, sess.key, targetKey)) return json(res, 403, { error: "Solo puedes hacer Trade con amigos." });
+    if (tradeByUser.has(sess.key) || tradeByUser.has(targetKey)) return json(res, 409, { error: "Uno de los jugadores ya tiene un Trade pendiente. Esperen a terminarlo o rechazarlo." });
+
+    const fromItems = normalizeTradeItems(body.items);
+    const fromSunnys = Number(body.sunnys || 0);
+    const err = validateTradeOffer(me, fromItems, fromSunnys);
+    if (err) return json(res, 400, { error: err });
+
+    const trade = { id: tradeId(), from: sess.key, to: targetKey, fromItems, toItems: [], fromSunnys, toSunnys: 0, accepted: { [sess.key]: false, [targetKey]: false }, status: "pending", createdAt: Date.now() };
+    trades.set(trade.id, trade); tradeByUser.set(sess.key, trade.id); tradeByUser.set(targetKey, trade.id);
+    return json(res, 201, { ok: true, trade: tradeSummaryForUser(trade, sess.key, users) });
+  }
+
+  if (urlPath === "/api/trade/respond" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const users = syncUserRegistry();
+    const body = await readBody(req);
+    const trade = trades.get(String(body.tradeId || ""));
+    const action = String(body.action || "").toLowerCase();
+    if (!trade || trade.status !== "pending") return json(res, 404, { error: "Ese Trade ya no está disponible." });
+    if (trade.from !== sess.key && trade.to !== sess.key) return json(res, 403, { error: "No puedes modificar este Trade." });
+
+    if (action === "decline" || action === "cancel") {
+      trade.status = "cancelled";
+      trades.delete(trade.id);
+      removeTradeIndexesForUser(trade.from, trade.id);
+      removeTradeIndexesForUser(trade.to, trade.id);
+      return json(res, 200, { ok: true, status: "cancelled" });
+    }
+
+    if (action === "accept") {
+      trade.accepted[sess.key] = true;
+      if (trade.accepted[trade.from] && trade.accepted[trade.to]) {
+        try { finishTrade(trade, users); }
+        catch (err) {
+          trades.delete(trade.id);
+          removeTradeIndexesForUser(trade.from, trade.id);
+          removeTradeIndexesForUser(trade.to, trade.id);
+          return json(res, 409, { error: err.message || "El Trade no pudo completarse. No se cambió ningún inventario." });
+        }
+        trades.delete(trade.id);
+        removeTradeIndexesForUser(trade.from, trade.id);
+        removeTradeIndexesForUser(trade.to, trade.id);
+        return json(res, 200, { ok: true, status: "completed", users: { self: publicUser(users[sess.key], sess.key) } });
+      }
+      return json(res, 200, { ok: true, status: "pending", trade: tradeSummaryForUser(trade, sess.key, users) });
+    }
+
+    return json(res, 400, { error: "Acción de Trade inválida." });
   }
 
   if (urlPath === "/api/users/search" && req.method === "GET") {
@@ -881,6 +1175,9 @@ const server = http.createServer(async (req, res) => {
   if (urlPath === "/api/creator/publish" && req.method === "POST") {
     const sess = getSessionUser(req);
     if (!sess) return json(res, 401, { error: "No autenticado." });
+    if (!isCreatorUser(sess.user, sess.key)) {
+      return json(res, 403, { error: "Solo los creadores autorizados pueden publicar ropa." });
+    }
     const body = await readBody(req);
     const name = safeText(body.name, "", 40);
     const description = safeText(body.description, "", 200);
@@ -913,6 +1210,104 @@ const server = http.createServer(async (req, res) => {
     items.push(item);
     saveCatalog(items);
     return json(res, 200, { ok: true, published: true, item, message: "Publicado en el catalogo correctamente." });
+  }
+
+
+  // ================= ADMINISTRACION =================
+  if (urlPath === "/api/admin/status" && req.method === "GET") {
+    const sess = getSessionUser(req);
+    if (!sess || !isAdminUser(sess.user, sess.key)) return json(res, 403, { error: "No tienes permisos de administrador." });
+    const users = syncUserRegistry();
+    const catalog = loadCatalog();
+    return json(res, 200, {
+      ok: true,
+      isAdmin: true,
+      creators: loadCreators(),
+      users: Object.entries(users).map(([key, user]) => ({
+        id: String(user.userId), username: user.username, usernameKey: key,
+        sunnys: Number(user.sunnys || 0), banUntil: Number(user.banUntil || 0),
+        createdAt: user.createdAt || ""
+      })),
+      items: catalog.filter(item => item && item.ownerId != null).map(item => ({
+        id: item.id, name: item.name, category: item.category, type: item.type,
+        ownerId: item.ownerId, owner: item.owner, price: Number(item.price || 0),
+        status: item.status || "approved", createdAt: item.createdAt || ""
+      }))
+    });
+  }
+
+  if (urlPath === "/api/admin/gift-sunnys" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess || !isAdminUser(sess.user, sess.key)) return json(res, 403, { error: "No tienes permisos de administrador." });
+    const body = await readBody(req);
+    const users = syncUserRegistry();
+    const targetKey = resolveUserKey(users, body.target ?? body.username ?? body.id);
+    if (!targetKey || !users[targetKey]) return json(res, 404, { error: "Usuario no encontrado." });
+    const amount = Math.floor(Number(body.amount));
+    if (!Number.isSafeInteger(amount) || amount < 0 || amount > 9999999) return json(res, 400, { error: "Cantidad de Sunnys invalida." });
+    users[targetKey].sunnys = Math.min(9999999, Number(users[targetKey].sunnys || 0) + amount);
+    saveUsersDisk(users);
+    return json(res, 200, { ok: true, user: publicUser(users[targetKey], targetKey), gifted: amount });
+  }
+
+  if (urlPath === "/api/admin/ban" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess || !isAdminUser(sess.user, sess.key)) return json(res, 403, { error: "No tienes permisos de administrador." });
+    const body = await readBody(req);
+    const users = syncUserRegistry();
+    const targetKey = resolveUserKey(users, body.target ?? body.username ?? body.id);
+    if (!targetKey || !users[targetKey]) return json(res, 404, { error: "Usuario no encontrado." });
+    if (isAdminUser(users[targetKey], targetKey)) return json(res, 400, { error: "No puedes banear a otro administrador desde este panel." });
+    const days = Math.floor(Number(body.days));
+    if (!Number.isSafeInteger(days) || days < 1 || days > 36500) return json(res, 400, { error: "Los dias deben estar entre 1 y 36500." });
+    users[targetKey].banUntil = Date.now() + days * 86400000;
+    users[targetKey].banReason = safeText(body.reason || "", "", 160);
+    saveUsersDisk(users);
+
+    for (const [token, key] of [...sessions.entries()]) {
+      if (key === targetKey) {
+        sessions.delete(token); sessionStamps.delete(token);
+      }
+    }
+    saveSessionsDisk();
+    closePlayersByAccount(targetKey, 4003, "Cuenta baneada");
+    return json(res, 200, { ok: true, username: users[targetKey].username, banUntil: users[targetKey].banUntil });
+  }
+
+  if (urlPath === "/api/admin/unban" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess || !isAdminUser(sess.user, sess.key)) return json(res, 403, { error: "No tienes permisos de administrador." });
+    const body = await readBody(req);
+    const users = syncUserRegistry();
+    const targetKey = resolveUserKey(users, body.target ?? body.username ?? body.id);
+    if (!targetKey || !users[targetKey]) return json(res, 404, { error: "Usuario no encontrado." });
+    users[targetKey].banUntil = 0;
+    users[targetKey].banReason = "";
+    saveUsersDisk(users);
+    return json(res, 200, { ok: true });
+  }
+
+  if (urlPath === "/api/admin/delete-item" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess || !isAdminUser(sess.user, sess.key)) return json(res, 403, { error: "No tienes permisos de administrador." });
+    const body = await readBody(req);
+    const itemId = safeText(body.itemId, "", 180);
+    if (!itemId) return json(res, 400, { error: "Falta el ID del articulo." });
+    const catalog = loadCatalog();
+    const item = catalog.find(x => String(x.id) === itemId);
+    if (!item) return json(res, 404, { error: "Ropa no encontrada." });
+    if (item.ownerId == null) return json(res, 400, { error: "Ese objeto no fue creado por un jugador." });
+    const nextCatalog = catalog.filter(x => String(x.id) !== itemId);
+    saveCatalog(nextCatalog);
+
+    const users = syncUserRegistry();
+    for (const [key, user] of Object.entries(users)) {
+      if (Array.isArray(user.avatarInventory)) user.avatarInventory = user.avatarInventory.filter(id => id !== itemId);
+      if (Array.isArray(user.avatar && user.avatar.accessories)) user.avatar.accessories = user.avatar.accessories.filter(id => id !== itemId);
+      users[key] = user;
+    }
+    saveUsersDisk(users);
+    return json(res, 200, { ok: true, deleted: itemId });
   }
 
   if (urlPath === "/api/streak/claim" && req.method === "POST") {
@@ -1164,6 +1559,29 @@ const server = http.createServer(async (req, res) => {
   res.end("Not found");
 });
 
+
+function closePlayersByAccount(accountKey, code = 4000, reason = "Sesion cerrada") {
+  for (const room of rooms.values()) {
+    for (const player of [...room.players.values()]) {
+      if (player.accountKey === accountKey) {
+        try { player.ws.close(code, reason); } catch {}
+        leaveRoom(player);
+      }
+    }
+  }
+}
+
+function getAccountFromToken(token) {
+  const raw = String(token || "");
+  const key = keyFromSignedToken(raw);
+  if (!key) return null;
+  const users = ensureUserIds(loadUsers());
+  const user = users[key];
+  if (!user) return null;
+  if (banRemainingMs(user) > 0 && !isAdminUser(user, key)) return null;
+  return { key, user, users };
+}
+
 const wss = new WebSocket.Server({ server });
 
 function send(ws, data) {
@@ -1174,6 +1592,8 @@ function publicPlayer(player) {
   return {
     id: player.id, playerId: player.id, gameId: player.gameId, serverId: SERVER_ID,
     username: censorText(player.username), avatar: player.avatar,
+    isAdmin: !!player.isAdmin,
+    isCreator: !!player.isCreator,
     x: player.x, y: player.y, z: player.z, rotation: player.rotation
   };
 }
@@ -1212,7 +1632,8 @@ loadSessionsDisk();
 wss.on("connection", (ws) => {
   const player = {
     id: makeId(), ws, roomKey: null, roomName: null, gameId: null,
-    username: "Player", avatar: null, x: 0, y: 0, z: 0, rotation: 0, lastChatAt: 0, lastEmoteAt: 0
+    username: "Player", accountKey: null, isAdmin: false, isCreator: false, adminFly: false,
+    avatar: null, x: 0, y: 0, z: 0, rotation: 0, lastChatAt: 0, lastEmoteAt: 0
   };
   ws.isAlive = true;
   ws.on("pong", () => { ws.isAlive = true; });
@@ -1224,14 +1645,26 @@ wss.on("connection", (ws) => {
     if (data.type === "join") {
       const roomName = safeText(data.room, "EpicBloxs Universe", 80);
       const gameId = safeText(data.gameId, "GAME-UNKNOWN", 32);
+      const account = getAccountFromToken(data.token);
+      if (!account) {
+        send(ws, { type: "error", code: "AUTH_REQUIRED", message: "Sesion invalida o cuenta baneada." });
+        try { ws.close(4001, "Authentication required"); } catch {}
+        return;
+      }
       if (player.roomKey) leaveRoom(player);
+      player.accountKey = account.key;
+      player.isAdmin = isAdminUser(account.user, account.key);
+      player.isCreator = isCreatorUser(account.user, account.key);
+      player.adminFly = false;
       const room = getOrCreateRoom(roomName, gameId);
       if (room.players.size >= MAX_PLAYERS_PER_ROOM) {
         send(ws, { type: "error", message: "Esta sala esta llena." });
         return;
       }
-      player.username = safeText(data.username, "Player", 24);
-      player.avatar = data.avatar || null;
+      // El servidor toma el nombre/avatar de la cuenta autenticada. El cliente
+      // no puede suplantar a otro usuario cambiando el username del join.
+      player.username = safeText(account.user.username, "Player", 24);
+      player.avatar = account.user.avatar || data.avatar || null;
       player.x = 0; player.y = 0; player.z = 0; player.rotation = 0;
       setPresence(player.username.toLowerCase(), { playing: true, gameId, gameName: roomName, roomName, serverId: SERVER_ID });
 
@@ -1264,6 +1697,8 @@ wss.on("connection", (ws) => {
         playerId: player.id,
         serverId: SERVER_ID,
         gameId: player.gameId,
+        isAdmin: !!player.isAdmin,
+        isCreator: !!player.isCreator,
         count: room.players.size,
         players: existingPlayers,
         accounts: Object.keys(loadUsers()).length
@@ -1278,6 +1713,76 @@ wss.on("connection", (ws) => {
     if (!player.roomKey) return;
     const room = rooms.get(player.roomKey);
     if (!room) return;
+
+    if (data.type === "adminAction") {
+      if (!player.isAdmin) {
+        send(ws, { type: "adminError", message: "No tienes permisos de administrador." });
+        return;
+      }
+      const action = safeText(data.action, "", 20).toLowerCase();
+
+      if (action === "fly") {
+        player.adminFly = !player.adminFly;
+        send(ws, { type: "adminFly", enabled: player.adminFly });
+        return;
+      }
+
+      const targetId = safeText(data.targetId, "", 80);
+      const targetUsername = safeText(data.targetUsername, "", 40).toLowerCase();
+      let target = null;
+      for (const p of room.players.values()) {
+        if ((targetId && p.id === targetId) || (targetUsername && p.username.toLowerCase() === targetUsername)) {
+          target = p; break;
+        }
+      }
+      if (!target) {
+        send(ws, { type: "adminError", message: "Jugador no encontrado en esta partida." });
+        return;
+      }
+      if (target === player) {
+        send(ws, { type: "adminError", message: "No puedes aplicar esa accion a ti mismo." });
+        return;
+      }
+      if (target.isAdmin) {
+        send(ws, { type: "adminError", message: "No puedes moderar a otro administrador." });
+        return;
+      }
+
+      if (action === "kick") {
+        send(target.ws, { type: "kicked", message: "Un administrador te saco de la partida." });
+        try { target.ws.close(4002, "Kicked by admin"); } catch {}
+        return;
+      }
+
+      if (action === "ban") {
+        const days = Math.floor(Number(data.days));
+        if (!Number.isSafeInteger(days) || days < 1 || days > 36500) {
+          send(ws, { type: "adminError", message: "Los dias deben estar entre 1 y 36500." });
+          return;
+        }
+        const users = syncUserRegistry();
+        const targetUser = users[target.accountKey];
+        if (!targetUser) {
+          send(ws, { type: "adminError", message: "La cuenta del jugador no existe." });
+          return;
+        }
+        targetUser.banUntil = Date.now() + days * 86400000;
+        targetUser.banReason = safeText(data.reason || "Moderacion en juego", "", 160);
+        saveUsersDisk(users);
+        for (const [token, key] of [...sessions.entries()]) {
+          if (key === target.accountKey) {
+            sessions.delete(token); sessionStamps.delete(token);
+          }
+        }
+        saveSessionsDisk();
+        send(target.ws, { type: "banned", message: banMessage(targetUser) });
+        try { target.ws.close(4003, "Banned by admin"); } catch {}
+        return;
+      }
+
+      send(ws, { type: "adminError", message: "Accion de administrador desconocida." });
+      return;
+    }
 
     if (data.type === "move") {
       player.x = safeNumber(data.x, player.x);
