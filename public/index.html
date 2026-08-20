@@ -385,17 +385,17 @@ body.theme-dark .admin-card{background:#292929;border-color:#444}
       <h3 style="margin-top:0">1. Elige un amigo</h3>
       <div id="tradeFriends" class="trade-friends"></div>
       <div id="tradeFriendHint" class="trade-empty" style="margin-top:10px">Selecciona un amigo para empezar.</div>
-      <h3 style="margin-top:18px">2. Tu oferta</h3>
-      <label style="font-size:12px;color:#666">Sunnys a ofrecer</label>
+      <h3 style="margin-top:18px">2. Tu parte del intercambio</h3>
+      <label style="font-size:12px;color:#666">Sunnys que das</label>
       <input id="tradeSunnysInput" type="number" min="0" max="9999999" step="1" value="0" style="width:100%;box-sizing:border-box;padding:9px;margin:5px 0 10px;border:1px solid #ccc;border-radius:5px">
       <div id="tradeMyItems" class="trade-items"></div>
       <div id="tradeSelectedCount" style="font-size:12px;color:#666;margin-top:8px">0 artículos seleccionados</div>
-      <button class="buy" style="margin-top:12px" onclick="sendTradeOffer()">Enviar oferta</button>
+      <button class="buy" style="margin-top:12px" onclick="sendTradeOffer()">Enviar intercambio</button>
     </div>
     <div class="trade-card">
-      <h3 style="margin-top:0">Ofertas pendientes</h3>
+      <h3 style="margin-top:0">Intercambios pendientes</h3>
       <div id="tradeIncoming"></div>
-      <h3 style="margin-top:22px">Mis ofertas enviadas</h3>
+      <h3 style="margin-top:22px">Mis intercambios enviados</h3>
       <div id="tradeOutgoing"></div>
     </div>
   </div>
@@ -1964,13 +1964,13 @@ function createSkybox(scene, gameName) {
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
-  const skyGeo = new THREE.SphereGeometry(400, 32, 24);
+  const skyGeo = new THREE.SphereGeometry(1200, 48, 32);
   const skyMat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide, depthWrite: false });
   const sky = new THREE.Mesh(skyGeo, skyMat);
   sky.name = 'skybox';
   scene.add(sky);
   scene.background = new THREE.Color(mid);
-  scene.fog = new THREE.Fog(new THREE.Color(bot), 40, 180);
+  scene.fog = null;
 }
 
 // ===== Controles móviles =====
@@ -2651,7 +2651,18 @@ function startGameLoop() {
     // 3) sube escalones bajos y 4) la colision vertical es continua (no atraviesa).
     const PW = 0.32, PD = 0.32, PH = 1.5;
     const EPS = 0.0008;
-    const solidBoxes = (solidColliders && solidColliders.length) ? solidColliders : [];
+    const rawSolidBoxes = (solidColliders && solidColliders.length) ? solidColliders : [];
+    const solidBoxes = [];
+    const solidKeys = new Set();
+    for (const s of rawSolidBoxes) {
+      if (!s || !Number.isFinite(s.x) || !Number.isFinite(s.y) || !Number.isFinite(s.z) ||
+          !Number.isFinite(s.width) || !Number.isFinite(s.height) || !Number.isFinite(s.depth) ||
+          s.width <= 0 || s.height <= 0 || s.depth <= 0) continue;
+      const key = [s.x,s.y,s.z,s.width,s.height,s.depth].map(v=>Math.round(v*1000)/1000).join('|');
+      if (solidKeys.has(key)) continue;
+      solidKeys.add(key);
+      solidBoxes.push(s);
+    }
     const oneWayPlatforms = currentGameType.includes('Obby') ? (activePlatforms || []) : [];
     const voidStartGame = ['Epic Obby','Sky Islands'].includes(currentGameType.trim());
     const hasWorldFloor = !voidStartGame;
@@ -3077,7 +3088,8 @@ function openMultiplayerSocket() {
         room: multiplayerRoom,
         gameId: epicGameId,
         username: c.user.username,
-        avatar: getAvatarSnapshot()
+        avatar: getAvatarSnapshot(),
+        token: getToken()
       }));
     });
 
@@ -4719,32 +4731,34 @@ function setBodyColor(part,color){
   sendAvatarUpdateToMultiplayer();
 }
 
-function toggleAccessory(a){
-  const c=current();if(!c)return;
+async function toggleAccessory(a){
+  const c=current();
+  if(!c||!c.user) return;
   c.user.avatar = c.user.avatar || {colors:{}, accessories:[]};
-  c.user.avatar.accessories = c.user.avatar.accessories || [];
-  
+  c.user.avatar.accessories = Array.isArray(c.user.avatar.accessories) ? c.user.avatar.accessories : [];
+  c.user.avatarInventory = Array.isArray(c.user.avatarInventory) ? c.user.avatarInventory : [];
+
   if(a === 'normal') {
     c.user.avatar.accessories = [];
   } else {
-    // Si es cara, camisa o pantalón, reemplazar el de la misma categoría para evitar conflictos
+    const owned = c.user.avatarInventory.includes(a);
+    if(!owned) return alert('Primero debes tener este artículo en tu inventario.');
     const itemData = catalogDatabase.find(item => item.id === a);
-    if(itemData) {
-      // Solo puede haber una cara, una camisa y un pantalon equipados a la vez.
-      if(['faces','shirts','pants'].includes(itemData.category)) {
-        c.user.avatar.accessories = c.user.avatar.accessories.filter(acc => acc === a || avatarItemCategory(acc) !== itemData.category);
-      }
+    if(itemData && ['faces','shirts','pants'].includes(itemData.category)) {
+      c.user.avatar.accessories = c.user.avatar.accessories.filter(acc => avatarItemCategory(acc) !== itemData.category || acc === a);
     }
-
     const idx = c.user.avatar.accessories.indexOf(a);
-    if(idx > -1) {
-      c.user.avatar.accessories.splice(idx, 1);
-    } else {
-      c.user.avatar.accessories.push(a);
-    }
+    if(idx > -1) c.user.avatar.accessories.splice(idx,1);
+    else c.user.avatar.accessories.push(a);
   }
 
-  const u=getUsers();u[c.key]=c.user;saveUsers(u);
+  try {
+    const saved = await persistUser(c.user);
+    if(saved){ c.user = saved; setCachedUser(saved); }
+  } catch(e) {
+    alert('❌ No se pudo guardar el equipamiento: ' + (e.message || 'error de conexión'));
+    return;
+  }
   try{ Object.keys(_portraitCache).forEach(k=>delete _portraitCache[k]); }catch(e){}
   updateUI(c.user);
   updatePreviewAvatar3D();
@@ -5155,6 +5169,7 @@ function renderTradeFriends(){
 function selectTradeFriend(id){
   tradeSelectedFriend=String(id);
   tradeSelectedItems.clear();
+  tradeResponseItems.clear();
   const amount=document.getElementById('tradeSunnysInput'); if(amount) amount.value='0';
   renderTradeFriends(); renderTradeMyItems();
 }
@@ -5181,15 +5196,33 @@ function toggleTradeItem(id){
 
 function renderTradeOffer(off, label, tradeId, isIncoming, accepted){
   const items=(off.items||[]).map(id=>`<span class="trade-pill">${escapeHTML(tradeItemInfo(id).name)}</span>`).join('');
-  return `<div class="trade-offer"><div style="font-weight:bold">${label}</div><div style="margin-top:6px">☀️ <b>${Number(off.sunnys||0).toLocaleString()}</b> Sunnys</div><div style="margin-top:4px">${items||'<span style="color:#777;font-size:12px">Sin artículos</span>'}</div>${isIncoming ? `<div class="trade-offer-actions"><button class="buy" style="width:auto" onclick="respondTrade('${escapeHTML(tradeId)}','accept')">Aceptar</button><button class="section-button" style="margin:0;background:#d93025" onclick="respondTrade('${escapeHTML(tradeId)}','decline')">Rechazar</button></div>` : `<div style="font-size:12px;color:#777;margin-top:8px">Estado: esperando la respuesta del amigo.</div><button class="section-button" style="margin-top:8px;background:#8a8f98" onclick="respondTrade('${escapeHTML(tradeId)}','cancel')">Cancelar</button>`}</div>`;
+  if(!isIncoming){
+    return `<div class="trade-offer"><div style="font-weight:bold">${label}</div><div style="margin-top:6px">☀️ <b>${Number(off.sunnys||0).toLocaleString()}</b> Sunnys</div><div style="margin-top:4px">${items||'<span style="color:#777;font-size:12px">Sin artículos</span>'}</div><div style="font-size:12px;color:#777;margin-top:8px">Esperando que el otro jugador prepare su parte.</div><button class="section-button" style="margin-top:8px;background:#8a8f98" onclick="respondTrade('${escapeHTML(tradeId)}','cancel')">Cancelar</button></div>`;
+  }
+  return `<div class="trade-offer"><div style="font-weight:bold">${label}</div><div style="margin-top:6px">☀️ <b>${Number(off.sunnys||0).toLocaleString()}</b> Sunnys</div><div style="margin-top:4px">${items||'<span style="color:#777;font-size:12px">Sin artículos</span>'}</div>${renderTradeResponseEditor(tradeId)}</div>`;
+}
+
+function renderTradeResponseEditor(tradeId){
+  const c=current(); const inv=(c&&c.user&&Array.isArray(c.user.avatarInventory))?c.user.avatarInventory:[];
+  const uniq=[...new Set(inv)].slice(0,20);
+  return `<div style="margin-top:12px;border-top:1px solid #ddd;padding-top:10px"><b>Tu parte del intercambio</b><div class="trade-items" style="margin-top:8px">${uniq.length?uniq.map(id=>{const sel=tradeResponseItems.has(id);return `<button type="button" class="trade-item ${sel?'selected':''}" onclick="toggleTradeResponseItem(${JSON.stringify(id)})"><b>${escapeHTML(tradeItemInfo(id).name)}</b><small>${tradeCategoryLabel(tradeItemInfo(id).category)}</small></button>`;}).join(''):'<div class="trade-empty" style="grid-column:1/-1">No tienes artículos para ofrecer.</div>'}</div><input id="tradeResponseSunnys_${escapeHTML(tradeId)}" type="number" min="0" max="9999999" step="1" value="0" style="width:100%;box-sizing:border-box;padding:9px;margin:8px 0;border:1px solid #ccc;border-radius:5px"><button class="buy" style="width:auto" onclick="respondTrade('${escapeHTML(tradeId)}','offer')">Preparar intercambio</button><button class="buy" style="width:auto;margin-left:6px" onclick="respondTrade('${escapeHTML(tradeId)}','accept')">Aceptar intercambio</button><button class="section-button" style="margin-left:6px;background:#d93025" onclick="respondTrade('${escapeHTML(tradeId)}','decline')">Rechazar</button></div>`;
 }
 
 function renderTradeState(){
   const inc=document.getElementById('tradeIncoming'), out=document.getElementById('tradeOutgoing');
   if(!inc||!out) return;
-  inc.innerHTML=tradeState.incoming.length ? tradeState.incoming.map(t=>renderTradeOffer(t.theyOffer, `${escapeHTML(t.other.username)} te ofrece:`, t.id, true, t.accepted&&t.accepted[t.to&&t.to.id])).join('') : '<div class="trade-empty">No tienes ofertas entrantes.</div>';
-  out.innerHTML=tradeState.outgoing.length ? tradeState.outgoing.map(t=>renderTradeOffer(t.youOffer, `Oferta para ${escapeHTML(t.other.username)}:`, t.id, false, false)).join('') : '<div class="trade-empty">No tienes ofertas enviadas.</div>';
+  inc.innerHTML=tradeState.incoming.length ? tradeState.incoming.map(t=>renderTradeOffer(t.theyOffer, `${escapeHTML(t.other.username)} te ofrece:`, t.id, true, false)).join('') : '<div class="trade-empty">No tienes intercambios entrantes.</div>';
+  out.innerHTML=tradeState.outgoing.length ? tradeState.outgoing.map(t=>renderTradeOffer(t.youOffer, `Intercambio para ${escapeHTML(t.other.username)}:`, t.id, false, false)).join('') : '<div class="trade-empty">No tienes intercambios enviados.</div>';
 }
+
+let tradeResponseItems = new Set();
+function toggleTradeResponseItem(id){
+  id=String(id);
+  if(tradeResponseItems.has(id)) tradeResponseItems.delete(id);
+  else { if(tradeResponseItems.size>=20) return alert('Puedes ofrecer como máximo 20 artículos.'); tradeResponseItems.add(id); }
+  renderTradeState();
+}
+
 
 async function refreshTradeState(){
   if(!getToken()) return;
@@ -5215,22 +5248,36 @@ async function sendTradeOffer(){
     const data=await api('/api/trade/offer',{method:'POST',body:JSON.stringify({id:tradeSelectedFriend,items:[...tradeSelectedItems],sunnys})},2);
     tradeSelectedItems.clear(); if(input) input.value='0';
     await refreshTradeState();
-    alert('✅ Oferta de Trade enviada. El otro jugador debe aceptarla.');
+    alert('✅ Intercambio enviado. El otro jugador debe preparar su parte y aceptarlo.');
   } catch(e){ alert('❌ '+(e.message||'No se pudo enviar el Trade.')); }
 }
 
 async function respondTrade(tradeId, action){
   try {
-    const data=await api('/api/trade/respond',{method:'POST',body:JSON.stringify({tradeId,action})},2);
+    const body={tradeId,action};
+    if(action==='offer'){
+      const input=document.getElementById('tradeResponseSunnys_'+tradeId);
+      const sunnys=Math.floor(Number(input?.value||0));
+      const c=current();
+      if(!Number.isSafeInteger(sunnys)||sunnys<0||sunnys>9999999) return alert('Cantidad de Sunnys inválida.');
+      if(c && sunnys>Number(c.user.sunnys||0)) return alert('No tienes suficientes Sunnys.');
+      body.items=[...tradeResponseItems]; body.sunnys=sunnys;
+    }
+    const data=await api('/api/trade/respond',{method:'POST',body:JSON.stringify(body)},2);
     if(data.status==='completed' && data.users && data.users.self){
       setCachedUser(data.users.self); updateUI(data.users.self); loadInventory(); renderCatalog('all'); renderTradeMyItems();
-      alert('✅ Trade completado. Los Sunnys y artículos fueron transferidos sin duplicarlos.');
+      tradeResponseItems.clear();
+      alert('✅ Intercambio completado. Los Sunnys y artículos fueron transferidos.');
+    } else if(action==='offer') {
+      tradeResponseItems.clear();
+      alert('✅ Tu parte del intercambio quedó preparada.');
     } else if(action==='accept') {
-      alert('✅ Has aceptado. El Trade se completará cuando el otro jugador también acepte.');
+      alert('✅ Intercambio aceptado. Se completará cuando ambos jugadores hayan aceptado.');
     }
     await refreshTradeState();
-  } catch(e){ alert('❌ '+(e.message||'El Trade no pudo completarse. Ningún artículo se duplicó.')); await refreshTradeState(); }
+  } catch(e){ alert('❌ '+(e.message||'El intercambio no pudo completarse. Ningún artículo se duplicó.')); await refreshTradeState(); }
 }
+
 
 function startTradePolling(){
   if(tradePollTimer) clearInterval(tradePollTimer);
