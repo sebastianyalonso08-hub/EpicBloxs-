@@ -32,7 +32,9 @@ body.theme-purple{background:#f4efff;color:#30204d}body.theme-purple .sidebar,bo
 .cat-tab{background:#ddd;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-weight:bold;font-size:13px}
 .cat-tab.active{background:#1684e8;color:#fff}
 
-.catalog-grid,.inventory-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:15px}.inventory-slots{grid-template-columns:repeat(3,1fr)!important;max-width:540px}.inventory-slot{min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;border:2px dashed #ccc;border-radius:8px;padding:10px}.inventory-slot.filled{border-style:solid;border-color:#bbb}.inventory-slot .slot-num{font-size:10px;color:#999;align-self:flex-start}
+.catalog-grid,.inventory-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:15px}
+.trade-layout{display:grid;grid-template-columns:1fr 1.3fr;gap:16px}.trade-card{background:#fff;border:1px solid #ccc;border-radius:8px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}.trade-friends,.trade-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}.trade-friend,.trade-item{border:1px solid #d5d9df;background:#f8fafc;border-radius:7px;padding:9px;cursor:pointer;text-align:left}.trade-friend:hover,.trade-item:hover{border-color:#1684e8}.trade-friend.selected,.trade-item.selected{outline:2px solid #1684e8;background:#eef7ff}.trade-item{min-height:72px}.trade-item small{display:block;color:#777;margin-top:3px}.trade-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;background:#eef2f7;font-size:11px;margin:2px}.trade-offer{border:1px solid #ddd;border-radius:7px;padding:10px;margin-top:10px;background:#fafafa}.trade-offer-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.trade-empty{padding:14px;color:#777;border:1px dashed #ccc;border-radius:7px;background:#fafafa}.trade-good{color:#188038}.trade-danger{color:#c5221f}@media(max-width:850px){.trade-layout{grid-template-columns:1fr}}
+.inventory-slots{grid-template-columns:repeat(3,1fr)!important;max-width:540px}.inventory-slot{min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;border:2px dashed #ccc;border-radius:8px;padding:10px}.inventory-slot.filled{border-style:solid;border-color:#bbb}.inventory-slot .slot-num{font-size:10px;color:#999;align-self:flex-start}
 .catalog-item,.inventory-item,.profile-card,.settings-card{background:#fff;border:1px solid #ccc;padding:15px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:transform 0.2s,box-shadow 0.2s}
 .catalog-item:hover,.inventory-item:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,0.1)}
 .catalog-item{text-align:center}
@@ -103,6 +105,16 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 
 #authScreen{position:fixed;inset:0;background:#252525;z-index:9999;display:flex;align-items:center;justify-content:center}.auth-box{width:400px;max-width:92%;background:#fff;padding:32px;border-radius:6px;box-shadow:0 5px 25px rgba(0,0,0,0.3)}.auth-logo{text-align:center;font-size:38px;font-weight:900}.auth-logo span{color:#25a9ff}.auth-sub{text-align:center;color:#777;margin:5px 0 22px}.auth-tabs{display:flex;border-radius:4px;overflow:hidden;border:1px solid #ddd}.auth-tab{width:50%;padding:11px;border:0;background:#eee;font-weight:bold;cursor:pointer}.auth-tab.active{background:#1684e8;color:#fff}.auth-form{display:none}.auth-form.active{display:block}.auth-form label{display:block;margin:12px 0 5px;font-size:13px;font-weight:bold}.auth-form input{width:100%;padding:11px;border:1px solid #bbb;border-radius:4px}.auth-button{width:100%;margin-top:20px;padding:12px;border:0;background:#1684e8;color:#fff;font-weight:bold;cursor:pointer;border-radius:4px}.auth-message{text-align:center;min-height:18px;margin-top:12px;font-size:13px}.error{color:#d93025}.success{color:#188038}.auth-info{margin-top:18px;padding:10px;background:#f3f3f3;color:#777;font-size:11px;border-radius:4px}
 
+
+.avatar-category-bar{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 6px;padding:8px;background:#f3f6f9;border:1px solid #d8dee5;border-radius:8px}
+.avatar-cat{border:1px solid #c7d0da;background:#fff;color:#333;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s}
+.avatar-cat:hover{border-color:#1684e8;background:#eef7ff}
+.avatar-cat.active{background:#1684e8;color:#fff;border-color:#1684e8;box-shadow:0 2px 6px rgba(22,132,232,.25)}
+.avatar-category-hint{font-size:12px;color:#666;margin:7px 0 10px}
+.avatar-items-list{display:flex;flex-wrap:wrap;gap:8px;padding:10px;background:#fafbfc;border:1px solid #e1e5ea;border-radius:8px;min-height:44px}
+.avatar-item-group-label{width:100%;font-size:11px;color:#777;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin:2px 0 0}
+.avatar-item-button{background:#292929!important;margin:0!important}
+.avatar-item-button.equipped{background:#188038!important}
 .avatar-wrap{display:flex;gap:35px;align-items:flex-start;flex-wrap:wrap}.avatar-panel{background:#fff;border:1px solid #ccc;padding:20px;min-width:330px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
 .avatar-stage{width:300px;height:390px;margin:auto;background:linear-gradient(#bde7ff 0 72%,#7bb957 72%);border:1px solid #aaa;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-radius:6px;box-shadow:inset 0 4px 10px rgba(0,0,0,0.1)}
 #previewCanvasContainer{width:100%;height:100%;position:absolute;top:0;left:0;}
@@ -156,6 +168,26 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 .game-inv-slot .slot-n{font-size:9px;color:#64748b;align-self:flex-start}
 .game-inv-foot{margin-top:10px;font-size:11px;color:#64748b;text-align:center}
 
+
+/* ================= EpicBloxs Admin Panel ================= */
+#adminFab{display:none;position:fixed;right:16px;bottom:16px;z-index:10050;background:#111827;color:#fff;border:2px solid #60a5fa;border-radius:9px;padding:10px 14px;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#adminFab.show{display:block}
+#adminOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:10040;align-items:center;justify-content:center;padding:20px}
+#adminOverlay.open{display:flex}
+#adminPanel{width:min(900px,96vw);max-height:90vh;overflow:auto;background:#fff;color:#222;border-radius:10px;box-shadow:0 20px 70px rgba(0,0,0,.4);padding:20px}
+body.theme-dark #adminPanel{background:#202020;color:#eee}
+.admin-head{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:14px}
+.admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.admin-card{border:1px solid #ccc;border-radius:8px;padding:14px;background:#fafafa}
+body.theme-dark .admin-card{background:#292929;border-color:#444}
+.admin-card h3{margin:0 0 10px}
+.admin-input{width:100%;padding:9px;border:1px solid #bbb;border-radius:5px;margin:4px 0}
+.admin-btn{padding:8px 11px;border:0;border-radius:5px;background:#2563eb;color:#fff;font-weight:700;cursor:pointer;margin:4px 4px 0 0}
+.admin-btn.danger{background:#dc2626}.admin-btn.gray{background:#4b5563}.admin-btn.green{background:#16a34a}
+.admin-list{max-height:220px;overflow:auto;border-top:1px solid #ddd;margin-top:10px}
+.admin-row{padding:8px 2px;border-bottom:1px solid #ddd;font-size:12px}
+.admin-muted{font-size:11px;color:#777}
+@media(max-width:700px){.admin-grid{grid-template-columns:1fr}}
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -213,7 +245,7 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
   <div class="side-item" onclick="showPage('friends')"><div class="side-icon">👥</div><span>Friends</span></div>
   <div class="side-item" onclick="showPage('settings')"><div class="side-icon">⚙️</div><span>Settings</span></div>
   <div class="side-item" onclick="alert('Messages próximamente')"><div class="side-icon">▤</div><span>Messages</span></div>
-  <div class="side-item" onclick="alert('Trade próximamente')"><div class="side-icon">⇄</div><span>Trade</span></div>
+  <div class="side-item" onclick="showPage('trade')"><div class="side-icon">⇄</div><span>Trade</span></div>
   <div class="side-item" onclick="alert('Groups próximamente')"><div class="side-icon">♧</div><span>Groups</span></div>
   <div class="upgrade" onclick="alert('EpicBloxs Premium próximamente')">Upgrade Now</div>
   <div class="events"><div class="events-title">Events</div><p>No ongoing events. Come back later.</p></div>
@@ -344,6 +376,31 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
   </div>
 </section>
 
+
+<section id="trade" class="page">
+  <h1>Trade</h1>
+  <p>Intercambia Sunnys, ropa y accesorios con tus amigos. El servidor comprueba la propiedad de cada artículo al completar el intercambio para evitar duplicaciones.</p>
+  <div class="trade-layout">
+    <div class="trade-card">
+      <h3 style="margin-top:0">1. Elige un amigo</h3>
+      <div id="tradeFriends" class="trade-friends"></div>
+      <div id="tradeFriendHint" class="trade-empty" style="margin-top:10px">Selecciona un amigo para empezar.</div>
+      <h3 style="margin-top:18px">2. Tu oferta</h3>
+      <label style="font-size:12px;color:#666">Sunnys a ofrecer</label>
+      <input id="tradeSunnysInput" type="number" min="0" max="9999999" step="1" value="0" style="width:100%;box-sizing:border-box;padding:9px;margin:5px 0 10px;border:1px solid #ccc;border-radius:5px">
+      <div id="tradeMyItems" class="trade-items"></div>
+      <div id="tradeSelectedCount" style="font-size:12px;color:#666;margin-top:8px">0 artículos seleccionados</div>
+      <button class="buy" style="margin-top:12px" onclick="sendTradeOffer()">Enviar oferta</button>
+    </div>
+    <div class="trade-card">
+      <h3 style="margin-top:0">Ofertas pendientes</h3>
+      <div id="tradeIncoming"></div>
+      <h3 style="margin-top:22px">Mis ofertas enviadas</h3>
+      <div id="tradeOutgoing"></div>
+    </div>
+  </div>
+</section>
+
 <section id="games" class="page"><h1>Games</h1><p>Descubre juegos únicos creados por la comunidad.</p><div id="gamesGrid" class="games"></div></section>
 
 <section id="catalog" class="page">
@@ -433,8 +490,17 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
     <div class="avatar-panel" style="flex:1">
       <h2>Personalización Accesories and Clothing</h2>
       <p style="font-size:13px;color:#666;">Equip or unequip accesories that you own! [W.I.P]:</p>
-      <div id="accessoryButtons" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;">
-        <button class="section-button" onclick="toggleAccessory('normal')">Ninguno</button>
+      <div class="avatar-category-bar" aria-label="Categorías del Avatar">
+        <button type="button" class="avatar-cat active" data-avatar-cat="all" onclick="filterAvatarCategory('all', this)">✨ Todo</button>
+        <button type="button" class="avatar-cat" data-avatar-cat="hats" onclick="filterAvatarCategory('hats', this)">🧢 Sombreros</button>
+        <button type="button" class="avatar-cat" data-avatar-cat="shirts" onclick="filterAvatarCategory('shirts', this)">👕 Camisas</button>
+        <button type="button" class="avatar-cat" data-avatar-cat="pants" onclick="filterAvatarCategory('pants', this)">👖 Pantalones</button>
+        <button type="button" class="avatar-cat" data-avatar-cat="faces" onclick="filterAvatarCategory('faces', this)">🙂 Caras</button>
+        <button type="button" class="avatar-cat" data-avatar-cat="gear" onclick="filterAvatarCategory('gear', this)">🎒 Accesorios</button>
+      </div>
+      <div id="avatarCategoryHint" class="avatar-category-hint">Mostrando todos tus objetos del Avatar.</div>
+      <div id="accessoryButtons" class="avatar-items-list">
+        <button class="section-button" onclick="toggleAccessory('normal')">Quitar todo</button>
       </div>
 
       <div class="color-section">
@@ -1504,6 +1570,46 @@ function buildAvatar3DModel(userData) {
   headMesh.castShadow = true;
   headMesh.receiveShadow = true;
 
+  // Accesorios 3D separados del sistema de ropa. Antes se podían comprar y
+  // equipar, pero no tenían geometría en el avatar, por lo que parecían no funcionar.
+  const hatIds = accessories.filter(acc => avatarItemCategory(acc) === 'hats');
+  hatIds.forEach((hatId, index) => {
+    const hatGroup = new THREE.Group();
+    hatGroup.name = "accessory_" + hatId;
+    let mesh = null;
+    if (hatId === 'Epic Cap') {
+      mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.55, 0.18, 24), new THREE.MeshLambertMaterial({color:"#1976D2"}));
+      mesh.position.y = 2.62;
+      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.58,0.58,0.06,24), new THREE.MeshLambertMaterial({color:"#1565C0"}));
+      brim.position.y = -0.08; mesh.add(brim);
+    } else if (hatId === 'Golden Crown') {
+      mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.52,0.48,0.28,8), new THREE.MeshLambertMaterial({color:"#FFD54F"}));
+      mesh.position.y = 2.68;
+    } else if (hatId === 'Black Beanie') {
+      mesh = new THREE.Mesh(new THREE.SphereGeometry(0.47,20,12,0,Math.PI*2,0,Math.PI/2), new THREE.MeshLambertMaterial({color:"#222"}));
+      mesh.scale.y = 0.65; mesh.position.y = 2.55;
+    } else if (hatId === 'Pink Bow') {
+      const mat = new THREE.MeshLambertMaterial({color:"#ff69b4"});
+      const a = new THREE.Mesh(new THREE.SphereGeometry(0.22,16,10),mat);
+      const b = a.clone(); a.position.set(-0.22,2.62,0); b.position.set(0.22,2.62,0);
+      hatGroup.add(a,b);
+      const knot = new THREE.Mesh(new THREE.SphereGeometry(0.10,12,8),mat); knot.position.set(0,2.62,0); hatGroup.add(knot);
+    } else if (hatId === 'White Fedora') {
+      mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.38,0.52,0.22,20), new THREE.MeshLambertMaterial({color:"#f4f4f4"}));
+      mesh.position.y = 2.64;
+      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.62,0.62,0.05,24), new THREE.MeshLambertMaterial({color:"#e5e5e5"}));
+      brim.position.y = -0.10; mesh.add(brim);
+    } else {
+      mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.45,0.12,20), new THREE.MeshLambertMaterial({color:"#9ca3af"}));
+      mesh.position.y = 2.62;
+    }
+    if(mesh) hatGroup.add(mesh);
+    if(hatGroup.children.length) {
+      hatGroup.position.y = index * 0.02;
+      avatarGroup.add(hatGroup);
+    }
+  });
+
   const leftArm = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.5), armMat);
   leftArm.position.set(-armX, armY, 0);
   leftArm.name = "leftArm";
@@ -2119,8 +2225,12 @@ function buildGameSpecificWorld(gameName){
     addBox(0,0.54+22*0.54,finishZ,20,0.7,1.8,0x22c55e,{solid:true});
     addBox(-8,4.0+22*0.54,finishZ,1,6.5,1,0xf1c40f); addBox(8,4.0+22*0.54,finishZ,1,6.5,1,0xf1c40f); addBox(0,7.3+22*0.54,finishZ,17,1,1,0xf1c40f);
   } else if(n==='Bloxs City'){
+    // Antes las calles horizontales y verticales estaban a la misma altura exacta
+    // y se cruzaban en cada esquina: en esos cruces dos superficies competian por
+    // el mismo lugar y parpadeaban. Se sube 1cm la direccion vertical para que
+    // el cruce quede limpio (diferencia invisible al jugar).
     for(let z=-48;z<=48;z+=12) addBox(0,0.03,z,100,0.06,5,0x2a2f38,{solid:false});
-    for(let x=-48;x<=48;x+=12) addBox(x,0.03,0,5,0.06,100,0x2a2f38,{solid:false});
+    for(let x=-48;x<=48;x+=12) addBox(x,0.04,0,5,0.06,100,0x2a2f38,{solid:false});
     for(let x=-42;x<=42;x+=12) for(let z=-42;z<=42;z+=12){
       if(Math.abs(x)<=18&&Math.abs(z)<=18) continue;
       addBox(x,0.07,z,7.0,0.14,7.0,0x8a8f98,{solid:false});
@@ -2132,19 +2242,29 @@ function buildGameSpecificWorld(gameName){
       addBox(x,h/2-0.5,z,5.2,h,5.2,colors[(Math.abs(bx+bz)+20)%colors.length],{solid:true});
       addBox(x,h-0.9,z-2.66,1.4,1.5,0.1,0x172033,{solid:false});
     }
-    addBox(0,-0.1,0,24,0.2,24,0x55b879,{solid:false});
+    // La plaza verde central flotaba a la misma altura exacta que el piso base
+    // gris de la ciudad: parpadeaba en toda esa zona. Se sube 1cm.
+    addBox(0,-0.09,0,24,0.2,24,0x55b879,{solid:false});
     for(const p of [[-9,-9],[9,-9],[-9,9],[9,9],[0,-9],[0,9],[-9,0],[9,0]]) addTree(p[0],p[1],0.9);
-    addBox(0,-0.08,27,26,0.16,14,0x4aa8ff,{solid:false});
+    // El rio flotaba a la misma altura exacta que el piso base de la ciudad:
+    // parpadeaba en toda esa zona. Se sube un poco para que quede claramente encima.
+    addBox(0,0.02,27,26,0.16,14,0x4aa8ff,{solid:false});
     addBox(0,0.15,19,10,0.3,12,0xb58b52,{solid:false});
     addBox(-30,2,-18,9,4,7,0xef5350); addBox(30,2,18,9,4,7,0x42a5f5);
     addBox(-30,2,18,9,4,7,0x8e44ad); addBox(30,2,-18,9,4,7,0x26a69a);
     for(const [x,z] of [[-30,-18],[30,-18],[-30,18],[30,18]]) addLamp(x,z);
   } else if(n==='Pet World'){
     addBox(0,-0.1,0,70,0.2,70,0x8bcf7b,{solid:false});
-    addBox(0,0.05,0,14,0.12,52,0xd8c39f,{solid:false}); addBox(0,0.05,0,52,0.12,14,0xd8c39f,{solid:false});
+    // Los dos caminos (la "cruz") antes estaban a la MISMA altura exacta y se
+    // superponian en el centro: eso hacia parpadear el suelo ahi. Se sube uno
+    // apenas (1cm, imperceptible) para que no compitan por el mismo pixel.
+    addBox(0,0.05,0,14,0.12,52,0xd8c39f,{solid:false}); addBox(0,0.08,0,52,0.12,14,0xd8c39f,{solid:false});
     for(let i=0;i<28;i++){ const x=((i*17)%56)-28,z=((i*29)%56)-28; if(Math.abs(x)<9&&Math.abs(z)<9) continue; addTree(x,z,0.75+(i%3)*0.1); }
-    addBox(0,-0.08,-22,20,0.16,12,0x53b7ff,{solid:false});
-    addBox(-20,-0.08,20,14,0.16,14,0xf0c27b,{solid:false});
+    // El estanque y la arena tambien flotaban a la misma altura que el cesped
+    // de abajo: mismo problema de parpadeo. Se elevan un poco para que queden
+    // claramente encima.
+    addBox(0,-0.05,-22,20,0.14,12,0x53b7ff,{solid:false});
+    addBox(-20,-0.05,20,14,0.14,14,0xf0c27b,{solid:false});
     addBox(0,0.12,17,24,0.24,12,0xe5e7eb,{solid:false});
     addBox(-8,1.1,17,1,2,1,0xf43f5e); addBox(8,1.1,17,1,2,1,0x60a5fa); addBox(-8,2.0,18,16,0.35,0.5,0xf59e0b,{solid:false});
     for(let i=-3;i<=3;i++){ addCylinder(i*2.2,0.6,9,0.9,1.2,0xc08c5a); const egg=new THREE.Mesh(new THREE.SphereGeometry(0.82,18,18),new THREE.MeshLambertMaterial({color:[0xffb3c1,0xb8e1ff,0xc7a7ff,0xffe59a][(i+3)%4]})); egg.scale.y=1.2; egg.position.set(i*2.2,1.7,9); gameScene.add(egg); gameDecorations.push(egg); }
@@ -2279,7 +2399,11 @@ function buildUniqueGameWorld(gameName) {
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.position.set(0, -0.5, 0);
   floor.receiveShadow = true;
-  const noGlobalFloor = ['Epic Obby','Sky Islands'].includes(gameName.trim());
+  // 'Pet World' y 'Speed Race' ya construyen su propio piso completo (mas abajo).
+  // Antes el piso generico de reserva quedaba visible EXACTAMENTE a la misma altura
+  // que ese piso propio: dos superficies ocupando el mismo lugar = parpadeo "epileptico"
+  // (z-fighting) en toda la pista/cesped cada vez que la camara se movia.
+  const noGlobalFloor = ['Epic Obby','Sky Islands','Pet World','Speed Race'].includes(gameName.trim());
   floor.visible = !noGlobalFloor;
   gameScene.add(floor);
   if(!noGlobalFloor) solidColliders.push({ x: 0, y: -0.5, z: 0, width: 100, height: 1, depth: 100 });
@@ -2575,6 +2699,17 @@ function startGameLoop() {
     }
     const isMovingInput = (moveDirX !== 0 || moveDirZ !== 0);
 
+    // Los administradores pueden volar. El servidor activa/desactiva esta
+    // facultad y el cliente solo aplica la fisica visual cuando esta autorizada.
+    if (adminIsEnabled && adminFlyEnabled) {
+      const flyVertical = (keysPressed['Space'] ? 1 : 0) + ((keysPressed['ShiftLeft'] || keysPressed['ShiftRight']) ? -1 : 0);
+      playerPos.x += moveDirX * moveSpeed * dt;
+      playerPos.z += moveDirZ * moveSpeed * dt;
+      playerPos.y += flyVertical * moveSpeed * dt;
+      velocityY = 0;
+      isGrounded = false;
+    }
+
     // Ayuda de escalon: sube bordes bajos en vez de trabarse contra ellos.
     const tryStepUp = (axis, target) => {
       let highestTop = -Infinity;
@@ -2621,8 +2756,10 @@ function startGameLoop() {
       }
       if (axis === 'x') playerPos.x = value; else playerPos.z = value;
     };
-    moveAxis('x', moveDirX * moveSpeed * dt);
-    moveAxis('z', moveDirZ * moveSpeed * dt);
+    if (!(adminIsEnabled && adminFlyEnabled)) {
+      moveAxis('x', moveDirX * moveSpeed * dt);
+      moveAxis('z', moveDirZ * moveSpeed * dt);
+    }
 
     // 4) SALTO + GRAVEDAD con colision vertical CONTINUA (no se atraviesan bloques).
     if (!voidDeathActive && keysPressed['Space'] && isGrounded) {
@@ -2633,15 +2770,19 @@ function startGameLoop() {
     const gravityNow = velocityY > 0
       ? (keysPressed['Space'] ? gravity : gravity * 1.9)
       : gravity * 1.25;
-    if (!voidDeathActive) velocityY -= gravityNow * dt;
-    if (velocityY < -45) velocityY = -45;
+    if (!(adminIsEnabled && adminFlyEnabled)) {
+      if (!voidDeathActive) velocityY -= gravityNow * dt;
+      if (velocityY < -45) velocityY = -45;
+    } else {
+      velocityY = 0;
+    }
 
     const previousY = playerPos.y;
-    let newY = playerPos.y + velocityY * dt;
+    let newY = (adminIsEnabled && adminFlyEnabled) ? playerPos.y : playerPos.y + velocityY * dt;
     let landingY = 0;
     let foundGround = false;
 
-    if (velocityY <= 0) {
+    if (!(adminIsEnabled && adminFlyEnabled) && velocityY <= 0) {
       // Bajando: nos apoyamos en la superficie mas alta cruzada entre previousY y newY.
       let bestTop = -Infinity;
       const consider = (top, b) => {
@@ -2657,7 +2798,7 @@ function startGameLoop() {
         foundGround = true;
         landingY = bestTop;
       }
-    } else {
+    } else if (!(adminIsEnabled && adminFlyEnabled)) {
       // Subiendo: el techo detiene el salto justo debajo del bloque.
       let bestCeil = Infinity;
       for (const s of solidBoxes) {
@@ -2673,7 +2814,7 @@ function startGameLoop() {
     playerPos.y = newY;
     isGrounded = foundGround;
 
-    if (!foundGround && playerPos.y < -10 && !voidDeathActive) {
+    if (!adminFlyEnabled && !foundGround && playerPos.y < -10 && !voidDeathActive) {
       showVoidDeath(() => {
         placePlayerAtSpawn(playerPos, currentGameType);
         velocityY = 0;
@@ -2898,6 +3039,8 @@ function setMultiplayerStatus(text, color="#7dd3fc") {
   }
 }
 
+let adminFlyEnabled = false;
+let adminIsEnabled = false;
 let multiplayerReconnectTimer = null;
 let multiplayerReconnectAttempts = 0;
 let multiplayerIntentionalClose = false;
@@ -2947,6 +3090,9 @@ function openMultiplayerSocket() {
         epicPlayerId = data.playerId || data.id;
         epicServerId = data.serverId || "SRV-UNKNOWN";
         epicGameId = data.gameId || epicGameId;
+        adminIsEnabled = !!data.isAdmin;
+        const fab = document.getElementById('adminFab');
+        if (fab) fab.classList.toggle('show', adminIsEnabled);
             const acc = (typeof data.accounts === 'number') ? data.accounts : null;
         setMultiplayerStatus(
           acc != null
@@ -2967,6 +3113,28 @@ function openMultiplayerSocket() {
         const body = document.getElementById('chatBody');
         if (body) body.innerHTML = '';
         appendChatMessage('Sistema', 'Conectado a la sala. ¡Chat en tiempo real activo!', true);
+        return;
+      }
+
+      if (data.type === "adminFly") {
+        adminFlyEnabled = !!data.enabled;
+        const st = document.getElementById('adminGameStatus');
+        if (st) st.textContent = adminFlyEnabled ? '🪽 Vuelo activado.' : '🪽 Vuelo desactivado.';
+        return;
+      }
+      if (data.type === "adminError") {
+        const st = document.getElementById('adminGameStatus');
+        if (st) st.textContent = '❌ ' + (data.message || 'Accion no permitida.');
+        return;
+      }
+      if (data.type === "kicked" || data.type === "banned") {
+        alert(data.message || 'Has sido expulsado.');
+        disconnectMultiplayer();
+        return;
+      }
+      if (data.type === "error" && data.code === "AUTH_REQUIRED") {
+        alert(data.message || 'Tu sesion ya no es valida.');
+        disconnectMultiplayer();
         return;
       }
 
@@ -3712,6 +3880,7 @@ function loadCurrentUser(){
     setCachedUser(user);
     authScreen.style.display = "none";
     updateUI(user);
+    updateAdminFab(user);
     loadGames();
     loadInventory();
     renderCatalog("all");
@@ -4258,6 +4427,7 @@ function showPage(p){
   if(p==="avatar") { try { const t=(current()&&current().user.avatar&&current().user.avatar.torsoType)||"male"; const mb=document.getElementById("torsoTypeMale"); const fb=document.getElementById("torsoTypeFemale"); if(mb) mb.style.background=t==="male"?"#1684e8":"#292929"; if(fb) fb.style.background=t==="female"?"#e91e8c":"#292929"; } catch(e){} }
   if(p==="games") loadGames();
   if(p==="friends") { refreshFriendsFromServer(); renderFriendsPage(); }
+  if(p==="trade") { refreshFriendsFromServer(); refreshTradeState(); renderTradeFriends(); renderTradeMyItems(); }
   if(p==="settings") { refreshSettings(); }
   if(p==="catalog") {
     renderCatalog('all');
@@ -4365,6 +4535,7 @@ function renderCatalog(category) {
       <div class="catalog-image">${catalogIconSVG(item)}</div>
       <h3 style="margin:5px 0">${item.name}</h3>
       <p style="color:#666;font-size:12px;margin:3px 0">${item.desc}</p>
+      <p style="color:#777;font-size:12px;margin:3px 0">👤 Creador: ${escapeHTML(item.owner || 'EpicBlox')}</p>
       <p style="color:#666;font-size:13px;margin:5px 0">☀️ ${item.price} Sunnys</p>
       <button class="buy" id="cat-btn-${item.id}" onclick="buy('${item.id}', ${item.price})">Buy</button>
     </div>
@@ -4407,27 +4578,57 @@ function updateCatalogButtons(u){
   });
 }
 
+let avatarCategoryFilter = 'all';
+
+function avatarCategoryLabel(category){
+  return ({hats:'Sombreros', shirts:'Camisas', pants:'Pantalones', faces:'Caras', gear:'Accesorios'})[category] || 'Otros';
+}
+
+function filterAvatarCategory(category, btn){
+  avatarCategoryFilter = category || 'all';
+  document.querySelectorAll('.avatar-cat').forEach(b => b.classList.toggle('active', b === btn || b.dataset.avatarCat === avatarCategoryFilter));
+  const hint = document.getElementById('avatarCategoryHint');
+  if(hint){
+    hint.textContent = avatarCategoryFilter === 'all'
+      ? 'Mostrando todos tus objetos del Avatar.'
+      : 'Mostrando: ' + avatarCategoryLabel(avatarCategoryFilter) + '.';
+  }
+  const c=current();
+  if(c) updateAccessoryButtons(c.user);
+}
+
 function updateAccessoryButtons(u){
   const accContainer = document.getElementById('accessoryButtons');
   if(!accContainer) return;
   const inv = (u && (u.avatarInventory || u.inventory)) || [];
   const equipped = (u && u.avatar && u.avatar.accessories) || [];
-  
-  let html = `<p style="font-size:12px;color:#555;margin:0 0 8px;">Haz clic para equipar o desequipar múltiples ítems y ropa 2D:</p>`;
-  html += `<button class="section-button" style="background:#d93025;margin-right:6px;margin-bottom:6px;" onclick="toggleAccessory('normal')">Quitar Todo</button>`;
-  
-  let hasAny = false;
-  
-  catalogDatabase.forEach(item => {
-    if(inv.includes(item.id)) {
-      hasAny = true;
-      const isEquipped = equipped.includes(item.id);
-      html += `<button class="section-button" style="background:${isEquipped ? '#188038' : '#292929'};margin-right:6px;margin-bottom:6px;" onclick="toggleAccessory('${item.id}')">${isEquipped ? '✓ Quitar ' : '+ Poner '} ${item.name}</button>`;
+  const filter = avatarCategoryFilter || 'all';
+  const items = catalogDatabase.filter(item => inv.includes(item.id) && (filter === 'all' || item.category === filter));
+
+  let html = '';
+  if(filter === 'all') html += `<div class="avatar-item-group-label">Equipamiento</div><button class="section-button" style="background:#d93025;margin:0;" onclick="toggleAccessory('normal')">✕ Quitar todo</button>`;
+  else html += `<button class="section-button" style="background:#d93025;margin:0;" onclick="toggleAccessory('normal')">✕ Quitar todo</button>`;
+
+  if(!items.length){
+    html += `<div style="width:100%;font-size:12px;color:#777;padding:8px 2px;">No tienes objetos en esta categoría. Visita el Catálogo para conseguirlos.</div>`;
+  } else {
+    if(filter === 'all'){
+      const order = ['hats','shirts','pants','faces','gear'];
+      order.forEach(cat => {
+        const group = items.filter(item => item.category === cat);
+        if(!group.length) return;
+        html += `<div class="avatar-item-group-label">${avatarCategoryLabel(cat)}</div>`;
+        group.forEach(item => {
+          const isEquipped = equipped.includes(item.id);
+          html += `<button type="button" class="section-button avatar-item-button ${isEquipped?'equipped':''}" onclick="toggleAccessory(${JSON.stringify(item.id)})">${isEquipped ? '✓ Quitar ' : '+ Poner '} ${escapeHTML(item.name)}</button>`;
+        });
+      });
+    } else {
+      items.forEach(item => {
+        const isEquipped = equipped.includes(item.id);
+        html += `<button type="button" class="section-button avatar-item-button ${isEquipped?'equipped':''}" onclick="toggleAccessory(${JSON.stringify(item.id)})">${isEquipped ? '✓ Quitar ' : '+ Poner '} ${escapeHTML(item.name)}</button>`;
+      });
     }
-  });
-  
-  if(!hasAny) {
-    html += `<p style="font-size:12px;color:#777;">No tienes accesorios comprados. Visita el Catálogo.</p>`;
   }
   accContainer.innerHTML = html;
 }
@@ -4921,6 +5122,208 @@ function sendChatMessage() {
   }
 }
 
+// ==================== TRADE SEGURO ====================
+let tradeSelectedFriend = null;
+let tradeSelectedItems = new Set();
+let tradeState = { incoming: [], outgoing: [] };
+let tradePollTimer = null;
+
+function tradeItemInfo(id){
+  const item = (typeof catalogDatabase !== 'undefined') ? catalogDatabase.find(x => x.id === id) : null;
+  return item || { id, name:id, category:'item', desc:'Artículo del avatar' };
+}
+
+function tradeCategoryLabel(category){
+  return ({hats:'Sombrero',shirts:'Ropa',pants:'Pantalón',faces:'Cara',gear:'Accesorio'})[category] || 'Artículo';
+}
+
+function renderTradeFriends(){
+  const box=document.getElementById('tradeFriends'); if(!box) return;
+  const friends=getMyFriends();
+  if(!friends.length){ box.innerHTML='<div class="trade-empty" style="grid-column:1/-1">Necesitas tener al menos un amigo para hacer Trade.</div>'; return; }
+  box.innerHTML=friends.map(f=>{
+    const id=String(f.id);
+    const selected=String(tradeSelectedFriend||'')===id;
+    const online=f.presence&&f.presence.online;
+    return `<button class="trade-friend ${selected?'selected':''}" onclick="selectTradeFriend('${escapeHTML(id)}')"><b>${escapeHTML(f.username||'Player')}</b><small>${online?'🟢 En línea':'⚪ Desconectado'}</small></button>`;
+  }).join('');
+  const chosen=friends.find(f=>String(f.id)===String(tradeSelectedFriend));
+  const hint=document.getElementById('tradeFriendHint');
+  if(hint) hint.innerHTML=chosen ? `Vas a hacer Trade con <strong>${escapeHTML(chosen.username)}</strong>.` : 'Selecciona un amigo para empezar.';
+}
+
+function selectTradeFriend(id){
+  tradeSelectedFriend=String(id);
+  tradeSelectedItems.clear();
+  const amount=document.getElementById('tradeSunnysInput'); if(amount) amount.value='0';
+  renderTradeFriends(); renderTradeMyItems();
+}
+
+function renderTradeMyItems(){
+  const box=document.getElementById('tradeMyItems'); const count=document.getElementById('tradeSelectedCount');
+  if(!box) return;
+  const c=current(); const inv=(c&&c.user&&Array.isArray(c.user.avatarInventory))?c.user.avatarInventory:[];
+  const unique=[]; const seen=new Set();
+  for(const id of inv){ if(seen.has(id)) continue; seen.add(id); unique.push(id); }
+  if(!unique.length){ box.innerHTML='<div class="trade-empty" style="grid-column:1/-1">No tienes ropa ni accesorios para intercambiar.</div>'; if(count) count.textContent='0 artículos seleccionados'; return; }
+  box.innerHTML=unique.map(id=>{
+    const item=tradeItemInfo(id); const selected=tradeSelectedItems.has(id);
+    return `<button type="button" class="trade-item ${selected?'selected':''}" onclick="toggleTradeItem(${JSON.stringify(id)})"><b>${escapeHTML(item.name)}</b><small>${tradeCategoryLabel(item.category)}</small></button>`;
+  }).join('');
+  if(count) count.textContent=tradeSelectedItems.size+' artículo(s) seleccionado(s)';
+}
+
+function toggleTradeItem(id){
+  id=String(id);
+  if(tradeSelectedItems.has(id)) tradeSelectedItems.delete(id); else { if(tradeSelectedItems.size>=20) return alert('Puedes ofrecer como máximo 20 artículos.'); tradeSelectedItems.add(id); }
+  renderTradeMyItems();
+}
+
+function renderTradeOffer(off, label, tradeId, isIncoming, accepted){
+  const items=(off.items||[]).map(id=>`<span class="trade-pill">${escapeHTML(tradeItemInfo(id).name)}</span>`).join('');
+  return `<div class="trade-offer"><div style="font-weight:bold">${label}</div><div style="margin-top:6px">☀️ <b>${Number(off.sunnys||0).toLocaleString()}</b> Sunnys</div><div style="margin-top:4px">${items||'<span style="color:#777;font-size:12px">Sin artículos</span>'}</div>${isIncoming ? `<div class="trade-offer-actions"><button class="buy" style="width:auto" onclick="respondTrade('${escapeHTML(tradeId)}','accept')">Aceptar</button><button class="section-button" style="margin:0;background:#d93025" onclick="respondTrade('${escapeHTML(tradeId)}','decline')">Rechazar</button></div>` : `<div style="font-size:12px;color:#777;margin-top:8px">Estado: esperando la respuesta del amigo.</div><button class="section-button" style="margin-top:8px;background:#8a8f98" onclick="respondTrade('${escapeHTML(tradeId)}','cancel')">Cancelar</button>`}</div>`;
+}
+
+function renderTradeState(){
+  const inc=document.getElementById('tradeIncoming'), out=document.getElementById('tradeOutgoing');
+  if(!inc||!out) return;
+  inc.innerHTML=tradeState.incoming.length ? tradeState.incoming.map(t=>renderTradeOffer(t.theyOffer, `${escapeHTML(t.other.username)} te ofrece:`, t.id, true, t.accepted&&t.accepted[t.to&&t.to.id])).join('') : '<div class="trade-empty">No tienes ofertas entrantes.</div>';
+  out.innerHTML=tradeState.outgoing.length ? tradeState.outgoing.map(t=>renderTradeOffer(t.youOffer, `Oferta para ${escapeHTML(t.other.username)}:`, t.id, false, false)).join('') : '<div class="trade-empty">No tienes ofertas enviadas.</div>';
+}
+
+async function refreshTradeState(){
+  if(!getToken()) return;
+  try {
+    const data=await api('/api/trade/state',{},1);
+    tradeState={incoming:data.incoming||[],outgoing:data.outgoing||[]};
+    renderTradeState();
+    if(document.getElementById('trade')?.classList.contains('active')){
+      const me=await api('/api/me',{},1);
+      if(me.user){ setCachedUser(me.user); updateUI(me.user); renderTradeMyItems(); }
+    }
+  } catch(e) {}
+}
+
+async function sendTradeOffer(){
+  if(!tradeSelectedFriend) return alert('Selecciona un amigo.');
+  const c=current(); if(!c||!c.user) return alert('Debes iniciar sesión.');
+  const input=document.getElementById('tradeSunnysInput');
+  const sunnys=Math.floor(Number(input?.value||0));
+  if(!Number.isSafeInteger(sunnys)||sunnys<0||sunnys>9999999) return alert('Cantidad de Sunnys inválida.');
+  if(sunnys>Number(c.user.sunnys||0)) return alert('No tienes suficientes Sunnys.');
+  try {
+    const data=await api('/api/trade/offer',{method:'POST',body:JSON.stringify({id:tradeSelectedFriend,items:[...tradeSelectedItems],sunnys})},2);
+    tradeSelectedItems.clear(); if(input) input.value='0';
+    await refreshTradeState();
+    alert('✅ Oferta de Trade enviada. El otro jugador debe aceptarla.');
+  } catch(e){ alert('❌ '+(e.message||'No se pudo enviar el Trade.')); }
+}
+
+async function respondTrade(tradeId, action){
+  try {
+    const data=await api('/api/trade/respond',{method:'POST',body:JSON.stringify({tradeId,action})},2);
+    if(data.status==='completed' && data.users && data.users.self){
+      setCachedUser(data.users.self); updateUI(data.users.self); loadInventory(); renderCatalog('all'); renderTradeMyItems();
+      alert('✅ Trade completado. Los Sunnys y artículos fueron transferidos sin duplicarlos.');
+    } else if(action==='accept') {
+      alert('✅ Has aceptado. El Trade se completará cuando el otro jugador también acepte.');
+    }
+    await refreshTradeState();
+  } catch(e){ alert('❌ '+(e.message||'El Trade no pudo completarse. Ningún artículo se duplicó.')); await refreshTradeState(); }
+}
+
+function startTradePolling(){
+  if(tradePollTimer) clearInterval(tradePollTimer);
+  tradePollTimer=setInterval(()=>{ if(getToken()) refreshTradeState(); },4000);
+}
+
+
+/* ================= Admin UI ================= */
+function updateAdminFab(user){
+  const isAdmin = !!(user && user.isAdmin);
+  adminIsEnabled = isAdmin;
+  const fab = document.getElementById('adminFab');
+  if(fab) fab.classList.toggle('show', isAdmin);
+}
+async function openAdminPanel(){
+  const c=current();
+  if(!c || !c.user || !c.user.isAdmin) return alert('No tienes permisos de administrador.');
+  document.getElementById('adminOverlay')?.classList.add('open');
+  await loadAdminPanel();
+}
+function closeAdminPanel(){ document.getElementById('adminOverlay')?.classList.remove('open'); }
+async function loadAdminPanel(){
+  try{
+    const data=await api('/api/admin/status',{},2);
+    if(!data.isAdmin) return;
+    const ul=document.getElementById('adminUsersList');
+    if(ul) ul.innerHTML=(data.users||[]).map(u=>{
+      const banned=Number(u.banUntil||0)>Date.now();
+      return `<div class="admin-row"><b>${escapeHTML(u.username)}</b> · ID ${escapeHTML(String(u.id))} · ☀️ ${Number(u.sunnys||0)} ${banned?'· 🔨 BANEADO':''}<br><span class="admin-muted">${escapeHTML(u.usernameKey)}</span></div>`;
+    }).join('') || '<div class="admin-row">No hay usuarios.</div>';
+    const il=document.getElementById('adminItemsList');
+    if(il) il.innerHTML=(data.items||[]).map(item=>
+      `<div class="admin-row"><b>${escapeHTML(item.name||item.id)}</b> · ${escapeHTML(item.id)} · ${escapeHTML(item.category||'')} · creador: ${escapeHTML(item.owner||String(item.ownerId||''))} <button class="admin-btn danger" onclick="adminDeleteItem('${String(item.id).replace(/'/g,"\\'")}')">Eliminar</button></div>`
+    ).join('') || '<div class="admin-row">No hay publicaciones de jugadores.</div>';
+  }catch(e){
+    const st=document.getElementById('adminGameStatus'); if(st) st.textContent='❌ '+(e.message||'No se pudo cargar el panel.');
+  }
+}
+async function adminGiftSunnys(targetOverride){
+  const target=targetOverride || document.getElementById('adminGiftTarget')?.value?.trim();
+  const amount=Math.floor(Number(document.getElementById('adminGiftAmount')?.value||0));
+  if(!target) return alert('Pon el usuario o ID.');
+  if(!Number.isSafeInteger(amount)||amount<0||amount>9999999) return alert('Cantidad invalida.');
+  try{
+    const d=await api('/api/admin/gift-sunnys',{method:'POST',body:JSON.stringify({target,amount})},2);
+    alert(`✅ ${amount} Sunnys enviados a ${d.user.username}.`);
+    if(current()?.user?.username?.toLowerCase()===d.user.username.toLowerCase()){setCachedUser(d.user);updateUI(d.user);renderCatalog('all');}
+    loadAdminPanel();
+  }catch(e){alert('❌ '+(e.message||'No se pudo regalar Sunnys.'));}
+}
+function adminGiftSelf(){
+  const c=current(); if(c?.user?.username) adminGiftSunnys(c.user.username);
+}
+async function adminBanUser(){
+  const target=document.getElementById('adminBanTarget')?.value?.trim();
+  const days=Math.floor(Number(document.getElementById('adminBanDays')?.value||1));
+  const reason=document.getElementById('adminBanReason')?.value||'';
+  if(!target) return alert('Pon el usuario o ID.');
+  try{await api('/api/admin/ban',{method:'POST',body:JSON.stringify({target,days,reason})},2);alert('🔨 Usuario baneado.');loadAdminPanel();}
+  catch(e){alert('❌ '+(e.message||'No se pudo banear.'));}
+}
+async function adminUnbanUser(){
+  const target=document.getElementById('adminBanTarget')?.value?.trim();
+  if(!target) return alert('Pon el usuario o ID.');
+  try{await api('/api/admin/unban',{method:'POST',body:JSON.stringify({target})},2);alert('✅ Ban eliminado.');loadAdminPanel();}
+  catch(e){alert('❌ '+(e.message||'No se pudo quitar el ban.'));}
+}
+async function adminDeleteItem(itemOverride){
+  const itemId=itemOverride || document.getElementById('adminItemId')?.value?.trim();
+  if(!itemId) return alert('Pon el ID del articulo.');
+  if(!confirm('¿Eliminar esta ropa creada por un jugador?')) return;
+  try{
+    await api('/api/admin/delete-item',{method:'POST',body:JSON.stringify({itemId})},2);
+    alert('🗑️ Ropa eliminada del catalogo e inventarios.');
+    try{await loadCustomCatalog();loadInventory();}catch(_){}
+    loadAdminPanel();
+  }catch(e){alert('❌ '+(e.message||'No se pudo eliminar la ropa.'));}
+}
+function adminGameAction(action){
+  const c=current();
+  if(!c?.user?.isAdmin) return alert('No tienes permisos.');
+  if(!multiplayerSocket || multiplayerSocket.readyState!==WebSocket.OPEN) return alert('No estas conectado a una partida.');
+  if(action==='fly'){
+    multiplayerSocket.send(JSON.stringify({type:'adminAction',action:'fly'}));
+    return;
+  }
+  const target=document.getElementById('adminGameTarget')?.value?.trim();
+  if(!target) return alert('Pon el username del jugador.');
+  const days=Math.floor(Number(document.getElementById('adminGameDays')?.value||1));
+  if(action==='ban' && (!Number.isSafeInteger(days)||days<1||days>36500)) return alert('Dias invalidos.');
+  multiplayerSocket.send(JSON.stringify({type:'adminAction',action,targetUsername:target,days}));
+}
+
 function resetLocalData(){if(confirm("¿Cerrar sesión y borrar cache local?")){setToken('');setCachedUser(null);location.reload()}}
 
 function init(){
@@ -4928,6 +5331,7 @@ function init(){
   const c=current();if(c)loadCurrentUser();else document.getElementById('authScreen').style.display="flex";
   loadGames();
   loadCustomCatalog();
+  startTradePolling();
   setTimeout(creatorInitViewer, 250);
 }
 init();
@@ -4946,6 +5350,57 @@ init();
   <div class="epic-bot-foot" id="epicBotFoot">Trabajando por ti...</div>
 </div>
 
+
+<button id="adminFab" onclick="openAdminPanel()">🛡️ Admin</button>
+<div id="adminOverlay" onclick="if(event.target===this)closeAdminPanel()">
+  <div id="adminPanel">
+    <div class="admin-head">
+      <div><h2 style="margin:0">🛡️ Panel de Administracion</h2><div class="admin-muted">Solo cuentas autorizadas por el servidor.</div></div>
+      <button class="admin-btn gray" onclick="closeAdminPanel()">Cerrar</button>
+    </div>
+    <div class="admin-grid">
+      <div class="admin-card">
+        <h3>☀️ Regalar Sunnys</h3>
+        <input id="adminGiftTarget" class="admin-input" placeholder="Usuario, ID o username">
+        <input id="adminGiftAmount" class="admin-input" type="number" min="0" max="9999999" placeholder="Cantidad">
+        <button class="admin-btn green" onclick="adminGiftSunnys()">Regalar</button>
+        <button class="admin-btn gray" onclick="adminGiftSelf()">Darme Sunnys</button>
+      </div>
+      <div class="admin-card">
+        <h3>🔨 Ban de cuenta</h3>
+        <input id="adminBanTarget" class="admin-input" placeholder="Usuario, ID o username">
+        <input id="adminBanDays" class="admin-input" type="number" min="1" max="36500" value="1" placeholder="Dias">
+        <input id="adminBanReason" class="admin-input" maxlength="160" placeholder="Motivo (opcional)">
+        <button class="admin-btn danger" onclick="adminBanUser()">Banear</button>
+        <button class="admin-btn green" onclick="adminUnbanUser()">Quitar ban</button>
+      </div>
+      <div class="admin-card">
+        <h3>👕 Ropa creada por jugadores</h3>
+        <div class="admin-muted">Elimina publicaciones de ropa del catalogo y tambien las quita de los inventarios/equipamientos.</div>
+        <input id="adminItemId" class="admin-input" placeholder="ID del articulo (U-...)">
+        <button class="admin-btn danger" onclick="adminDeleteItem()">Eliminar ropa</button>
+      </div>
+      <div class="admin-card">
+        <h3>🎮 Moderacion dentro del juego</h3>
+        <input id="adminGameTarget" class="admin-input" placeholder="Username del jugador en tu sala">
+        <input id="adminGameDays" class="admin-input" type="number" min="1" max="36500" value="1" placeholder="Dias de ban">
+        <button class="admin-btn danger" onclick="adminGameAction('kick')">Kick</button>
+        <button class="admin-btn danger" onclick="adminGameAction('ban')">Ban</button>
+        <button class="admin-btn" onclick="adminGameAction('fly')">🪽 Volar ON/OFF</button>
+        <div id="adminGameStatus" class="admin-muted" style="margin-top:8px"></div>
+      </div>
+    </div>
+    <div class="admin-card" style="margin-top:14px">
+      <h3>📋 Usuarios</h3>
+      <button class="admin-btn" onclick="loadAdminPanel()">Actualizar</button>
+      <div id="adminUsersList" class="admin-list"></div>
+    </div>
+    <div class="admin-card" style="margin-top:14px">
+      <h3>👕 Publicaciones</h3>
+      <div id="adminItemsList" class="admin-list"></div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
 
