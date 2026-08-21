@@ -4807,36 +4807,42 @@ function setBodyColor(part,color){
 
 async function toggleAccessory(a){
   const c=current();
-  if(!c||!c.user) return;
-  c.user.avatar = c.user.avatar || {colors:{}, accessories:[]};
-  c.user.avatar.accessories = Array.isArray(c.user.avatar.accessories) ? c.user.avatar.accessories.map(String) : [];
-  c.user.avatarInventory = Array.isArray(c.user.avatarInventory) ? c.user.avatarInventory : [];
+  if(!c || !c.user) return;
 
-  if(a === 'normal') {
-    c.user.avatar.accessories = [];
-  } else {
-    const owned = c.user.avatarInventory.map(String).includes(String(a));
-    if(!owned) return alert('Primero debes tener este artículo en tu inventario.');
-    const itemData = catalogDatabase.find(item => item.id === a);
-    if(itemData && ['faces','shirts','pants'].includes(itemData.category)) {
-      c.user.avatar.accessories = c.user.avatar.accessories.filter(acc => avatarItemCategory(acc) !== itemData.category || acc === a);
-    }
-    const idx = c.user.avatar.accessories.map(String).indexOf(String(a));
-    if(idx > -1) c.user.avatar.accessories.splice(idx,1);
-    else c.user.avatar.accessories.push(String(a));
-  }
+  c.user.avatar = c.user.avatar || {colors:{}, accessories:[]};
+  c.user.avatar.accessories = Array.isArray(c.user.avatar.accessories)
+    ? c.user.avatar.accessories.map(String)
+    : [];
+  c.user.avatarInventory = Array.isArray(c.user.avatarInventory)
+    ? c.user.avatarInventory.map(String)
+    : [];
+
+  const itemId = String(a);
 
   try {
-    const saved = await persistUser(c.user);
-    if(saved){ c.user = saved; setCachedUser(saved); }
+    // El equipamiento se guarda en una peticion independiente para que no
+    // pueda perderse por un perfil en cache desactualizado.
+    const data = await api("/api/avatar/equip", {
+      method: "POST",
+      body: JSON.stringify({
+        itemId: itemId,
+        action: itemId === "normal" ? "clear" : "toggle"
+      })
+    }, 3);
+
+    if(!data || !data.user) throw new Error("El servidor no devolvio el usuario.");
+    c.user = data.user;
+    setCachedUser(data.user);
+
+    try{ Object.keys(_portraitCache).forEach(k=>delete _portraitCache[k]); }catch(e){}
+    updateUI(c.user);
+    try{ loadInventory(); }catch(e){}
+    try{ renderCatalog('all'); }catch(e){}
+    try{ updatePreviewAvatar3D(); }catch(e){}
+    try{ sendAvatarUpdateToMultiplayer(); }catch(e){}
   } catch(e) {
-    alert('❌ No se pudo guardar el equipamiento: ' + (e.message || 'error de conexión'));
-    return;
+    alert('❌ No se pudo equipar el articulo: ' + (e.message || 'error de conexión'));
   }
-  try{ Object.keys(_portraitCache).forEach(k=>delete _portraitCache[k]); }catch(e){}
-  updateUI(c.user);
-  updatePreviewAvatar3D();
-  sendAvatarUpdateToMultiplayer();
 }
 
 let chatUnread = 0;
