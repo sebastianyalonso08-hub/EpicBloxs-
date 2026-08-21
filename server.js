@@ -139,6 +139,7 @@ function loadUsers() {
   // servidor sin perder cuentas que estaban en una versión anterior.
   const legacyFiles = [
     path.join(dataDir, "users.backup.json"),
+    path.join(dataDir, "users.previous.json"),
     path.join(dataDir, "users.legacy.json"),
     path.join(dataDir, "accounts.json"),
     path.join(dataDir, "accounts.backup.json"),
@@ -152,15 +153,32 @@ function loadUsers() {
 
 function saveUsersDisk(users) {
   ensureDataDir();
-  const clean = users && typeof users === "object" ? users : {};
+  const clean = users && typeof users === "object" && !Array.isArray(users) ? users : {};
   const tempPath = usersPath + ".tmp";
   const backupPath = path.join(dataDir, "users.backup.json");
+  const previousPath = path.join(dataDir, "users.previous.json");
+
   try {
-    // Backup antes de cada escritura: si una actualización falla, las cuentas
-    // antiguas siguen disponibles para la recuperación automática.
+    const current = readJsonObject(usersPath);
+    const currentCount = Object.keys(current).length;
+    const nextCount = Object.keys(clean).length;
+
+    // Una actualización nunca puede borrar accidentalmente todas las cuentas.
+    // Si el proceso intenta escribir {} mientras ya había cuentas, conservamos
+    // el archivo actual y dejamos una copia para recuperación.
+    if (currentCount > 0 && nextCount === 0) {
+      console.error("Se rechazo una escritura vacia de users.json para proteger las cuentas.");
+      try { fs.copyFileSync(usersPath, backupPath); } catch {}
+      return;
+    }
+
+    // Dos copias de seguridad independientes permiten recuperar cuentas si un
+    // deploy/interrupción deja users.json vacio o corrupto.
     if (fs.existsSync(usersPath)) {
       try { fs.copyFileSync(usersPath, backupPath); } catch {}
+      try { fs.copyFileSync(usersPath, previousPath); } catch {}
     }
+
     fs.writeFileSync(tempPath, JSON.stringify(clean, null, 2), "utf8");
     fs.renameSync(tempPath, usersPath);
   } catch (err) {
@@ -324,6 +342,24 @@ function finishTrade(trade, users) {
   saveUsersDisk(users);
 }
 
+
+const BUILTIN_AVATAR_CATALOG = [
+  ["Epic Cap","hats",50],["Golden Crown","hats",250],["Black Beanie","hats",90],["Pink Bow","hats",85],["White Fedora","hats",140],
+  ["Blue Shirt","shirts",75],["Green Hoodie","shirts",120],["Red Tee","shirts",65],["Black Jacket","shirts",150],["Pink Tee","shirts",70],["Lavender Hoodie","shirts",125],["White Blouse","shirts",110],
+  ["Classic Jeans","pants",80],["Dark Cargo Pants","pants",110],["Black Jeans","pants",90],["White Pants","pants",85],["Pink Jeans","pants",95],["Purple Pants","pants",100],
+  ["Classic Smile","faces",40],["Cool Wink","faces",90],["Happy Face","faces",60],["Sleepy Face","faces",75],["Cute Face","faces",95],["Starry Face","faces",120],
+  ["Classic Shades","gear",100],["Cool Backpack","gear",180],["Heart Necklace","gear",90],["Shoulder Bunny","gear",160],["Golden Headphones","gear",200]
+];
+
+function findAvatarCatalogItem(itemId) {
+  const id = String(itemId ?? "").trim();
+  if (!id) return null;
+  const builtin = BUILTIN_AVATAR_CATALOG.find(x => String(x[0]) === id);
+  if (builtin) return { id: String(builtin[0]), category: builtin[1], price: Number(builtin[2]) };
+  const custom = loadCatalog().find(x => String(x && x.id) === id);
+  if (custom) return { id, category: String(custom.category || "gear"), price: Math.max(0, Number(custom.price) || 0) };
+  return null;
+}
 
 function loadCatalog() {
   try { ensureDataDir(); return JSON.parse(fs.readFileSync(catalogPath, "utf8") || "[]"); } catch { return []; }
@@ -884,6 +920,65 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, { user: publicUser(sess.user, sess.key) });
   }
 
+
+  // Equipamiento separado: no depende de que el cliente mande todo el perfil.
+  // El servidor comprueba que el articulo pertenece al inventario y conserva
+  // los demas datos de la cuenta intactos.
+  if (urlPath === "/api/avatar/equip" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+
+    const body = await readBody(req);
+    const rawId = body.itemId == null ? "" : String(body.itemId).trim();
+    const users = sess.users;
+    const user = users[sess.key];
+    normalizeAvatarData(user);
+
+    user.avatarInventory = Array.isArray(user.avatarInventory)
+      ? user.avatarInventory.map(String)
+      : (Array.isArray(user.inventory) ? user.inventory.map(String) : []);
+
+    user.avatar.accessories = Array.isArray(user.avatar.accessories)
+      ? user.avatar.accessories.map(String)
+      : [];
+
+    if (rawId === "normal" || body.action === "clear") {
+      user.avatar.accessories = [];
+    } else {
+      const itemId = rawId;
+      if (!itemId) return json(res, 400, { error: "Falta el articulo." });
+      if (!user.avatarInventory.includes(itemId)) {
+        return json(res, 403, { error: "No tienes este articulo en tu inventario." });
+      }
+
+      const item = findAvatarCatalogItem(itemId);
+      const category = item ? String(item.category || "").toLowerCase() : "";
+      const singleEquipCategories = new Set(["faces", "shirts", "pants"]);
+
+      // Solo un objeto de estas categorias puede estar equipado a la vez.
+      if (singleEquipCategories.has(category)) {
+        user.avatar.accessories = user.avatar.accessories.filter(id => {
+          const old = findAvatarCatalogItem(id);
+          return !old || String(old.category || "").toLowerCase() !== category;
+        });
+      }
+
+      const idx = user.avatar.accessories.indexOf(itemId);
+      if (idx >= 0) user.avatar.accessories.splice(idx, 1);
+      else if (user.avatar.accessories.length < 100) user.avatar.accessories.push(itemId);
+    }
+
+    // Limpieza de IDs duplicados/no poseidos sin tocar el inventario.
+    const owned = new Set(user.avatarInventory);
+    user.avatar.accessories = [...new Set(user.avatar.accessories)]
+      .filter(id => owned.has(String(id)))
+      .slice(0, 100);
+
+    users[sess.key] = user;
+    saveUsersDisk(users);
+    return json(res, 200, { ok: true, user: publicUser(user, sess.key) });
+  }
+
   if (urlPath === "/api/me" && req.method === "POST") {
     const sess = getSessionUser(req);
     if (!sess) return json(res, 401, { error: "No autenticado." });
@@ -1214,19 +1309,7 @@ const server = http.createServer(async (req, res) => {
     const itemId = String(body.itemId || "").trim();
     if (!itemId) return json(res, 400, { error: "Falta el articulo." });
 
-    const BUILTIN_CATALOG = [
-      ["Epic Cap","hats",50],["Golden Crown","hats",250],["Black Beanie","hats",90],["Pink Bow","hats",85],["White Fedora","hats",140],
-      ["Blue Shirt","shirts",75],["Green Hoodie","shirts",120],["Red Tee","shirts",65],["Black Jacket","shirts",150],["Pink Tee","shirts",70],["Lavender Hoodie","shirts",125],["White Blouse","shirts",110],
-      ["Classic Jeans","pants",80],["Dark Cargo Pants","pants",110],["Black Jeans","pants",90],["White Pants","pants",85],["Pink Jeans","pants",95],["Purple Pants","pants",100],
-      ["Classic Smile","faces",40],["Cool Wink","faces",90],["Happy Face","faces",60],["Sleepy Face","faces",75],["Cute Face","faces",95],["Starry Face","faces",120],
-      ["Classic Shades","gear",100],["Cool Backpack","gear",180],["Heart Necklace","gear",90],["Shoulder Bunny","gear",160],["Golden Headphones","gear",200]
-    ];
-
-    const builtin = BUILTIN_CATALOG.find(x => x[0] === itemId);
-    const custom = loadCatalog().find(x => String(x && x.id) === itemId);
-    const item = builtin ? { id: builtin[0], category: builtin[1], price: builtin[2] }
-      : custom ? { id: String(custom.id), category: custom.category || "gear", price: Number(custom.price) || 0 }
-      : null;
+    const item = findAvatarCatalogItem(itemId);
     if (!item) return json(res, 404, { error: "Articulo no encontrado en el catalogo." });
 
     const users = sess.users;
