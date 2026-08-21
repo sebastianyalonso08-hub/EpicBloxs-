@@ -4621,35 +4621,24 @@ function renderCatalog(category) {
 }
 
 async function buy(item,price){
-  const c=current();if(!c)return alert("Debes iniciar sesión.");
-  c.user.avatarInventory = Array.isArray(c.user.avatarInventory) ? c.user.avatarInventory : (Array.isArray(c.user.inventory) ? c.user.inventory.slice() : []);
-  c.user.inventory = [];
-  if(c.user.avatarInventory.includes(item))return alert("Ya tienes este artículo.");
-  if((c.user.sunnys || 0) < price)return alert("❌ No tienes suficientes Sunnys.");
-
-  const previousSunnys = c.user.sunnys;
-  const previousInventory = c.user.avatarInventory.slice();
-
-  c.user.sunnys -= price;
-  c.user.avatarInventory.push(item);
+  const c=current();
+  if(!c)return alert("Debes iniciar sesión.");
 
   try {
-    const saved = await persistUser(c.user);
-    if(saved){
-      c.user = saved;
-      setCachedUser(saved);
-    }
-    updateUI(c.user);
+    const data = await api("/api/catalog/buy", {
+      method: "POST",
+      body: JSON.stringify({ itemId: String(item) })
+    }, 4);
+
+    if(!data || !data.user) throw new Error("El servidor no devolvio tu inventario.");
+    setCachedUser(data.user);
+    updateUI(data.user);
     loadInventory();
+    updateAccessoryButtons(data.user);
     renderCatalog(document.querySelector('.cat-tab.active')?.textContent.includes('Sombreros') ? 'hats' : 'all');
-    alert("✅ Compraste "+item+"!");
+    alert("✅ Compraste " + item + " y ya esta en tu inventario.");
   } catch(e) {
-    // Si Render no pudo guardar, no dejamos la compra solo en local.
-    c.user.sunnys = previousSunnys;
-    c.user.avatarInventory = previousInventory;
-    setCachedUser(c.user);
-    updateUI(c.user);
-    alert("❌ No se pudo guardar la compra: " + (e.message || "error de conexión"));
+    alert("❌ No se pudo comprar: " + (e.message || "error de conexión"));
   }
 }
 
@@ -4820,29 +4809,21 @@ async function toggleAccessory(a){
   const c=current();
   if(!c||!c.user) return;
   c.user.avatar = c.user.avatar || {colors:{}, accessories:[]};
-  c.user.avatar.accessories = Array.isArray(c.user.avatar.accessories) ? c.user.avatar.accessories : [];
+  c.user.avatar.accessories = Array.isArray(c.user.avatar.accessories) ? c.user.avatar.accessories.map(String) : [];
   c.user.avatarInventory = Array.isArray(c.user.avatarInventory) ? c.user.avatarInventory : [];
 
   if(a === 'normal') {
     c.user.avatar.accessories = [];
   } else {
-    const itemId = String(a);
-    const owned = c.user.avatarInventory.map(String).includes(itemId);
+    const owned = c.user.avatarInventory.map(String).includes(String(a));
     if(!owned) return alert('Primero debes tener este artículo en tu inventario.');
-
-    const idx = c.user.avatar.accessories.findIndex(id => String(id) === itemId);
-    // Si ya estaba equipado, lo quitamos.
-    if(idx > -1) {
-      c.user.avatar.accessories.splice(idx, 1);
-    } else {
-      // Al equipar uno nuevo, primero quitamos otro de la misma categoría
-      // (camisa, pantalón o cara), pero NO el artículo que acabamos de elegir.
-      const itemData = catalogDatabase.find(item => String(item.id) === itemId);
-      if(itemData && ['faces','shirts','pants'].includes(itemData.category)) {
-        c.user.avatar.accessories = c.user.avatar.accessories.filter(acc => avatarItemCategory(acc) !== itemData.category);
-      }
-      c.user.avatar.accessories.push(itemId);
+    const itemData = catalogDatabase.find(item => item.id === a);
+    if(itemData && ['faces','shirts','pants'].includes(itemData.category)) {
+      c.user.avatar.accessories = c.user.avatar.accessories.filter(acc => avatarItemCategory(acc) !== itemData.category || acc === a);
     }
+    const idx = c.user.avatar.accessories.map(String).indexOf(String(a));
+    if(idx > -1) c.user.avatar.accessories.splice(idx,1);
+    else c.user.avatar.accessories.push(String(a));
   }
 
   try {
