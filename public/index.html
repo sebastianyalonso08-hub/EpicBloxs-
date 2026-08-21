@@ -408,12 +408,12 @@ body.theme-dark .admin-card{background:#292929;border-color:#444}
   <p>Personaliza tu avatar con accesorios, ropa 2D y caras exclusivas.</p>
   
   <div class="catalog-categories">
-    <button class="cat-tab active" onclick="filterCatalog('all', this)">Todos</button>
-    <button class="cat-tab" onclick="filterCatalog('hats', this)">Sombreros</button>
-    <button class="cat-tab" onclick="filterCatalog('shirts', this)">Camisas (2D)</button>
-    <button class="cat-tab" onclick="filterCatalog('pants', this)">Pantalones (2D)</button>
-    <button class="cat-tab" onclick="filterCatalog('faces', this)">Caras</button>
-    <button class="cat-tab" onclick="filterCatalog('gear', this)">Accesorios / Gear</button>
+    <button class="cat-tab active" data-category="all" onclick="filterCatalog('all', this)">Todos</button>
+    <button class="cat-tab" data-category="hats" onclick="filterCatalog('hats', this)">Sombreros</button>
+    <button class="cat-tab" data-category="shirts" onclick="filterCatalog('shirts', this)">Camisas (2D)</button>
+    <button class="cat-tab" data-category="pants" onclick="filterCatalog('pants', this)">Pantalones (2D)</button>
+    <button class="cat-tab" data-category="faces" onclick="filterCatalog('faces', this)">Caras</button>
+    <button class="cat-tab" data-category="gear" onclick="filterCatalog('gear', this)">Accesorios / Gear</button>
   </div>
 
   <div class="catalog-grid" id="catalogGridContainer">
@@ -802,42 +802,55 @@ async function loadCustomCatalog(){try{const r=await fetch('/api/catalog/custom'
 // Atajos del editor 3D retirados junto al creador de accesorios.
 
 function startAmbientMusic(gameName) {
-
   stopAmbientMusic();
   try {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    let scale = [220, 247, 277, 329, 370, 440];
-    let waveType = 'sine';
-    let tempo = 450;
 
-    if(gameName.includes("City")) {
-      scale = [130, 164, 196, 220, 261, 329];
-      waveType = 'triangle';
-      tempo = 600;
-    } else if(gameName.includes("Battle")) {
-      scale = [110, 130, 146, 164, 196, 220];
-      waveType = 'sawtooth';
-      tempo = 350;
-    } else if(gameName.includes("Race")) {
-      scale = [293, 329, 370, 440, 493, 587];
-      waveType = 'square';
-      tempo = 300;
-    }
+    const name = String(gameName || '').trim();
+    const presets = {
+      'Epic Obby':   { notes:[261.63,329.63,392.00,523.25], wave:'sine', tempo:700 },
+      'Bloxs City':  { notes:[196.00,246.94,293.66,392.00], wave:'triangle', tempo:850 },
+      'Pet World':   { notes:[261.63,329.63,392.00,440.00,523.25], wave:'sine', tempo:900 },
+      'Battle Arena':{ notes:[146.83,174.61,220.00,293.66], wave:'triangle', tempo:500 },
+      'Speed Race':  { notes:[293.66,369.99,440.00,587.33], wave:'triangle', tempo:380 },
+      'Sky Islands':{ notes:[220.00,277.18,329.63,440.00], wave:'sine', tempo:1000 }
+    };
+    const preset = presets[name] || {notes:[220,277.18,329.63,440], wave:'sine', tempo:850};
 
-    musicInterval = setInterval(() => {
-      if(!audioCtx || audioCtx.state === 'closed') return;
+    let noteIndex = 0;
+    const playNote = () => {
+      if (!audioCtx || audioCtx.state === 'closed') return;
+      const now = audioCtx.currentTime;
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-      osc.type = waveType;
-      const freq = scale[Math.floor(Math.random() * scale.length)];
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
-      osc.connect(gain);
+      const filter = audioCtx.createBiquadFilter();
+
+      osc.type = preset.wave;
+      osc.frequency.setValueAtTime(preset.notes[noteIndex % preset.notes.length], now);
+      noteIndex++;
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1800, now);
+      filter.Q.setValueAtTime(0.35, now);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.035, now + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
+
+      osc.connect(filter);
+      filter.connect(gain);
       gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 1.5);
-    }, tempo);
+      osc.start(now);
+      osc.stop(now + 1.9);
+    };
+
+    if (audioCtx.state === 'suspended') {
+      // El navegador exige una interacción del usuario para comenzar el audio.
+      audioCtx.resume().catch(() => {});
+    }
+
+    playNote();
+    musicInterval = setInterval(playNote, preset.tempo);
   } catch(e) {
     console.log("Audio no soportado o bloqueado por navegador", e);
   }
@@ -850,6 +863,18 @@ function stopAmbientMusic() {
   }
   audioCtx = null;
 }
+
+function resumeAmbientMusicFromGesture() {
+  if (!document.body.classList.contains('in-game')) return;
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+  } else if (!audioCtx) {
+    startAmbientMusic(currentGameType);
+  }
+}
+window.addEventListener('pointerdown', resumeAmbientMusicFromGesture, {passive:true});
+window.addEventListener('keydown', resumeAmbientMusicFromGesture, {passive:true});
+
 
 
 // ===== Racha de Sunnys =====
@@ -2083,7 +2108,7 @@ function setupMobileControls() {
           cameraAngleY += dy * 0.008;
           // Permite mirar completamente hacia arriba y hacia abajo sin bloquear la cámara.
           if (cameraAngleY > 1.52) cameraAngleY = 1.52;
-          if (cameraAngleY < -0.2) cameraAngleY = -0.2;
+          if (cameraAngleY < -1.50) cameraAngleY = -1.50;
         }
       }
     };
@@ -2244,7 +2269,7 @@ function buildGameSpecificWorld(gameName){
       // Obstáculos más bajos y colocados para que puedan superarse con un salto normal.
       if(i%4===1) addBox(x+(i%2?1.15:-1.15),y+0.45,z,0.72,0.9,0.72,0xf97316,{solid:true});
       if(i%5===2) addBox(x,y+0.32,z+1.05,1.25,0.64,0.7,0x111827,{solid:true});
-      addCoinAt(x,y+0.72,z);
+      addCoinAt(x,y+0.39,z);
     }
     const finishZ=-8.8-22*4.45;
     addBox(0,0.54+22*0.54,finishZ,20,0.7,1.8,0x22c55e,{solid:true});
@@ -2254,8 +2279,8 @@ function buildGameSpecificWorld(gameName){
     // y se cruzaban en cada esquina: en esos cruces dos superficies competian por
     // el mismo lugar y parpadeaban. Se sube 1cm la direccion vertical para que
     // el cruce quede limpio (diferencia invisible al jugar).
-    for(let z=-48;z<=48;z+=12) addBox(0,0.03,z,100,0.06,5,0x2a2f38,{solid:false});
-    for(let x=-48;x<=48;x+=12) addBox(x,0.04,0,5,0.06,100,0x2a2f38,{solid:false});
+    for(let z=-48;z<=48;z+=12) addBox(0,0.03,z,100,0.06,5,0x2a2f38,{solid:true});
+    for(let x=-48;x<=48;x+=12) addBox(x,0.04,0,5,0.06,100,0x2a2f38,{solid:true});
     for(let x=-42;x<=42;x+=12) for(let z=-42;z<=42;z+=12){
       if(Math.abs(x)<=18&&Math.abs(z)<=18) continue;
       addBox(x,0.07,z,7.0,0.14,7.0,0x8a8f98,{solid:false});
@@ -2302,7 +2327,7 @@ function buildGameSpecificWorld(gameName){
     }
     // La plaza verde central flotaba a la misma altura exacta que el piso base
     // gris de la ciudad: parpadeaba en toda esa zona. Se sube 1cm.
-    addBox(0,-0.09,0,24,0.2,24,0x55b879,{solid:false});
+    addBox(0,-0.09,0,24,0.2,24,0x55b879,{solid:true});
     for(const p of [[-9,-9],[9,-9],[-9,9],[9,9],[0,-9],[0,9],[-9,0],[9,0]]) addTree(p[0],p[1],0.9);
     // El rio flotaba a la misma altura exacta que el piso base de la ciudad:
     // parpadeaba en toda esa zona. Se sube un poco para que quede claramente encima.
@@ -2312,11 +2337,11 @@ function buildGameSpecificWorld(gameName){
     addBox(-30,2,18,9,4,7,0x8e44ad); addBox(30,2,-18,9,4,7,0x26a69a);
     for(const [x,z] of [[-30,-18],[30,-18],[-30,18],[30,18]]) addLamp(x,z);
   } else if(n==='Pet World'){
-    addBox(0,-0.1,0,70,0.2,70,0x8bcf7b,{solid:false});
+    addBox(0,-0.1,0,70,0.2,70,0x8bcf7b,{solid:true});
     // Los dos caminos (la "cruz") antes estaban a la MISMA altura exacta y se
     // superponian en el centro: eso hacia parpadear el suelo ahi. Se sube uno
     // apenas (1cm, imperceptible) para que no compitan por el mismo pixel.
-    addBox(0,0.05,0,14,0.12,52,0xd8c39f,{solid:false}); addBox(0,0.08,0,52,0.12,14,0xd8c39f,{solid:false});
+    addBox(0,0.05,0,14,0.12,52,0xd8c39f,{solid:true}); addBox(0,0.08,0,52,0.12,14,0xd8c39f,{solid:true});
     for(let i=0;i<28;i++){ const x=((i*17)%56)-28,z=((i*29)%56)-28; if(Math.abs(x)<9&&Math.abs(z)<9) continue; addTree(x,z,0.75+(i%3)*0.1); }
     // El estanque y la arena tambien flotaban a la misma altura que el cesped
     // de abajo: mismo problema de parpadeo. Se elevan un poco para que queden
@@ -2397,7 +2422,7 @@ function initGameWebGL(gameName) {
       cameraAngleY += deltaY * 0.005;
           // Permite mirar completamente hacia arriba y hacia abajo sin bloquear la cámara.
           if (cameraAngleY > 1.52) cameraAngleY = 1.52;
-          if (cameraAngleY < -0.2) cameraAngleY = -0.2;
+          if (cameraAngleY < -1.50) cameraAngleY = -1.50;
     }
   });
 
@@ -2728,7 +2753,7 @@ function startGameLoop() {
     }
     const oneWayPlatforms = currentGameType.includes('Obby') ? (activePlatforms || []) : [];
     const voidStartGame = ['Epic Obby','Sky Islands'].includes(currentGameType.trim());
-    const hasWorldFloor = !voidStartGame;
+    const hasWorldFloor = false;
 
     const boxBounds = (s) => ({
       minX: s.x - s.width / 2 - PW,  maxX: s.x + s.width / 2 + PW,
@@ -4562,7 +4587,7 @@ function searchGames(t){
 
 function filterCatalog(category, btnElement) {
   document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
-  if(btnElement) btnElement.classList.add('active');
+  if(btnElement){ btnElement.classList.add('active'); btnElement.dataset.category = category; }
   renderCatalog(category);
 }
 
@@ -4605,29 +4630,50 @@ function catalogIconSVG(item) {
 function renderCatalog(category) {
   const container = document.getElementById('catalogGridContainer');
   if(!container) return;
-  const filtered = category === 'all' ? catalogDatabase : catalogDatabase.filter(item => item.category === category);
-  container.innerHTML = filtered.map(item => `
-    <div class="catalog-item">
-      <div class="catalog-image">${catalogIconSVG(item)}</div>
-      <h3 style="margin:5px 0">${item.name}</h3>
-      <p style="color:#666;font-size:12px;margin:3px 0">${item.desc}</p>
-      <p style="color:#777;font-size:12px;margin:3px 0">👤 Creador: ${escapeHTML(item.owner || 'EpicBlox')}</p>
-      <p style="color:#666;font-size:13px;margin:5px 0">☀️ ${item.price} Sunnys</p>
-      <button class="buy" id="cat-btn-${item.id}" onclick="buy('${item.id}', ${item.price})">Buy</button>
-    </div>
-  `).join('');
+  const currentCategory = category || 'all';
+  const filtered = currentCategory === 'all' ? catalogDatabase : catalogDatabase.filter(item => item.category === currentCategory);
+  container.innerHTML = filtered.map((item, index) => {
+    const safeId = `catalog-buy-${index}-${item.id.replace(/[^a-zA-Z0-9_-]/g,'_')}`;
+    const price = Math.max(0, Math.floor(Number(item.price) || 0));
+    return `
+      <div class="catalog-item">
+        <div class="catalog-image">${catalogIconSVG(item)}</div>
+        <h3 style="margin:5px 0">${escapeHTML(item.name)}</h3>
+        <p style="color:#666;font-size:12px;margin:3px 0">${escapeHTML(item.desc || '')}</p>
+        <p style="color:#777;font-size:12px;margin:3px 0">👤 Creador: ${escapeHTML(item.owner || 'EpicBlox')}</p>
+        <p style="color:#666;font-size:13px;margin:5px 0">☀️ ${price} Sunnys</p>
+        <button class="buy" id="${safeId}" data-catalog-item-id="${escapeHTML(String(item.id))}">Buy</button>
+      </div>
+    `;
+  }).join('');
+
+  // Eventos reales sobre los botones: evita que un ID/nombre de artículo
+  // rompa un onclick inline y permite bloquear dobles clics durante la compra.
+  container.querySelectorAll('[data-catalog-item-id]').forEach(btn => {
+    btn.addEventListener('click', () => buy(btn.dataset.catalogItemId, btn));
+  });
+
   const c = current();
   if(c) updateCatalogButtons(c.user);
 }
 
-async function buy(item,price){
+async function buy(item, buttonEl){
   const c=current();
   if(!c)return alert("Debes iniciar sesión.");
 
+  const itemId = String(item || '').trim();
+  if(!itemId)return alert("Artículo inválido.");
+
+  const button = buttonEl || document.querySelector(`[data-catalog-item-id="${CSS.escape(itemId)}"]`);
+  if(button && button.disabled) return;
+  const previousText = button ? button.textContent : '';
+  if(button){ button.disabled = true; button.textContent = 'Comprando...'; }
+
   try {
+    // El servidor decide el precio real: el cliente nunca puede alterarlo.
     const data = await api("/api/catalog/buy", {
       method: "POST",
-      body: JSON.stringify({ itemId: String(item) })
+      body: JSON.stringify({ itemId })
     }, 4);
 
     if(!data || !data.user) throw new Error("El servidor no devolvio tu inventario.");
@@ -4635,31 +4681,44 @@ async function buy(item,price){
     updateUI(data.user);
     loadInventory();
     updateAccessoryButtons(data.user);
-    renderCatalog(document.querySelector('.cat-tab.active')?.textContent.includes('Sombreros') ? 'hats' : 'all');
-    alert("✅ Compraste " + item + " y ya esta en tu inventario.");
+    const activeTab = document.querySelector('.cat-tab.active');
+    const activeCategory = activeTab && activeTab.dataset.category ? activeTab.dataset.category : (activeTab && /sombrero/i.test(activeTab.textContent) ? 'hats' : (activeTab && /camisa/i.test(activeTab.textContent) ? 'shirts' : (activeTab && /pantalon/i.test(activeTab.textContent) ? 'pants' : (activeTab && /cara/i.test(activeTab.textContent) ? 'faces' : (activeTab && /accesorio/i.test(activeTab.textContent) ? 'gear' : 'all')))));
+    renderCatalog(activeCategory);
+    alert("✅ Compraste " + itemId + " y ya esta en tu inventario.");
   } catch(e) {
+    if(button){ button.disabled = false; button.textContent = previousText || 'Buy'; }
     alert("❌ No se pudo comprar: " + (e.message || "error de conexión"));
   }
 }
 
 function updateCatalogButtons(u){
-  const inv = (u && (u.avatarInventory || u.inventory)) || [];
+  const inv = new Set(((u && (u.avatarInventory || u.inventory)) || []).map(String));
+  const sunnys = Number(u && u.sunnys || 0);
   catalogDatabase.forEach(item => {
-    const btn = document.getElementById(`cat-btn-${item.id}`);
-    if(btn){
-      if(inv.includes(item.id)){
-        btn.textContent = "Comprado";
-        btn.disabled = true;
-        btn.style.background = "#888";
-        btn.style.boxShadow = "none";
-        btn.style.cursor = "default";
-      } else {
-        btn.textContent = "Buy";
-        btn.disabled = false;
-        btn.style.background = "linear-gradient(135deg,#1684e8,#0d5aa7)";
-        btn.style.boxShadow = "0 2px 5px rgba(22,132,232,0.3)";
-        btn.style.cursor = "pointer";
-      }
+    const btn = document.querySelector(`[data-catalog-item-id="${CSS.escape(String(item.id))}"]`);
+    if(!btn) return;
+    const price = Math.max(0, Math.floor(Number(item.price) || 0));
+    if(inv.has(String(item.id))){
+      btn.textContent = "Comprado";
+      btn.disabled = true;
+      btn.title = "Ya tienes este artículo";
+      btn.style.background = "#888";
+      btn.style.boxShadow = "none";
+      btn.style.cursor = "default";
+    } else if(sunnys < price){
+      btn.textContent = "No alcanza";
+      btn.disabled = false;
+      btn.title = `Necesitas ${price} Sunnys y tienes ${sunnys}`;
+      btn.style.background = "#9a9a9a";
+      btn.style.boxShadow = "none";
+      btn.style.cursor = "not-allowed";
+    } else {
+      btn.textContent = "Comprar";
+      btn.disabled = false;
+      btn.title = `Comprar por ${price} Sunnys`;
+      btn.style.background = "linear-gradient(135deg,#1684e8,#0d5aa7)";
+      btn.style.boxShadow = "0 2px 5px rgba(22,132,232,0.3)";
+      btn.style.cursor = "pointer";
     }
   });
 }
