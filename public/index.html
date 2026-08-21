@@ -4898,8 +4898,17 @@ async function toggleAccessory(a){
   const itemId = String(a);
 
   try {
-    // El equipamiento se guarda en una peticion independiente para que no
-    // pueda perderse por un perfil en cache desactualizado.
+    // Refresca el perfil real antes de equipar. Esto evita que una pestaña
+    // que estuvo inactiva conserve un inventario viejo en localStorage.
+    try {
+      const fresh = await api("/api/me", { method: "GET" }, 2);
+      if(fresh && fresh.user) {
+        c.user = fresh.user;
+        rememberAuth(fresh);
+      }
+    } catch(refreshErr) {}
+
+    // El servidor es la fuente de verdad del equipamiento.
     const data = await api("/api/avatar/equip", {
       method: "POST",
       body: JSON.stringify({
