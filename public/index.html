@@ -4829,13 +4829,20 @@ async function toggleAccessory(a){
     const itemId = String(a);
     const owned = c.user.avatarInventory.map(String).includes(itemId);
     if(!owned) return alert('Primero debes tener este artículo en tu inventario.');
-    const itemData = catalogDatabase.find(item => String(item.id) === itemId);
-    if(itemData && ['faces','shirts','pants'].includes(itemData.category)) {
-      c.user.avatar.accessories = c.user.avatar.accessories.filter(acc => avatarItemCategory(acc) !== itemData.category || String(acc) === itemId);
-    }
+
     const idx = c.user.avatar.accessories.findIndex(id => String(id) === itemId);
-    if(idx > -1) c.user.avatar.accessories.splice(idx,1);
-    else c.user.avatar.accessories.push(itemId);
+    // Si ya estaba equipado, lo quitamos.
+    if(idx > -1) {
+      c.user.avatar.accessories.splice(idx, 1);
+    } else {
+      // Al equipar uno nuevo, primero quitamos otro de la misma categoría
+      // (camisa, pantalón o cara), pero NO el artículo que acabamos de elegir.
+      const itemData = catalogDatabase.find(item => String(item.id) === itemId);
+      if(itemData && ['faces','shirts','pants'].includes(itemData.category)) {
+        c.user.avatar.accessories = c.user.avatar.accessories.filter(acc => avatarItemCategory(acc) !== itemData.category);
+      }
+      c.user.avatar.accessories.push(itemId);
+    }
   }
 
   try {
