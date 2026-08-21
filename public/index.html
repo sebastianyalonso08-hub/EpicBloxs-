@@ -106,7 +106,7 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 #authScreen{position:fixed;inset:0;background:#252525;z-index:9999;display:flex;align-items:center;justify-content:center}.auth-box{width:400px;max-width:92%;background:#fff;padding:32px;border-radius:6px;box-shadow:0 5px 25px rgba(0,0,0,0.3)}.auth-logo{text-align:center;font-size:38px;font-weight:900}.auth-logo span{color:#25a9ff}.auth-sub{text-align:center;color:#777;margin:5px 0 22px}.auth-tabs{display:flex;border-radius:4px;overflow:hidden;border:1px solid #ddd}.auth-tab{width:50%;padding:11px;border:0;background:#eee;font-weight:bold;cursor:pointer}.auth-tab.active{background:#1684e8;color:#fff}.auth-form{display:none}.auth-form.active{display:block}.auth-form label{display:block;margin:12px 0 5px;font-size:13px;font-weight:bold}.auth-form input{width:100%;padding:11px;border:1px solid #bbb;border-radius:4px}.auth-button{width:100%;margin-top:20px;padding:12px;border:0;background:#1684e8;color:#fff;font-weight:bold;cursor:pointer;border-radius:4px}.auth-message{text-align:center;min-height:18px;margin-top:12px;font-size:13px}.error{color:#d93025}.success{color:#188038}.auth-info{margin-top:18px;padding:10px;background:#f3f3f3;color:#777;font-size:11px;border-radius:4px}
 
 
-.avatar-category-bar{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 6px;padding:8px;background:#f3f6f9;border:1px solid #d8dee5;border-radius:8px}
+.avatar-category-bar{display:none!important;display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 6px;padding:8px;background:#f3f6f9;border:1px solid #d8dee5;border-radius:8px}
 .avatar-cat{border:1px solid #c7d0da;background:#fff;color:#333;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s}
 .avatar-cat:hover{border-color:#1684e8;background:#eef7ff}
 .avatar-cat.active{background:#1684e8;color:#fff;border-color:#1684e8;box-shadow:0 2px 6px rgba(22,132,232,.25)}
@@ -490,15 +490,6 @@ body.theme-dark .admin-card{background:#292929;border-color:#444}
     <div class="avatar-panel" style="flex:1">
       <h2>Personalización Accesories and Clothing</h2>
       <p style="font-size:13px;color:#666;">Equip or unequip accesories that you own! [W.I.P]:</p>
-      <div class="avatar-category-bar" aria-label="Categorías del Avatar">
-        <button type="button" class="avatar-cat active" data-avatar-cat="all" onclick="filterAvatarCategory('all', this)">✨ Todo</button>
-        <button type="button" class="avatar-cat" data-avatar-cat="hats" onclick="filterAvatarCategory('hats', this)">🧢 Sombreros</button>
-        <button type="button" class="avatar-cat" data-avatar-cat="shirts" onclick="filterAvatarCategory('shirts', this)">👕 Camisas</button>
-        <button type="button" class="avatar-cat" data-avatar-cat="pants" onclick="filterAvatarCategory('pants', this)">👖 Pantalones</button>
-        <button type="button" class="avatar-cat" data-avatar-cat="faces" onclick="filterAvatarCategory('faces', this)">🙂 Caras</button>
-        <button type="button" class="avatar-cat" data-avatar-cat="gear" onclick="filterAvatarCategory('gear', this)">🎒 Accesorios</button>
-      </div>
-      <div id="avatarCategoryHint" class="avatar-category-hint">Mostrando todos tus objetos del Avatar.</div>
       <div id="accessoryButtons" class="avatar-items-list">
         <button class="section-button" onclick="toggleAccessory('normal')">Quitar todo</button>
       </div>
@@ -1449,10 +1440,7 @@ function createAccessoryMesh(accessoryName) {
 // Constructor del Avatar con soporte de ropa 2D y accesorios múltiples
 // Busca un objeto del catalogo (incluye los publicados por la comunidad).
 function catalogItemById(id){
-  try {
-    const wanted = String(id || '').trim().toLowerCase();
-    return catalogDatabase.find(it => String(it.id || '').trim().toLowerCase() === wanted) || null;
-  } catch(e) { return null; }
+  try { return catalogDatabase.find(it => it.id === id) || null; } catch(e) { return null; }
 }
 // Categoria real del objeto equipado (con respaldo para los objetos clasicos).
 function avatarItemCategory(id){
@@ -3611,7 +3599,6 @@ const SESSION_KEY="epicbloxs_token_global_v2";
 const USER_CACHE_KEY="epicbloxs_user_cache_v2";
 // URL del servidor GLOBAL (Render). Si abres el HTML desde el mismo server, usa el origen actual.
 const GLOBAL_SERVER = "https://epicbloxserversito.onrender.com";
-const ACCOUNT_RECOVERY_KEY = "epicbloxs_account_recovery_v1";
 
 function getApiBase() {
   try {
@@ -3635,40 +3622,11 @@ function getCachedUser(){
   try { return JSON.parse(localStorage.getItem(USER_CACHE_KEY)||"null"); } catch(e){ return null; }
 }
 function setCachedUser(u){
-  if(u){
-    if(u.recoveryToken) rememberRecoveryToken(u.recoveryToken);
-    const copy = Object.assign({}, u);
-    delete copy.recoveryToken;
-    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(copy));
-  } else localStorage.removeItem(USER_CACHE_KEY);
+  if(u) localStorage.setItem(USER_CACHE_KEY, JSON.stringify(u));
+  else localStorage.removeItem(USER_CACHE_KEY);
 }
 
-function rememberRecoveryToken(token){
-  try { if(token) localStorage.setItem(ACCOUNT_RECOVERY_KEY, String(token)); } catch(e) {}
-}
-function getRecoveryToken(){
-  try { return localStorage.getItem(ACCOUNT_RECOVERY_KEY) || ""; } catch(e) { return ""; }
-}
-async function recoverAccountAfterServerReset(){
-  const recoveryToken = getRecoveryToken();
-  if(!recoveryToken) return false;
-  try {
-    const res = await fetch(getApiBase() + "/api/account/recover", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({recoveryToken}),
-      cache: "no-store"
-    });
-    const data = await res.json().catch(()=>({}));
-    if(!res.ok || !data.token || !data.user) return false;
-    setToken(data.token);
-    if(data.user.recoveryToken) rememberRecoveryToken(data.user.recoveryToken);
-    setCachedUser(data.user);
-    return true;
-  } catch(e) {
-    return false;
-  }
-}function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
 // API global con reintentos (Render free a veces tarda en despertar)
 async function api(path, opts={}, retries=3) {
@@ -3693,14 +3651,7 @@ async function api(path, opts={}, retries=3) {
       try { data = textBody ? JSON.parse(textBody) : {}; } catch(e) {
         if (!res.ok) throw new Error("Servidor sin API de cuentas (hay que subir el server.js nuevo).");
       }
-      if (data && data.user && data.user.recoveryToken) rememberRecoveryToken(data.user.recoveryToken);
       if (res.status === 401) {
-        // Si Render reinicio/deploy y perdio el filesystem efimero, intenta
-        // reconstruir la cuenta desde el respaldo firmado del navegador antes
-        // de sacar al usuario de la sesion.
-        if (path !== "/api/account/recover" && await recoverAccountAfterServerReset()) {
-          return await api(path, opts, 1);
-        }
         // El token anterior puede pertenecer a una version vieja del servidor.
         // Se limpia una sola vez para que el siguiente login cree una sesion
         // compatible con el registro global actual.
@@ -3991,28 +3942,7 @@ function current(){
   return { key, user: u };
 }
 
-async function syncRecoverySnapshotOnce(){
-  try {
-    if(sessionStorage.getItem("eb_recovery_synced") === "1") return;
-    sessionStorage.setItem("eb_recovery_synced", "1");
-    const recoveryToken = getRecoveryToken();
-    if(!recoveryToken) return;
-    const res = await fetch(getApiBase() + "/api/account/recover", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({recoveryToken}),
-      cache: "no-store"
-    });
-    const data = await res.json().catch(()=>({}));
-    if(res.ok && data.token && data.user){
-      setToken(data.token);
-      setCachedUser(data.user);
-    }
-  } catch(e) {}
-}
-
-async function loadCurrentUser(){
-  await syncRecoverySnapshotOnce();
+function loadCurrentUser(){
   const authScreen = document.getElementById("authScreen");
   const token = getToken();
   const cached = getCachedUser();
@@ -4698,8 +4628,8 @@ function renderCatalog(category) {
     const price = Math.max(0, Math.floor(Number(item.price) || 0));
     return `
       <div class="catalog-item">
-        <div class="catalog-image">${catalogIconSVG(item)}</div>
         <h3 style="margin:5px 0">${escapeHTML(item.name)}</h3>
+        <div class="catalog-image">${catalogIconSVG(item)}</div>
         <p style="color:#666;font-size:12px;margin:3px 0">${escapeHTML(item.desc || '')}</p>
         <p style="color:#777;font-size:12px;margin:3px 0">👤 Creador: ${escapeHTML(item.owner || 'EpicBlox')}</p>
         <p style="color:#666;font-size:13px;margin:5px 0">☀️ ${price} Sunnys</p>
@@ -4784,59 +4714,30 @@ function updateCatalogButtons(u){
   });
 }
 
-let avatarCategoryFilter = 'all';
-
-function avatarCategoryLabel(category){
-  return ({hats:'Sombreros', shirts:'Camisas', pants:'Pantalones', faces:'Caras', gear:'Accesorios'})[category] || 'Otros';
-}
-
-function filterAvatarCategory(category, btn){
-  avatarCategoryFilter = category || 'all';
-  document.querySelectorAll('.avatar-cat').forEach(b => b.classList.toggle('active', b === btn || b.dataset.avatarCat === avatarCategoryFilter));
-  const hint = document.getElementById('avatarCategoryHint');
-  if(hint){
-    hint.textContent = avatarCategoryFilter === 'all'
-      ? 'Mostrando todos tus objetos del Avatar.'
-      : 'Mostrando: ' + avatarCategoryLabel(avatarCategoryFilter) + '.';
-  }
-  const c=current();
-  if(c) updateAccessoryButtons(c.user);
-}
-
 function updateAccessoryButtons(u){
   const accContainer = document.getElementById('accessoryButtons');
   if(!accContainer) return;
-  const inv = ((u && (u.avatarInventory || u.inventory)) || []).map(String);
-  const equipped = ((u && u.avatar && u.avatar.accessories) || []).map(String);
-  const invSet = new Set(inv.map(v => v.toLowerCase()));
-  const equippedSet = new Set(equipped.map(v => v.toLowerCase()));
-  const filter = avatarCategoryFilter || 'all';
-  const items = catalogDatabase.filter(item => invSet.has(String(item.id).toLowerCase()) && (filter === 'all' || item.category === filter));
+  const inv = Array.isArray(u && u.avatarInventory) ? u.avatarInventory.map(String) : [];
+  const equipped = Array.isArray(u && u.avatar && u.avatar.accessories) ? u.avatar.accessories.map(String) : [];
+  const itemForId = id => catalogDatabase.find(item => String(item.id).toLowerCase() === String(id).toLowerCase());
+  const items = inv.map(id => itemForId(id) || {id, name:id, desc:'Objeto del avatar', category:'item'});
 
-  let html = '';
-  if(filter === 'all') html += `<div class="avatar-item-group-label">Equipamiento</div><button class="section-button" style="background:#d93025;margin:0;" onclick="toggleAccessory('normal')">✕ Quitar todo</button>`;
-  else html += `<button class="section-button" style="background:#d93025;margin:0;" onclick="toggleAccessory('normal')">✕ Quitar todo</button>`;
-
+  let html = `<div style="width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px"><b style="font-size:13px">Tus objetos del Avatar</b><button class="section-button" style="background:#d93025;margin:0" type="button" onclick="toggleAccessory('normal')">✕ Quitar todo</button></div>`;
   if(!items.length){
-    html += `<div style="width:100%;font-size:12px;color:#777;padding:8px 2px;">No tienes objetos en esta categoría. Visita el Catálogo para conseguirlos.</div>`;
+    html += `<div style="width:100%;font-size:12px;color:#777;padding:8px 2px">No tienes ropa ni accesorios todavía. Visita el Catálogo.</div>`;
   } else {
-    if(filter === 'all'){
-      const order = ['hats','shirts','pants','faces','gear'];
-      order.forEach(cat => {
-        const group = items.filter(item => item.category === cat);
-        if(!group.length) return;
-        html += `<div class="avatar-item-group-label">${avatarCategoryLabel(cat)}</div>`;
-        group.forEach(item => {
-          const isEquipped = equippedSet.has(String(item.id).toLowerCase());
-          html += `<button type="button" class="section-button avatar-item-button ${isEquipped?'equipped':''}" onclick="toggleAccessory(${JSON.stringify(item.id)})">${isEquipped ? '✓ Quitar ' : '+ Poner '} ${escapeHTML(item.name)}</button>`;
-        });
-      });
-    } else {
-      items.forEach(item => {
-        const isEquipped = equippedSet.has(String(item.id).toLowerCase());
-        html += `<button type="button" class="section-button avatar-item-button ${isEquipped?'equipped':''}" onclick="toggleAccessory(${JSON.stringify(item.id)})">${isEquipped ? '✓ Quitar ' : '+ Poner '} ${escapeHTML(item.name)}</button>`;
-      });
-    }
+    html += `<div style="width:100%;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">`;
+    items.forEach(item => {
+      const canonId = String(item.id);
+      const isEquipped = equipped.some(id => id.toLowerCase() === canonId.toLowerCase());
+      html += `<div class="catalog-item" style="padding:10px;display:flex;flex-direction:column;align-items:center;gap:5px">
+        <h3 style="margin:2px 0;font-size:13px;text-align:center">${escapeHTML(item.name || canonId)}</h3>
+        <div class="catalog-image" style="width:120px;height:120px;margin:0">${catalogIconSVG(item)}</div>
+        <p style="color:#666;font-size:11px;margin:2px 0;text-align:center;min-height:26px">${escapeHTML(item.desc || 'Objeto del avatar')}</p>
+        <button type="button" class="section-button avatar-item-button ${isEquipped?'equipped':''}" style="width:100%;margin:0!important" onclick="toggleAccessory(${JSON.stringify(canonId)})">${isEquipped ? '✓ Quitar' : '+ Equipar'}</button>
+      </div>`;
+    });
+    html += `</div>`;
   }
   accContainer.innerHTML = html;
 }
@@ -4882,19 +4783,29 @@ function loadInventory(){
   const inventoryGrid = document.getElementById('inventoryGrid');
   if(!inventoryGrid) return;
   if(!c){ inventoryGrid.innerHTML=""; return; }
-  const inv = Array.isArray(c.user.avatarInventory) ? c.user.avatarInventory : (Array.isArray(c.user.inventory) ? c.user.inventory : []);
+  const inv = Array.isArray(c.user.avatarInventory) ? c.user.avatarInventory : [];
+  const itemForId = id => catalogDatabase.find(it => String(it.id).toLowerCase() === String(id).toLowerCase());
+  const equipped = (c.user.avatar && Array.isArray(c.user.avatar.accessories)) ? c.user.avatar.accessories : [];
   let html = "";
   if(!inv.length){
     html = `<div class="settings-card" style="grid-column:1/-1;text-align:center;color:#777">Todavía no tienes ropa ni accesorios. Visita el Catálogo.</div>`;
   } else {
     inv.forEach((itemId) => {
-      const item = (typeof catalogDatabase !== 'undefined') ? catalogDatabase.find(it => it.id === itemId) : null;
-      const icon = item ? catalogIconSVG(item) : `<span style="font-weight:bold;font-size:13px;color:#333">${itemId}</span>`;
-      html += `<div class="catalog-item inventory-item"><div class="catalog-image">${icon}</div><h3 style="margin:5px 0 0 0;font-size:13px;text-align:center;">${item ? item.name : itemId}</h3><p style="color:#666;font-size:11px;margin:5px 0;text-align:center">${item ? item.desc : 'Objeto del avatar'}</p></div>`;
+      const item = itemForId(itemId) || {id:String(itemId), name:String(itemId), desc:'Objeto del avatar'};
+      const canonId = String(item.id);
+      const isEquipped = equipped.some(id => String(id).toLowerCase() === canonId.toLowerCase());
+      const icon = catalogIconSVG(item);
+      html += `<div class="catalog-item inventory-item" style="display:flex;flex-direction:column;align-items:center">
+        <h3 style="margin:2px 0 6px;font-size:13px;text-align:center">${escapeHTML(item.name || canonId)}</h3>
+        <div class="catalog-image" style="width:150px;height:150px">${icon}</div>
+        <p style="color:#666;font-size:11px;margin:6px 0;text-align:center;min-height:28px">${escapeHTML(item.desc || 'Objeto del avatar')}</p>
+        <button class="section-button ${isEquipped?'equipped':''}" type="button" style="width:100%" onclick="toggleAccessory(${JSON.stringify(canonId)})">${isEquipped ? '✓ Equipado — Quitar' : '+ Equipar'}</button>
+      </div>`;
     });
   }
   inventoryGrid.innerHTML = html;
 }
+
 
 const colors=["#f5c928","#ff0000","#00aaff","#00cc66","#ffffff","#222222","#ff8c42","#9b59b6","#ff69b4"];
 function makeColorButtons(id,part){document.getElementById(id).innerHTML=colors.map(c=>`<button class="color-button" style="background:${c}" onclick="setBodyColor('${part}','${c}')"></button>`).join("")}
