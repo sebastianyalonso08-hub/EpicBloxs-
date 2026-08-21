@@ -1449,7 +1449,10 @@ function createAccessoryMesh(accessoryName) {
 // Constructor del Avatar con soporte de ropa 2D y accesorios múltiples
 // Busca un objeto del catalogo (incluye los publicados por la comunidad).
 function catalogItemById(id){
-  try { return catalogDatabase.find(it => it.id === id) || null; } catch(e) { return null; }
+  try {
+    const wanted = String(id || '').trim().toLowerCase();
+    return catalogDatabase.find(it => String(it.id || '').trim().toLowerCase() === wanted) || null;
+  } catch(e) { return null; }
 }
 // Categoria real del objeto equipado (con respaldo para los objetos clasicos).
 function avatarItemCategory(id){
@@ -3608,6 +3611,7 @@ const SESSION_KEY="epicbloxs_token_global_v2";
 const USER_CACHE_KEY="epicbloxs_user_cache_v2";
 // URL del servidor GLOBAL (Render). Si abres el HTML desde el mismo server, usa el origen actual.
 const GLOBAL_SERVER = "https://epicbloxserversito.onrender.com";
+const ACCOUNT_RECOVERY_KEY = "epicbloxs_account_recovery_v1";
 
 function getApiBase() {
   try {
@@ -3631,11 +3635,40 @@ function getCachedUser(){
   try { return JSON.parse(localStorage.getItem(USER_CACHE_KEY)||"null"); } catch(e){ return null; }
 }
 function setCachedUser(u){
-  if(u) localStorage.setItem(USER_CACHE_KEY, JSON.stringify(u));
-  else localStorage.removeItem(USER_CACHE_KEY);
+  if(u){
+    if(u.recoveryToken) rememberRecoveryToken(u.recoveryToken);
+    const copy = Object.assign({}, u);
+    delete copy.recoveryToken;
+    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(copy));
+  } else localStorage.removeItem(USER_CACHE_KEY);
 }
 
-function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+function rememberRecoveryToken(token){
+  try { if(token) localStorage.setItem(ACCOUNT_RECOVERY_KEY, String(token)); } catch(e) {}
+}
+function getRecoveryToken(){
+  try { return localStorage.getItem(ACCOUNT_RECOVERY_KEY) || ""; } catch(e) { return ""; }
+}
+async function recoverAccountAfterServerReset(){
+  const recoveryToken = getRecoveryToken();
+  if(!recoveryToken) return false;
+  try {
+    const res = await fetch(getApiBase() + "/api/account/recover", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({recoveryToken}),
+      cache: "no-store"
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok || !data.token || !data.user) return false;
+    setToken(data.token);
+    if(data.user.recoveryToken) rememberRecoveryToken(data.user.recoveryToken);
+    setCachedUser(data.user);
+    return true;
+  } catch(e) {
+    return false;
+  }
+}function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
 // API global con reintentos (Render free a veces tarda en despertar)
 async function api(path, opts={}, retries=3) {
@@ -3660,7 +3693,14 @@ async function api(path, opts={}, retries=3) {
       try { data = textBody ? JSON.parse(textBody) : {}; } catch(e) {
         if (!res.ok) throw new Error("Servidor sin API de cuentas (hay que subir el server.js nuevo).");
       }
+      if (data && data.user && data.user.recoveryToken) rememberRecoveryToken(data.user.recoveryToken);
       if (res.status === 401) {
+        // Si Render reinicio/deploy y perdio el filesystem efimero, intenta
+        // reconstruir la cuenta desde el respaldo firmado del navegador antes
+        // de sacar al usuario de la sesion.
+        if (path !== "/api/account/recover" && await recoverAccountAfterServerReset()) {
+          return await api(path, opts, 1);
+        }
         // El token anterior puede pertenecer a una version vieja del servidor.
         // Se limpia una sola vez para que el siguiente login cree una sesion
         // compatible con el registro global actual.
@@ -3951,7 +3991,28 @@ function current(){
   return { key, user: u };
 }
 
-function loadCurrentUser(){
+async function syncRecoverySnapshotOnce(){
+  try {
+    if(sessionStorage.getItem("eb_recovery_synced") === "1") return;
+    sessionStorage.setItem("eb_recovery_synced", "1");
+    const recoveryToken = getRecoveryToken();
+    if(!recoveryToken) return;
+    const res = await fetch(getApiBase() + "/api/account/recover", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({recoveryToken}),
+      cache: "no-store"
+    });
+    const data = await res.json().catch(()=>({}));
+    if(res.ok && data.token && data.user){
+      setToken(data.token);
+      setCachedUser(data.user);
+    }
+  } catch(e) {}
+}
+
+async function loadCurrentUser(){
+  await syncRecoverySnapshotOnce();
   const authScreen = document.getElementById("authScreen");
   const token = getToken();
   const cached = getCachedUser();
@@ -4745,10 +4806,12 @@ function filterAvatarCategory(category, btn){
 function updateAccessoryButtons(u){
   const accContainer = document.getElementById('accessoryButtons');
   if(!accContainer) return;
-  const inv = (u && (u.avatarInventory || u.inventory)) || [];
-  const equipped = (u && u.avatar && u.avatar.accessories) || [];
+  const inv = ((u && (u.avatarInventory || u.inventory)) || []).map(String);
+  const equipped = ((u && u.avatar && u.avatar.accessories) || []).map(String);
+  const invSet = new Set(inv.map(v => v.toLowerCase()));
+  const equippedSet = new Set(equipped.map(v => v.toLowerCase()));
   const filter = avatarCategoryFilter || 'all';
-  const items = catalogDatabase.filter(item => inv.includes(item.id) && (filter === 'all' || item.category === filter));
+  const items = catalogDatabase.filter(item => invSet.has(String(item.id).toLowerCase()) && (filter === 'all' || item.category === filter));
 
   let html = '';
   if(filter === 'all') html += `<div class="avatar-item-group-label">Equipamiento</div><button class="section-button" style="background:#d93025;margin:0;" onclick="toggleAccessory('normal')">✕ Quitar todo</button>`;
@@ -4764,13 +4827,13 @@ function updateAccessoryButtons(u){
         if(!group.length) return;
         html += `<div class="avatar-item-group-label">${avatarCategoryLabel(cat)}</div>`;
         group.forEach(item => {
-          const isEquipped = equipped.includes(item.id);
+          const isEquipped = equippedSet.has(String(item.id).toLowerCase());
           html += `<button type="button" class="section-button avatar-item-button ${isEquipped?'equipped':''}" onclick="toggleAccessory(${JSON.stringify(item.id)})">${isEquipped ? '✓ Quitar ' : '+ Poner '} ${escapeHTML(item.name)}</button>`;
         });
       });
     } else {
       items.forEach(item => {
-        const isEquipped = equipped.includes(item.id);
+        const isEquipped = equippedSet.has(String(item.id).toLowerCase());
         html += `<button type="button" class="section-button avatar-item-button ${isEquipped?'equipped':''}" onclick="toggleAccessory(${JSON.stringify(item.id)})">${isEquipped ? '✓ Quitar ' : '+ Poner '} ${escapeHTML(item.name)}</button>`;
       });
     }
