@@ -352,12 +352,30 @@ const BUILTIN_AVATAR_CATALOG = [
 ];
 
 function findAvatarCatalogItem(itemId) {
-  const id = String(itemId ?? "").trim();
-  if (!id) return null;
-  const builtin = BUILTIN_AVATAR_CATALOG.find(x => String(x[0]) === id);
-  if (builtin) return { id: String(builtin[0]), category: builtin[1], price: Number(builtin[2]) };
-  const custom = loadCatalog().find(x => String(x && x.id) === id);
-  if (custom) return { id, category: String(custom.category || "gear"), price: Math.max(0, Number(custom.price) || 0) };
+  const raw = String(itemId ?? "").trim();
+  if (!raw) return null;
+  const wanted = raw.toLowerCase();
+
+  // Los objetos internos usan su nombre como ID. Aceptamos diferencias de
+  // mayúsculas/minúsculas para que un botón o una versión antigua del cliente
+  // no rompa la compra. El ID canónico que devolvemos siempre es el oficial.
+  const builtin = BUILTIN_AVATAR_CATALOG.find(x => String(x[0]).trim().toLowerCase() === wanted);
+  if (builtin) return { id: String(builtin[0]), category: builtin[1], price: Number(builtin[2]), custom: false };
+
+  const custom = loadCatalog().find(x => {
+    const id = String(x && x.id || '').trim().toLowerCase();
+    const name = String(x && x.name || '').trim().toLowerCase();
+    return id === wanted || name === wanted;
+  });
+  if (custom) {
+    return {
+      id: String(custom.id),
+      category: String(custom.category || "gear"),
+      price: Math.max(0, Number(custom.price) || 0),
+      custom: true,
+      status: String(custom.status || 'approved')
+    };
+  }
   return null;
 }
 
@@ -1311,6 +1329,9 @@ const server = http.createServer(async (req, res) => {
 
     const item = findAvatarCatalogItem(itemId);
     if (!item) return json(res, 404, { error: "Articulo no encontrado en el catalogo." });
+    if (item.custom && item.status !== "approved") {
+      return json(res, 400, { error: "Este articulo ya no esta disponible en el catalogo." });
+    }
 
     const users = sess.users;
     const user = users[sess.key];
