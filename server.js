@@ -703,6 +703,54 @@ function signSession(payload) {
   return crypto.createHmac("sha256", SESSION_SECRET).update(payload).digest("hex").slice(0, 32);
 }
 
+// Copia de recuperación cifrada y firmada. En Render Free el filesystem del
+// servicio es efímero, así que esta copia vive en el navegador del jugador y
+// puede reconstruir su cuenta automáticamente después de un redeploy.
+function recoveryCipherKey() {
+  return crypto.createHash("sha256").update(SESSION_SECRET + "|recovery-v1").digest();
+}
+
+function makeRecoveryToken(key, user) {
+  const payload = JSON.stringify({
+    v: 1,
+    key: String(key),
+    user: user && typeof user === "object" ? user : null,
+    iat: Date.now()
+  });
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv("aes-256-gcm", recoveryCipherKey(), iv);
+  const encrypted = Buffer.concat([cipher.update(payload, "utf8"), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return [iv.toString("base64url"), tag.toString("base64url"), encrypted.toString("base64url")].join(".");
+}
+
+function readRecoveryToken(token) {
+  try {
+    const parts = String(token || "").split(".");
+    if (parts.length !== 3) return null;
+    const iv = Buffer.from(parts[0], "base64url");
+    const tag = Buffer.from(parts[1], "base64url");
+    const encrypted = Buffer.from(parts[2], "base64url");
+    if (iv.length !== 12 || tag.length !== 16 || !encrypted.length) return null;
+    const decipher = crypto.createDecipheriv("aes-256-gcm", recoveryCipherKey(), iv);
+    decipher.setAuthTag(tag);
+    const raw = Buffer.concat([decipher.update(encrypted), decipher.final()]).toString("utf8");
+    const data = JSON.parse(raw);
+    if (!data || data.v !== 1 || !data.key || !data.user || typeof data.user !== "object") return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function authPayload(user, key) {
+  return {
+    token: makeToken(key),
+    recoveryToken: makeRecoveryToken(key, user),
+    user: publicUser(user, key)
+  };
+}
+
 function makeToken(key) {
   // Token firmado y SIN caducidad: se puede validar sin guardar nada.
   if (key) {
@@ -1022,7 +1070,7 @@ const server = http.createServer(async (req, res) => {
     saveUsersDisk(users);
     const token = makeToken(key);
     registerSession(token, key);
-    return json(res, 200, { token, user: publicUser(users[key], key) });
+    return json(res, 200, authPayload(users[key], key));
   }
 
   if (urlPath === "/api/login" && req.method === "POST") {
@@ -1045,13 +1093,52 @@ const server = http.createServer(async (req, res) => {
     }
     const token = makeToken(key);
     registerSession(token, key);
-    return json(res, 200, { token, user: publicUser(user, key) });
+    return json(res, 200, authPayload(user, key));
+  }
+
+  if (urlPath === "/api/recover" && req.method === "POST") {
+    const body = await readBody(req);
+    const recovery = readRecoveryToken(body.recoveryToken);
+    if (!recovery) return json(res, 401, { error: "Copia de recuperacion invalida." });
+
+    const username = String(recovery.user.username || recovery.key || "").trim();
+    const key = String(recovery.key || username).trim().toLowerCase();
+    if (!key || username.length < 3 || !recovery.user.passwordHash) {
+      return json(res, 400, { error: "Copia de recuperacion incompleta." });
+    }
+
+    const users = syncUserRegistry();
+    const existing = users[key];
+    // Si la cuenta ya existe, nunca la reemplazamos a ciegas con una copia vieja.
+    // Solo usamos la recuperacion para cuentas que realmente desaparecieron.
+    if (!existing) {
+      const restored = { ...recovery.user };
+      restored.username = username;
+      restored.avatarInventory = Array.isArray(restored.avatarInventory) ? restored.avatarInventory.map(canonicalAvatarItemId).filter(Boolean).slice(0,100) : [];
+      restored.gameInventory = Array.isArray(restored.gameInventory) ? restored.gameInventory.slice(0,20) : [];
+      restored.inventory = [];
+      normalizeAvatarData(restored);
+      restored.avatar.accessories = Array.isArray(restored.avatar.accessories) ? restored.avatar.accessories.map(canonicalAvatarItemId).filter(Boolean) : [];
+      restored.avatar.accessories = restored.avatar.accessories.filter(id => restored.avatarInventory.some(owned => sameAvatarItem(owned, id)));
+      users[key] = restored;
+      ensureUserIds(users);
+      saveUsersDisk(users);
+    }
+
+    const token = makeToken(key);
+    registerSession(token, key);
+    return json(res, 200, {
+      token,
+      recoveryToken: makeRecoveryToken(key, users[key]),
+      user: publicUser(users[key], key),
+      recovered: !existing
+    });
   }
 
   if (urlPath === "/api/me" && req.method === "GET") {
     const sess = getSessionUser(req);
     if (!sess) return json(res, 401, { error: "No autenticado." });
-    return json(res, 200, { user: publicUser(sess.user, sess.key) });
+    return json(res, 200, { recoveryToken: makeRecoveryToken(sess.key, sess.user), user: publicUser(sess.user, sess.key) });
   }
 
 
@@ -1112,7 +1199,7 @@ const server = http.createServer(async (req, res) => {
 
     users[sess.key] = user;
     saveUsersDisk(users);
-    return json(res, 200, { ok: true, user: publicUser(user, sess.key) });
+    return json(res, 200, { ok: true, recoveryToken: makeRecoveryToken(sess.key, user), user: publicUser(user, sess.key) });
   }
 
   if (urlPath === "/api/me" && req.method === "POST") {
@@ -1121,8 +1208,19 @@ const server = http.createServer(async (req, res) => {
     const body = await readBody(req);
     const users = sess.users;
     const user = users[sess.key];
-    if (body.avatar) user.avatar = body.avatar;
-    if (Array.isArray(body.avatarInventory)) user.avatarInventory = body.avatarInventory.slice(0, 100).map(String);
+    if (body.avatar && typeof body.avatar === "object") {
+      const incomingAccessories = Array.isArray(body.avatar.accessories) ? body.avatar.accessories.map(String) : null;
+      const mergedAvatar = { ...user.avatar, ...body.avatar };
+      // Equipamiento solo puede cambiar mediante /api/avatar/equip. Los guardados
+      // normales pueden cambiar colores/torso, pero no borrar accesorios con una
+      // copia de perfil desactualizada.
+      delete mergedAvatar.accessories;
+      user.avatar = mergedAvatar;
+      if (incomingAccessories && incomingAccessories.length === 0 && !body.allowAccessoryClear) {
+        // ignorar un clear accidental enviado por un cliente viejo
+      }
+    }
+    if (Array.isArray(body.avatarInventory)) user.avatarInventory = body.avatarInventory.slice(0, 100).map(canonicalAvatarItemId).filter(Boolean);
     normalizeAvatarData(user);
     // Nunca permitas equipar un objeto que la cuenta no posee.
     // Esto tambien repara cuentas antiguas que perdieron la separacion entre inventario y equipamiento.
@@ -1470,7 +1568,7 @@ const server = http.createServer(async (req, res) => {
     users[sess.key] = user;
     saveUsersDisk(users);
 
-    return json(res, 200, { ok: true, user: publicUser(user, sess.key), item });
+    return json(res, 200, { ok: true, recoveryToken: makeRecoveryToken(sess.key, user), user: publicUser(user, sess.key), item });
   }
 
   if (urlPath === "/api/catalog/custom" && req.method === "GET") {
