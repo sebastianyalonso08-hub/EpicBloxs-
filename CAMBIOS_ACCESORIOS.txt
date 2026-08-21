@@ -1,0 +1,12 @@
+CAMBIOS DE ESTA VERSION
+
+public/index.html
+1. Los colores de cabeza, brazos, torso y piernas ahora se guardan en el servidor
+   mediante persistUser(), por lo que permanecen al cambiar de juego.
+2. Se eliminó el bloque antiguo que renderizaba los sombreros/accesorios 3D una
+   segunda vez. Ahora los accesorios se generan una sola vez mediante
+   createAccessoryMesh().
+3. No se eliminó ningún accesorio del inventario ni se cambió el catálogo.
+
+4. Se añadió public/assets/epicbloxs_face.png y Classic Smile ahora usa la cara subida por el usuario (PNG transparente).
+5. La cara subida se añadió al artículo `Classic Smile` del Catálogo; su icono ahora usa `public/assets/epicbloxs_face.png`.
