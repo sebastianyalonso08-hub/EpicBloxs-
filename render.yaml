@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: epicbloxs
+    runtime: node
+    # Persistent disk = obligatorio para conservar users.json/catalog.json entre deploys.
+    # Render solo permite persistent disks en planes de pago.
+    plan: starter
+    buildCommand: npm ci --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /health
+    autoDeploy: true
+    numInstances: 1
+    envVars:
+      - key: EPICBLOXS_DATA_DIR
+        value: /var/data
+      # Crear este secreto UNA SOLA VEZ en Render y no cambiarlo entre deploys.
+      # Al usar sync:false no se guarda en GitHub.
+      - key: SESSION_SECRET
+        sync: false
+    disk:
+      name: epicbloxs-data
+      mountPath: /var/data
+      sizeGB: 1
