@@ -655,7 +655,7 @@ const catalogDatabase = [
   { id: 'Purple Pants', name: 'Purple Pants', category: 'pants', price: 100, desc: 'Pantalones morados 2D · Mujer' },
 
   // Caras
-  { id: 'Classic Smile', name: 'Classic Smile', category: 'faces', price: 40, desc: 'Cara feliz clásica' },
+  { id: 'Classic Smile', name: 'Classic Smile', category: 'faces', price: 40, desc: 'Cara feliz clásica', image: 'assets/epicbloxs_face.png' },
   { id: 'Cool Wink', name: 'Cool Wink', category: 'faces', price: 90, desc: 'Cara guiñando el ojo' },
   { id: 'Happy Face', name: 'Happy Face', category: 'faces', price: 60, desc: 'Cara sonriente' },
   { id: 'Sleepy Face', name: 'Sleepy Face', category: 'faces', price: 75, desc: 'Cara dormida' },
@@ -958,72 +958,131 @@ function addSunnys(amount) {
   updateUI(c.user);
 }
 
-// Generación de cara 2D sobre la cabeza (Opaca para evitar invisibilidad)
+// Generación de cara 2D sobre la cabeza
 function createFaceTexture(headColor, faceName) {
   const canvas = document.createElement('canvas');
   canvas.width = 256;
   canvas.height = 256;
   const ctx = canvas.getContext('2d');
-  
+
   ctx.fillStyle = headColor || '#f5c928';
   ctx.fillRect(0, 0, 256, 256);
-  
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  // Cara personalizada subida por el usuario.
+  // El PNG tiene fondo transparente, así que conserva el color de la cabeza.
+  if (faceName === 'Classic Smile' || !faceName) {
+    const customFace = new Image();
+
+    customFace.onload = () => {
+      ctx.clearRect(0, 0, 256, 256);
+      ctx.fillStyle = headColor || '#f5c928';
+      ctx.fillRect(0, 0, 256, 256);
+      ctx.drawImage(customFace, 0, 0, 256, 256);
+      texture.needsUpdate = true;
+    };
+
+    customFace.onerror = () => {
+      // Fallback si el archivo no carga.
+      ctx.fillStyle = '#111111';
+      ctx.beginPath();
+      ctx.arc(80, 85, 18, 0, Math.PI * 2);
+      ctx.arc(176, 85, 18, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.lineWidth = 14;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#111111';
+      ctx.beginPath();
+      ctx.arc(128, 120, 45, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
+
+      texture.needsUpdate = true;
+    };
+
+    customFace.src = 'assets/epicbloxs_face.png';
+    return texture;
+  }
+
   if (faceName === 'Cool Wink') {
-    // Ojo izquierdo abierto
     ctx.fillStyle = '#111111';
     ctx.beginPath();
     ctx.arc(80, 85, 16, 0, Math.PI * 2);
     ctx.fill();
-    // Ojo derecho guiño (línea curva)
     ctx.lineWidth = 6;
     ctx.strokeStyle = '#111111';
     ctx.beginPath();
     ctx.arc(176, 85, 14, Math.PI, 0, false);
     ctx.stroke();
-    // Sonrisa chula
     ctx.lineWidth = 12;
     ctx.beginPath();
     ctx.arc(128, 125, 40, 0.1 * Math.PI, 0.9 * Math.PI);
     ctx.stroke();
-  } else if (faceName === 'Classic Smile' || !faceName) {
-    // Classic Smile (Default)
-    ctx.fillStyle = '#111111';
-    ctx.beginPath();
-    ctx.arc(80, 85, 18, 0, Math.PI * 2);
-    ctx.arc(176, 85, 18, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(86, 78, 6, 0, Math.PI * 2);
-    ctx.arc(182, 78, 6, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.lineWidth = 14;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = '#111111';
-    ctx.beginPath();
-    ctx.arc(128, 120, 45, 0.15 * Math.PI, 0.85 * Math.PI);
-    ctx.stroke();
   } else if (faceName === 'Happy Face') {
-    ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(80,85,16,0,Math.PI*2); ctx.arc(176,85,16,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='#111'; ctx.lineWidth=12; ctx.beginPath(); ctx.arc(128,120,44,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+    ctx.fillStyle='#111';
+    ctx.beginPath();
+    ctx.arc(80,85,16,0,Math.PI*2);
+    ctx.arc(176,85,16,0,Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle='#111';
+    ctx.lineWidth=12;
+    ctx.beginPath();
+    ctx.arc(128,120,44,0.15*Math.PI,0.85*Math.PI);
+    ctx.stroke();
   } else if (faceName === 'Sleepy Face') {
-    ctx.strokeStyle='#111'; ctx.lineWidth=8; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(62,88); ctx.lineTo(98,88); ctx.moveTo(158,88); ctx.lineTo(194,88); ctx.stroke();
-    ctx.lineWidth=10; ctx.beginPath(); ctx.arc(128,125,38,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+    ctx.strokeStyle='#111';
+    ctx.lineWidth=8;
+    ctx.lineCap='round';
+    ctx.beginPath();
+    ctx.moveTo(62,88); ctx.lineTo(98,88);
+    ctx.moveTo(158,88); ctx.lineTo(194,88);
+    ctx.stroke();
+    ctx.lineWidth=10;
+    ctx.beginPath();
+    ctx.arc(128,125,38,0.15*Math.PI,0.85*Math.PI);
+    ctx.stroke();
   } else if (faceName === 'Cute Face') {
-    ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(78,85,13,0,Math.PI*2); ctx.arc(178,85,13,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(82,80,5,0,Math.PI*2); ctx.arc(182,80,5,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#ef6b8a'; ctx.beginPath(); ctx.arc(58,115,10,0,Math.PI*2); ctx.arc(198,115,10,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='#111'; ctx.lineWidth=8; ctx.beginPath(); ctx.arc(128,125,30,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+    ctx.fillStyle='#111';
+    ctx.beginPath();
+    ctx.arc(78,85,13,0,Math.PI*2);
+    ctx.arc(178,85,13,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.beginPath();
+    ctx.arc(82,80,5,0,Math.PI*2);
+    ctx.arc(182,80,5,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle='#ef6b8a';
+    ctx.beginPath();
+    ctx.arc(58,115,10,0,Math.PI*2);
+    ctx.arc(198,115,10,0,Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle='#111';
+    ctx.lineWidth=8;
+    ctx.beginPath();
+    ctx.arc(128,125,30,0.15*Math.PI,0.85*Math.PI);
+    ctx.stroke();
   } else if (faceName === 'Starry Face') {
-    ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(78,85,16,0,Math.PI*2); ctx.arc(178,85,16,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#fff'; ctx.font='bold 22px Arial'; ctx.textAlign='center'; ctx.fillText('✦',78,93); ctx.fillText('✦',178,93);
-    ctx.strokeStyle='#111'; ctx.lineWidth=8; ctx.beginPath(); ctx.arc(128,125,30,0.1*Math.PI,0.9*Math.PI); ctx.stroke();
+    ctx.fillStyle='#111';
+    ctx.beginPath();
+    ctx.arc(78,85,16,0,Math.PI*2);
+    ctx.arc(178,85,16,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.font='bold 22px Arial';
+    ctx.textAlign='center';
+    ctx.fillText('✦',78,93);
+    ctx.fillText('✦',178,93);
+    ctx.strokeStyle='#111';
+    ctx.lineWidth=8;
+    ctx.beginPath();
+    ctx.arc(128,125,30,0.1*Math.PI,0.9*Math.PI);
+    ctx.stroke();
   }
 
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
   return texture;
 }
 
@@ -1587,45 +1646,9 @@ function buildAvatar3DModel(userData) {
   headMesh.castShadow = true;
   headMesh.receiveShadow = true;
 
-  // Accesorios 3D separados del sistema de ropa. Antes se podían comprar y
-  // equipar, pero no tenían geometría en el avatar, por lo que parecían no funcionar.
-  const hatIds = accessories.filter(acc => avatarItemCategory(acc) === 'hats');
-  hatIds.forEach((hatId, index) => {
-    const hatGroup = new THREE.Group();
-    hatGroup.name = "accessory_" + hatId;
-    let mesh = null;
-    if (hatId === 'Epic Cap') {
-      mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.55, 0.18, 24), new THREE.MeshLambertMaterial({color:"#1976D2"}));
-      mesh.position.y = 2.62;
-      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.58,0.58,0.06,24), new THREE.MeshLambertMaterial({color:"#1565C0"}));
-      brim.position.y = -0.08; mesh.add(brim);
-    } else if (hatId === 'Golden Crown') {
-      mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.52,0.48,0.28,8), new THREE.MeshLambertMaterial({color:"#FFD54F"}));
-      mesh.position.y = 2.68;
-    } else if (hatId === 'Black Beanie') {
-      mesh = new THREE.Mesh(new THREE.SphereGeometry(0.47,20,12,0,Math.PI*2,0,Math.PI/2), new THREE.MeshLambertMaterial({color:"#222"}));
-      mesh.scale.y = 0.65; mesh.position.y = 2.55;
-    } else if (hatId === 'Pink Bow') {
-      const mat = new THREE.MeshLambertMaterial({color:"#ff69b4"});
-      const a = new THREE.Mesh(new THREE.SphereGeometry(0.22,16,10),mat);
-      const b = a.clone(); a.position.set(-0.22,2.62,0); b.position.set(0.22,2.62,0);
-      hatGroup.add(a,b);
-      const knot = new THREE.Mesh(new THREE.SphereGeometry(0.10,12,8),mat); knot.position.set(0,2.62,0); hatGroup.add(knot);
-    } else if (hatId === 'White Fedora') {
-      mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.38,0.52,0.22,20), new THREE.MeshLambertMaterial({color:"#f4f4f4"}));
-      mesh.position.y = 2.64;
-      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.62,0.62,0.05,24), new THREE.MeshLambertMaterial({color:"#e5e5e5"}));
-      brim.position.y = -0.10; mesh.add(brim);
-    } else {
-      mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.45,0.12,20), new THREE.MeshLambertMaterial({color:"#9ca3af"}));
-      mesh.position.y = 2.62;
-    }
-    if(mesh) hatGroup.add(mesh);
-    if(hatGroup.children.length) {
-      hatGroup.position.y = index * 0.02;
-      avatarGroup.add(hatGroup);
-    }
-  });
+  // Los accesorios 3D se crean una sola vez más abajo mediante
+  // createAccessoryMesh(). El antiguo bloque de sombreros se eliminó porque
+  // renderizaba los mismos accesorios por segunda vez.
 
   const leftArm = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.5), armMat);
   leftArm.position.set(-armX, armY, 0);
@@ -4584,6 +4607,7 @@ function filterCatalog(category, btnElement) {
 
 function catalogIconSVG(item) {
   const common = 'width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg"';
+  if(item.image) return `<img src="${escapeHTML(item.image)}" style="width:96px;height:96px;object-fit:contain" alt="${escapeHTML(item.name || 'Artículo')}">`;
   if(item.category === 'hats' && item.id === 'Epic Cap') return `<svg ${common}><path d="M18 49C24 25 72 25 78 49" fill="#1976D2" stroke="#123A63" stroke-width="4"/><path d="M16 48H80C77 61 65 67 48 67C31 67 19 61 16 48Z" fill="#2196F3" stroke="#123A63" stroke-width="4"/><path d="M25 50C38 54 58 54 71 50" stroke="#90CAF9" stroke-width="4" stroke-linecap="round"/></svg>`;
   if(item.category === 'hats' && item.id === 'Golden Crown') return `<svg ${common}><path d="M17 30L29 44L40 22L48 43L60 22L69 44L80 30L75 66H21L17 30Z" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><rect x="20" y="60" width="56" height="13" rx="4" fill="#FFC107" stroke="#9A6B00" stroke-width="4"/><circle cx="29" cy="43" r="4" fill="#E53935"/><circle cx="60" cy="42" r="4" fill="#1E88E5"/></svg>`;
   if(item.category === 'shirts' && item.id === 'Blue Shirt') return `<svg ${common}><defs><linearGradient id="bsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#42A5F5"/><stop offset="100%" stop-color="#1565C0"/></linearGradient></defs><path d="M25 20L39 14H57L71 20L84 34L70 45L64 36V78H32V36L26 45L12 34L25 20Z" fill="url(#bsg)" stroke="#0D47A1" stroke-width="3.5"/><path d="M39 14L48 42L57 14" fill="#F5F5F5" stroke="#CFD8DC" stroke-width="2"/><rect x="36" y="48" width="24" height="26" rx="2" fill="#0D47A1"/><text x="48" y="66" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="Arial">EB</text><circle cx="48" cy="52" r="2" fill="#ECEFF1"/><circle cx="48" cy="60" r="2" fill="#ECEFF1"/><circle cx="48" cy="68" r="2" fill="#ECEFF1"/></svg>`;
@@ -4837,12 +4861,24 @@ function setTorsoType(type){
   try { Object.keys(_portraitCache).forEach(k=>delete _portraitCache[k]); } catch(e) {}
 }
 
-function setBodyColor(part,color){
+async function setBodyColor(part,color){
   const c=current();if(!c)return;
   c.user.avatar = c.user.avatar || {accessories:[],colors:{}};
   c.user.avatar.colors = c.user.avatar.colors || {};
   c.user.avatar.colors[part]=color;
-  const u=getUsers();u[c.key]=c.user;saveUsers(u);
+
+  // Guardar el avatar en el servidor para que NO se pierda al cambiar de juego.
+  try {
+    const saved = await persistUser(c.user);
+    if(saved) {
+      c.user = saved;
+      setCachedUser(saved);
+    }
+  } catch(e) {
+    // Mantener el cambio local si el servidor está temporalmente desconectado.
+    setCachedUser(c.user);
+  }
+
   try{ Object.keys(_portraitCache).forEach(k=>delete _portraitCache[k]); }catch(e){}
   updateUI(c.user);
   updatePreviewAvatar3D();
