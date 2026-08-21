@@ -1153,11 +1153,17 @@ const server = http.createServer(async (req, res) => {
     const rawId = body.itemId == null ? "" : String(body.itemId).trim();
     const users = sess.users;
     const user = users[sess.key];
+    if (!user) return json(res, 404, { error: "Cuenta no encontrada." });
     normalizeAvatarData(user);
 
-    user.avatarInventory = Array.isArray(user.avatarInventory)
-      ? user.avatarInventory.map(canonicalAvatarItemId).filter(Boolean)
-      : (Array.isArray(user.inventory) ? user.inventory.map(canonicalAvatarItemId).filter(Boolean) : []);
+    // Migración segura: las compras antiguas pueden estar en inventory o usar
+    // mayúsculas distintas. Canonicalizamos todo antes de comprobar propiedad.
+    const legacyAvatarInventory = Array.isArray(user.inventory) ? user.inventory : [];
+    const sourceAvatarInventory = Array.isArray(user.avatarInventory) && user.avatarInventory.length
+      ? user.avatarInventory
+      : legacyAvatarInventory;
+    user.avatarInventory = sourceAvatarInventory.map(canonicalAvatarItemId).filter(Boolean);
+    user.avatarInventory = [...new Set(user.avatarInventory.map(String))].slice(0, 100);
 
     user.avatar.accessories = Array.isArray(user.avatar.accessories)
       ? user.avatar.accessories.map(String)
@@ -1241,7 +1247,7 @@ const server = http.createServer(async (req, res) => {
     }
     users[sess.key] = user;
     saveUsersDisk(users);
-    return json(res, 200, { user: publicUser(user, sess.key) });
+    return json(res, 200, { recoveryToken: makeRecoveryToken(sess.key, user), user: publicUser(user, sess.key) });
   }
 
 
