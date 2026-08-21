@@ -3595,7 +3595,8 @@ function sendAvatarUpdateToMultiplayer() {
 // ================= END EPICBLOXS MULTIPLAYER ====================
 
 
-const SESSION_KEY="epicbloxs_token_global_v2";
+const SESSION_KEY="epicbloxs_token_global_v3";
+const RECOVERY_KEY="epicbloxs_recovery_v1";
 const USER_CACHE_KEY="epicbloxs_user_cache_v2";
 // URL del servidor GLOBAL (Render). Si abres el HTML desde el mismo server, usa el origen actual.
 const GLOBAL_SERVER = "https://epicbloxserversito.onrender.com";
@@ -3618,6 +3619,13 @@ function getApiBase() {
 
 function getToken(){ return localStorage.getItem(SESSION_KEY) || ""; }
 function setToken(t){ if(t) localStorage.setItem(SESSION_KEY,t); else localStorage.removeItem(SESSION_KEY); }
+function getRecoveryToken(){ return localStorage.getItem(RECOVERY_KEY) || ""; }
+function setRecoveryToken(t){ if(t) localStorage.setItem(RECOVERY_KEY,t); else localStorage.removeItem(RECOVERY_KEY); }
+function rememberAuth(data){
+  if(data && data.token) setToken(data.token);
+  if(data && data.recoveryToken) setRecoveryToken(data.recoveryToken);
+  if(data && data.user) setCachedUser(data.user);
+}
 function getCachedUser(){
   try { return JSON.parse(localStorage.getItem(USER_CACHE_KEY)||"null"); } catch(e){ return null; }
 }
@@ -3627,6 +3635,29 @@ function setCachedUser(u){
 }
 
 function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+// Recuperación automática: si Render pierde el filesystem durante un deploy,
+// la copia cifrada de la cuenta guardada en este navegador puede reconstruirla.
+let recoveryInProgress = false;
+async function recoverAccountFromBrowser(){
+  const recoveryToken = getRecoveryToken();
+  if(!recoveryToken || recoveryInProgress) return false;
+  recoveryInProgress = true;
+  try {
+    const res = await fetch(getApiBase() + "/api/recover", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({recoveryToken}),
+      cache:"no-store",
+      mode:"cors"
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok || !data.token || !data.user) return false;
+    rememberAuth(data);
+    return true;
+  } catch(e) { return false; }
+  finally { recoveryInProgress = false; }
+}
 
 // API global con reintentos (Render free a veces tarda en despertar)
 async function api(path, opts={}, retries=3) {
@@ -3652,14 +3683,15 @@ async function api(path, opts={}, retries=3) {
         if (!res.ok) throw new Error("Servidor sin API de cuentas (hay que subir el server.js nuevo).");
       }
       if (res.status === 401) {
-        // El token anterior puede pertenecer a una version vieja del servidor.
-        // Se limpia una sola vez para que el siguiente login cree una sesion
-        // compatible con el registro global actual.
-        setToken("");
-        setCachedUser(null);
+        // No borres la sesión al primer 401. Primero intenta reconstruir la
+        // cuenta desde la copia de recuperación cifrada del navegador.
+        if (path !== "/api/recover" && await recoverAccountFromBrowser()) {
+          headers["Authorization"] = "Bearer " + getToken();
+          continue;
+        }
         const authScreen = document.getElementById("authScreen");
         if (authScreen) authScreen.style.display = "flex";
-        throw new Error("Tu sesión anterior ya no es válida. Inicia sesión una vez para crear una sesión nueva.");
+        throw new Error("Tu sesión no pudo recuperarse automáticamente. Inicia sesión para continuar.");
       }
       if (!res.ok) throw new Error(data.error || ("Error " + res.status));
       return data;
@@ -3701,7 +3733,7 @@ async function persistUser(user) {
       })
     }, 3);
     if (data.user) {
-      setCachedUser(data.user);
+      rememberAuth(data);
       return data.user;
     }
   } catch(e) {
@@ -3880,8 +3912,7 @@ async function register(e){
       throw new Error("El servidor no devolvio los datos de la cuenta.");
     }
 
-    setToken(data.token);
-    setCachedUser(data.user);
+    rememberAuth(data);
     try { sessionStorage.removeItem("eb_pending_pw"); sessionStorage.removeItem("eb_pending_user"); } catch(e) {}
     msg(regMsg, "Cuenta creada y guardada en EpicBloxs.", "success");
 
@@ -3913,8 +3944,7 @@ function login(e){
 
   api("/api/login", { method: "POST", body: JSON.stringify({ username, password }) }, 4)
     .then(data => {
-      setToken(data.token);
-      setCachedUser(data.user);
+      rememberAuth(data);
       loadCurrentUser();
     })
     .catch(err => {
@@ -3969,7 +3999,7 @@ function loadCurrentUser(){
     if (!data || !data.user) throw new Error("Cuenta no encontrada");
     const user = data.user;
     normalizeInventories(user);
-    setCachedUser(user);
+    rememberAuth(data);
     authScreen.style.display = "none";
     updateUI(user);
     updateAdminFab(user);
@@ -3982,9 +4012,24 @@ function loadCurrentUser(){
     try { refreshServerStats(); } catch(e) {}
     try { startPresenceHeartbeat(); } catch(e) {}
     try { startGameStatsHeartbeat(); } catch(e) {}
-  }).catch(() => {
-    setToken("");
-    setCachedUser(null);
+  }).catch(async () => {
+    const recovered = await recoverAccountFromBrowser();
+    if (recovered) {
+      try {
+        const data = await api("/api/me", {}, 2);
+        if (data && data.user) {
+          rememberAuth(data);
+          normalizeInventories(data.user);
+          authScreen.style.display = "none";
+          updateUI(data.user);
+          updateAdminFab(data.user);
+          loadGames(); loadInventory(); renderCatalog("all");
+          return;
+        }
+      } catch(e) {}
+    }
+    // Solo elimina credenciales si tampoco existe una copia de recuperación válida.
+    if (!getRecoveryToken()) { setToken(""); setCachedUser(null); }
     authScreen.style.display = "flex";
   });
 }
@@ -4865,7 +4910,7 @@ async function toggleAccessory(a){
 
     if(!data || !data.user) throw new Error("El servidor no devolvio el usuario.");
     c.user = data.user;
-    setCachedUser(data.user);
+    rememberAuth(data);
 
     try{ Object.keys(_portraitCache).forEach(k=>delete _portraitCache[k]); }catch(e){}
     updateUI(c.user);
