@@ -92,6 +92,52 @@ function getPersistentSessionSecret() {
   }
 }
 
+
+function base64UrlEncode(value) {
+  return Buffer.from(String(value), "utf8").toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function base64UrlDecode(value) {
+  const raw = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
+  const pad = raw.length % 4 ? "=".repeat(4 - (raw.length % 4)) : "";
+  return Buffer.from(raw + pad, "base64").toString("utf8");
+}
+
+function makeAccountRecoveryToken(user, key) {
+  const safeUser = JSON.parse(JSON.stringify(user || {}));
+  const stateVersion = Date.now();
+  const payload = JSON.stringify({
+    version: 1,
+    key: String(key),
+    user: safeUser,
+    stateVersion,
+    issuedAt: stateVersion
+  });
+  const encoded = base64UrlEncode(payload);
+  const sig = crypto.createHmac("sha256", getPersistentSessionSecret()).update(encoded).digest("base64url");
+  return encoded + "." + sig;
+}
+
+function parseAccountRecoveryToken(token) {
+  try {
+    const raw = String(token || "");
+    const dot = raw.lastIndexOf(".");
+    if (dot <= 0) return null;
+    const encoded = raw.slice(0, dot);
+    const sig = raw.slice(dot + 1);
+    const expected = crypto.createHmac("sha256", getPersistentSessionSecret()).update(encoded).digest("base64url");
+    const a = Buffer.from(sig);
+    const b = Buffer.from(expected);
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+    const payload = JSON.parse(base64UrlDecode(encoded));
+    if (!payload || payload.version !== 1 || !payload.key || !payload.user) return null;
+    if (Date.now() - Number(payload.issuedAt || 0) > 1000 * 60 * 60 * 24 * 365 * 5) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
 function readJsonObject(file) {
   try {
     if (!fs.existsSync(file)) return {};
@@ -119,7 +165,8 @@ function mergeUserStores(target, source) {
   return changed;
 }
 
-function loadUsers() {
+function loadUsers(options = {}) {
+  const persistChanges = options.persistChanges !== false;
   ensureDataDir();
   const users = readJsonObject(usersPath);
   let changed = false;
@@ -147,7 +194,7 @@ function loadUsers() {
   ];
   for (const file of legacyFiles) changed = mergeUserStores(users, readJsonObject(file)) || changed;
 
-  if (changed) saveUsersDisk(users);
+  if (changed && persistChanges) saveUsersDisk(users);
   return users;
 }
 
@@ -177,6 +224,12 @@ function saveUsersDisk(users) {
     if (fs.existsSync(usersPath)) {
       try { fs.copyFileSync(usersPath, backupPath); } catch {}
       try { fs.copyFileSync(usersPath, previousPath); } catch {}
+    }
+
+    // Cada escritura deja una marca de version para que un respaldo del
+    // navegador pueda restaurar una cuenta mas nueva que un backup antiguo.
+    for (const value of Object.values(clean)) {
+      if (value && typeof value === "object") value.updatedAt = Date.now();
     }
 
     fs.writeFileSync(tempPath, JSON.stringify(clean, null, 2), "utf8");
@@ -760,7 +813,8 @@ function publicUser(user, key) {
     bannedUntil: Number(user.banUntil || 0),
     isAdmin: isAdminUser(user, key),
     isCreator: isCreatorUser(user, key),
-    createdAt: user.createdAt
+    createdAt: user.createdAt,
+    recoveryToken: makeAccountRecoveryToken(user, key)
   };
 }
 
@@ -932,6 +986,44 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, { token, user: publicUser(user, key) });
   }
 
+  // Recuperacion de emergencia para servicios Render con filesystem efimero.
+  // El navegador conserva un token firmado de la propia cuenta y puede
+  // reconstruirla despues de un reinicio/deploy que haya borrado el disco local.
+  if (urlPath === "/api/account/recover" && req.method === "POST") {
+    const body = await readBody(req);
+    const recovery = parseAccountRecoveryToken(body.recoveryToken);
+    if (!recovery) return json(res, 401, { error: "El respaldo de la cuenta no es valido." });
+
+    // No normalices ni guardes antes de comparar versiones: loadUsers() puede
+    // haber recuperado users.backup.json y eso no debe tapar una copia mas nueva.
+    const users = loadUsers({ persistChanges: false });
+    const key = String(recovery.key).trim().toLowerCase();
+    const snapshot = recovery.user;
+    if (!key || !snapshot || typeof snapshot !== "object") {
+      return json(res, 400, { error: "Respaldo de cuenta incompleto." });
+    }
+
+    snapshot.username = typeof snapshot.username === "string" && snapshot.username.trim() ? snapshot.username : key;
+    snapshot.passwordHash = String(snapshot.passwordHash || "");
+    if (!snapshot.passwordHash) return json(res, 400, { error: "El respaldo no contiene credenciales validas." });
+
+    // Solo actualiza si la copia firmada del navegador tiene una version mas
+    // nueva. Esto tambien corrige el caso en que users.json fue reconstruido
+    // desde users.backup.json justo despues de un deploy.
+    const current = users[key];
+    const snapshotVersion = Number(recovery.stateVersion || recovery.issuedAt || snapshot.updatedAt || 0);
+    const currentVersion = Number(current && current.updatedAt || 0);
+    if (!current || snapshotVersion > currentVersion) {
+      users[key] = snapshot;
+      ensureUserIds(users);
+      saveUsersDisk(users);
+    }
+
+    const token = makeToken(key);
+    registerSession(token, key);
+    return json(res, 200, { ok: true, token, user: publicUser(users[key], key) });
+  }
+
   if (urlPath === "/api/me" && req.method === "GET") {
     const sess = getSessionUser(req);
     if (!sess) return json(res, 401, { error: "No autenticado." });
@@ -953,23 +1045,36 @@ const server = http.createServer(async (req, res) => {
     normalizeAvatarData(user);
 
     user.avatarInventory = Array.isArray(user.avatarInventory)
-      ? user.avatarInventory.map(String)
-      : (Array.isArray(user.inventory) ? user.inventory.map(String) : []);
+      ? user.avatarInventory.map(v => String(v).trim()).filter(Boolean)
+      : (Array.isArray(user.inventory) ? user.inventory.map(v => String(v).trim()).filter(Boolean) : []);
+
+    // Convierte IDs/nombres antiguos a los IDs canónicos del catálogo. Esto evita
+    // que "epic cap", "Epic Cap" o una copia antigua del ID impidan equipar.
+    user.avatarInventory = [...new Set(user.avatarInventory.map(id => {
+      const item = findAvatarCatalogItem(id);
+      return item ? String(item.id) : id;
+    }))].slice(0, 100);
 
     user.avatar.accessories = Array.isArray(user.avatar.accessories)
-      ? user.avatar.accessories.map(String)
+      ? user.avatar.accessories.map(v => String(v).trim()).filter(Boolean)
       : [];
+
+    user.avatar.accessories = [...new Set(user.avatar.accessories.map(id => {
+      const item = findAvatarCatalogItem(id);
+      return item ? String(item.id) : id;
+    }))].slice(0, 100);
 
     if (rawId === "normal" || body.action === "clear") {
       user.avatar.accessories = [];
     } else {
-      const itemId = rawId;
-      if (!itemId) return json(res, 400, { error: "Falta el articulo." });
-      if (!user.avatarInventory.includes(itemId)) {
+      const resolved = findAvatarCatalogItem(rawId);
+      if (!resolved) return json(res, 404, { error: "Articulo no encontrado en el catalogo." });
+      const itemId = String(resolved.id);
+      if (!user.avatarInventory.some(id => String(id).toLowerCase() === itemId.toLowerCase())) {
         return json(res, 403, { error: "No tienes este articulo en tu inventario." });
       }
 
-      const item = findAvatarCatalogItem(itemId);
+      const item = resolved;
       const category = item ? String(item.category || "").toLowerCase() : "";
       const singleEquipCategories = new Set(["faces", "shirts", "pants"]);
 
