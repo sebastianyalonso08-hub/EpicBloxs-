@@ -3,6 +3,8 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const WebSocket = require("ws");
+let Pool = null;
+try { ({ Pool } = require("pg")); } catch {}
 
 const PORT = Number(process.env.PORT || 10000);
 const HOST = "0.0.0.0";
@@ -32,6 +34,98 @@ const dmsPath = path.join(dataDir, "dms.json");
 const groupsPath = path.join(dataDir, "groups.json");
 const sessionSecretPath = path.join(dataDir, "session-secret.txt");
 const adminsPath = path.join(dataDir, "admins.json");
+
+// Persistencia remota opcional para Render Free.
+// Cuando existe DATABASE_URL, PostgreSQL pasa a ser la fuente principal de datos;
+// los archivos locales se conservan solo como respaldo/cache.
+let pgPool = null;
+let pgReady = false;
+let pgUsersCache = null;
+let pgCatalogCache = null;
+let pgWriteQueue = Promise.resolve();
+
+function queuePgStore(key, value) {
+  if (!pgPool || !pgReady) return;
+  const snapshot = JSON.parse(JSON.stringify(value));
+  pgWriteQueue = pgWriteQueue.then(async () => {
+    await pgPool.query(
+      `INSERT INTO epicbloxs_store (key, value, updated_at) VALUES ($1, $2::jsonb, NOW())
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+      [key, JSON.stringify(snapshot)]
+    );
+  }).catch(err => console.error("No se pudo guardar en Postgres:", err.message));
+}
+
+async function initPostgresPersistence() {
+  if (!process.env.DATABASE_URL || !Pool) return;
+  try {
+    pgPool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      max: 3,
+      ssl: /render\.com|postgres/i.test(process.env.DATABASE_URL) ? { rejectUnauthorized: false } : undefined
+    });
+    await pgPool.query(`
+      CREATE TABLE IF NOT EXISTS epicbloxs_store (
+        key TEXT PRIMARY KEY,
+        value JSONB NOT NULL,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    const result = await pgPool.query(
+      `SELECT key, value FROM epicbloxs_store WHERE key IN ('users','catalog')`
+    );
+    const rows = new Map(result.rows.map(r => [r.key, r.value]));
+
+    const fileUsers = readJsonObject(usersPath);
+    const fileCatalog = (() => {
+      try { return JSON.parse(fs.readFileSync(catalogPath, "utf8") || "[]"); } catch { return []; }
+    })();
+
+    // La primera vez migra los datos locales existentes; después Postgres manda.
+    let seedUsers = false;
+    let seedCatalog = false;
+    if (rows.has('users')) {
+      const dbUsers = rows.get('users');
+      if (dbUsers && typeof dbUsers === 'object' && Object.keys(dbUsers).length) {
+        pgUsersCache = dbUsers;
+      } else if (Object.keys(fileUsers).length) {
+        pgUsersCache = fileUsers;
+        seedUsers = true;
+      } else {
+        pgUsersCache = {};
+      }
+    } else {
+      pgUsersCache = fileUsers;
+      seedUsers = true;
+    }
+
+    if (rows.has('catalog')) {
+      const dbCatalog = rows.get('catalog');
+      if (Array.isArray(dbCatalog) && dbCatalog.length) {
+        pgCatalogCache = dbCatalog;
+      } else if (Array.isArray(fileCatalog) && fileCatalog.length) {
+        pgCatalogCache = fileCatalog;
+        seedCatalog = true;
+      } else {
+        pgCatalogCache = [];
+      }
+    } else {
+      pgCatalogCache = Array.isArray(fileCatalog) ? fileCatalog : [];
+      seedCatalog = true;
+    }
+
+    // Permitir que la cola de escrituras funcione durante la migración inicial.
+    pgReady = true;
+    if (seedUsers) queuePgStore('users', pgUsersCache);
+    if (seedCatalog) queuePgStore('catalog', pgCatalogCache);
+    console.log("Persistencia PostgreSQL activa: cuentas y catalogo sobreviven a redeploys del servicio Free.");
+  } catch (err) {
+    pgPool = null;
+    pgReady = false;
+    console.error("No se pudo iniciar PostgreSQL; se usara el almacenamiento local:", err.message);
+  }
+}
 
 function ensureDataDir() {
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
@@ -92,52 +186,6 @@ function getPersistentSessionSecret() {
   }
 }
 
-
-function base64UrlEncode(value) {
-  return Buffer.from(String(value), "utf8").toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-}
-
-function base64UrlDecode(value) {
-  const raw = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
-  const pad = raw.length % 4 ? "=".repeat(4 - (raw.length % 4)) : "";
-  return Buffer.from(raw + pad, "base64").toString("utf8");
-}
-
-function makeAccountRecoveryToken(user, key) {
-  const safeUser = JSON.parse(JSON.stringify(user || {}));
-  const stateVersion = Date.now();
-  const payload = JSON.stringify({
-    version: 1,
-    key: String(key),
-    user: safeUser,
-    stateVersion,
-    issuedAt: stateVersion
-  });
-  const encoded = base64UrlEncode(payload);
-  const sig = crypto.createHmac("sha256", getPersistentSessionSecret()).update(encoded).digest("base64url");
-  return encoded + "." + sig;
-}
-
-function parseAccountRecoveryToken(token) {
-  try {
-    const raw = String(token || "");
-    const dot = raw.lastIndexOf(".");
-    if (dot <= 0) return null;
-    const encoded = raw.slice(0, dot);
-    const sig = raw.slice(dot + 1);
-    const expected = crypto.createHmac("sha256", getPersistentSessionSecret()).update(encoded).digest("base64url");
-    const a = Buffer.from(sig);
-    const b = Buffer.from(expected);
-    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
-    const payload = JSON.parse(base64UrlDecode(encoded));
-    if (!payload || payload.version !== 1 || !payload.key || !payload.user) return null;
-    if (Date.now() - Number(payload.issuedAt || 0) > 1000 * 60 * 60 * 24 * 365 * 5) return null;
-    return payload;
-  } catch {
-    return null;
-  }
-}
-
 function readJsonObject(file) {
   try {
     if (!fs.existsSync(file)) return {};
@@ -165,9 +213,9 @@ function mergeUserStores(target, source) {
   return changed;
 }
 
-function loadUsers(options = {}) {
-  const persistChanges = options.persistChanges !== false;
+function loadUsers() {
   ensureDataDir();
+  if (pgReady && pgUsersCache) return pgUsersCache;
   const users = readJsonObject(usersPath);
   let changed = false;
 
@@ -194,13 +242,17 @@ function loadUsers(options = {}) {
   ];
   for (const file of legacyFiles) changed = mergeUserStores(users, readJsonObject(file)) || changed;
 
-  if (changed && persistChanges) saveUsersDisk(users);
+  if (changed) saveUsersDisk(users);
   return users;
 }
 
 function saveUsersDisk(users) {
   ensureDataDir();
   const clean = users && typeof users === "object" && !Array.isArray(users) ? users : {};
+  if (pgReady) {
+    pgUsersCache = clean;
+    queuePgStore('users', clean);
+  }
   const tempPath = usersPath + ".tmp";
   const backupPath = path.join(dataDir, "users.backup.json");
   const previousPath = path.join(dataDir, "users.previous.json");
@@ -224,12 +276,6 @@ function saveUsersDisk(users) {
     if (fs.existsSync(usersPath)) {
       try { fs.copyFileSync(usersPath, backupPath); } catch {}
       try { fs.copyFileSync(usersPath, previousPath); } catch {}
-    }
-
-    // Cada escritura deja una marca de version para que un respaldo del
-    // navegador pueda restaurar una cuenta mas nueva que un backup antiguo.
-    for (const value of Object.values(clean)) {
-      if (value && typeof value === "object") value.updatedAt = Date.now();
     }
 
     fs.writeFileSync(tempPath, JSON.stringify(clean, null, 2), "utf8");
@@ -432,12 +478,29 @@ function findAvatarCatalogItem(itemId) {
   return null;
 }
 
+function canonicalAvatarItemId(itemId) {
+  const raw = String(itemId ?? "").trim();
+  if (!raw) return "";
+  const item = findAvatarCatalogItem(raw);
+  return item ? String(item.id) : raw;
+}
+
+function sameAvatarItem(a, b) {
+  return String(a ?? "").trim().toLowerCase() === String(b ?? "").trim().toLowerCase();
+}
+
 function loadCatalog() {
+  if (pgReady && pgCatalogCache) return pgCatalogCache;
   try { ensureDataDir(); return JSON.parse(fs.readFileSync(catalogPath, "utf8") || "[]"); } catch { return []; }
 }
 function saveCatalog(items) {
   ensureDataDir();
-  fs.writeFileSync(catalogPath, JSON.stringify(items, null, 2), "utf8");
+  const clean = Array.isArray(items) ? items : [];
+  if (pgReady) {
+    pgCatalogCache = clean;
+    queuePgStore('catalog', clean);
+  }
+  fs.writeFileSync(catalogPath, JSON.stringify(clean, null, 2), "utf8");
 }
 
 function loadAccessConfig() {
@@ -813,8 +876,7 @@ function publicUser(user, key) {
     bannedUntil: Number(user.banUntil || 0),
     isAdmin: isAdminUser(user, key),
     isCreator: isCreatorUser(user, key),
-    createdAt: user.createdAt,
-    recoveryToken: makeAccountRecoveryToken(user, key)
+    createdAt: user.createdAt
   };
 }
 
@@ -986,44 +1048,6 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, { token, user: publicUser(user, key) });
   }
 
-  // Recuperacion de emergencia para servicios Render con filesystem efimero.
-  // El navegador conserva un token firmado de la propia cuenta y puede
-  // reconstruirla despues de un reinicio/deploy que haya borrado el disco local.
-  if (urlPath === "/api/account/recover" && req.method === "POST") {
-    const body = await readBody(req);
-    const recovery = parseAccountRecoveryToken(body.recoveryToken);
-    if (!recovery) return json(res, 401, { error: "El respaldo de la cuenta no es valido." });
-
-    // No normalices ni guardes antes de comparar versiones: loadUsers() puede
-    // haber recuperado users.backup.json y eso no debe tapar una copia mas nueva.
-    const users = loadUsers({ persistChanges: false });
-    const key = String(recovery.key).trim().toLowerCase();
-    const snapshot = recovery.user;
-    if (!key || !snapshot || typeof snapshot !== "object") {
-      return json(res, 400, { error: "Respaldo de cuenta incompleto." });
-    }
-
-    snapshot.username = typeof snapshot.username === "string" && snapshot.username.trim() ? snapshot.username : key;
-    snapshot.passwordHash = String(snapshot.passwordHash || "");
-    if (!snapshot.passwordHash) return json(res, 400, { error: "El respaldo no contiene credenciales validas." });
-
-    // Solo actualiza si la copia firmada del navegador tiene una version mas
-    // nueva. Esto tambien corrige el caso en que users.json fue reconstruido
-    // desde users.backup.json justo despues de un deploy.
-    const current = users[key];
-    const snapshotVersion = Number(recovery.stateVersion || recovery.issuedAt || snapshot.updatedAt || 0);
-    const currentVersion = Number(current && current.updatedAt || 0);
-    if (!current || snapshotVersion > currentVersion) {
-      users[key] = snapshot;
-      ensureUserIds(users);
-      saveUsersDisk(users);
-    }
-
-    const token = makeToken(key);
-    registerSession(token, key);
-    return json(res, 200, { ok: true, token, user: publicUser(users[key], key) });
-  }
-
   if (urlPath === "/api/me" && req.method === "GET") {
     const sess = getSessionUser(req);
     if (!sess) return json(res, 401, { error: "No autenticado." });
@@ -1045,36 +1069,23 @@ const server = http.createServer(async (req, res) => {
     normalizeAvatarData(user);
 
     user.avatarInventory = Array.isArray(user.avatarInventory)
-      ? user.avatarInventory.map(v => String(v).trim()).filter(Boolean)
-      : (Array.isArray(user.inventory) ? user.inventory.map(v => String(v).trim()).filter(Boolean) : []);
-
-    // Convierte IDs/nombres antiguos a los IDs canónicos del catálogo. Esto evita
-    // que "epic cap", "Epic Cap" o una copia antigua del ID impidan equipar.
-    user.avatarInventory = [...new Set(user.avatarInventory.map(id => {
-      const item = findAvatarCatalogItem(id);
-      return item ? String(item.id) : id;
-    }))].slice(0, 100);
+      ? user.avatarInventory.map(canonicalAvatarItemId).filter(Boolean)
+      : (Array.isArray(user.inventory) ? user.inventory.map(canonicalAvatarItemId).filter(Boolean) : []);
 
     user.avatar.accessories = Array.isArray(user.avatar.accessories)
-      ? user.avatar.accessories.map(v => String(v).trim()).filter(Boolean)
+      ? user.avatar.accessories.map(String)
       : [];
-
-    user.avatar.accessories = [...new Set(user.avatar.accessories.map(id => {
-      const item = findAvatarCatalogItem(id);
-      return item ? String(item.id) : id;
-    }))].slice(0, 100);
 
     if (rawId === "normal" || body.action === "clear") {
       user.avatar.accessories = [];
     } else {
-      const resolved = findAvatarCatalogItem(rawId);
-      if (!resolved) return json(res, 404, { error: "Articulo no encontrado en el catalogo." });
-      const itemId = String(resolved.id);
-      if (!user.avatarInventory.some(id => String(id).toLowerCase() === itemId.toLowerCase())) {
+      const itemId = canonicalAvatarItemId(rawId);
+      if (!itemId) return json(res, 400, { error: "Falta el articulo." });
+      if (!user.avatarInventory.some(id => sameAvatarItem(id, itemId))) {
         return json(res, 403, { error: "No tienes este articulo en tu inventario." });
       }
 
-      const item = resolved;
+      const item = findAvatarCatalogItem(itemId);
       const category = item ? String(item.category || "").toLowerCase() : "";
       const singleEquipCategories = new Set(["faces", "shirts", "pants"]);
 
@@ -1086,15 +1097,17 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
-      const idx = user.avatar.accessories.indexOf(itemId);
-      if (idx >= 0) user.avatar.accessories.splice(idx, 1);
+      const existingIndex = user.avatar.accessories.findIndex(id => sameAvatarItem(id, itemId));
+      if (existingIndex >= 0) user.avatar.accessories.splice(existingIndex, 1);
       else if (user.avatar.accessories.length < 100) user.avatar.accessories.push(itemId);
     }
 
     // Limpieza de IDs duplicados/no poseidos sin tocar el inventario.
-    const owned = new Set(user.avatarInventory);
-    user.avatar.accessories = [...new Set(user.avatar.accessories)]
-      .filter(id => owned.has(String(id)))
+    user.avatarInventory = [...new Set(user.avatarInventory.map(canonicalAvatarItemId).filter(Boolean))].slice(0, 100);
+    user.avatar.accessories = user.avatar.accessories
+      .map(canonicalAvatarItemId)
+      .filter((id, i, arr) => arr.findIndex(x => sameAvatarItem(x, id)) === i)
+      .filter(id => user.avatarInventory.some(ownedId => sameAvatarItem(ownedId, id)))
       .slice(0, 100);
 
     users[sess.key] = user;
@@ -2140,9 +2153,12 @@ function shutdown() {
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
 
-ensureDataDir();
-syncUserRegistry();
-server.listen(PORT, HOST, () => {
-  console.log("EpicBloxs GLOBAL server on http://" + HOST + ":" + PORT);
-  console.log("Users file: " + usersPath);
-});
+(async () => {
+  ensureDataDir();
+  await initPostgresPersistence();
+  syncUserRegistry();
+  server.listen(PORT, HOST, () => {
+    console.log("EpicBloxs GLOBAL server on http://" + HOST + ":" + PORT);
+    console.log("Users storage: " + (pgReady ? "Render Postgres" : usersPath));
+  });
+})();
