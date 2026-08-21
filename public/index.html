@@ -3618,6 +3618,9 @@ function getApiBase() {
 
 function getToken(){ return localStorage.getItem(SESSION_KEY) || ""; }
 function setToken(t){ if(t) localStorage.setItem(SESSION_KEY,t); else localStorage.removeItem(SESSION_KEY); }
+const RECOVERY_KEY = "epicbloxs_account_recovery_v2";
+function getRecoveryToken(){ return localStorage.getItem(RECOVERY_KEY) || ""; }
+function setRecoveryToken(t){ if(t) localStorage.setItem(RECOVERY_KEY,t); }
 function getCachedUser(){
   try { return JSON.parse(localStorage.getItem(USER_CACHE_KEY)||"null"); } catch(e){ return null; }
 }
@@ -3651,15 +3654,18 @@ async function api(path, opts={}, retries=3) {
       try { data = textBody ? JSON.parse(textBody) : {}; } catch(e) {
         if (!res.ok) throw new Error("Servidor sin API de cuentas (hay que subir el server.js nuevo).");
       }
+      if (data && data.recoveryToken) setRecoveryToken(data.recoveryToken);
       if (res.status === 401) {
-        // El token anterior puede pertenecer a una version vieja del servidor.
-        // Se limpia una sola vez para que el siguiente login cree una sesion
-        // compatible con el registro global actual.
-        setToken("");
-        setCachedUser(null);
+        // /api/me se puede recuperar automaticamente desde la copia cifrada
+        // del navegador cuando Render Free ha perdido el filesystem durante
+        // un redeploy. Los demas 401 siguen invalidando la sesion.
+        if (path !== "/api/me") {
+          setToken("");
+          setCachedUser(null);
+        }
         const authScreen = document.getElementById("authScreen");
-        if (authScreen) authScreen.style.display = "flex";
-        throw new Error("Tu sesión anterior ya no es válida. Inicia sesión una vez para crear una sesión nueva.");
+        if (authScreen && path !== "/api/me") authScreen.style.display = "flex";
+        throw new Error(path === "/api/me" ? "Cuenta no encontrada en el almacenamiento del servidor." : "Tu sesión anterior ya no es válida. Inicia sesión una vez para crear una sesión nueva.");
       }
       if (!res.ok) throw new Error(data.error || ("Error " + res.status));
       return data;
@@ -3670,9 +3676,15 @@ async function api(path, opts={}, retries=3) {
       // Reintentar solo errores de red / timeout
       const retryable = e.name === "AbortError" || /fetch|network|Failed|Load failed|timeout|respond/i.test(msg);
       if (!retryable || attempt === retries) {
-        if (e.name === "AbortError") throw new Error("El servidor tarda en responder. Espera 30s y vuelve a intentar.");
+        if (e.name === "AbortError") {
+          const err = new Error("El servidor tarda en responder. Espera 30s y vuelve a intentar.");
+          err.transient = true;
+          throw err;
+        }
         if (/Failed to fetch|NetworkError|Load failed/i.test(msg)) {
-          throw new Error("No hay conexion con el servidor. Abre la web desde la URL de Render (no el archivo HTML) y espera a que el server despierte.");
+          const err = new Error("No hay conexion con el servidor. Abre la web desde la URL de Render (no el archivo HTML) y espera a que el server despierte.");
+          err.transient = true;
+          throw err;
         }
         throw (e instanceof Error ? e : new Error(msg));
       }
@@ -3681,6 +3693,34 @@ async function api(path, opts={}, retries=3) {
     }
   }
   throw lastErr || new Error("Error de conexion");
+}
+
+let lastRecoveryStatus = "none";
+async function recoverAccountAfterDeploy(){
+  const recoveryToken = getRecoveryToken();
+  lastRecoveryStatus = recoveryToken ? "network" : "none";
+  if(!recoveryToken) return null;
+  try {
+    const res = await fetch(getApiBase() + "/api/recover", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recoveryToken }),
+      cache: "no-store"
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok || !data.token || !data.user) {
+      lastRecoveryStatus = `http_${res.status}`;
+      return null;
+    }
+    setToken(data.token);
+    if(data.recoveryToken) setRecoveryToken(data.recoveryToken);
+    setCachedUser(data.user);
+    lastRecoveryStatus = "ok";
+    return data.user;
+  } catch(e) {
+    lastRecoveryStatus = "network";
+    return null;
+  }
 }
 
 async function persistUser(user) {
@@ -3881,6 +3921,7 @@ async function register(e){
     }
 
     setToken(data.token);
+    if(data.recoveryToken) setRecoveryToken(data.recoveryToken);
     setCachedUser(data.user);
     try { sessionStorage.removeItem("eb_pending_pw"); sessionStorage.removeItem("eb_pending_user"); } catch(e) {}
     msg(regMsg, "Cuenta creada y guardada en EpicBloxs.", "success");
@@ -3914,6 +3955,7 @@ function login(e){
   api("/api/login", { method: "POST", body: JSON.stringify({ username, password }) }, 4)
     .then(data => {
       setToken(data.token);
+      if(data.recoveryToken) setRecoveryToken(data.recoveryToken);
       setCachedUser(data.user);
       loadCurrentUser();
     })
@@ -3940,6 +3982,64 @@ function current(){
   normalizeInventories(u);
   const key = u.id || (u.username||'').toLowerCase();
   return { key, user: u };
+}
+
+let resumeSessionTimer = null;
+let resumeSessionInFlight = false;
+let lastResumeCheck = 0;
+
+function scheduleResumeSession(delay = 5000){
+  clearTimeout(resumeSessionTimer);
+  resumeSessionTimer = setTimeout(() => verifySessionOnResume(), delay);
+}
+
+async function verifySessionOnResume(){
+  const now = Date.now();
+  if (resumeSessionInFlight || now - lastResumeCheck < 3000) return;
+  const token = getToken();
+  const cached = getCachedUser();
+  if(!token || String(token).startsWith("pending_")) return;
+  resumeSessionInFlight = true;
+  lastResumeCheck = now;
+  try {
+    const data = await api("/api/me", {}, 5);
+    if(data && data.user){
+      const user = normalizeInventories(data.user);
+      setCachedUser(user);
+      if(data.recoveryToken) setRecoveryToken(data.recoveryToken);
+      const authScreen = document.getElementById("authScreen");
+      if(authScreen) authScreen.style.display = "none";
+      try { updateUI(user); } catch(e) {}
+      try { loadInventory(); } catch(e) {}
+      try { renderCatalog("all"); } catch(e) {}
+      try { renderFriends(); } catch(e) {}
+      try { startPresenceHeartbeat(); } catch(e) {}
+      return;
+    }
+  } catch(err) {
+    // Muy importante: cambiar de pestaña puede despertar Render y producir
+    // un timeout/transitorio. Nunca cierres la sesión por un simple fallo de red.
+    if(err && err.transient){
+      if(cached){
+        setCachedUser(cached);
+        const authScreen = document.getElementById("authScreen");
+        if(authScreen) authScreen.style.display = "none";
+      }
+      scheduleResumeSession(10000);
+      return;
+    }
+  } finally {
+    resumeSessionInFlight = false;
+  }
+}
+
+function installResumeSessionGuard(){
+  const trigger = () => scheduleResumeSession(700);
+  document.addEventListener("visibilitychange", () => {
+    if(document.visibilityState === "visible") trigger();
+  });
+  window.addEventListener("pageshow", trigger);
+  window.addEventListener("focus", trigger);
 }
 
 function loadCurrentUser(){
@@ -3970,6 +4070,7 @@ function loadCurrentUser(){
     const user = data.user;
     normalizeInventories(user);
     setCachedUser(user);
+    if(data.recoveryToken) setRecoveryToken(data.recoveryToken);
     authScreen.style.display = "none";
     updateUI(user);
     updateAdminFab(user);
@@ -3982,7 +4083,49 @@ function loadCurrentUser(){
     try { refreshServerStats(); } catch(e) {}
     try { startPresenceHeartbeat(); } catch(e) {}
     try { startGameStatsHeartbeat(); } catch(e) {}
-  }).catch(() => {
+  }).catch(async (err) => {
+    // Un timeout al volver de otra pestaña NO significa que la cuenta haya sido
+    // borrada. Conservamos token + cache y reintentamos cuando Render despierte.
+    if(err && err.transient){
+      if(cached){
+        setCachedUser(cached);
+        authScreen.style.display = "none";
+        try { updateUI(cached); } catch(e) {}
+      }
+      scheduleResumeSession(10000);
+      return;
+    }
+
+    // Si Render Free perdio el filesystem en el redeploy, reconstruimos la cuenta
+    // desde la copia cifrada del mismo navegador en vez de pedir registrarla otra vez.
+    const recovered = await recoverAccountAfterDeploy();
+    if(recovered){
+      const user = normalizeInventories(recovered);
+      setCachedUser(user);
+      authScreen.style.display = "none";
+      updateUI(user);
+      updateAdminFab(user);
+      loadGames();
+      loadInventory();
+      renderCatalog("all");
+      try { initPreviewRenderer(); } catch(e) {}
+      try { renderFriends(); } catch(e) {}
+      try { refreshFriendsFromServer(); } catch(e) {}
+      try { refreshServerStats(); } catch(e) {}
+      return;
+    }
+    // Si incluso la recuperación falló por red (por ejemplo Render sigue
+    // despertando), NO borres la sesión ni el cache local. Reintentaremos.
+    if(lastRecoveryStatus === "network") {
+      if(cached){
+        setCachedUser(cached);
+        authScreen.style.display = "none";
+        try { updateUI(cached); } catch(e) {}
+      }
+      scheduleResumeSession(10000);
+      return;
+    }
+
     setToken("");
     setCachedUser(null);
     authScreen.style.display = "flex";
@@ -4864,6 +5007,7 @@ async function toggleAccessory(a){
     }, 3);
 
     if(!data || !data.user) throw new Error("El servidor no devolvio el usuario.");
+    if(data.recoveryToken) setRecoveryToken(data.recoveryToken);
     c.user = data.user;
     setCachedUser(data.user);
 
@@ -5487,6 +5631,7 @@ function adminGameAction(action){
 function resetLocalData(){if(confirm("¿Cerrar sesión y borrar cache local?")){setToken('');setCachedUser(null);location.reload()}}
 
 function init(){
+  installResumeSessionGuard();
   makeColorButtons("headColors","head");makeColorButtons("armColors","arms");makeColorButtons("torsoColors","torso");makeColorButtons("legsColors","legs");
   const c=current();if(c)loadCurrentUser();else document.getElementById('authScreen').style.display="flex";
   loadGames();
