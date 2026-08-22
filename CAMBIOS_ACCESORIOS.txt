@@ -1,12 +1,25 @@
-CAMBIOS DE ESTA VERSION
+CAMBIOS DE ESTA VERSION (persistencia + cara + desequipar)
 
-public/index.html
-1. Los colores de cabeza, brazos, torso y piernas ahora se guardan en el servidor
-   mediante persistUser(), por lo que permanecen al cambiar de juego.
-2. Se eliminó el bloque antiguo que renderizaba los sombreros/accesorios 3D una
-   segunda vez. Ahora los accesorios se generan una sola vez mediante
-   createAccessoryMesh().
-3. No se eliminó ningún accesorio del inventario ni se cambió el catálogo.
+CAUSA RAIZ de "cuenta eliminada" / "sesion no valida" / "Perfil no encontrado":
+1. .gitignore tenia "data/" entero → en GitHub NO subia session-secret.txt
+   ni nada de data. Cada Manual Deploy regeneraba el secreto y el
+   users.json quedaba vacio → tokens invalidos y cuentas "desaparecidas".
+2. En plan Free de Render el disco del proyecto es EFIMERO. Sin Postgres
+   las cuentas se pierden en cada redeploy.
+3. sessionSecretFromEnv:false en /health = Render no tenia SESSION_SECRET.
 
-4. Se añadió public/assets/epicbloxs_face.png y Classic Smile ahora usa la cara subida por el usuario (PNG transparente).
-5. La cara subida se añadió al artículo `Classic Smile` del Catálogo; su icono ahora usa `public/assets/epicbloxs_face.png`.
+ARREGLOS:
+- .gitignore: ya NO ignora data/session-secret.txt ni data/admins.json
+- server.js: SESSION_SECRET estable (nunca aleatorio entre deploys)
+- server.js: /health muestra postgresReady y aviso si falta Postgres
+- server.js: Desequipar funciona aunque el item no este en inventario
+- server.js: no borra caras/items clasicos del equipamiento por filtro de inventario
+- public/index.html: Classic Smile usa SVG (antes imagen rota en catalogo)
+
+EN RENDER (OBLIGATORIO):
+1. Environment → SESSION_SECRET = (cualquier cadena larga fija, NO la cambies nunca)
+2. Environment → DATABASE_URL = la de tu Postgres free (epicbloxs-db)
+3. Manual Deploy after push
+4. Abre /health y verifica:
+   - postgresReady: true
+   - sessionSecretFromEnv: true
