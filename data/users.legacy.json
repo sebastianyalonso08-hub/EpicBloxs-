@@ -1,26 +1,28 @@
 {
-  "sebuser": {
-    "username": "SebUser",
+  "EpicBloxs": {
+    "username": "EpicBloxs",
     "passwordHash": "ca7afd6a5b83ee0bc412d15c060f8388fa35e192e7d9086fa8bb4ebe88695166",
-    "sunnys": 600,
-    "bio": "Insert Bio.",
+    "sunnys": 676767,
+    "bio": "Welcome to EpicBloxs! a game ispired by BrickHill and Roblox,We Make Clothing!,Hope you have fun!.",
     "avatar": {
       "accessories": [
         "Classic Smile",
         "Blue Shirt",
-        "Classic Jeans"
+        "Classic Jeans",
+        "Classic Shades"
       ],
       "colors": {
-        "head": "#f5c928",
-        "arms": "#f5c928",
+        "head": "#ffffff",
+        "arms": "#121212",
         "torso": "#1477b9",
         "legs": "#8cae45"
       }
     },
     "inventory": [
-      "Classic Smile",
-      "Blue Shirt",
-      "Classic Jeans"
+        "Classic Smile",
+        "Blue Shirt",
+        "Classic Jeans",
+        "Classic Shades"
     ],
     "friends": [],
     "friendRequests": [],
