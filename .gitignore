@@ -1,1 +1,13 @@
-data/
+# No ignore toda data/: el secreto de sesión debe ir al repo para que
+# los deploys en Render Free no regeneren el secret y borren las sesiones.
+data/users.json
+data/users.backup.json
+data/users.previous.json
+data/sessions.json
+data/dms.json
+data/groups.json
+data/catalog.json
+data/temp
+node_modules/
+.env
+*.log
