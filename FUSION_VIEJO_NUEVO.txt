@@ -1,0 +1,16 @@
+FUSION VERSION VIEJA + VERSION NUEVA
+
+Base:
+- Se conserva la VERSION NUEVA completa.
+
+Tomado de la versión vieja:
+- Persistencia local basada en data/users.json.
+- Se conserva la cuenta/estado existente de la versión vieja como semilla.
+- La versión nueva ya tenía backups, recuperación de archivos legacy y protección
+  contra escribir un users.json vacío, así que se conservaron esas mejoras.
+
+IMPORTANTE:
+Esto no puede hacer que el filesystem de Render Free sea permanente entre redeploys.
+Sin PostgreSQL o Persistent Disk, una cuenta creada después del deploy puede perderse
+si Render reemplaza el filesystem. Esta fusión evita perder cuentas por errores de
+carga/escritura y conserva la semilla de la versión vieja.

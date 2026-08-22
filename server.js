@@ -205,18 +205,6 @@ function loadUsers() {
   if (pgReady && pgUsersCache) return pgUsersCache;
   const users = readJsonObject(usersPath);
   let changed = false;
-
-  // El proyecto traía una cuenta de prueba llamada SebUser. No es una cuenta
-  // real y nunca debe volver a aparecer en el buscador. Solo eliminamos esa
-  // semilla exacta; cualquier otra cuenta se conserva.
-  const fakeSeedHash = "ca7afd6a5b83ee0bc412d15c060f8388fa35e192e7d9086fa8bb4ebe88695166";
-  for (const [key, value] of Object.entries(users)) {
-    if (String(key).toLowerCase() === "sebuser" && value && value.passwordHash === fakeSeedHash && Number(value.userId) === 1001) {
-      delete users[key];
-      changed = true;
-    }
-  }
-
   // Recuperación automática de cuentas antiguas. Esto permite actualizar el
   // servidor sin perder cuentas que estaban en una versión anterior.
   const legacyFiles = [
