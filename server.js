@@ -1209,16 +1209,24 @@ const server = http.createServer(async (req, res) => {
     const users = sess.users;
     const user = users[sess.key];
     if (body.avatar && typeof body.avatar === "object") {
-      const incomingAccessories = Array.isArray(body.avatar.accessories) ? body.avatar.accessories.map(String) : null;
-      const mergedAvatar = { ...user.avatar, ...body.avatar };
-      // Equipamiento solo puede cambiar mediante /api/avatar/equip. Los guardados
-      // normales pueden cambiar colores/torso, pero no borrar accesorios con una
-      // copia de perfil desactualizada.
-      delete mergedAvatar.accessories;
-      user.avatar = mergedAvatar;
-      if (incomingAccessories && incomingAccessories.length === 0 && !body.allowAccessoryClear) {
-        // ignorar un clear accidental enviado por un cliente viejo
-      }
+      // Equipamiento SOLO cambia mediante /api/avatar/equip.
+      // /api/me puede actualizar colores y torsoType, pero NUNCA debe
+      // borrar ni reemplazar los accesorios equipados (un cliente con
+      // cache desactualizado borraba sombreros/ropa al cambiar de color).
+      const preservedAccessories = Array.isArray(user.avatar && user.avatar.accessories)
+        ? user.avatar.accessories.slice()
+        : [];
+      const nextColors = (body.avatar.colors && typeof body.avatar.colors === "object")
+        ? { ...(user.avatar.colors || {}), ...body.avatar.colors }
+        : (user.avatar.colors || {});
+      const nextTorso = body.avatar.torsoType === "female" ? "female"
+        : (body.avatar.torsoType === "male" ? "male" : (user.avatar.torsoType || "male"));
+      user.avatar = {
+        ...(user.avatar || {}),
+        colors: nextColors,
+        torsoType: nextTorso,
+        accessories: preservedAccessories
+      };
     }
     if (Array.isArray(body.avatarInventory)) user.avatarInventory = body.avatarInventory.slice(0, 100).map(canonicalAvatarItemId).filter(Boolean);
     normalizeAvatarData(user);
