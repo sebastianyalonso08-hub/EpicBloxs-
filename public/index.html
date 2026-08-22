@@ -655,7 +655,7 @@ const catalogDatabase = [
   { id: 'Purple Pants', name: 'Purple Pants', category: 'pants', price: 100, desc: 'Pantalones morados 2D · Mujer' },
 
   // Caras
-  { id: 'Classic Smile', name: 'Classic Smile', category: 'faces', price: 40, desc: 'Cara feliz clásica', image: 'assets/epicbloxs_face.png' },
+  { id: 'Classic Smile', name: 'Classic Smile', category: 'faces', price: 40, desc: 'Cara feliz clásica' },
   { id: 'Cool Wink', name: 'Cool Wink', category: 'faces', price: 90, desc: 'Cara guiñando el ojo' },
   { id: 'Happy Face', name: 'Happy Face', category: 'faces', price: 60, desc: 'Cara sonriente' },
   { id: 'Sleepy Face', name: 'Sleepy Face', category: 'faces', price: 75, desc: 'Cara dormida' },
@@ -4774,7 +4774,9 @@ function filterCatalog(category, btnElement) {
 
 function catalogIconSVG(item) {
   const common = 'width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg"';
-  if(item.image) return `<img src="${escapeHTML(item.image)}" style="width:96px;height:96px;object-fit:contain" alt="${escapeHTML(item.name || 'Artículo')}">`;
+  // Caras: siempre SVG (el PNG roto mostraba icono de archivo vacio en el catalogo).
+  if(item.category === 'faces' && item.id === 'Classic Smile') return `<svg ${common}><circle cx="48" cy="48" r="34" fill="#F5C928" stroke="#9A7B00" stroke-width="4"/><circle cx="36" cy="40" r="4" fill="#222"/><circle cx="60" cy="40" r="4" fill="#222"/><path d="M33 54C39 65 57 65 63 54" stroke="#222" stroke-width="4" stroke-linecap="round"/></svg>`;
+  if(item.image && !String(item.image).includes('epicbloxs_face')) return `<img src="${escapeHTML(item.image)}" style="width:96px;height:96px;object-fit:contain" alt="${escapeHTML(item.name || 'Artículo')}" onerror="this.style.display='none'">`;
   if(item.category === 'hats' && item.id === 'Epic Cap') return `<svg ${common}><path d="M18 49C24 25 72 25 78 49" fill="#1976D2" stroke="#123A63" stroke-width="4"/><path d="M16 48H80C77 61 65 67 48 67C31 67 19 61 16 48Z" fill="#2196F3" stroke="#123A63" stroke-width="4"/><path d="M25 50C38 54 58 54 71 50" stroke="#90CAF9" stroke-width="4" stroke-linecap="round"/></svg>`;
   if(item.category === 'hats' && item.id === 'Golden Crown') return `<svg ${common}><path d="M17 30L29 44L40 22L48 43L60 22L69 44L80 30L75 66H21L17 30Z" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><rect x="20" y="60" width="56" height="13" rx="4" fill="#FFC107" stroke="#9A6B00" stroke-width="4"/><circle cx="29" cy="43" r="4" fill="#E53935"/><circle cx="60" cy="42" r="4" fill="#1E88E5"/></svg>`;
   if(item.category === 'shirts' && item.id === 'Blue Shirt') return `<svg ${common}><defs><linearGradient id="bsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#42A5F5"/><stop offset="100%" stop-color="#1565C0"/></linearGradient></defs><path d="M25 20L39 14H57L71 20L84 34L70 45L64 36V78H32V36L26 45L12 34L25 20Z" fill="url(#bsg)" stroke="#0D47A1" stroke-width="3.5"/><path d="M39 14L48 42L57 14" fill="#F5F5F5" stroke="#CFD8DC" stroke-width="2"/><rect x="36" y="48" width="24" height="26" rx="2" fill="#0D47A1"/><text x="48" y="66" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="Arial">EB</text><circle cx="48" cy="52" r="2" fill="#ECEFF1"/><circle cx="48" cy="60" r="2" fill="#ECEFF1"/><circle cx="48" cy="68" r="2" fill="#ECEFF1"/></svg>`;
