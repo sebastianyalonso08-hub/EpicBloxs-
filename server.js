@@ -153,37 +153,24 @@ function ensureDataDir() {
 }
 
 function getPersistentSessionSecret() {
+  // Prioridad: env de Render > archivo en repo > fallback ESTABLE (nunca aleatorio).
+  // Un secret aleatorio en cada deploy invalida TODAS las sesiones y parece
+  // que "la cuenta se borro".
+  const STABLE_FALLBACK = "866c46259ecda63845f8188bed622e76191215abe53d35053cb0e17891f9274e";
+  if (process.env.SESSION_SECRET) return String(process.env.SESSION_SECRET).trim() || STABLE_FALLBACK;
+
   ensureDataDir();
-  if (process.env.SESSION_SECRET) return String(process.env.SESSION_SECRET);
-
-  // Primero usa el secreto que ya estaba en el repositorio. Esto es importante
-  // porque /var/data NO existe en una instancia nueva/efimera de Render.
-  // Si no hacemos esto, cada deploy genera otro secreto y todos los tokens
-  // anteriores dejan de ser validos.
   const repoSecretPath = path.join(__dirname, "data", "session-secret.txt");
-
   try {
-    if (fs.existsSync(sessionSecretPath)) {
-      const existing = fs.readFileSync(sessionSecretPath, "utf8").trim();
-      if (existing) return existing;
-    }
-
-    if (repoSecretPath !== sessionSecretPath && fs.existsSync(repoSecretPath)) {
-      const repoSecret = fs.readFileSync(repoSecretPath, "utf8").trim();
-      if (repoSecret) {
-        try { fs.writeFileSync(sessionSecretPath, repoSecret, "utf8"); } catch {}
-        return repoSecret;
+    for (const p of [sessionSecretPath, repoSecretPath]) {
+      if (fs.existsSync(p)) {
+        const existing = fs.readFileSync(p, "utf8").trim();
+        if (existing) return existing;
       }
     }
-
-    // Solo se genera una vez cuando no existe NINGUN secreto anterior.
-    const generated = crypto.randomBytes(32).toString("hex");
-    try { fs.writeFileSync(sessionSecretPath, generated, "utf8"); } catch {}
-    return generated;
-  } catch {
-    // Ultimo fallback estable para no invalidar tokens entre reinicios.
-    return "epicbloxs-session-key-v3-stable";
-  }
+    try { fs.writeFileSync(sessionSecretPath, STABLE_FALLBACK, "utf8"); } catch {}
+  } catch {}
+  return STABLE_FALLBACK;
 }
 
 function readJsonObject(file) {
@@ -1049,10 +1036,13 @@ const server = http.createServer(async (req, res) => {
       accounts,
       dataDir,
       persistentDataPath: dataDir === "/var/data",
+      postgresReady: !!pgReady,
+      postgresConfigured: !!process.env.DATABASE_URL,
       usersFileExists: fs.existsSync(usersPath),
       sessionSecretFileExists: fs.existsSync(sessionSecretPath),
       sessionSecretFromEnv: !!process.env.SESSION_SECRET,
-      message: accounts + " cuentas registradas, " + online + " en linea"
+      message: accounts + " cuentas registradas, " + online + " en linea" +
+        (pgReady ? " · Postgres OK" : (process.env.DATABASE_URL ? " · Postgres FALLA" : " · SIN Postgres (cuentas se pierden al redeploy)"))
     });
   }
 
@@ -1119,7 +1109,9 @@ const server = http.createServer(async (req, res) => {
       restored.inventory = [];
       normalizeAvatarData(restored);
       restored.avatar.accessories = Array.isArray(restored.avatar.accessories) ? restored.avatar.accessories.map(canonicalAvatarItemId).filter(Boolean) : [];
-      restored.avatar.accessories = restored.avatar.accessories.filter(id => restored.avatarInventory.some(owned => sameAvatarItem(owned, id)));
+      restored.avatar.accessories = restored.avatar.accessories.filter(id =>
+        restored.avatarInventory.some(owned => sameAvatarItem(owned, id)) || !!findAvatarCatalogItem(id)
+      );
       users[key] = restored;
       ensureUserIds(users);
       saveUsersDisk(users);
@@ -1168,25 +1160,27 @@ const server = http.createServer(async (req, res) => {
     } else {
       const itemId = canonicalAvatarItemId(rawId);
       if (!itemId) return json(res, 400, { error: "Falta el articulo." });
-      if (!user.avatarInventory.some(id => sameAvatarItem(id, itemId))) {
-        return json(res, 403, { error: "No tienes este articulo en tu inventario." });
-      }
-
-      const item = findAvatarCatalogItem(itemId);
-      const category = item ? String(item.category || "").toLowerCase() : "";
-      const singleEquipCategories = new Set(["faces", "shirts", "pants"]);
-
-      // Solo un objeto de estas categorias puede estar equipado a la vez.
-      if (singleEquipCategories.has(category)) {
-        user.avatar.accessories = user.avatar.accessories.filter(id => {
-          const old = findAvatarCatalogItem(id);
-          return !old || String(old.category || "").toLowerCase() !== category;
-        });
-      }
 
       const existingIndex = user.avatar.accessories.findIndex(id => sameAvatarItem(id, itemId));
-      if (existingIndex >= 0) user.avatar.accessories.splice(existingIndex, 1);
-      else if (user.avatar.accessories.length < 100) user.avatar.accessories.push(itemId);
+      // Desequipar siempre permitido si ya estaba equipado (aunque falte en inventario).
+      if (existingIndex >= 0) {
+        user.avatar.accessories.splice(existingIndex, 1);
+      } else {
+        // Equipar: requiere poseer el articulo.
+        if (!user.avatarInventory.some(id => sameAvatarItem(id, itemId))) {
+          return json(res, 403, { error: "No tienes este articulo en tu inventario." });
+        }
+        const item = findAvatarCatalogItem(itemId);
+        const category = item ? String(item.category || "").toLowerCase() : "";
+        const singleEquipCategories = new Set(["faces", "shirts", "pants"]);
+        if (singleEquipCategories.has(category)) {
+          user.avatar.accessories = user.avatar.accessories.filter(id => {
+            const old = findAvatarCatalogItem(id);
+            return !old || String(old.category || "").toLowerCase() !== category;
+          });
+        }
+        if (user.avatar.accessories.length < 100) user.avatar.accessories.push(itemId);
+      }
     }
 
     // Limpieza de IDs duplicados/no poseidos sin tocar el inventario.
@@ -1194,7 +1188,11 @@ const server = http.createServer(async (req, res) => {
     user.avatar.accessories = user.avatar.accessories
       .map(canonicalAvatarItemId)
       .filter((id, i, arr) => arr.findIndex(x => sameAvatarItem(x, id)) === i)
-      .filter(id => user.avatarInventory.some(ownedId => sameAvatarItem(ownedId, id)))
+      // Conservar si esta en inventario O es un item clasico del catalogo (caras/gorras base).
+      .filter(id =>
+        user.avatarInventory.some(ownedId => sameAvatarItem(ownedId, id)) ||
+        !!findAvatarCatalogItem(id)
+      )
       .slice(0, 100);
 
     users[sess.key] = user;
@@ -1230,12 +1228,12 @@ const server = http.createServer(async (req, res) => {
     }
     if (Array.isArray(body.avatarInventory)) user.avatarInventory = body.avatarInventory.slice(0, 100).map(canonicalAvatarItemId).filter(Boolean);
     normalizeAvatarData(user);
-    // Nunca permitas equipar un objeto que la cuenta no posee.
-    // Esto tambien repara cuentas antiguas que perdieron la separacion entre inventario y equipamiento.
-    const ownedAvatarItems = new Set(Array.isArray(user.avatarInventory) ? user.avatarInventory : []);
+    // Conservar accesorios del inventario O del catalogo clasico.
+    // No borrar caras/gorras solo porque el inventario local este incompleto.
+    const ownedAvatarItems = new Set((Array.isArray(user.avatarInventory) ? user.avatarInventory : []).map(String));
     user.avatar.accessories = user.avatar.accessories
       .map(id => String(id))
-      .filter((id, i, arr) => arr.indexOf(id) === i && ownedAvatarItems.has(id))
+      .filter((id, i, arr) => arr.indexOf(id) === i && (ownedAvatarItems.has(id) || !!findAvatarCatalogItem(id)))
       .slice(0, 100);
     if (Array.isArray(body.gameInventory)) user.gameInventory = body.gameInventory.slice(0, 20);
     // Compatibilidad con versiones anteriores: nunca vuelve a usarse como inventario de juego.
