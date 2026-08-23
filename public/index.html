@@ -4047,7 +4047,7 @@ async function runNewAccountBot(username){
 
 
 
-function register(e){
+async function register(e){
   e.preventDefault();
   const regMsg = document.getElementById("registerMessage");
   const username = document.getElementById("registerUsername").value.trim();
@@ -4057,11 +4057,8 @@ function register(e){
   if (password.length < 6) return msg(regMsg, "Minimo 6 caracteres en la contraseña.", "error");
   if (password !== confirm) return msg(regMsg, "Las contraseñas no coinciden.", "error");
 
-  // Sistema recuperado de la version que funcionaba: el cliente inicia el
-  // proceso de guardado y el registro global se reintenta si Render tarda en
-  // despertar. La cuenta solo queda confirmada cuando /api/register responde.
-  msg(regMsg, "Registrando cuenta...", "success");
-
+  // Registro inmediato local, como en la version que funcionaba:
+  // el jugador entra sin esperar a que Render despierte.
   const key = username.toLowerCase();
   const tempUser = {
     id: key,
@@ -4085,51 +4082,56 @@ function register(e){
     createdAt: new Date().toISOString()
   };
 
+  setToken("pending_" + key);
   setCachedUser(tempUser);
   try {
     sessionStorage.setItem("eb_pending_pw", password);
     sessionStorage.setItem("eb_pending_user", username);
   } catch(e) {}
 
-  // Mostrar el mismo asistente que tenia la version antigua mientras se
-  // completa el guardado global.
-  setTimeout(() => runNewAccountBot(username), 100);
+  msg(regMsg, "Cuenta creada. Guardandola en el servidor...", "success");
+
+  // Entrar automaticamente sin esperar al servidor.
+  setTimeout(() => {
+    loadCurrentUser();
+    setTimeout(() => runNewAccountBot(username), 400);
+  }, 50);
+
+  // Registro global en segundo plano. Si Render esta dormido, reintenta.
   syncRegisterGlobal(username, password);
 }
 
 function syncRegisterGlobal(username, password) {
-  const regMsg = document.getElementById("registerMessage");
+  const key = String(username || "").toLowerCase();
   api("/api/register", {
     method: "POST",
     body: JSON.stringify({ username, password })
   }, 4)
     .then(data => {
-      if (!data || !data.token || !data.user) throw new Error("El servidor no devolvio los datos de la cuenta.");
+      if (!data || !data.token || !data.user) throw new Error("Respuesta de registro invalida.");
       setToken(data.token);
       setCachedUser(data.user);
       try {
         sessionStorage.removeItem("eb_pending_pw");
         sessionStorage.removeItem("eb_pending_user");
       } catch(e) {}
-      if (regMsg) msg(regMsg, "Cuenta creada y guardada en EpicBloxs.", "success");
       try { updateUI(data.user); } catch(e) {}
-      // Ahora que existe en el servidor, el bot hace el guardado final del
-      // avatar/inventario usando /api/me.
-      setTimeout(() => runNewAccountBot(data.user.username || username), 100);
-      setTimeout(() => loadCurrentUser(), 150);
+      try { updateAdminFab(data.user); } catch(e) {}
+      try { loadCurrentUser(); } catch(e) {}
     })
-    .catch(err => {
-      if (regMsg) msg(regMsg, "Servidor despertando... guardando cuenta...", "success");
-      // Igual que en la version antigua: Render puede tardar en despertar.
-      // Conservamos las credenciales solo durante el intento de registro y
-      // reintentamos hasta que el servidor responda.
+    .catch(() => {
+      // No se pierde la cuenta local. Se vuelve a intentar hasta que Render
+      // despierte y el servidor acepte el registro.
       setTimeout(() => {
-        let u = null, p = null;
         try {
-          u = sessionStorage.getItem("eb_pending_user");
-          p = sessionStorage.getItem("eb_pending_pw");
+          const u = sessionStorage.getItem("eb_pending_user");
+          const p = sessionStorage.getItem("eb_pending_pw");
+          if (u && p && String(getToken() || "").toLowerCase() === "pending_" + u.toLowerCase()) {
+            syncRegisterGlobal(u, p);
+          } else if (u && p && String(getToken() || "").startsWith("pending_")) {
+            syncRegisterGlobal(u, p);
+          }
         } catch(e) {}
-        if (u && p) syncRegisterGlobal(u, p);
       }, 5000);
     });
 }
@@ -4143,7 +4145,6 @@ function login(e){
 
   msg(loginMsg, "Entrando...", "success");
 
-  // Entrada rapida si ya hay cache del mismo usuario
   const key = username.toLowerCase();
   const cached = getCachedUser();
   if (cached && (cached.id === key || (cached.username || "").toLowerCase() === key)) {
@@ -4158,8 +4159,7 @@ function login(e){
       loadCurrentUser();
     })
     .catch(err => {
-      // Si ya entro con cache, no molestar
-      if (getToken() && getCachedUser()) return;
+      if (getToken() && getCachedUser() && !String(getToken()).startsWith("pending_")) return;
       msg(loginMsg, err.message || "Usuario o contraseña incorrectos.", "error");
     });
 }
@@ -4186,33 +4186,15 @@ function loadCurrentUser(){
   const authScreen = document.getElementById("authScreen");
   const token = getToken();
   const cached = getCachedUser();
+  if (!token && !cached) { authScreen.style.display = "flex"; return; }
 
-  // Los tokens "pending_" pertenecen al sistema antiguo que creaba cuentas
-  // localmente. Ya no se consideran cuentas reales del registro global.
-  if (String(token || "").startsWith("pending_")) {
-    setToken("");
-    try { sessionStorage.removeItem("eb_pending_pw"); sessionStorage.removeItem("eb_pending_user"); } catch(e) {}
-  }
-
-  const currentToken = getToken();
-  if (!currentToken) {
-    // Un usuario guardado solamente en localStorage NO se considera registrado
-    // globalmente. Debe iniciar sesion/registrarse para aparecer en el buscador.
-    authScreen.style.display = "flex";
-    return;
-  }
-
-  // El servidor es la unica fuente de verdad. Esto evita que una cuenta vieja
-  // o inventada del cache aparezca como registrada si no existe en users.json.
-  authScreen.style.display = "none";
-  api("/api/me", {}, 3).then(data => {
-    if (!data || !data.user) throw new Error("Cuenta no encontrada");
-    const user = data.user;
+  const enterApp = (user) => {
+    if (!user) { authScreen.style.display = "flex"; return; }
     normalizeInventories(user);
     setCachedUser(user);
     authScreen.style.display = "none";
     updateUI(user);
-    updateAdminFab(user);
+    try { updateAdminFab(user); } catch(e) {}
     loadGames();
     loadInventory();
     renderCatalog("all");
@@ -4222,11 +4204,38 @@ function loadCurrentUser(){
     try { refreshServerStats(); } catch(e) {}
     try { startPresenceHeartbeat(); } catch(e) {}
     try { startGameStatsHeartbeat(); } catch(e) {}
-  }).catch(() => {
-    setToken("");
-    setCachedUser(null);
-    authScreen.style.display = "flex";
-  });
+  };
+
+  // El registro antiguo entraba inmediatamente usando la cuenta temporal.
+  if (cached) enterApp(cached);
+  else if (token) authScreen.style.display = "none";
+
+  // Token temporal = cuenta local pendiente de sincronizar con el servidor.
+  // NO se elimina: el sistema antiguo lo usaba para que el jugador pudiera
+  // entrar mientras Render despertaba.
+  if (String(token || "").startsWith("pending_")) {
+    try {
+      const u = sessionStorage.getItem("eb_pending_user");
+      const p = sessionStorage.getItem("eb_pending_pw");
+      if (u && p && typeof syncRegisterGlobal === "function") syncRegisterGlobal(u, p);
+    } catch(e) {}
+    return;
+  }
+
+  // Para sesiones reales, refrescar silenciosamente desde el servidor.
+  if (token && !String(token).startsWith("pending_")) {
+    api("/api/me", {}, 2).then(data => {
+      if (!data || !data.user) throw new Error("Cuenta no encontrada");
+      enterApp(data.user);
+    }).catch(() => {
+      // Si ya entramos con cache, no expulsar al usuario por un fallo temporal.
+      if (!cached) {
+        setToken("");
+        setCachedUser(null);
+        authScreen.style.display = "flex";
+      }
+    });
+  }
 }
 
 function applyTheme(theme){
