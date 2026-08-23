@@ -4047,7 +4047,7 @@ async function runNewAccountBot(username){
 
 
 
-async function register(e){
+function register(e){
   e.preventDefault();
   const regMsg = document.getElementById("registerMessage");
   const username = document.getElementById("registerUsername").value.trim();
@@ -4057,31 +4057,81 @@ async function register(e){
   if (password.length < 6) return msg(regMsg, "Minimo 6 caracteres en la contraseña.", "error");
   if (password !== confirm) return msg(regMsg, "Las contraseñas no coinciden.", "error");
 
-  // La cuenta ahora se crea PRIMERO en el registro global del servidor.
-  // No se muestra una cuenta local/falsa si el servidor todavía no la guardó.
+  // Sistema recuperado de la version que funcionaba: el cliente inicia el
+  // proceso de guardado y el registro global se reintenta si Render tarda en
+  // despertar. La cuenta solo queda confirmada cuando /api/register responde.
   msg(regMsg, "Registrando cuenta...", "success");
+
+  const key = username.toLowerCase();
+  const tempUser = {
+    id: key,
+    username: username,
+    sunnys: 500,
+    bio: "Insert Bio.",
+    theme: "light",
+    avatar: {
+      accessories: [],
+      torsoType: "male",
+      colors: { head: "#f5c928", arms: "#f5c928", torso: "#1477b9", legs: "#8cae45" }
+    },
+    avatarInventory: [],
+    gameInventory: [],
+    inventory: [],
+    friends: [],
+    friendRequests: [],
+    outgoingRequests: [],
+    loginStreak: 0,
+    lastStreakClaim: "",
+    createdAt: new Date().toISOString()
+  };
+
+  setCachedUser(tempUser);
   try {
-    const data = await api("/api/register", {
-      method: "POST",
-      body: JSON.stringify({ username, password })
-    }, 4);
+    sessionStorage.setItem("eb_pending_pw", password);
+    sessionStorage.setItem("eb_pending_user", username);
+  } catch(e) {}
 
-    if (!data || !data.token || !data.user) {
-      throw new Error("El servidor no devolvio los datos de la cuenta.");
-    }
+  // Mostrar el mismo asistente que tenia la version antigua mientras se
+  // completa el guardado global.
+  setTimeout(() => runNewAccountBot(username), 100);
+  syncRegisterGlobal(username, password);
+}
 
-    setToken(data.token);
-    setCachedUser(data.user);
-    try { sessionStorage.removeItem("eb_pending_pw"); sessionStorage.removeItem("eb_pending_user"); } catch(e) {}
-    msg(regMsg, "Cuenta creada y guardada en EpicBloxs.", "success");
-
-    // EpicBot solo prepara el avatar después de que la cuenta ya existe
-    // realmente en users.json.
-    setTimeout(() => runNewAccountBot(data.user.username || username), 100);
-    setTimeout(() => loadCurrentUser(), 150);
-  } catch (err) {
-    msg(regMsg, err && err.message ? err.message : "No se pudo crear la cuenta.", "error");
-  }
+function syncRegisterGlobal(username, password) {
+  const regMsg = document.getElementById("registerMessage");
+  api("/api/register", {
+    method: "POST",
+    body: JSON.stringify({ username, password })
+  }, 4)
+    .then(data => {
+      if (!data || !data.token || !data.user) throw new Error("El servidor no devolvio los datos de la cuenta.");
+      setToken(data.token);
+      setCachedUser(data.user);
+      try {
+        sessionStorage.removeItem("eb_pending_pw");
+        sessionStorage.removeItem("eb_pending_user");
+      } catch(e) {}
+      if (regMsg) msg(regMsg, "Cuenta creada y guardada en EpicBloxs.", "success");
+      try { updateUI(data.user); } catch(e) {}
+      // Ahora que existe en el servidor, el bot hace el guardado final del
+      // avatar/inventario usando /api/me.
+      setTimeout(() => runNewAccountBot(data.user.username || username), 100);
+      setTimeout(() => loadCurrentUser(), 150);
+    })
+    .catch(err => {
+      if (regMsg) msg(regMsg, "Servidor despertando... guardando cuenta...", "success");
+      // Igual que en la version antigua: Render puede tardar en despertar.
+      // Conservamos las credenciales solo durante el intento de registro y
+      // reintentamos hasta que el servidor responda.
+      setTimeout(() => {
+        let u = null, p = null;
+        try {
+          u = sessionStorage.getItem("eb_pending_user");
+          p = sessionStorage.getItem("eb_pending_pw");
+        } catch(e) {}
+        if (u && p) syncRegisterGlobal(u, p);
+      }, 5000);
+    });
 }
 
 function login(e){
