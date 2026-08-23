@@ -3816,13 +3816,17 @@ function setCachedUser(u){
   else localStorage.removeItem(USER_CACHE_KEY);
 }
 
+const RECOVERY_TOKEN_KEY = "epicbloxs_recovery_token_v2";
+function getRecoveryToken(){ try { return localStorage.getItem(RECOVERY_TOKEN_KEY) || ""; } catch(e) { return ""; } }
+function setRecoveryToken(t){ try { if(t) localStorage.setItem(RECOVERY_TOKEN_KEY, t); else localStorage.removeItem(RECOVERY_TOKEN_KEY); } catch(e) {} }
+
 function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
 // API global con reintentos (Render free a veces tarda en despertar)
 async function api(path, opts={}, retries=3) {
   const headers = Object.assign({"Content-Type":"application/json"}, opts.headers||{});
   const token = getToken();
-  if (token) headers["Authorization"] = "Bearer " + token;
+  if (token && !String(token).startsWith("pending_")) headers["Authorization"] = "Bearer " + token;
 
   let lastErr = null;
   for (let attempt = 1; attempt <= retries; attempt++) {
@@ -3841,23 +3845,47 @@ async function api(path, opts={}, retries=3) {
       try { data = textBody ? JSON.parse(textBody) : {}; } catch(e) {
         if (!res.ok) throw new Error("Servidor sin API de cuentas (hay que subir el server.js nuevo).");
       }
-      if (res.status === 401) {
-        // El token anterior puede pertenecer a una version vieja del servidor.
-        // Se limpia una sola vez para que el siguiente login cree una sesion
-        // compatible con el registro global actual.
-        setToken("");
-        setCachedUser(null);
-        const authScreen = document.getElementById("authScreen");
-        if (authScreen) authScreen.style.display = "flex";
-        throw new Error("Tu sesión anterior ya no es válida. Inicia sesión una vez para crear una sesión nueva.");
+
+      // Las versiones nuevas del servidor tienen un recoveryToken firmado.
+      // Si Render reinicia y el token de sesion anterior deja de ser valido,
+      // recuperamos la sesion/cuenta automaticamente y repetimos la peticion.
+      // Esto evita el bug de: entra -> vuelve al registro -> no deja comprar.
+      if (res.status === 401 && path !== "/api/recover" && !opts.__recoveryTried) {
+        const recoveryToken = getRecoveryToken();
+        if (recoveryToken) {
+          try {
+            const recoveryRes = await fetch(getApiBase() + "/api/recover", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ recoveryToken }),
+              mode: "cors",
+              cache: "no-store"
+            });
+            const recoveryText = await recoveryRes.text();
+            let recoveryData = {};
+            try { recoveryData = recoveryText ? JSON.parse(recoveryText) : {}; } catch(e) {}
+            if (recoveryRes.ok && recoveryData.token && recoveryData.user) {
+              setToken(recoveryData.token);
+              setCachedUser(recoveryData.user);
+              if (recoveryData.recoveryToken) setRecoveryToken(recoveryData.recoveryToken);
+              const retryOpts = Object.assign({}, opts, { __recoveryTried: true });
+              return api(path, retryOpts, retries);
+            }
+          } catch(e) {}
+        }
+
+        // La sesion realmente no se puede recuperar. No destruimos la cuenta
+        // cacheada automaticamente; el usuario puede volver a iniciar sesion.
+        throw new Error("Tu sesión expiró. Inicia sesión nuevamente.");
       }
+
       if (!res.ok) throw new Error(data.error || ("Error " + res.status));
+      if (data && data.recoveryToken) setRecoveryToken(data.recoveryToken);
       return data;
     } catch (e) {
       clearTimeout(timer);
       lastErr = e;
       const msg = (e && e.message) ? e.message : String(e);
-      // Reintentar solo errores de red / timeout
       const retryable = e.name === "AbortError" || /fetch|network|Failed|Load failed|timeout|respond/i.test(msg);
       if (!retryable || attempt === retries) {
         if (e.name === "AbortError") throw new Error("El servidor tarda en responder. Espera 30s y vuelve a intentar.");
@@ -3866,7 +3894,6 @@ async function api(path, opts={}, retries=3) {
         }
         throw (e instanceof Error ? e : new Error(msg));
       }
-      // Esperar antes de reintentar (despierta Render)
       await sleep(1500 * attempt);
     }
   }
@@ -4057,6 +4084,9 @@ async function register(e){
   if (password.length < 6) return msg(regMsg, "Minimo 6 caracteres en la contraseña.", "error");
   if (password !== confirm) return msg(regMsg, "Las contraseñas no coinciden.", "error");
 
+  // Si habia una sesion vieja de otra cuenta, no debe contaminar el registro nuevo.
+  if (!String(getToken() || "").startsWith("pending_")) setToken("");
+
   // Registro inmediato local, como en la version que funcionaba:
   // el jugador entra sin esperar a que Render despierte.
   const key = username.toLowerCase();
@@ -4111,6 +4141,7 @@ function syncRegisterGlobal(username, password) {
       if (!data || !data.token || !data.user) throw new Error("Respuesta de registro invalida.");
       setToken(data.token);
       setCachedUser(data.user);
+      if (data.recoveryToken) setRecoveryToken(data.recoveryToken);
       try {
         sessionStorage.removeItem("eb_pending_pw");
         sessionStorage.removeItem("eb_pending_user");
@@ -4119,7 +4150,31 @@ function syncRegisterGlobal(username, password) {
       try { updateAdminFab(data.user); } catch(e) {}
       try { loadCurrentUser(); } catch(e) {}
     })
-    .catch(() => {
+    .catch(err => {
+      // Si el usuario ya existe porque el registro termino antes de una
+      // actualizacion/refresco, no dejamos la cuenta atrapada en pending_:
+      // iniciamos sesion automaticamente con las credenciales que acabamos
+      // de introducir.
+      if (err && /ya existe/i.test(String(err.message || ""))) {
+        api("/api/login", {
+          method: "POST",
+          body: JSON.stringify({ username, password })
+        }, 4).then(data => {
+          setToken(data.token);
+          setCachedUser(data.user);
+          if (data.recoveryToken) setRecoveryToken(data.recoveryToken);
+          try { sessionStorage.removeItem("eb_pending_pw"); sessionStorage.removeItem("eb_pending_user"); } catch(e) {}
+          try { loadCurrentUser(); } catch(e) {}
+        }).catch(() => {
+          setTimeout(() => {
+            const u = sessionStorage.getItem("eb_pending_user");
+            const p = sessionStorage.getItem("eb_pending_pw");
+            if (u && p) syncRegisterGlobal(u, p);
+          }, 5000);
+        });
+        return;
+      }
+
       // No se pierde la cuenta local. Se vuelve a intentar hasta que Render
       // despierte y el servidor acepte el registro.
       setTimeout(() => {
@@ -4156,6 +4211,7 @@ function login(e){
     .then(data => {
       setToken(data.token);
       setCachedUser(data.user);
+      if (data.recoveryToken) setRecoveryToken(data.recoveryToken);
       loadCurrentUser();
     })
     .catch(err => {
@@ -4226,14 +4282,14 @@ function loadCurrentUser(){
   if (token && !String(token).startsWith("pending_")) {
     api("/api/me", {}, 2).then(data => {
       if (!data || !data.user) throw new Error("Cuenta no encontrada");
+      if (data.recoveryToken) setRecoveryToken(data.recoveryToken);
       enterApp(data.user);
     }).catch(() => {
-      // Si ya entramos con cache, no expulsar al usuario por un fallo temporal.
-      if (!cached) {
-        setToken("");
-        setCachedUser(null);
-        authScreen.style.display = "flex";
-      }
+      // Si la sesion vieja no se puede recuperar, pedir login sin borrar
+      // silenciosamente la cuenta cacheada ni dejar el registro bloqueado.
+      setToken("");
+      authScreen.style.display = "flex";
+      switchAuth("login");
     });
   }
 }
