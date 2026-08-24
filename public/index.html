@@ -810,13 +810,13 @@ function creatorAddClothingPreview(){
 }
 
 async function creatorPublish(){
-  const c=current();if(!c)return creatorMessage('Debes iniciar sesión.',true); const name=document.getElementById('creatorName').value.trim(); const description=document.getElementById('creatorDescription').value.trim(); const category=document.getElementById('creatorCategory').value; const price=Math.floor(Number(document.getElementById('creatorPrice')?.value??0));
+  if(!getToken() || String(getToken()).startsWith('pending_'))return creatorMessage('Debes iniciar sesión.',true); const name=document.getElementById('creatorName').value.trim(); const description=document.getElementById('creatorDescription').value.trim(); const category=document.getElementById('creatorCategory').value; const price=Math.floor(Number(document.getElementById('creatorPrice')?.value??0));
   if(name.length<2)return creatorMessage('Pon un nombre a la ropa.',true); if(!Number.isFinite(price)||price<0||price>1000000)return creatorMessage('El precio debe estar entre 0 y 1.000.000 Sunnys.',true);
   const type=category==='hats'?'3d':'2d';
   creatorSync2DTexture();
   const data=type==='3d'?{shapes:creatorCubes.map(mesh=>({type:mesh.userData.type,color:mesh.userData.color,position:mesh.position.toArray(),rotation:[mesh.rotation.x,mesh.rotation.y,mesh.rotation.z],scale:mesh.scale.toArray()}))}:{imageData:document.getElementById('creator2dCanvas').toDataURL('image/png')};
-  creatorMessage('Publicando ropa...');
-  try{const res=await fetch('/api/creator/publish',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},body:JSON.stringify({name,description,category,type,price,data})});const payload=await res.json().catch(()=>({}));if(!res.ok)throw new Error(payload.error||'No se pudo publicar.');creatorMessage('Publicado en el catalogo. Precio: '+price+' Sunnys. Ya puedes equiparlo desde Avatar.');await loadCustomCatalog();renderCatalog('all');if(typeof renderInventory==='function')renderInventory();}catch(err){creatorMessage(err.message||'No se pudo conectar con el servidor.',true);}}
+  creatorMessage('Publicando...');
+  try{await api('/api/creator/publish',{method:'POST',body:JSON.stringify({name,description,category,type,price,data})},3);creatorMessage('Publicado en el catalogo. Precio: '+price+' Sunnys. Ya puedes equiparlo desde Avatar.');await loadCustomCatalog();renderCatalog('all');if(typeof renderInventory==='function')renderInventory();}catch(err){creatorMessage(err.message||'No se pudo conectar con el servidor.',true);}}
 async function loadCustomCatalog(){try{const r=await fetch('/api/catalog/custom',{cache:'no-store'});const data=await r.json();const custom=data.items||[];custom.forEach(item=>{const local=catalogDatabase.find(x=>x.id===item.id);const normalized={id:item.id,name:item.name,category:item.category,price:Number(item.price)||0,desc:item.description||'Creado por la comunidad',custom:true,data:item.data,type:item.type,owner:item.owner,ownerId:item.ownerId,status:item.status};if(local)Object.assign(local,normalized);else catalogDatabase.push(normalized);});if(typeof renderCatalog==='function')renderCatalog('all');return custom;}catch(_){return[];}}
 
 // Atajos del editor 3D retirados junto al creador de accesorios.
