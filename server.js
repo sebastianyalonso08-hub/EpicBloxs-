@@ -1588,9 +1588,8 @@ const server = http.createServer(async (req, res) => {
     const body = await readBody(req);
     const name = safeText(body.name, "", 40);
     const description = safeText(body.description, "", 200);
-    // Solo se publica ROPA 2D (camisas y pantalones). El creador de accesorios 3D fue retirado.
-    const category = ["shirts","pants"].includes(body.category) ? body.category : "shirts";
-    const type = "2d";
+    const category = ["shirts", "pants", "faces", "hats"].includes(body.category) ? body.category : "shirts";
+    const type = category === "hats" ? "3d" : "2d";
     const price = Math.floor(Number(body.price ?? 0));
     if (!Number.isFinite(price) || price < 0 || price > 1000000) return json(res, 400, { error: "El precio debe estar entre 0 y 1.000.000 Sunnys." });
     if (name.length < 2) return json(res, 400, { error: "Pon un nombre al objeto." });
@@ -1602,9 +1601,15 @@ const server = http.createServer(async (req, res) => {
     }
     const payloadText = JSON.stringify(body.data || {});
     if (payloadText.length > 2500000) return json(res, 413, { error: "El recurso es demasiado grande." });
-    if (!body.data || !body.data.imageData) return json(res, 400, { error: "Falta el diseno de la ropa." });
-    if (!/^data:image\/(png|jpeg|webp);base64,/i.test(String(body.data.imageData))) {
-      return json(res, 400, { error: "Formato de imagen no permitido." });
+    if (!body.data || typeof body.data !== "object") return json(res, 400, { error: "Faltan los datos del diseño." });
+    if (type === "2d") {
+      if (!body.data.imageData) return json(res, 400, { error: "Falta la imagen del diseño." });
+      if (!/^data:image\/(png|jpeg|webp);base64,/i.test(String(body.data.imageData))) return json(res, 400, { error: "Formato de imagen no permitido." });
+    } else {
+      const shapes = Array.isArray(body.data.shapes) ? body.data.shapes : [];
+      if (!shapes.length || shapes.length > 24) return json(res, 400, { error: "El sombrero debe tener entre 1 y 24 piezas." });
+      if (shapes.some(shape => !shape || !["box", "cylinder", "sphere", "cone", "torus"].includes(shape.type))) return json(res, 400, { error: "Una pieza del sombrero no es valida." });
+      body.data = { shapes: shapes.map(shape => ({ type: shape.type, color: /^#[0-9a-f]{6}$/i.test(String(shape.color || "")) ? String(shape.color) : "#1684e8", position: Array.isArray(shape.position) ? shape.position.slice(0, 3).map(n => Math.max(-10, Math.min(10, Number(n) || 0))) : [0, 2.5, 0], rotation: Array.isArray(shape.rotation) ? shape.rotation.slice(0, 3).map(n => Math.max(-10, Math.min(10, Number(n) || 0))) : [0, 0, 0], scale: Array.isArray(shape.scale) ? shape.scale.slice(0, 3).map(n => Math.max(0.05, Math.min(10, Number(n) || 1))) : [1, 1, 1] })) };
     }
     const items = loadCatalog();
     const item = {
@@ -1770,7 +1775,7 @@ const server = http.createServer(async (req, res) => {
     const me = users[sess.key];
     const friendSet = new Set(me.friends || []);
     const requested = Array.isArray(body.memberIds) ? body.memberIds : [];
-    const memberKeys = [...new Set(requested.map(identifier => resolveUserKey(users, identifier)).filter(key => key && key !== sess.key && friendSet.has(key)))].slice(0, 20);
+    const memberKeys = [...new Set(requested.map(identifier => resolveUserKey(users, identifier)).filter(key => key && key !== sess.key && friendSet.has(key)))].slice(0, 19);
     if (!memberKeys.length) return json(res, 400, { error: "Selecciona al menos un amigo del grupo." });
     const group = { id: "G-" + crypto.randomBytes(6).toString("hex"), name, ownerKey: sess.key, memberKeys: [sess.key, ...memberKeys], messages: [], readAt: {}, createdAt: new Date().toISOString() };
     const groups = loadGroups();
