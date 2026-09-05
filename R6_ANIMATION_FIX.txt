@@ -1,0 +1,8 @@
+EpicBloxs Main 8 - R6 animation fix
+
+Cambios:
+- Separacion del brazo izquierdo ajustada para que no quede pegado al torso en juegos normales.
+- Espada sigue en la mano derecha.
+- Nueva pose de salto R6-style para el jugador local en todos los juegos.
+- Pose de salto para jugadores remotos basada en movimiento vertical.
+- No se modificaron server.js, data, render.yaml ni sistemas del servidor.

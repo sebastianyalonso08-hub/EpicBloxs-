@@ -1,0 +1,5 @@
+EpicBloxs R6 Jump Arm Fix
+- Both local arms use the exact same vertical jump pose: rotation (0,0,PI).
+- Walking explicitly resets both arm Z rotations to 0 so the jump pose cannot persist while a movement key is held.
+- Idle explicitly resets both arm Z rotations to 0.
+- Remote-player jump/walk animation receives the same stale-pose fix.
