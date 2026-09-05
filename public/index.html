@@ -503,7 +503,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
   </div>
 </section>
 
-<section id="download" class="page"><h1>Download</h1><div class="download-box"><h2>🖥️ EpicBloxs  Client</h2><p>Fucking ChatGPT dosen't want to make a real download client so is just a web client [comming soon download client].</p><button class="section-button" onclick="launchWebClient('EpicBloxs Universe')">Launch Client</button></div></section>
+<section id="download" class="page"><h1>Download</h1><div class="download-box"><h2>🖥️ EpicBloxs Studio Client</h2><p>Working on it but test the baseplate if u want lol.</p><button class="section-button" onclick="launchWebClient('EpicBloxs Universe')">Launch Client</button></div></section>
 
 <section id="avatar" class="page">
   <h1>Avatar</h1>
@@ -4767,7 +4767,7 @@ function renderFriends(){
   friendsBox.innerHTML = list.map(f => {
     const p = f.presence || {};
     const cls = p.playing ? 'presence-playing' : (p.online ? 'presence-online' : 'presence-offline');
-    const label = p.playing ? `🎮 Jugando: ${escapeHTML(p.gameName || 'un juego')}` : (p.online ? '🟢 En línea' : '⚪ Desconectado');
+    const label = p.playing ? `Playing: ${escapeHTML(p.gameName || 'un juego')}` : (p.online ? 'Online' : 'Disconected');
     return `
     <div class="friend" onclick="viewFriendProfile('${escapeHTML(f.id)}')">
       <div class="friend-avatar">${avatarPortraitHTML(f, 82)}</div>
