@@ -52,11 +52,11 @@ body.theme-purple{background:#f4efff;color:#30204d}body.theme-purple .sidebar,bo
 .profile-avatar-large{width:260px;height:340px;margin:0 auto 15px;background:linear-gradient(#bde7ff 0 72%,#7bb957 72%);border:2px solid #999;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 6px 15px rgba(0,0,0,0.15)}
 
 .bio-box{margin-top:15px;padding:15px;background:#f9f9f9;border:1px solid #ddd;border-radius:6px;text-align:left}.bio-box h3{margin-top:0;font-size:16px;color:#444}
-.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}.game{background:#1a1628;border:1px solid #3d315e;cursor:pointer;border-radius:10px;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 6px 18px rgba(0,0,0,.25)}.game:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,.4);border-color:#6b52a8}.game-image{height:150px;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(145deg,#2b2150,#12101c);color:#ffcc00;font-weight:bold;position:relative}.game-icon{font-size:72px!important;line-height:1;text-shadow:0 4px 16px rgba(0,0,0,.45);transition:transform .2s ease,filter .2s ease}.game:hover .game-icon{transform:scale(1.1);filter:brightness(1.15)}.game-info{padding:12px 12px 14px}.game-name{font-size:14px;font-weight:700;color:#f4f0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.game-players{color:#b9afd4;font-size:12px;margin-top:6px;display:flex;align-items:center;gap:6px}.play-button{margin-top:10px;width:100%;border:0;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;padding:8px;cursor:pointer;border-radius:6px;font-weight:bold;transition:filter 0.2s;display:none}.play-button:hover{filter:brightness(1.12)}
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}.game{background:#1a1628;border:1px solid #3d315e;cursor:pointer;border-radius:10px;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 6px 18px rgba(0,0,0,.25)}.game:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,.4);border-color:#6b52a8}.game-image{height:150px;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(145deg,#2b2150,#12101c);color:#ffcc00;font-weight:bold;position:relative}.game-icon{width:100%;height:150px;object-fit:cover;display:block;transition:transform .2s ease,filter .2s ease}.game:hover .game-icon{transform:scale(1.03);filter:brightness(1.08)}.game-info{padding:12px 12px 14px}.game-name{font-size:14px;font-weight:700;color:#f4f0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.game-players{color:#b9afd4;font-size:12px;margin-top:6px;display:flex;align-items:center;gap:6px}.play-button{margin-top:10px;width:100%;border:0;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;padding:8px;cursor:pointer;border-radius:6px;font-weight:bold;transition:filter 0.2s;display:none}.play-button:hover{filter:brightness(1.12)}
 /* Game detail page (Roblox-style) */
 .game-detail-wrap{max-width:920px;margin:0 auto}
 .game-detail-banner{width:100%;height:280px;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#2b2150,#12101c);display:flex;align-items:center;justify-content:center;position:relative;border:1px solid #3d315e;box-shadow:0 12px 40px rgba(0,0,0,.35)}
-.game-detail-banner .gd-icon{font-size:120px;text-shadow:0 8px 30px rgba(0,0,0,.5);line-height:1}
+.game-detail-banner .gd-icon{display:block;width:100%;height:100%;overflow:hidden;border-radius:inherit}.game-detail-banner .gd-icon img{display:block;width:100%;height:100%;object-fit:cover}
 .game-detail-banner .gd-arrows{position:absolute;inset:0;pointer-events:none;opacity:.55}
 .game-detail-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-top:18px;flex-wrap:wrap}
 .game-detail-title{font-size:28px;font-weight:800;margin:0;color:#f4f0ff}
@@ -478,7 +478,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
   <div class="game-detail-wrap">
     <button class="game-detail-back" onclick="showPage('games')">← Volver a Games</button>
     <div class="game-detail-banner" id="gdBanner">
-      <span class="gd-icon" id="gdIcon">🎮</span>
+      <span class="gd-icon" id="gdIcon"><img src="/assets/games/default-game.svg" alt="Game"></span>
     </div>
     <div class="game-detail-header">
       <div>
@@ -566,7 +566,30 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 
     <div class="creator-card">
       <h3 style="margin-top:0">Vista previa</h3>
-      <div id="creator3dTools" class="creator-tools" style="display:none"><input id="creatorCubeColor" class="creator-color" type="color" value="#1684e8"><button onclick="creatorAddShape('box')">Cubo</button><button onclick="creatorAddShape('cylinder')">Cilindro</button><button onclick="creatorAddShape('sphere')">Esfera</button><button onclick="creatorAddShape('cone')">Cono</button><button onclick="creatorAddShape('torus')">Aro</button><button onclick="creatorRemoveCube()">Delete Piece</button></div>
+      <div id="creator3dTools" class="creator-tools" style="display:none">
+        <input id="creatorCubeColor" class="creator-color" type="color" value="#1684e8">
+        <button onclick="creatorAddShape('box')">Cubo</button><button onclick="creatorAddShape('cylinder')">Cilindro</button><button onclick="creatorAddShape('sphere')">Esfera</button><button onclick="creatorAddShape('cone')">Cono</button><button onclick="creatorAddShape('torus')">Aro</button><button onclick="creatorRemoveCube()">Delete Piece</button>
+      </div>
+      <div id="creatorTransformPanel" class="creator-transform" style="display:none">
+        <div class="creator-transform-title">Transformar pieza seleccionada</div>
+        <div class="creator-tools creator-transform-tools">
+          <button id="creatorToolMove" onclick="creatorSetTransformTool('move')">Mover</button>
+          <button id="creatorToolRotate" onclick="creatorSetTransformTool('rotate')">Rotar</button>
+          <button id="creatorToolScale" onclick="creatorSetTransformTool('scale')">Escalar</button>
+        </div>
+        <div class="creator-transform-grid">
+          <label>X <input id="creatorTx" type="number" step="0.05"></label>
+          <label>Y <input id="creatorTy" type="number" step="0.05"></label>
+          <label>Z <input id="creatorTz" type="number" step="0.05"></label>
+          <label>Rot X <input id="creatorRx" type="number" step="0.05"></label>
+          <label>Rot Y <input id="creatorRy" type="number" step="0.05"></label>
+          <label>Rot Z <input id="creatorRz" type="number" step="0.05"></label>
+          <label>Scale X <input id="creatorSx" type="number" min="0.05" step="0.05"></label>
+          <label>Scale Y <input id="creatorSy" type="number" min="0.05" step="0.05"></label>
+          <label>Scale Z <input id="creatorSz" type="number" min="0.05" step="0.05"></label>
+        </div>
+        <div class="creator-small" style="margin-top:7px">Puedes escalar cada eje por separado o usar el modo Escalar y arrastrar la pieza. Las piezas se guardan con su tamaño al publicar.</div>
+      </div>
       <div id="creatorViewer" class="creator-viewer"></div>
       <p class="creator-small">Arrastra para rotar la camara y ver como queda tu ropa en el personaje.</p>
     </div>
@@ -886,6 +909,20 @@ function creatorApplyTransformInputs(){if(!creatorSelected)return; const v=id=>N
 function creatorSetTransformTool(tool){creatorTransformTool=tool;creatorUpdateTransformPanel();creatorMessage(tool==='move'?'Modo mover activo.':tool==='rotate'?'Modo rotar activo.':'Modo escalar activo.');}
 function creatorFocusSelected(resetDistance=false){if(!creatorSelected)return; const target=creatorGetObjectCenter(creatorSelected); if(resetDistance){creatorOrbit.distance=5;} const cp=Math.cos(creatorOrbit.pitch),sp=Math.sin(creatorOrbit.pitch),sy=Math.sin(creatorOrbit.yaw),cy=Math.cos(creatorOrbit.yaw); creatorCamera.position.set(target.x+sy*cp*creatorOrbit.distance,target.y+sp*creatorOrbit.distance,target.z+cy*cp*creatorOrbit.distance); creatorCamera.lookAt(target);}
 function creatorApplyDrag(dx,dy){if(!creatorSelected)return; if(creatorTransformTool==='move'){creatorSelected.position.x+=dx*.012; creatorSelected.position.y-=dy*.012;} else if(creatorTransformTool==='rotate'){creatorSelected.rotation.y+=dx*.012;creatorSelected.rotation.x+=dy*.012;} else {const factor=Math.max(.2,1-dy*.01+dx*.005);creatorSelected.scale.multiplyScalar(factor);} creatorUpdateSelectionVisual();creatorUpdateTransformPanel();}
+
+function creatorScaleSelected(axis, amount){
+  if(!creatorSelected) return;
+  creatorSelected.scale[axis]=Math.max(0.05, creatorSelected.scale[axis]+(Number(amount)||0));
+  creatorUpdateSelectionVisual(); creatorUpdateTransformPanel();
+}
+document.addEventListener('keydown',e=>{
+  if(creatorMode!=='3d' || !creatorSelected) return;
+  const tag=e.target?.tagName||'';
+  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+  if(e.key==='1') creatorSetTransformTool('move');
+  if(e.key==='2') creatorSetTransformTool('rotate');
+  if(e.key==='3') creatorSetTransformTool('scale');
+});
 function renderCreatorCubeList(){const box=document.getElementById('creatorCubeList');if(!box)return;if(!creatorCubes.length){box.innerHTML='<div class="creator-small">No hay objetos.</div>';return;}box.innerHTML=creatorCubes.map((c,i)=>`<div class="creator-cube-row ${creatorSelected===c?'creator-list-selected':''}"><span>${creatorShapeName(c.userData.type)} ${i+1}</span><span style="width:18px;height:18px;border-radius:3px;background:${c.userData.color};border:1px solid #999"></span><button onclick="creatorSelectCube(${i})">${creatorSelected===c?'Seleccionado':'Seleccionar'}</button></div>`).join('');}
 function creatorMessage(text,error=false){const el=document.getElementById('creatorMessage');if(!el)return;el.textContent=text;el.className='creator-msg '+(error?'err':'ok');}
 function creatorAddClothingPreview(){
@@ -1751,8 +1788,8 @@ function buildAvatar3DModel(userData) {
     armH = 1.35;
   } else {
     // Hombre R6 clásico: bloque 1.2 x 1.4 x 0.6, centro y=1.0
-    torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 0.6), torsoMat);
-    torsoMesh.position.set(0, 1.0, 0);
+    torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.05, 1.3, 0.6), torsoMat);
+    torsoMesh.position.set(0, 0.95, 0);
     torsoMesh.name = "torso";
     torsoMesh.castShadow = true;
     torsoMesh.receiveShadow = true;
@@ -1760,7 +1797,7 @@ function buildAvatar3DModel(userData) {
 
   // Cabeza encima del torso (torso top ~1.7)
   const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), headMaterials);
-  headMesh.position.set(0, 2.15, 0);
+  headMesh.position.set(0, 2.08, 0);
   headMesh.name = "head";
   headMesh.castShadow = true;
   headMesh.receiveShadow = true;
@@ -1849,6 +1886,213 @@ function buildAvatar3DModel(userData) {
     });
   }
 
+  avatarGroup.scale.set(0.5, 0.5, 0.5);
+  return avatarGroup;
+}
+
+
+// ===== MODELOS DE JUGADOR DEL JUEGO (R6) =====
+// Este modelo se usa SOLO dentro de las partidas. La vista del Avatar/Perfil
+// conserva su modelo propio; aquí el cuerpo sigue las proporciones de las
+// referencias: masculino rectangular y femenino con torso entallado.
+function buildGamePlayerModel(userData) {
+  const avatarGroup = new THREE.Group();
+  const avatarData = (userData && userData.avatar) || {};
+  const colors = avatarData.colors || {};
+  const accessories = Array.isArray(avatarData.accessories) ? avatarData.accessories : [];
+
+  const headCol = colors.head || "#f5c928";
+  const torsoCol = colors.torso || "#1477b9";
+  const armCol = colors.arms || "#f5c928";
+  const legCol = colors.legs || "#171820";
+
+  let activeFace = "Classic Smile";
+  let activeShirt = null;
+  let activePants = null;
+  let customShirt = null;
+  let customPants = null;
+
+  accessories.forEach(acc => {
+    const cat = avatarItemCategory(acc);
+    const item = catalogItemById(acc);
+    if (cat === "faces") activeFace = acc;
+    else if (cat === "shirts") {
+      activeShirt = acc;
+      customShirt = (item && item.custom) ? item : null;
+    } else if (cat === "pants") {
+      activePants = acc;
+      customPants = (item && item.custom) ? item : null;
+    }
+  });
+
+  const customShirtTex = customShirt ? customClothingTexture(customShirt) : null;
+  const torsoTexture = customShirtTex || createShirtTexture(torsoCol, activeShirt);
+  const torsoMat = new THREE.MeshLambertMaterial({ map: torsoTexture });
+
+  const customPantsTex = customPants ? customClothingTexture(customPants) : null;
+  const legsTexture = customPantsTex || createPantsTexture(legCol, activePants);
+  const legMat = new THREE.MeshLambertMaterial({ map: legsTexture });
+
+  const armMat = new THREE.MeshLambertMaterial({ color: armCol });
+  const sideHeadMat = new THREE.MeshLambertMaterial({ color: headCol });
+  const faceTexture = createFaceTexture(headCol, activeFace);
+  const frontFaceMat = new THREE.MeshLambertMaterial({ map: faceTexture, color: headCol });
+  const headMaterials = [sideHeadMat, sideHeadMat, sideHeadMat, sideHeadMat, frontFaceMat, sideHeadMat];
+
+  const torsoType = avatarData.torsoType === "female" ? "female" : "male";
+
+  // The in-game body is intentionally built from the same blocky proportions
+  // as the supplied references: cube head, separate shirt torso, trapezoid
+  // arms and two straight black legs. These dimensions are the model itself,
+  // not a UI/avatar-preview approximation.
+  function extrudedShape(points, depth, bevel = 0.018) {
+    const shape = new THREE.Shape();
+    shape.moveTo(points[0][0], points[0][1]);
+    for (let i = 1; i < points.length; i++) shape.lineTo(points[i][0], points[i][1]);
+    shape.closePath();
+    const geo = new THREE.ExtrudeGeometry(shape, {
+      depth,
+      bevelEnabled: bevel > 0,
+      bevelThickness: bevel,
+      bevelSize: bevel,
+      bevelSegments: 1,
+      curveSegments: 1
+    });
+    geo.translate(0, 0, -depth / 2);
+    return geo;
+  }
+
+  // Torso proportions from the references.
+  let torsoMesh;
+  if (torsoType === "female") {
+    // Feminine reference: broad shoulders, visibly narrower waist, then
+    // slightly wider hips. It is a single solid torso mesh.
+    const femaleTorso = [
+      [-0.56,  0.70], [ 0.56,  0.70],
+      [ 0.56,  0.28], [ 0.40,  0.08],
+      [ 0.33, -0.12], [ 0.46, -0.70],
+      [-0.46, -0.70], [-0.33, -0.12],
+      [-0.40,  0.08], [-0.56,  0.28]
+    ];
+    torsoMesh = new THREE.Mesh(extrudedShape(femaleTorso, 0.56, 0.02), torsoMat);
+  } else {
+    // Masculine reference: simple straight rectangular torso.
+    const maleTorso = [
+      [-0.525,  0.65], [ 0.525,  0.65],
+      [ 0.525, -0.65], [-0.525, -0.65]
+    ];
+    torsoMesh = new THREE.Mesh(extrudedShape(maleTorso, 0.60, 0.015), torsoMat);
+  }
+  torsoMesh.name = "torso";
+  torsoMesh.position.set(0, 0.95, 0);
+
+  // Same cube head in both models.
+  const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.82, 0.82), headMaterials);
+  headMesh.position.set(0, 2.08, 0);
+  headMesh.name = "head";
+
+  // Arms are tapered/trapezoidal instead of simple rectangular bars.
+  // Their top edge meets the shoulder and their lower edge angles outward,
+  // matching the silhouette in both supplied references.
+  const armH = 1.35;
+  const armTopW = torsoType === "female" ? 0.40 : 0.38;
+  const armBottomW = torsoType === "female" ? 0.50 : 0.45;
+  const armDepth = 0.50;
+  const armX = torsoType === "female" ? 0.84 : 0.79;
+
+  const armShape = [
+    [-armTopW / 2, 0], [armTopW / 2, 0],
+    [armBottomW / 2, -armH], [-armBottomW / 2, -armH]
+  ];
+
+  const leftArm = new THREE.Group();
+  leftArm.name = "leftArm";
+  leftArm.position.set(-armX, 1.70, 0);
+  leftArm.userData.bindX = -armX;
+  const leftArmMesh = new THREE.Mesh(extrudedShape(armShape, armDepth, 0.018), armMat);
+  leftArm.add(leftArmMesh);
+
+  const rightArm = new THREE.Group();
+  rightArm.name = "rightArm";
+  rightArm.position.set(armX, 1.70, 0);
+  rightArm.userData.bindX = armX;
+  const rightArmMesh = new THREE.Mesh(extrudedShape(armShape, armDepth, 0.018), armMat);
+  rightArm.add(rightArmMesh);
+
+  // Two independent straight legs with a small central gap, black by default.
+  const legW = torsoType === "female" ? 0.50 : 0.52;
+  const legH = torsoType === "female" ? 1.20 : 1.34;
+  const legDepth = 0.50;
+
+  const leftLeg = new THREE.Group();
+  leftLeg.name = "leftLeg";
+  leftLeg.position.set(-0.27, 0.28, 0);
+  const leftLegMesh = new THREE.Mesh(new THREE.BoxGeometry(legW, legH, legDepth), legMat);
+  leftLegMesh.position.y = -legH / 2;
+  leftLeg.add(leftLegMesh);
+
+  const rightLeg = new THREE.Group();
+  rightLeg.name = "rightLeg";
+  rightLeg.position.set(0.27, 0.28, 0);
+  const rightLegMesh = new THREE.Mesh(new THREE.BoxGeometry(legW, legH, legDepth), legMat);
+  rightLegMesh.position.y = -legH / 2;
+  rightLeg.add(rightLegMesh);
+
+  avatarGroup.add(headMesh, torsoMesh, leftArm, rightArm, leftLeg, rightLeg);
+
+  // Accessories stay attached to the appropriate body part.
+  function accessoryAttachTarget(accName, cat) {
+    const n = String(accName || "");
+    if (cat === "hats" || cat === "faces") return "head";
+    if (/cap|crown|beanie|bow|fedora|headphones|shades|glasses|hat|sombrero/i.test(n)) return "head";
+    if (/backpack|necklace|bunny|shoulder|wing|cape|pack/i.test(n)) return "torso";
+    if (cat === "gear") return /shades|glasses|mask|face/i.test(n) ? "head" : "torso";
+    return "head";
+  }
+
+  accessories.forEach(accName => {
+    const accCat = avatarItemCategory(accName);
+    const accItem = catalogItemById(accName);
+    const isClothing = accCat === "faces" || accCat === "shirts" || accCat === "pants";
+    if (isClothing || (accItem && accItem.type === "2d")) return;
+
+    const accMesh = createAccessoryMesh(accName);
+    accMesh.name = "acc_" + String(accName).replace(/\s+/g, "_");
+    accMesh.traverse(obj => {
+      if (obj.isMesh) {
+        obj.castShadow = true;
+        obj.receiveShadow = true;
+      }
+    });
+
+    const boneName = accessoryAttachTarget(accName, accCat);
+    const bone = avatarGroup.getObjectByName(boneName);
+    if (bone) {
+      const bx = bone.position.x, by = bone.position.y, bz = bone.position.z;
+      accMesh.children.forEach(ch => {
+        if (ch.position) {
+          ch.position.x -= bx;
+          ch.position.y -= by;
+          ch.position.z -= bz;
+        }
+      });
+      accMesh.position.set(0, 0, 0);
+      bone.add(accMesh);
+    } else {
+      avatarGroup.add(accMesh);
+    }
+  });
+
+  avatarGroup.traverse(obj => {
+    if (obj.isMesh) {
+      obj.castShadow = true;
+      obj.receiveShadow = true;
+    }
+  });
+
+  // Proporciones del personaje masculino: torso mas estrecho y piernas mas largas/grandes,
+  // manteniendo el mismo estilo R6 de la referencia.
+  // Keep the existing world scale so gameplay/collisions/camera remain stable.
   avatarGroup.scale.set(0.5, 0.5, 0.5);
   return avatarGroup;
 }
@@ -1996,7 +2240,13 @@ function launchWebClient(gameName) {
       n==='Speed Race' ? '🏎️ Corre con tu auto · pasa 6 checkpoints y llega a la meta' :
       n==='Epic Obby' ? '🏃 Salta, toca checkpoints, recoge monedas y llega a la meta (+Sunnys)' :
       n==='Sky Islands' ? '☁️ Salta entre islas y recoge monedas' :
-      n==='Bloxs City' ? '🏙️ Ciudad grande · semáforos, autos · E en puestos para trabajar' : '';
+      n==='Bloxs City' ? '🏙️ Ciudad grande · semáforos, autos · E en puestos para trabajar' :
+      n==='Zombie Survival' ? '🧟 Busca refugio, recoge suministros y sobrevive.' :
+      n==='Treasure Island' ? '🏝️ Explora la isla y encuentra los cofres del tesoro.' :
+      n==='Neon City' ? '🌃 Explora las calles y edificios de la ciudad nocturna.' :
+      n==='Lava Escape' ? '🌋 Salta entre plataformas y llega a la zona segura.' :
+      n==='Paintball Plaza' ? '🎨 Muévete entre las coberturas y domina la plaza.' :
+      n==='Castle Defense' ? '🏰 Recorre el castillo y protege el patio central.' : '';
   }
   const sub = document.getElementById('gameMenuSubtitle');
   if(sub) sub.textContent = gameName;
@@ -2338,7 +2588,13 @@ const GAME_SPAWN_POINTS = Object.freeze({
   'Pet World': Object.freeze([{ x: 0, y: 0.02, z: 0 }]),
   'Battle Arena': Object.freeze([{ x: 0, y: 0.5, z: 16 }]),
   'Speed Race': Object.freeze([{ x: 0, y: 0.02, z: 35 }]),
-  'Sky Islands': Object.freeze([{ x: 0, y: 0, z: 0 }])
+  'Sky Islands': Object.freeze([{ x: 0, y: 0, z: 0 }]),
+  'Zombie Survival': Object.freeze([{ x: 0, y: 0.02, z: 12 }]),
+  'Treasure Island': Object.freeze([{ x: 0, y: 0.02, z: -24 }]),
+  'Neon City': Object.freeze([{ x: 0, y: 0.02, z: 0 }]),
+  'Lava Escape': Object.freeze([{ x: 0, y: 0.02, z: 30 }]),
+  'Paintball Plaza': Object.freeze([{ x: 0, y: 0.02, z: 0 }]),
+  'Castle Defense': Object.freeze([{ x: 0, y: 0.02, z: 20 }])
 });
 
 let activeSpawnPoints = [];
@@ -2662,6 +2918,161 @@ function buildGameSpecificWorld(gameName){
     window._playerRaceCar = addRaceCar(0,32,0x1e88e5);
     addRaceCar(6,32,0x43a047);
     raceStartTime=performance.now();
+  } else if(n==='Zombie Survival'){
+    // Zombie Survival: zona urbana abandonada, barricadas, refugio y suministros.
+    addBox(0,-0.1,0,72,0.2,72,0x39434a,{solid:true});
+    addBox(0,0.08,0,58,0.12,5,0x20252b,{solid:false});
+    addBox(0,0.08,0,5,0.12,58,0x20252b,{solid:false});
+    // Refugio central con muros y puerta.
+    addBox(0,2.2,-22,28,4.4,2,0x59636b,{solid:true});
+    addBox(-13,2.2,-8,2,4.4,28,0x59636b,{solid:true});
+    addBox(13,2.2,-8,2,4.4,28,0x59636b,{solid:true});
+    addBox(-5,1.4,-22,7,2.8,2.3,0x3f474e,{solid:true});
+    addBox(5,1.4,-22,7,2.8,2.3,0x3f474e,{solid:true});
+    // Callejones y edificios destruidos.
+    const buildings=[[-28,3,-27,9,6,9],[28,4,-27,10,8,8],[-28,2,18,8,4,10],[28,3,18,10,6,9],[-20,1.5,32,12,3,7],[20,2.5,32,12,5,7]];
+    buildings.forEach(([x,y,z,w,h,d],i)=>{
+      addBox(x,h/2,z,w,h,d,[0x555d62,0x4a5157,0x626a70][i%3],{solid:true});
+      addBox(x,Math.min(h-0.7,2.1),z-d/2-0.06,Math.max(1.1,w/4),1.0,0.12,0x171b1f,{solid:false});
+    });
+    // Barricadas de madera, cajas y barriles.
+    for(const [x,z,r] of [[-8,-3,0.15],[8,-3,-0.15],[-6,9,-0.25],[7,14,0.25],[-18,-2,0]]){
+      const g=new THREE.Group();
+      addBox(x,0.65,z,5.2,0.3,0.35,0x6b4226,{solid:true});
+      addBox(x,1.15,z,5.2,0.25,0.35,0x8b5a2b,{solid:true});
+      const post1=addBox(x-2.2,1,z,0.28,2,0.28,0x5a351f,{solid:true});
+      const post2=addBox(x+2.2,1,z,0.28,2,0.28,0x5a351f,{solid:true});
+    }
+    for(const [x,z] of [[-5,5],[5,5],[-24,7],[24,7],[-18,27],[18,27]]) addCylinder(x,0.7,z,0.75,1.4,0x8b5e3c);
+    for(let i=0;i<18;i++) addCoinAt(((i*13)%50)-25,0.75,((i*19)%50)-18);
+    // Siluetas de zombis decorativas.
+    for(const [x,z] of [[-20,-12],[20,-12],[-34,4],[34,4],[-16,25],[16,25]]){
+      const g=new THREE.Group();
+      const body=new THREE.Mesh(new THREE.BoxGeometry(0.8,1.5,0.55),new THREE.MeshLambertMaterial({color:0x6b8e5a})); body.position.y=0.75; g.add(body);
+      const head=new THREE.Mesh(new THREE.BoxGeometry(0.7,0.7,0.7),new THREE.MeshLambertMaterial({color:0x8cab70})); head.position.y=1.85; g.add(head);
+      g.position.set(x,0,z); gameScene.add(g); gameDecorations.push(g);
+    }
+  } else if(n==='Treasure Island'){
+    // Treasure Island: isla, playas, palmeras, ruinas y una zona de tesoros.
+    addBox(0,-0.1,0,76,0.2,76,0xd7c17b,{solid:true});
+    addBox(0,0.02,0,58,0.14,58,0x62b86f,{solid:true});
+    addBox(0,0.03,-31,70,0.12,12,0x42a9e8,{solid:false});
+    addBox(-30,0.03,8,12,0.12,38,0x42a9e8,{solid:false});
+    // Montículo central y ruinas.
+    addBox(0,1.1,2,18,2.2,14,0x6f9950,{solid:true});
+    for(const [x,z] of [[-8,-2],[8,-2],[-8,10],[8,10]]){
+      addBox(x,2,z,1.5,4,1.5,0x8a7652,{solid:true});
+      addBox(x,4.1,z,1.9,0.45,1.9,0x6d5c42,{solid:false});
+    }
+    // Cofres grandes repartidos por la isla.
+    for(const [x,z] of [[-20,-8],[19,-12],[-22,23],[21,22],[0,25]]){
+      addBox(x,0.55,z,2.3,1.1,1.4,0x7a4a20,{solid:true});
+      addBox(x,0.95,z-0.02,2.0,0.18,1.25,0xd9a441,{solid:false});
+      addBox(x,1.08,z-0.65,0.28,0.35,0.12,0xf4d35e,{solid:false});
+      addCoinAt(x,1.45,z);
+    }
+    for(const [x,z,s] of [[-27,-22,1.1],[22,-24,1.0],[-25,18,0.9],[26,16,1.15],[-10,27,0.8],[11,28,0.9]]) addTree(x,z,s);
+    // Piedras y monedas siguiendo un recorrido hacia el tesoro.
+    for(let i=0;i<14;i++){
+      const x=-24+i*3.6, z=-17+Math.sin(i*0.9)*5;
+      addCylinder(x,0.28,z,0.42,0.55,0x77736a);
+      addCoinAt(x,0.72,z+1.2);
+    }
+  } else if(n==='Neon City'){
+    // Neon City: metrópolis nocturna con calles, rascacielos, anuncios y plaza.
+    addBox(0,-0.1,0,100,0.2,100,0x171a25,{solid:true});
+    for(const z of [-36,-12,12,36]) addBox(0,0.02,z,100,0.12,7,0x262b38,{solid:true});
+    for(const x of [-36,-12,12,36]) addBox(x,0.03,0,7,0.14,100,0x262b38,{solid:true});
+    const buildingCols=[0x34304f,0x3d335d,0x293b56,0x46334d,0x263f4a];
+    for(let gx=-3;gx<=3;gx++) for(let gz=-3;gz<=3;gz++){
+      if(Math.abs(gx)<=1 && Math.abs(gz)<=1) continue;
+      const h=7+((gx*7+gz*11+50)%10), x=gx*12, z=gz*12;
+      addBox(x,h/2,z,7.5,h,7.5,buildingCols[(gx+gz+20)%buildingCols.length],{solid:true});
+      for(let f=0;f<Math.floor(h/1.5);f++) for(const side of [-1,1]){
+        const win=new THREE.Mesh(new THREE.BoxGeometry(1.05,0.55,0.08),new THREE.MeshLambertMaterial({color:[0x60a5fa,0xf472b6,0xa78bfa,0x22d3ee][(f+gx+gz+20)%4],emissive:[0x60a5fa,0xf472b6,0xa78bfa,0x22d3ee][(f+gx+gz+20)%4],emissiveIntensity:0.65}));
+        win.position.set(x+side*3.78,0.75+f*1.5,z); gameScene.add(win); gameDecorations.push(win);
+      }
+    }
+    // Plaza central y torres de anuncios.
+    addBox(0,0.12,0,18,0.24,18,0x303848,{solid:true});
+    for(const [x,z,c] of [[-8,-8,0xf472b6],[8,-8,0x22d3ee],[-8,8,0xa78bfa],[8,8,0xfacc15]]){
+      addBox(x,2,z,2,4,2,c,{solid:true});
+      addBox(x,4.2,z,2.5,0.35,0.3,c,{solid:false});
+    }
+    for(const [x,z] of [[-30,-30],[30,-30],[-30,30],[30,30],[-18,18],[18,-18]]) addLamp(x,z);
+    for(let i=0;i<12;i++) addCoinAt(((i*17)%70)-35,0.7,((i*23)%70)-35);
+  } else if(n==='Lava Escape'){
+    // Lava Escape: lava subiendo, plataformas de roca, puentes y zona segura.
+    addBox(0,-0.6,0,86,1,86,0x7c241f,{solid:false});
+    addBox(0,-0.05,0,80,0.12,80,0xd43a2f,{solid:false});
+    // Canales de lava con pequeñas islas para saltar.
+    for(let i=0;i<24;i++){
+      const x=((i*17)%58)-29, z=((i*29)%58)-29;
+      const y=0.5+(i%5)*0.55;
+      const w=3.8+(i%3)*0.7, d=3.2+(i%2)*0.8;
+      addBox(x,y,z,w,0.65,d,[0x57443a,0x6b4b3a,0x4b3b35][i%3],{solid:true});
+      if(i%2===0) addCoinAt(x,y+0.55,z);
+    }
+    // Lava visible entre las plataformas.
+    for(const [x,z,w,d] of [[0,0,20,8],[-18,12,12,7],[18,-14,13,7],[0,25,24,7]]) addBox(x,0.16,z,w,0.18,d,0xff5a1f,{solid:false});
+    // Volcanes y rocas laterales.
+    for(const [x,z] of [[-34,-30],[34,-30],[-34,30],[34,30]]){
+      addCylinder(x,2,z,3.2,4,0x46352f);
+      addCylinder(x,4.3,z,2.0,0.8,0xff6a22);
+    }
+    addBox(0,7,36,20,1,7,0x4ade80,{solid:true});
+    addBox(0,8,39,20,0.6,1,0x166534,{solid:false});
+    for(let i=0;i<10;i++) addCoinAt(-18+i*4,2.2,28-i*2.8);
+  } else if(n==='Paintball Plaza'){
+    // Paintball Plaza: arena colorida con coberturas, barriles, cajas y objetivos.
+    addBox(0,-0.1,0,72,0.2,72,0x5d8f62,{solid:true});
+    addBox(0,0.04,0,58,0.1,58,0x8e9b8e,{solid:false});
+    // Muros de cobertura.
+    for(const [x,z,w,d,c] of [[-18,-18,14,2,0x4f78d1],[18,-18,14,2,0xe35d6a],[-18,18,14,2,0x55a878],[18,18,14,2,0xe5a93d],[0,-9,2,14,0x8b5cf6],[0,9,2,14,0x14b8a6]]) addBox(x,1.3,z,w,2.6,d,c,{solid:true});
+    // Barriles.
+    for(const [x,z,c] of [[-28,-8,0x3b82f6],[28,8,0xef4444],[-26,24,0xf59e0b],[26,-24,0x22c55e],[-6,25,0x8b5cf6],[6,-25,0xec4899]]) addCylinder(x,0.8,z,0.75,1.6,c);
+    // Cajas de munición y plataformas.
+    for(const [x,z] of [[-10,-25],[10,-25],[-10,25],[10,25],[-25,0],[25,0]]) addBox(x,0.65,z,2.3,1.3,2.3,0xb27b42,{solid:true});
+    for(const [x,z,c] of [[-25,-25,0x2563eb],[25,-25,0xdc2626],[-25,25,0x16a34a],[25,25,0xd97706]]){
+      addBox(x,2,z,4,4,1,c,{solid:true});
+      addBox(x,4.25,z,4.6,0.3,1.3,0xffffff,{solid:false});
+    }
+    // Dianas grandes.
+    for(const [x,z,c] of [[-30,0,0xef4444],[30,0,0x2563eb]]){
+      addCylinder(x,3,z,2.2,0.35,c).rotation.z=Math.PI/2;
+      addCylinder(x,3,z-0.03,1.25,0.38,0xffffff).rotation.z=Math.PI/2;
+      addCylinder(x,3,z-0.06,0.55,0.42,c).rotation.z=Math.PI/2;
+    }
+    for(let i=0;i<14;i++) addCoinAt(((i*19)%54)-27,0.75,((i*31)%54)-27);
+  } else if(n==='Castle Defense'){
+    // Castle Defense: fortaleza completa con murallas, torres, puerta y defensas.
+    addBox(0,-0.1,0,80,0.2,80,0x5f8751,{solid:true});
+    addBox(0,0.1,0,56,0.2,56,0x9a8769,{solid:false});
+    // Murallas exteriores.
+    addBox(0,2.5,-29,62,5,3,0x7b6b61,{solid:true});
+    addBox(0,2.5,29,62,5,3,0x7b6b61,{solid:true});
+    addBox(-29,2.5,0,3,5,62,0x7b6b61,{solid:true});
+    addBox(29,2.5,0,3,5,62,0x7b6b61,{solid:true});
+    // Torres de las esquinas.
+    for(const [x,z] of [[-29,-29],[29,-29],[-29,29],[29,29]]){
+      addCylinder(x,4.2,z,3.8,8.4,0x6e625a);
+      addCylinder(x,8.7,z,4.2,0.6,0x3f3a36);
+      addBox(x,9.2,z,5.5,0.5,5.5,0x4a403a,{solid:false});
+    }
+    // Puerta y patio central.
+    addBox(0,2.5,-29,12,5,3.6,0x4f3a2d,{solid:true});
+    addBox(0,2.8,29,12,5,3.6,0x4f3a2d,{solid:true});
+    addBox(0,0.35,0,14,0.7,14,0xc7a86b,{solid:true});
+    // Barreras interiores y posiciones defensivas.
+    for(const [x,z] of [[-18,0],[18,0],[0,-18],[0,18]]) addBox(x,1.3,z,7,2.6,2.2,0x795548,{solid:true});
+    for(const [x,z] of [[-10,-10],[10,-10],[-10,10],[10,10]]){
+      addCylinder(x,1.1,z,1.0,2.2,0x8a6748);
+      addBox(x,2.5,z,1.8,0.3,1.8,0xd4a72c,{solid:false});
+    }
+    // Banderas/estandartes en el centro.
+    addCylinder(0,3.0,0,0.09,6,0x4b3621);
+    addBox(1.7,4.9,0,3.2,1.8,0.12,0x8b1e2d,{solid:false});
+    for(let i=0;i<10;i++) addCoinAt(((i*17)%44)-22,0.8,((i*23)%44)-22);
   } else if(n==='Sky Islands'){
     addBox(0,-0.5,0,20,1,20,0x79b96b,{solid:true}); addBox(-20,-2,-12,15,1,15,0x6ea85e,{solid:true}); addBox(20,-3,-6,13,1,13,0x8fbd73,{solid:true}); addBox(8,-4,18,16,1,16,0x6da96d,{solid:true});
     addBox(-10,-1,-6,8,0.8,3,0xa47c48,{solid:true}); addBox(10,-1,6,8,0.8,3,0xa47c48,{solid:true}); addBox(0,-2,10,3,0.8,10,0xa47c48,{solid:true});
@@ -2757,7 +3168,7 @@ function initGameWebGL(gameName) {
 
   const c = current();
   clearAllRemotePlayers();
-  playerMeshGroup = buildAvatar3DModel(c ? c.user : null);
+  playerMeshGroup = buildGamePlayerModel(c ? c.user : null);
   playerMeshGroup.position.set(0, 0, 0);
   gameScene.add(playerMeshGroup);
   if(gameName.trim() === "Battle Arena") addSwordToPlayer();
@@ -2784,7 +3195,7 @@ function buildUniqueGameWorld(gameName) {
   // Antes el piso generico de reserva quedaba visible EXACTAMENTE a la misma altura
   // que ese piso propio: dos superficies ocupando el mismo lugar = parpadeo "epileptico"
   // (z-fighting) en toda la pista/cesped cada vez que la camara se movia.
-  const noGlobalFloor = ['Epic Obby','Sky Islands','Pet World','Speed Race'].includes(gameName.trim());
+  const noGlobalFloor = ['Epic Obby','Sky Islands','Pet World','Speed Race','Zombie Survival','Treasure Island','Neon City','Lava Escape','Paintball Plaza','Castle Defense'].includes(gameName.trim());
   floor.visible = !noGlobalFloor;
   gameScene.add(floor);
   if(!noGlobalFloor) solidColliders.push({ x: 0, y: -0.5, z: 0, width: floorSize, height: 1, depth: floorSize });
@@ -3488,7 +3899,13 @@ function getGameId(gameName) {
     "Speed Race ":"RACE-33D8",
     "Battle Arena ":"PVP-73B2",
     "Sky Islands ":"SKY-19E4",
-    "Pet World ":"PET-44C1"
+    "Pet World ":"PET-44C1",
+    "Zombie Survival ":"ZOMB-52A1",
+    "Treasure Island ":"TREASURE-8C31",
+    "Neon City ":"NEON-61D4",
+    "Lava Escape ":"LAVA-29B7",
+    "Paintball Plaza ":"PAINT-74E2",
+    "Castle Defense ":"CASTLE-90F5"
   };
   const trimmed = String(gameName || "").trim();
   for (const [k, v] of Object.entries(known)) {
@@ -3815,7 +4232,7 @@ function addOrUpdateRemotePlayer(p) {
     const ghost = gameScene.getObjectByName("remotePlayer_" + p.id);
     if (ghost) gameScene.remove(ghost);
 
-    group = buildAvatar3DModel({
+    group = buildGamePlayerModel({
       avatar: p.avatar || {
         colors:{head:"#f5c928",arms:"#f5c928",torso:"#1477b9",legs:"#8cae45"},
         accessories:[]
@@ -3840,7 +4257,7 @@ function addOrUpdateRemotePlayer(p) {
       const pos = group.position.clone();
       const rot = group.rotation.y;
       gameScene.remove(group);
-      group = buildAvatar3DModel({avatar:p.avatar});
+      group = buildGamePlayerModel({avatar:p.avatar});
       group.name = "remotePlayer_" + p.id;
       group.position.copy(pos);
       group.rotation.y = rot;
@@ -4707,6 +5124,7 @@ let _requestsCache = [];
 let _presenceTimer = null;
 let _gameStatsTimer = null;
 let _gameStats = {};
+let _gameVisits = {};
 
 function getMyFriends(){
   return _friendsCache.slice();
@@ -5123,44 +5541,47 @@ function showPage(p){
 }
 
 const games=[
-  ["Epic Obby ","🏃 Complete 22 platforms, obstacles, coins and reach the finish"],
-  ["Bloxs City ","🏙️ Explore neighborhoods, parks, a lake, shops and skyscrapers"],
-  ["Speed Race ","🏎️ Race through a track with ramps, curves and checkpoints"],
-  ["Battle Arena ","⚔️ Arena with swords, walls, chests and training dummies — F attack"],
-  ["Sky Islands ","☁️ Explore floating islands connected by bridges"],
-  ["Pet World ","🐾 Explore a pet park, eggs, lake and companions"],
-  ["Zombie Survival ","🧟 Survive waves of zombies and stay alive as long as you can"],
-  ["Treasure Island ","🏝️ Explore the island, find hidden treasure and collect coins"],
-  ["Neon City ","🌃 Explore a glowing city full of lights and futuristic streets"],
-  ["Lava Escape ","🌋 Escape the rising lava and reach the safe zone"],
-  ["Paintball Plaza ","🎨 Battle other players with paintball weapons"],
-  ["Castle Defense ","🏰 Defend the castle from incoming enemies"]
+  ["Epic Obby ","Complete 22 platforms, obstacles, coins and reach the finish"],
+  ["Bloxs City ","Explore neighborhoods, parks, a lake, shops and skyscrapers"],
+  ["Speed Race ","Race through a track with ramps, curves and checkpoints"],
+  ["Battle Arena ","Arena with walls, chests and training dummies — F attack"],
+  ["Sky Islands ","Explore floating islands connected by bridges"],
+  ["Pet World ","Explore a pet park, eggs, lake and companions"],
+  ["Zombie Survival ","Survive waves of zombies and stay alive as long as you can"],
+  ["Treasure Island ","Explore the island, find hidden treasure and collect coins"],
+  ["Neon City ","Explore a glowing city full of lights and futuristic streets"],
+  ["Lava Escape ","Escape the rising lava and reach the safe zone"],
+  ["Paintball Plaza ","Battle other players in a colorful arena"],
+  ["Castle Defense ","Defend the castle from incoming enemies"]
 ];
 
 const gameIconMap={
-  'Epic Obby':'🏃',
-  'Bloxs City':'🏙️',
-  'Speed Race':'🏎️',
-  'Battle Arena':'⚔️',
-  'Sky Islands':'☁️',
-  'Pet World':'🐾',
-  'Zombie Survival':'🧟',
-  'Treasure Island':'🏝️',
-  'Neon City':'🌃',
-  'Lava Escape':'🌋',
-  'Paintball Plaza':'🎨',
-  'Castle Defense':'🏰'
+  'Epic Obby':'/assets/games/epic-obby.svg',
+  'Bloxs City':'/assets/games/bloxs-city.svg',
+  'Speed Race':'/assets/games/speed-race.svg',
+  'Battle Arena':'/assets/games/battle-arena.svg',
+  'Sky Islands':'/assets/games/sky-islands.svg',
+  'Pet World':'/assets/games/pet-world.svg',
+  'Zombie Survival':'/assets/games/zombie-survival.svg',
+  'Treasure Island':'/assets/games/treasure-island.svg',
+  'Neon City':'/assets/games/neon-city.svg',
+  'Lava Escape':'/assets/games/lava-escape.svg',
+  'Paintball Plaza':'/assets/games/paintball-plaza.svg',
+  'Castle Defense':'/assets/games/castle-defense.svg'
 };
 
+function getGameIcon(name){
+  return gameIconMap[String(name||'').trim()] || '/assets/games/default-game.svg';
+}
+
 function getGameVisits(name){
-  // Pseudo visits estables por nombre (no reales, solo para UI)
-  let h=0; const s=String(name||'').toLowerCase();
-  for(let i=0;i<s.length;i++) h=((h<<5)-h)+s.charCodeAt(i)|0;
-  return Math.abs(h%90000)+1200;
+  const gid=getGameId(name);
+  return Number(_gameVisits[gid]||0);
 }
 
 function formatVisits(n){
   n=Number(n)||0;
+  if(n>=1000000) return (n/1000000).toFixed(n>=10000000?0:1).replace(/\.0$/,'')+'M';
   if(n>=1000) return (n/1000).toFixed(n>=10000?0:1).replace(/\.0$/,'')+'K';
   return String(n);
 }
@@ -5169,9 +5590,10 @@ function loadGames(list=games){
   const render=(arr)=>arr.map(g=>{
     const gid=getGameId(g[0]);
     const count=Number(_gameStats[gid]||0);
-    const icon=gameIconMap[String(g[0]).trim()]||'🎮';
-    const safeName=String(g[0]).replace(/'/g,"\'");
-    return `<div class="game" onclick="openGameDetail('${safeName}')"><div class="game-image game-icon" aria-label="${g[0]}">${icon}</div><div class="game-info"><div class="game-name">${g[0]}</div><div class="game-players"><span>👥 ${count}</span></div></div></div>`;
+    const name=String(g[0]).trim();
+    const safeName=name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const icon=getGameIcon(name);
+    return `<div class="game" onclick="openGameDetail('${safeName}')"><img class="game-icon" src="${icon}" alt="${escapeHTML(name)}" loading="lazy"><div class="game-info"><div class="game-name">${escapeHTML(name)}</div><div class="game-players"><span>👥 ${count} playing</span><span style="margin-left:auto">👁 ${formatVisits(_gameVisits[gid]||0)}</span></div></div></div>`;
   }).join("");
   const grid=document.getElementById('gamesGrid');
   const recent=document.getElementById('recentGames');
@@ -5184,23 +5606,20 @@ function openGameDetail(gameName){
   const g = games.find(x => String(x[0]).trim() === String(gameName).trim() || x[0] === gameName);
   if(!g){ alert('Juego no encontrado'); return; }
   _currentDetailGame = g[0];
-  const name = g[0];
+  const name = String(g[0]).trim();
   const desc = g[1] || '';
-  const icon = gameIconMap[String(name).trim()] || '🎮';
   const gid = getGameId(name);
   const playing = Number(_gameStats[gid]||0);
-  const visits = getGameVisits(name);
+  const visits = Number(_gameVisits[gid]||0);
   const el = (id) => document.getElementById(id);
-  if(el('gdIcon')) el('gdIcon').textContent = icon;
-  if(el('gdTitle')) el('gdTitle').textContent = String(name).trim();
+  if(el('gdIcon')) el('gdIcon').innerHTML = `<img src="${getGameIcon(name)}" alt="${escapeHTML(name)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">`;
+  if(el('gdTitle')) el('gdTitle').textContent = name;
   if(el('gdCreator')) el('gdCreator').textContent = 'By EpicBloxs Community';
   if(el('gdPlaying')) el('gdPlaying').textContent = '👥 ' + playing + ' PLAYING';
   if(el('gdVisits')) el('gdVisits').textContent = '👁 ' + formatVisits(visits) + ' VISITS';
   if(el('gdDescription')) el('gdDescription').textContent = desc.trim() || 'No description available.';
   const playBtn = el('gdPlayBtn');
-  if(playBtn){
-    playBtn.onclick = function(){ launchWebClient(name); };
-  }
+  if(playBtn) playBtn.onclick = function(){ launchWebClient(name); };
   showPage('gameDetail');
 }
 
@@ -5208,15 +5627,17 @@ async function refreshGameStats(){
   try {
     const data=await api('/api/games/stats',{},1);
     _gameStats=(data&&data.stats)||{};
-    const page=document.getElementById('games');
-    loadGames(page && page.classList.contains('active') ? games : games);
-    // Actualizar contadores si la página de detalle está abierta
+    _gameVisits=(data&&data.visits)||{};
+    loadGames(games);
     const detail = document.getElementById('gameDetail');
     if(detail && detail.classList.contains('active') && _currentDetailGame){
       const gid = getGameId(_currentDetailGame);
       const playing = Number(_gameStats[gid]||0);
+      const visits = Number(_gameVisits[gid]||0);
       const el = document.getElementById('gdPlaying');
+      const ev = document.getElementById('gdVisits');
       if(el) el.textContent = '👥 ' + playing + ' PLAYING';
+      if(ev) ev.textContent = '👁 ' + formatVisits(visits) + ' VISITS';
     }
   } catch(e) {}
 }
@@ -5279,6 +5700,9 @@ function catalogIconSVG(item) {
   return `<svg ${common}><rect x="18" y="18" width="60" height="60" rx="12" fill="#E9EEF3" stroke="#9AA7B2" stroke-width="4"/><path d="M30 50H66" stroke="#1684E8" stroke-width="6" stroke-linecap="round"/></svg>`;
 }
 
+function catalogCategoryLabel(category){
+  return ({hats:'Sombrero',shirts:'Camisa 2D',pants:'Pantalón 2D',faces:'Cara',gear:'Accesorio'}[String(category||'').toLowerCase()] || 'Artículo');
+}
 function renderCatalog(category) {
   const container = document.getElementById('catalogGridContainer');
   if(!container) return;
@@ -5291,6 +5715,7 @@ function renderCatalog(category) {
       <div class="catalog-item">
         <h3 style="margin:5px 0">${escapeHTML(item.name)}</h3>
         <div class="catalog-image">${catalogIconSVG(item)}</div>
+        <div style="display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;background:rgba(124,58,237,.16);border:1px solid rgba(124,58,237,.35);font-size:11px;font-weight:800;color:#c4b5fd;margin:2px 0 7px">${escapeHTML(catalogCategoryLabel(item.category))}${item.type==='3d'?' · 3D':''}</div>
         <p style="color:#666;font-size:12px;margin:3px 0">${escapeHTML(item.desc || '')}</p>
         <p style="color:#777;font-size:12px;margin:3px 0">👤 Creator: ${escapeHTML(item.owner || 'EpicBlox')}</p>
         <p style="color:#666;font-size:13px;margin:5px 0">☀️ ${price} Sunnys</p>
