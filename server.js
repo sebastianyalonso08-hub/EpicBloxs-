@@ -1637,7 +1637,9 @@ const server = http.createServer(async (req, res) => {
       creators: loadCreators(),
       users: Object.entries(users).map(([key, user]) => ({
         id: String(user.userId), username: user.username, usernameKey: key,
-        sunnys: Number(user.sunnys || 0), banUntil: Number(user.banUntil || 0),
+        sunnys: Number(user.sunnys || 0),
+        banUntil: Number(user.banUntil || 0),
+        banReason: String(user.banReason || ""),
         createdAt: user.createdAt || ""
       })),
       items: catalog.filter(item => item && item.ownerId != null).map(item => ({
@@ -1682,8 +1684,14 @@ const server = http.createServer(async (req, res) => {
       }
     }
     saveSessionsDisk();
-    closePlayersByAccount(targetKey, 4003, "Cuenta baneada");
-    return json(res, 200, { ok: true, username: users[targetKey].username, banUntil: users[targetKey].banUntil });
+    const banPayload = {
+      type: "banned",
+      days,
+      reason: users[targetKey].banReason || "Moderacion",
+      message: banMessage(users[targetKey])
+    };
+    closePlayersByAccount(targetKey, 4003, "Cuenta baneada", banPayload);
+    return json(res, 200, { ok: true, username: users[targetKey].username, banUntil: users[targetKey].banUntil, banReason: users[targetKey].banReason });
   }
 
   if (urlPath === "/api/admin/unban" && req.method === "POST") {
@@ -1695,8 +1703,20 @@ const server = http.createServer(async (req, res) => {
     if (!targetKey || !users[targetKey]) return json(res, 404, { error: "Usuario no encontrado." });
     users[targetKey].banUntil = 0;
     users[targetKey].banReason = "";
+    // Forzar escritura inmediata y relectura limpia
     saveUsersDisk(users);
-    return json(res, 200, { ok: true });
+    const verified = syncUserRegistry();
+    if (verified[targetKey]) {
+      verified[targetKey].banUntil = 0;
+      verified[targetKey].banReason = "";
+      saveUsersDisk(verified);
+    }
+    return json(res, 200, {
+      ok: true,
+      username: users[targetKey].username,
+      banUntil: 0,
+      banReason: ""
+    });
   }
 
   if (urlPath === "/api/admin/delete-item" && req.method === "POST") {
@@ -1972,11 +1992,20 @@ const server = http.createServer(async (req, res) => {
 });
 
 
-function closePlayersByAccount(accountKey, code = 4000, reason = "Sesion cerrada") {
+function closePlayersByAccount(accountKey, code = 4000, reason = "Sesion cerrada", payload = null) {
   for (const room of rooms.values()) {
     for (const player of [...room.players.values()]) {
       if (player.accountKey === accountKey) {
-        try { player.ws.close(code, reason); } catch {}
+        try {
+          if (payload && player.ws && player.ws.readyState === 1) {
+            player.ws.send(JSON.stringify(payload));
+          }
+        } catch {}
+        const ws = player.ws;
+        // Dar tiempo al cliente a mostrar la UI de ban/kick antes de cortar
+        setTimeout(() => {
+          try { if (ws) ws.close(code, reason); } catch {}
+        }, 180);
         leaveRoom(player);
       }
     }
@@ -2161,7 +2190,8 @@ wss.on("connection", (ws) => {
       }
 
       if (action === "kick") {
-        send(target.ws, { type: "kicked", message: "Un administrador te saco de la partida." });
+        const reason = safeText(data.reason || "Expulsado por un administrador", "", 160);
+        send(target.ws, { type: "kicked", reason, message: reason });
         try { target.ws.close(4002, "Kicked by admin"); } catch {}
         return;
       }
@@ -2187,7 +2217,12 @@ wss.on("connection", (ws) => {
           }
         }
         saveSessionsDisk();
-        send(target.ws, { type: "banned", message: banMessage(targetUser) });
+        send(target.ws, {
+          type: "banned",
+          days,
+          reason: targetUser.banReason,
+          message: banMessage(targetUser)
+        });
         try { target.ws.close(4003, "Banned by admin"); } catch {}
         return;
       }
