@@ -43,7 +43,28 @@ body.theme-purple{background:#f4efff;color:#30204d}body.theme-purple .sidebar,bo
 .profile-avatar-large{width:260px;height:340px;margin:0 auto 15px;background:linear-gradient(#bde7ff 0 72%,#7bb957 72%);border:2px solid #999;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 6px 15px rgba(0,0,0,0.15)}
 
 .bio-box{margin-top:15px;padding:15px;background:#f9f9f9;border:1px solid #ddd;border-radius:6px;text-align:left}.bio-box h3{margin-top:0;font-size:16px;color:#444}
-.games{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.game{background:#fff;border:1px solid #ddd;cursor:pointer;border-radius:6px;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s}.game:hover{transform:translateY(-3px);box-shadow:0 4px 12px rgba(0,0,0,0.15)}.game-image{height:140px;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(135deg,#1f2937,#111827);color:#ffcc00;font-weight:bold;text-shadow:0 2px 4px rgba(0,0,0,0.3)}.game-icon{font-size:64px!important;line-height:1;letter-spacing:0;text-shadow:0 4px 14px rgba(0,0,0,.35);background:linear-gradient(135deg,#2b2150,#161329)!important;transition:transform .2s ease,filter .2s ease}.game:hover .game-icon{transform:scale(1.08);filter:brightness(1.15)}.game-info{padding:10px}.game-name{font-size:13px;font-weight:bold}.game-players{color:#777;font-size:11px;margin-top:4px}.play-button{margin-top:8px;width:100%;border:0;background:#1684e8;color:#fff;padding:7px;cursor:pointer;border-radius:4px;font-weight:bold;transition:background 0.2s}.play-button:hover{background:#0d6efd}
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}.game{background:#1a1628;border:1px solid #3d315e;cursor:pointer;border-radius:10px;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 6px 18px rgba(0,0,0,.25)}.game:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,.4);border-color:#6b52a8}.game-image{height:150px;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(145deg,#2b2150,#12101c);color:#ffcc00;font-weight:bold;position:relative}.game-icon{font-size:72px!important;line-height:1;text-shadow:0 4px 16px rgba(0,0,0,.45);transition:transform .2s ease,filter .2s ease}.game:hover .game-icon{transform:scale(1.1);filter:brightness(1.15)}.game-info{padding:12px 12px 14px}.game-name{font-size:14px;font-weight:700;color:#f4f0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.game-players{color:#b9afd4;font-size:12px;margin-top:6px;display:flex;align-items:center;gap:6px}.play-button{margin-top:10px;width:100%;border:0;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;padding:8px;cursor:pointer;border-radius:6px;font-weight:bold;transition:filter 0.2s;display:none}.play-button:hover{filter:brightness(1.12)}
+/* Game detail page (Roblox-style) */
+.game-detail-wrap{max-width:920px;margin:0 auto}
+.game-detail-banner{width:100%;height:280px;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#2b2150,#12101c);display:flex;align-items:center;justify-content:center;position:relative;border:1px solid #3d315e;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.game-detail-banner .gd-icon{font-size:120px;text-shadow:0 8px 30px rgba(0,0,0,.5);line-height:1}
+.game-detail-banner .gd-arrows{position:absolute;inset:0;pointer-events:none;opacity:.55}
+.game-detail-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-top:18px;flex-wrap:wrap}
+.game-detail-title{font-size:28px;font-weight:800;margin:0;color:#f4f0ff}
+.game-detail-creator{color:#b9afd4;font-size:14px;margin-top:4px}
+.game-detail-stats{display:flex;gap:18px;margin-top:10px;color:#b9afd4;font-size:13px;align-items:center;flex-wrap:wrap}
+.game-detail-stats span{display:inline-flex;align-items:center;gap:5px}
+.game-detail-play{background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:0;padding:12px 36px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(109,40,217,.45);transition:transform .15s,filter .15s}
+.game-detail-play:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.game-detail-about{margin-top:22px;background:linear-gradient(145deg,rgba(34,27,58,.97),rgba(18,15,34,.97));border:1px solid #4b3a76;border-radius:12px;padding:18px 20px;box-shadow:0 8px 24px rgba(0,0,0,.22)}
+.game-detail-about h3{margin:0 0 10px;font-size:13px;letter-spacing:.08em;color:#b9afd4;text-transform:uppercase}
+.game-detail-about p{margin:0 0 10px;line-height:1.55;color:#e8e2f8;font-size:14px}
+.game-detail-back{background:transparent;border:1px solid #4b3a76;color:#c4b5fd;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;margin-bottom:14px}
+.game-detail-back:hover{background:rgba(155,92,255,.15)}
+/* Join friend button states */
+.presence-actions .join,.join-friend-btn{background:#1684e8;color:#fff;border:0;padding:5px 9px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:bold}
+.presence-actions .join:disabled,.join-friend-btn:disabled,.join-friend-btn.disabled{background:#6b7280!important;color:#d1d5db!important;opacity:.85;cursor:not-allowed;pointer-events:none}
+#friendProfileJoinBtn:disabled,#friendProfileJoinBtn.disabled{background:#6b7280!important;color:#d1d5db!important;cursor:not-allowed;opacity:.9;filter:none;box-shadow:none}
 
 .catalog-categories{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
 .cat-tab{background:#ddd;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-weight:bold;font-size:13px}
@@ -58,6 +79,7 @@ body.theme-purple{background:#f4efff;color:#30204d}body.theme-purple .sidebar,bo
 .catalog-image{height:160px;background:radial-gradient(circle,#ffffff 0%,#f0f2f5 100%);display:flex;align-items:center;justify-content:center;position:relative;border-radius:4px;border:1px solid #e1e4e8;margin-bottom:12px;overflow:hidden}
 .buy{width:100%;background:linear-gradient(135deg,#1684e8,#0d5aa7);color:#fff;border:0;padding:9px;cursor:pointer;border-radius:4px;font-weight:bold;box-shadow:0 2px 5px rgba(22,132,232,0.3);transition:filter 0.2s}
 .buy:hover{filter:brightness(1.1)}
+.buy:disabled,.buy.disabled{background:#6b7280!important;color:#d1d5db!important;cursor:not-allowed;box-shadow:none;filter:none;opacity:.9}
 .download-box{background:#fff;padding:30px;border:1px solid #ccc;max-width:650px;border-radius:6px}
 
 .chat{position:fixed;right:30px;bottom:0;width:240px;height:40px;background:#292929;color:#fff;border-radius:7px 7px 0 0;padding:12px 18px;cursor:pointer;z-index:200;font-weight:bold;box-shadow:0 -2px 10px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:space-between}.chat .chat-badge{background:#e53935;color:#fff;font-size:11px;border-radius:10px;padding:1px 7px;margin-left:8px;display:none}
@@ -427,6 +449,30 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 </section>
 
 <section id="games" class="page"><h1>Games</h1><p>Discover unique games created by the community.</p><div id="gamesGrid" class="games"></div></section>
+
+<section id="gameDetail" class="page">
+  <div class="game-detail-wrap">
+    <button class="game-detail-back" onclick="showPage('games')">← Volver a Games</button>
+    <div class="game-detail-banner" id="gdBanner">
+      <span class="gd-icon" id="gdIcon">🎮</span>
+    </div>
+    <div class="game-detail-header">
+      <div>
+        <h1 class="game-detail-title" id="gdTitle">Game</h1>
+        <div class="game-detail-creator" id="gdCreator">By Community</div>
+        <div class="game-detail-stats">
+          <span id="gdPlaying">👥 0 PLAYING</span>
+          <span id="gdVisits">👁 0 VISITS</span>
+        </div>
+      </div>
+      <button class="game-detail-play" id="gdPlayBtn">Play</button>
+    </div>
+    <div class="game-detail-about">
+      <h3>About</h3>
+      <p id="gdDescription">—</p>
+    </div>
+  </div>
+</section>
 
 <section id="catalog" class="page">
   <h1>Catalog</h1>
@@ -4811,7 +4857,9 @@ function renderFriendsPage(){
 
   grid.innerHTML = list.map(f => {
     const p = f.presence || {};
-    const join = p.playing ? '<button class="join" onclick="event.stopPropagation();joinFriendGame(\'' + escapeHTML(String(f.id)) + '\')">Unirse</button>' : '';
+    const canJoin = !!p.playing;
+    const fid = escapeHTML(String(f.id));
+    const join = '<button class="join join-friend-btn"' + (canJoin ? '' : ' disabled') + ' onclick="event.stopPropagation();' + (canJoin ? ('joinFriendGame(\'' + fid + '\')') : '') + '">' + (canJoin ? '▶ Unirse' : 'Unirse') + '</button>';
     return userCardHTML({ ...f, relation:'friend' }, join);
   }).join('');
 }
@@ -4929,7 +4977,22 @@ function openUserProfile(userId){
       if(msgBtn) msgBtn.onclick=()=>openDirectChatWith(friend.id, friend.username);
       const actionEl=document.getElementById("friendProfileAction");
       if(actionEl) actionEl.innerHTML=friendActionHTML({ id:friend.id, relation:friend.relation || data.relation });
-      if(joinBtn){joinBtn.disabled=!presence.playing;joinBtn.textContent=presence.playing?"▶ Unirse al Juego":"Unirse al Juego";joinBtn.onclick=presence.playing?()=>joinFriendGame(friend.id):null;}
+      if(joinBtn){
+        const canJoin = !!presence.playing;
+        joinBtn.disabled = !canJoin;
+        joinBtn.classList.toggle('disabled', !canJoin);
+        if(canJoin){
+          joinBtn.style.background = '';
+          joinBtn.style.cursor = 'pointer';
+          joinBtn.textContent = '▶ Unirse al Juego';
+          joinBtn.onclick = () => joinFriendGame(friend.id);
+        } else {
+          joinBtn.style.background = '#6b7280';
+          joinBtn.style.cursor = 'not-allowed';
+          joinBtn.textContent = presence.online ? 'Unirse al Juego' : 'Unirse al Juego';
+          joinBtn.onclick = null;
+        }
+      }
       const avEl=document.getElementById("friendProfileAvatar");
       if(avEl){avEl.style.background="transparent";avEl.innerHTML=avatarPortraitHTML(friend,260);}
       showPage("friendProfile");
@@ -5008,31 +5071,71 @@ const games=[
   ["Castle Defense ","🏰 Defend the castle from incoming enemies"]
 ];
 
+const gameIconMap={
+  'Epic Obby':'🏃',
+  'Bloxs City':'🏙️',
+  'Speed Race':'🏎️',
+  'Battle Arena':'⚔️',
+  'Sky Islands':'☁️',
+  'Pet World':'🐾',
+  'Zombie Survival':'🧟',
+  'Treasure Island':'🏝️',
+  'Neon City':'🌃',
+  'Lava Escape':'🌋',
+  'Paintball Plaza':'🎨',
+  'Castle Defense':'🏰'
+};
+
+function getGameVisits(name){
+  // Pseudo visits estables por nombre (no reales, solo para UI)
+  let h=0; const s=String(name||'').toLowerCase();
+  for(let i=0;i<s.length;i++) h=((h<<5)-h)+s.charCodeAt(i)|0;
+  return Math.abs(h%90000)+1200;
+}
+
+function formatVisits(n){
+  n=Number(n)||0;
+  if(n>=1000) return (n/1000).toFixed(n>=10000?0:1).replace(/\.0$/,'')+'K';
+  return String(n);
+}
+
 function loadGames(list=games){
   const render=(arr)=>arr.map(g=>{
     const gid=getGameId(g[0]);
     const count=Number(_gameStats[gid]||0);
-        const iconMap={
-      'Epic Obby':'🏃',
-      'Bloxs City':'🏙️',
-      'Speed Race':'🏎️',
-      'Battle Arena':'⚔️',
-      'Sky Islands':'☁️',
-      'Pet World':'🐾',
-      'Zombie Survival':'🧟',
-      'Treasure Island':'🏝️',
-      'Neon City':'🌃',
-      'Lava Escape':'🌋',
-      'Paintball Plaza':'🎨',
-      'Castle Defense':'🏰'
-    };
-    const icon=iconMap[String(g[0]).trim()]||'🎮';
-    return `<div class="game" onclick="launchWebClient('${g[0]}')"><div class="game-image game-icon" aria-label="${g[0]}">${icon}</div><div class="game-info"><div class="game-name">${g[0]}</div><div class="game-players">${g[1]}<br><b>👥 ${count} player(s) playing</b></div><button class="play-button">▶ Play</button></div></div>`;
+    const icon=gameIconMap[String(g[0]).trim()]||'🎮';
+    const safeName=String(g[0]).replace(/'/g,"\'");
+    return `<div class="game" onclick="openGameDetail('${safeName}')"><div class="game-image game-icon" aria-label="${g[0]}">${icon}</div><div class="game-info"><div class="game-name">${g[0]}</div><div class="game-players"><span>👥 ${count}</span></div></div></div>`;
   }).join("");
   const grid=document.getElementById('gamesGrid');
   const recent=document.getElementById('recentGames');
   if(grid) grid.innerHTML=render(list);
   if(recent) recent.innerHTML=render(list.slice(0,6));
+}
+
+let _currentDetailGame = null;
+function openGameDetail(gameName){
+  const g = games.find(x => String(x[0]).trim() === String(gameName).trim() || x[0] === gameName);
+  if(!g){ alert('Juego no encontrado'); return; }
+  _currentDetailGame = g[0];
+  const name = g[0];
+  const desc = g[1] || '';
+  const icon = gameIconMap[String(name).trim()] || '🎮';
+  const gid = getGameId(name);
+  const playing = Number(_gameStats[gid]||0);
+  const visits = getGameVisits(name);
+  const el = (id) => document.getElementById(id);
+  if(el('gdIcon')) el('gdIcon').textContent = icon;
+  if(el('gdTitle')) el('gdTitle').textContent = String(name).trim();
+  if(el('gdCreator')) el('gdCreator').textContent = 'By EpicBloxs Community';
+  if(el('gdPlaying')) el('gdPlaying').textContent = '👥 ' + playing + ' PLAYING';
+  if(el('gdVisits')) el('gdVisits').textContent = '👁 ' + formatVisits(visits) + ' VISITS';
+  if(el('gdDescription')) el('gdDescription').textContent = desc.trim() || 'No description available.';
+  const playBtn = el('gdPlayBtn');
+  if(playBtn){
+    playBtn.onclick = function(){ launchWebClient(name); };
+  }
+  showPage('gameDetail');
 }
 
 async function refreshGameStats(){
@@ -5041,6 +5144,14 @@ async function refreshGameStats(){
     _gameStats=(data&&data.stats)||{};
     const page=document.getElementById('games');
     loadGames(page && page.classList.contains('active') ? games : games);
+    // Actualizar contadores si la página de detalle está abierta
+    const detail = document.getElementById('gameDetail');
+    if(detail && detail.classList.contains('active') && _currentDetailGame){
+      const gid = getGameId(_currentDetailGame);
+      const playing = Number(_gameStats[gid]||0);
+      const el = document.getElementById('gdPlaying');
+      if(el) el.textContent = '👥 ' + playing + ' PLAYING';
+    }
   } catch(e) {}
 }
 
