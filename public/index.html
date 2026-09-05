@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>EpicBloxs</title>
-<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon.png?v=3">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon.png?v=3">
+<link rel="apple-touch-icon" href="/assets/favicon.png?v=3">
 <style>
 /* EpicBloxs visual cleanup: cohesive dark/violet UI without white legacy panels. */
 /* EXTRA UI COLOR FIX */
@@ -27,7 +29,7 @@ body.theme-purple .sidebar,body.theme-purple .settings-card,body.theme-purple .f
 .sidebar{border-right:1px solid var(--eb-border)!important}.side-item:hover,.friend:hover{background:rgba(155,92,255,.16)!important}.section-header h2,.creator-small,.events p,.game-players,.trade-item small,.trade-last,.presence-dot{color:var(--eb-muted)!important}
 .profile-header{background:linear-gradient(135deg,#31265b,#1a1730)!important;border-color:var(--eb-border)!important}.profile-avatar{background:#211b36!important}.profile-avatar-large{background:linear-gradient(#30265b 0 72%,#526d38 72%)!important;border-color:#66568e!important}
 .game,.trade-friend,.trade-item,.dm-row,.inventory-slot,.catalog-image,.chat-window,.chat-body,.chat-msg,.chat-input-row,.dm-msg.them,.creator-transform,.creator-2d-canvas,.auth-info{background:#18152b!important;color:var(--eb-text)!important;border-color:#3d315e!important}.game:hover,.catalog-item:hover,.inventory-item:hover{box-shadow:0 12px 28px rgba(0,0,0,.35)}
-.catalog-image{background:radial-gradient(circle,#302650 0%,#141126 100%)!important}.cat-tab{background:#2b2346;color:#ddd4f5}.cat-tab.active{background:linear-gradient(135deg,#9b5cff,#5f36c9);color:#fff}.trade-friend.selected,.trade-item.selected{background:#2b2050!important}.trade-pill{background:#30284a;color:#ddd4f5}.trade-empty{background:#1a162d;color:var(--eb-muted);border-color:#4a3a68}.creator-viewer{background:linear-gradient(#1f3150,#17132b)!important;border-color:#4b3a76}.creator-gizmo-label{background:rgba(24,20,43,.92);color:#eee;border-color:#4b3a76}.creator-tools button,.creator-transform-grid input,.friends-actions input,.auth-form input,.trade-friend,.trade-item,.search,.chat-input-row input{background:#111020!important;color:#f4f0ff!important;border-color:#4b3a76!important}.creator-tools button.active,.section-button{background:linear-gradient(135deg,#6d45d9,#422a8d);color:#fff}.auth-screen{background:radial-gradient(circle at 50% 10%,#35245d,#0b0912 70%)!important}.auth-tab{background:#241e39;color:#cfc7e4}.auth-tab.active,.auth-button{background:linear-gradient(135deg,#9b5cff,#5b35c7);color:#fff}.auth-info{color:var(--eb-muted)!important}.topbar{background:rgba(17,13,32,.94)!important;border-bottom:1px solid #443568;backdrop-filter:blur(14px)}
+.catalog-image{background:radial-gradient(circle,#302650 0%,#141126 100%)!important}.cat-tab{background:#2b2346;color:#ddd4f5}.cat-tab.active{background:linear-gradient(135deg,#9b5cff,#5f36c9);color:#fff}.trade-friend.selected,.trade-item.selected{background:#2b2050!important}.trade-pill{background:#30284a;color:#ddd4f5}.trade-empty{background:#1a162d;color:var(--eb-muted);border-color:#4a3a68}.creator-viewer{background:radial-gradient(circle at 50% 28%,#302452 0,#17142a 48%,#0e0c18 100%)!important;border-color:#4b3a76}.creator-gizmo-label{background:rgba(24,20,43,.92);color:#eee;border-color:#4b3a76}.creator-tools button,.creator-transform-grid input,.friends-actions input,.auth-form input,.trade-friend,.trade-item,.search,.chat-input-row input{background:#111020!important;color:#f4f0ff!important;border-color:#4b3a76!important}.creator-tools button.active,.section-button{background:linear-gradient(135deg,#6d45d9,#422a8d);color:#fff}.auth-screen{background:radial-gradient(circle at 50% 10%,#35245d,#0b0912 70%)!important}.auth-tab{background:#241e39;color:#cfc7e4}.auth-tab.active,.auth-button{background:linear-gradient(135deg,#9b5cff,#5b35c7);color:#fff}.auth-info{color:var(--eb-muted)!important}.topbar{background:rgba(17,13,32,.94)!important;border-bottom:1px solid #443568;backdrop-filter:blur(14px)}
 /* Game HUD / chat */
 .chat-window{width:300px;height:340px;min-width:240px;min-height:260px;max-width:min(92vw,560px);max-height:70vh;resize:both;overflow:hidden;background:#151126!important;border:1px solid #58447f!important}.chat-body,.dm-list{background:#100e1e!important}.chat-msg,.dm-msg.them{background:#211a36!important;color:#eee!important}.chat-input-row{background:#151126!important;border-color:#3d315e!important}.chat{background:linear-gradient(135deg,#241b42,#141022)!important;border:1px solid #58447f}.chat-resize-handle{position:absolute;right:2px;bottom:2px;width:18px;height:18px;cursor:nwse-resize;opacity:.7;background:linear-gradient(135deg,transparent 45%,#b98cff 46%,#b98cff 54%,transparent 55%);pointer-events:auto}
 body.in-game .chat-window{max-width:92vw;max-height:70vh}
@@ -93,7 +95,7 @@ body.theme-purple{background:#f4efff;color:#30204d}body.theme-purple .sidebar,bo
 .download-box{background:#fff;padding:30px;border:1px solid #ccc;max-width:650px;border-radius:6px}
 
 .chat{position:fixed;right:30px;bottom:0;width:240px;height:40px;background:#292929;color:#fff;border-radius:7px 7px 0 0;padding:12px 18px;cursor:pointer;z-index:200;font-weight:bold;box-shadow:0 -2px 10px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:space-between}.chat .chat-badge{background:#e53935;color:#fff;font-size:11px;border-radius:10px;padding:1px 7px;margin-left:8px;display:none}
-.creator-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.creator-card{background:#fff;border:1px solid #ccc;border-radius:8px;padding:16px}.creator-tools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.creator-tools button{border:1px solid #bbb;background:#f5f5f5;border-radius:5px;padding:7px 10px;cursor:pointer}.creator-tools button.active{background:#1684e8;color:#fff;border-color:#1684e8}.creator-viewer{height:430px;background:linear-gradient(#dff1ff,#f6fbff);border:1px solid #ccc;border-radius:8px;overflow:hidden;position:relative}.creator-viewer canvas{width:100%;height:100%;display:block}.creator-cube-list{max-height:180px;overflow:auto;border:1px solid #ddd;border-radius:6px;padding:8px}.creator-cube-row{display:flex;align-items:center;gap:8px;padding:6px;border-bottom:1px solid #eee}.creator-cube-row:last-child{border-bottom:0}.creator-cube-row button{margin-left:auto}.creator-color{width:42px;height:34px;padding:0;border:1px solid #aaa}.creator-2d-preview{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}.creator-2d-canvas{width:320px;height:320px;border:1px solid #bbb;background:#fff;image-rendering:auto;touch-action:none}.creator-small{font-size:12px;color:#666}.moderation-badge{display:inline-flex;gap:6px;align-items:center;background:#fff4cc;color:#775800;border:1px solid #e3c55d;padding:4px 8px;border-radius:12px;font-size:11px;font-weight:bold}.creator-msg{min-height:18px;font-size:12px;margin-top:8px}.creator-msg.ok{color:#188038}.creator-msg.err{color:#c5221f}@media(max-width:900px){.creator-layout{grid-template-columns:1fr}.creator-viewer{height:360px}}.creator-transform{border:1px solid #cfd7df;background:#f7faff;border-radius:8px;padding:10px;margin:10px 0}.creator-transform-title{font-weight:700;font-size:13px;margin-bottom:4px}.creator-transform-tools{margin:6px 0}.creator-transform-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.creator-transform-grid label{font-size:11px;color:#555;display:flex;gap:4px;align-items:center}.creator-transform-grid input{width:100%;min-width:0;padding:5px;border:1px solid #bbb;border-radius:4px}.creator-list-selected{outline:2px solid #1684e8;background:#eef7ff}.creator-gizmo-label{font:700 11px Arial,sans-serif;color:#222;background:rgba(255,255,255,.92);padding:2px 5px;border-radius:4px;border:1px solid #ccd6e0}@media(max-width:600px){.creator-transform-grid{grid-template-columns:1fr 1fr}}
+.creator-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.creator-card{background:#18152b;border:1px solid #3d315e;border-radius:12px;padding:16px;color:var(--eb-text)}.creator-tools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.creator-tools button{border:1px solid #bbb;background:#f5f5f5;border-radius:5px;padding:7px 10px;cursor:pointer}.creator-tools button.active{background:#1684e8;color:#fff;border-color:#1684e8}.creator-viewer{height:500px;background:radial-gradient(circle at 50% 28%,#302452 0,#17142a 48%,#0e0c18 100%);border:1px solid #4a3a72;border-radius:12px;overflow:hidden;position:relative;box-shadow:inset 0 -80px 120px rgba(0,0,0,.25)}.creator-viewer canvas{width:100%;height:100%;display:block}.creator-cube-list{max-height:180px;overflow:auto;border:1px solid #ddd;border-radius:6px;padding:8px}.creator-cube-row{display:flex;align-items:center;gap:8px;padding:6px;border-bottom:1px solid #eee}.creator-cube-row:last-child{border-bottom:0}.creator-cube-row button{margin-left:auto}.creator-color{width:42px;height:34px;padding:0;border:1px solid #aaa}.creator-2d-preview{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}.creator-2d-canvas{width:320px;height:320px;border:1px solid #4a3a72;border-radius:10px;background:#fff;image-rendering:auto;touch-action:none}.creator-small{font-size:12px;color:#666}.moderation-badge{display:inline-flex;gap:6px;align-items:center;background:#fff4cc;color:#775800;border:1px solid #e3c55d;padding:4px 8px;border-radius:12px;font-size:11px;font-weight:bold}.creator-msg{min-height:18px;font-size:12px;margin-top:8px}.creator-msg.ok{color:#188038}.creator-msg.err{color:#c5221f}@media(max-width:900px){.creator-layout{grid-template-columns:1fr}.creator-viewer{height:360px}}.creator-transform{border:1px solid #cfd7df;background:#f7faff;border-radius:8px;padding:10px;margin:10px 0}.creator-transform-title{font-weight:700;font-size:13px;margin-bottom:4px}.creator-transform-tools{margin:6px 0}.creator-transform-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.creator-transform-grid label{font-size:11px;color:#555;display:flex;gap:4px;align-items:center}.creator-transform-grid input{width:100%;min-width:0;padding:5px;border:1px solid #bbb;border-radius:4px}.creator-list-selected{outline:2px solid #1684e8;background:#eef7ff}.creator-gizmo-label{font:700 11px Arial,sans-serif;color:#222;background:rgba(255,255,255,.92);padding:2px 5px;border-radius:4px;border:1px solid #ccd6e0}@media(max-width:600px){.creator-transform-grid{grid-template-columns:1fr 1fr}}
 
 .chat-window{display:none;position:fixed;right:30px;bottom:40px;width:340px;height:420px;background:#fff;border:1px solid #bbb;z-index:200;border-radius:8px 8px 0 0;box-shadow:0 5px 25px rgba(0,0,0,0.25);flex-direction:column;overflow:hidden}.chat-window.open{display:flex}.chat-header{background:#292929;color:#fff;padding:12px 14px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}.chat-header .chat-status{font-size:11px;font-weight:normal;color:#86efac}.chat-body{flex:1;overflow-y:auto;padding:12px;color:#333;background:#f7f8fa;display:flex;flex-direction:column;gap:8px}.chat-msg{font-size:13px;line-height:1.35;padding:8px 10px;border-radius:8px;background:#fff;border:1px solid #e5e7eb;word-break:break-word}.chat-msg.system{background:#eef2ff;border-color:#c7d2fe;color:#4338ca;font-style:italic}.chat-msg .chat-user{font-weight:bold;color:#1684e8;margin-right:4px}.chat-msg.system .chat-user{color:#4338ca}.chat-msg .chat-time{float:right;font-size:10px;color:#9ca3af;margin-left:8px}.chat-input-row{display:flex;gap:6px;padding:10px;border-top:1px solid #ddd;background:#fff;flex-shrink:0}.chat-input-row input{flex:1;padding:9px 12px;border:1px solid #ccc;border-radius:6px;font-size:13px;outline:none}.chat-input-row input:focus{border-color:#1684e8}.chat-input-row button{padding:9px 14px;background:#1684e8;color:#fff;border:0;border-radius:6px;font-weight:bold;cursor:pointer}.chat-input-row button:hover{background:#0d5aa7}.chat-tabs{display:flex;gap:0;background:#1f1f1f;flex-shrink:0}.chat-tabs button{flex:1;padding:9px 6px;background:#1f1f1f;color:#cfcfcf;border:0;border-bottom:2px solid transparent;font-size:12px;font-weight:bold;cursor:pointer}.chat-tabs button.active{color:#fff;border-bottom-color:#1684e8;background:#292929}.dm-list{flex:1;overflow-y:auto;background:#f7f8fa}.dm-row{display:flex;align-items:center;gap:8px;padding:9px 10px;border-bottom:1px solid #e8eaed;cursor:pointer;background:#fff}.dm-row:hover{background:#eef7ff}.dm-row .dm-info{flex:1;min-width:0}.dm-row .dm-name{font-size:13px;font-weight:bold;color:#222}.dm-row .dm-last{font-size:11px;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dm-unread{background:#d93025;color:#fff;border-radius:10px;font-size:10px;padding:2px 6px;font-weight:bold}.dm-mini-avatar{width:34px;height:34px;border-radius:50%;overflow:hidden;background:#dfe7ec;flex-shrink:0}.dm-mini-avatar>*{width:100%!important;height:100%!important}.dm-back{background:#292929;color:#fff;border:0;padding:7px 10px;font-size:11px;cursor:pointer;text-align:left;flex-shrink:0}.dm-msg{max-width:80%;padding:7px 10px;border-radius:10px;font-size:13px;word-break:break-word}.dm-msg.me{align-self:flex-end;background:#1684e8;color:#fff}.dm-msg.them{align-self:flex-start;background:#fff;border:1px solid #e5e7eb;color:#222}.dm-msg .dm-time{display:block;font-size:9px;opacity:.7;margin-top:2px}.ingame-chat{position:absolute;left:12px;bottom:50px;width:min(360px,90%);max-height:180px;overflow-y:auto;pointer-events:none;z-index:50;display:flex;flex-direction:column;gap:4px}.ingame-chat .ig-msg{background:rgba(0,0,0,0.55);color:#fff;padding:5px 10px;border-radius:6px;font-size:12px;backdrop-filter:blur(4px)}.ingame-chat .ig-msg .ig-user{font-weight:bold;color:#7dd3fc;margin-right:4px}.ingame-chat .ig-msg.system{color:#c4b5fd}
 
@@ -510,6 +512,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
     <button class="cat-tab" data-category="pants" onclick="filterCatalog('pants', this)">Pantalones (2D)</button>
     <button class="cat-tab" data-category="faces" onclick="filterCatalog('faces', this)">Faces</button>
     <button class="cat-tab" data-category="gear" onclick="filterCatalog('gear', this)">Accessories / Gear</button>
+    <button class="cat-tab" data-category="backgrounds" onclick="filterCatalog('backgrounds', this)">Fondos de perfil</button>
   </div>
 
   <div class="catalog-grid" id="catalogGridContainer">
@@ -566,7 +569,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
     </div>
 
     <div class="creator-card">
-      <h3 style="margin-top:0">Vista previa</h3>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h3 style="margin-top:0">Vista previa</h3><span style="font-size:11px;padding:5px 8px;border:1px solid #4b3a76;border-radius:999px;background:#211a38;color:#cfc7e4">Modelo R6 actualizado</span></div>
       <div id="creator3dTools" class="creator-tools" style="display:none">
         <input id="creatorCubeColor" class="creator-color" type="color" value="#1684e8">
         <button onclick="creatorAddShape('box')">Cubo</button><button onclick="creatorAddShape('cylinder')">Cilindro</button><button onclick="creatorAddShape('sphere')">Esfera</button><button onclick="creatorAddShape('cone')">Cono</button><button onclick="creatorAddShape('torus')">Aro</button><button onclick="creatorRemoveCube()">Delete Piece</button>
@@ -804,13 +807,21 @@ const catalogDatabase = [
   { id: 'Sleepy Face', name: 'Sleepy Face', category: 'faces', price: 75, desc: 'Cara dormida' },
   { id: 'Cute Face', name: 'Cute Face', category: 'faces', price: 95, desc: 'Cara tierna · Mujer' },
   { id: 'Starry Face', name: 'Starry Face', category: 'faces', price: 120, desc: 'Cara con estrellas · Mujer' },
+  { id: 'Funny Smile', name: 'Funny Smile', category: 'faces', price: 80, desc: 'Cara creada por la comunidad', image: '/assets/faces/funny-smile.png' },
 
   // Accesorios
   { id: 'Classic Shades', name: 'Classic Shades', category: 'gear', price: 100, desc: 'Gafas de sol' },
   { id: 'Cool Backpack', name: 'Cool Backpack', category: 'gear', price: 180, desc: 'Mochila de aventurero' },
   { id: 'Heart Necklace', name: 'Heart Necklace', category: 'gear', price: 90, desc: 'Collar de corazón · Mujer' },
   { id: 'Shoulder Bunny', name: 'Shoulder Bunny', category: 'gear', price: 160, desc: 'Conejito para el hombro' },
-  { id: 'Golden Headphones', name: 'Golden Headphones', category: 'gear', price: 200, desc: 'Auriculares dorados' }
+  { id: 'Golden Headphones', name: 'Golden Headphones', category: 'gear', price: 200, desc: 'Auriculares dorados' },
+
+  // Fondos de perfil
+  { id: 'Purple Galaxy', name: 'Purple Galaxy', category: 'backgrounds', price: 120, desc: 'Fondo espacial morado para tu perfil', background: 'galaxy', image: '/assets/profile-backgrounds/purple-galaxy.svg' },
+  { id: 'Neon Grid', name: 'Neon Grid', category: 'backgrounds', price: 150, desc: 'Fondo neon futurista', background: 'neon', image: '/assets/profile-backgrounds/neon-grid.svg' },
+  { id: 'Sunset', name: 'Sunset', category: 'backgrounds', price: 100, desc: 'Atardecer cálido', background: 'sunset', image: '/assets/profile-backgrounds/sunset.svg' },
+  { id: 'Ocean', name: 'Ocean', category: 'backgrounds', price: 110, desc: 'Fondo oceánico', background: 'ocean', image: '/assets/profile-backgrounds/ocean.svg' },
+  { id: 'Dark Void', name: 'Dark Void', category: 'backgrounds', price: 180, desc: 'Fondo oscuro espacial', background: 'void', image: '/assets/profile-backgrounds/dark-void.svg' }
 ];
 
 let creatorMode = '2d';
@@ -928,19 +939,75 @@ function renderCreatorCubeList(){const box=document.getElementById('creatorCubeL
 function creatorMessage(text,error=false){const el=document.getElementById('creatorMessage');if(!el)return;el.textContent=text;el.className='creator-msg '+(error?'err':'ok');}
 function creatorAddClothingPreview(){
   creatorSync2DTexture();
+  if(!creatorGroup || typeof THREE==='undefined') return;
   const cat=(document.getElementById('creatorCategory')?.value)||'shirts';
-  // Maniqui simple: cabeza, torso y piernas para ver camisas y pantalones.
-  const skin=new THREE.MeshLambertMaterial({color:0xf5c928});
-  const head=new THREE.Mesh(new THREE.BoxGeometry(1.0,0.95,1.0),skin); head.position.y=2.75; creatorGroup.add(head);
-  const torso=new THREE.Mesh(new THREE.BoxGeometry(1.6,1.7,.9),new THREE.MeshLambertMaterial({color:0x1477b9})); torso.position.y=1.45; creatorGroup.add(torso);
-  const legL=new THREE.Mesh(new THREE.BoxGeometry(.7,1.3,.85),new THREE.MeshLambertMaterial({color:0x8cae45})); legL.position.set(-.44,.05+.6,0); creatorGroup.add(legL);
-  const legR=legL.clone(); legR.position.x=.44; creatorGroup.add(legR);
-  const mat=new THREE.MeshBasicMaterial({map:creatorClothingTex,transparent:true,side:THREE.DoubleSide});
+  const skinColor=0xf5c928;
+  const bodyDark=0x171820;
+  const torsoColor=0x1477b9;
+
+  // Preview actualizado: usa las mismas proporciones R6 que el avatar real
+  // (cabeza cuadrada, torso estrecho, brazos trapezoidales y piernas largas).
+  const sideHeadMat=new THREE.MeshLambertMaterial({color:skinColor});
+  let previewFaceTex=null;
+  if(creatorMode==='2d' && cat==='faces'){
+    const faceCanvas=document.getElementById('creator2dCanvas');
+    if(faceCanvas){
+      previewFaceTex=new THREE.CanvasTexture(faceCanvas);
+      previewFaceTex.flipY=false;
+      previewFaceTex.colorSpace=THREE.SRGBColorSpace;
+      previewFaceTex.needsUpdate=true;
+    }
+  }
+  const faceMat=previewFaceTex ? new THREE.MeshLambertMaterial({map:previewFaceTex,color:0xffffff}) : sideHeadMat;
+  const headMats=[sideHeadMat,sideHeadMat,sideHeadMat,sideHeadMat,faceMat,sideHeadMat];
+  const head=new THREE.Mesh(new THREE.BoxGeometry(.82,.82,.82),headMats);
+  head.position.set(0,2.08,0); head.name='previewHead'; creatorGroup.add(head);
+
+  const torso=new THREE.Mesh(new THREE.BoxGeometry(1.05,1.30,.60),
+    new THREE.MeshLambertMaterial({color:torsoColor}));
+  torso.position.set(0,.95,0); torso.name='previewTorso'; creatorGroup.add(torso);
+
+  // Brazos con ligera forma trapezoidal para que el creador se parezca al
+  // modelo que verá el jugador, en vez del maniquí cuadrado antiguo.
+  const armShape=new THREE.Shape();
+  armShape.moveTo(-.19,0); armShape.lineTo(.19,0); armShape.lineTo(.225,-1.35); armShape.lineTo(-.225,-1.35); armShape.closePath();
+  const armGeo=new THREE.ExtrudeGeometry(armShape,{depth:.50,bevelEnabled:true,bevelThickness:.018,bevelSize:.018,bevelSegments:1});
+  armGeo.translate(0,0,-.25);
+  const armMat=new THREE.MeshLambertMaterial({color:skinColor});
+  const la=new THREE.Mesh(armGeo,armMat); la.position.set(-.79,1.70,0); creatorGroup.add(la);
+  const ra=new THREE.Mesh(armGeo,armMat); ra.position.set(.79,1.70,0); creatorGroup.add(ra);
+
+  const legMat=new THREE.MeshLambertMaterial({color:bodyDark});
+  const legL=new THREE.Mesh(new THREE.BoxGeometry(.52,1.34,.50),legMat);
+  legL.position.set(-.27,-.39,0); creatorGroup.add(legL);
+  const legR=legL.clone(); legR.position.x=.27; creatorGroup.add(legR);
+
+  if(cat==='faces') return;
+
+  // La textura 2D se muestra sobre el frente del cuerpo nuevo. Para pantalones
+  // se divide la plantilla entre las dos piernas, igual que en el avatar real.
+  const makeHalfTexture=(side)=>{
+    const src=document.getElementById('creator2dCanvas');
+    if(!src) return null;
+    const c=document.createElement('canvas'); c.width=256; c.height=512;
+    const ctx=c.getContext('2d');
+    ctx.clearRect(0,0,c.width,c.height);
+    ctx.drawImage(src,side==='right'?src.width/2:0,0,src.width/2,src.height,0,0,c.width,c.height);
+    const t=new THREE.CanvasTexture(c);
+    t.colorSpace=THREE.SRGBColorSpace; t.needsUpdate=true;
+    return t;
+  };
+
   if(cat==='pants'){
-    const p1=new THREE.Mesh(new THREE.PlaneGeometry(.66,1.25),mat); p1.position.set(-.44,.65,.44); p1.userData.creator2D=true; creatorGroup.add(p1);
-    const p2=new THREE.Mesh(new THREE.PlaneGeometry(.66,1.25),mat); p2.position.set(.44,.65,.44); p2.userData.creator2D=true; creatorGroup.add(p2);
+    const lt=makeHalfTexture('left'), rt=makeHalfTexture('right');
+    const lm=lt?new THREE.MeshLambertMaterial({map:lt,color:0xffffff,side:THREE.DoubleSide,transparent:true}):legMat;
+    const rm=rt?new THREE.MeshLambertMaterial({map:rt,color:0xffffff,side:THREE.DoubleSide,transparent:true}):legMat;
+    const lp=new THREE.Mesh(new THREE.PlaneGeometry(.50,1.30),lm); lp.position.set(-.27,-.39,.256); lp.userData.creator2D=true; creatorGroup.add(lp);
+    const rp=new THREE.Mesh(new THREE.PlaneGeometry(.50,1.30),rm); rp.position.set(.27,-.39,.256); rp.userData.creator2D=true; creatorGroup.add(rp);
   } else {
-    const plane=new THREE.Mesh(new THREE.PlaneGeometry(1.55,1.62),mat); plane.position.set(0,1.45,.46); plane.userData.creator2D=true; creatorGroup.add(plane);
+    const tm=new THREE.MeshLambertMaterial({map:creatorClothingTex,color:0xffffff,side:THREE.DoubleSide,transparent:true});
+    const plane=new THREE.Mesh(new THREE.PlaneGeometry(1.05,1.30),tm);
+    plane.position.set(0,.95,.306); plane.userData.creator2D=true; creatorGroup.add(plane);
   }
 }
 
@@ -952,7 +1019,7 @@ async function creatorPublish(){
   const data=type==='3d'?{shapes:creatorCubes.map(mesh=>({type:mesh.userData.type,color:mesh.userData.color,position:mesh.position.toArray(),rotation:[mesh.rotation.x,mesh.rotation.y,mesh.rotation.z],scale:mesh.scale.toArray()}))}:{imageData:document.getElementById('creator2dCanvas').toDataURL('image/png')};
   creatorMessage('Publicando...');
   try{await api('/api/creator/publish',{method:'POST',body:JSON.stringify({name,description,category,type,price,data})},3);creatorMessage('Publicado en el catalogo. Precio: '+price+' Sunnys. Ya puedes equiparlo desde Avatar.');await loadCustomCatalog();renderCatalog('all');if(typeof renderInventory==='function')renderInventory();}catch(err){creatorMessage(err.message||'No se pudo conectar con el servidor.',true);}}
-async function loadCustomCatalog(){try{const r=await fetch('/api/catalog/custom',{cache:'no-store'});const data=await r.json();const custom=data.items||[];custom.forEach(item=>{const local=catalogDatabase.find(x=>x.id===item.id);const normalized={id:item.id,name:item.name,category:item.category,price:Number(item.price)||0,desc:item.description||'Creado por la comunidad',custom:true,data:item.data,type:item.type,owner:item.owner,ownerId:item.ownerId,status:item.status};if(local)Object.assign(local,normalized);else catalogDatabase.push(normalized);});if(typeof renderCatalog==='function')renderCatalog('all');return custom;}catch(_){return[];}}
+async function loadCustomCatalog(){try{const r=await fetch('/api/catalog/custom',{cache:'no-store'});const data=await r.json();const custom=data.items||[];custom.forEach(item=>{const local=catalogDatabase.find(x=>x.id===item.id);const normalized={id:item.id,name:item.name,category:item.category,price:Number(item.price)||0,desc:item.description||'Creado por la comunidad',custom:true,data:item.data,type:item.type,owner:item.owner,ownerId:item.ownerId,status:item.status,image:item.image};if(local)Object.assign(local,normalized);else catalogDatabase.push(normalized);});if(typeof renderCatalog==='function')renderCatalog('all');return custom;}catch(_){return[];}}
 
 // Atajos del editor 3D retirados junto al creador de accesorios.
 
@@ -1662,9 +1729,9 @@ function catalogItemById(id){
 function avatarItemCategory(id){
   const item = catalogItemById(id);
   if(item && item.category) return item.category;
-  if(id === 'Classic Smile' || id === 'Cool Wink') return 'faces';
+  if(id === 'Classic Smile' || id === 'Cool Wink' || id === 'Happy Face' || id === 'Sleepy Face' || id === 'Cute Face' || id === 'Starry Face' || id === 'Funny Smile') return 'faces';
   if(id === 'Blue Shirt' || id === 'Green Hoodie') return 'shirts';
-  if(id === 'Classic Jeans' || id === 'Dark Cargo Pants') return 'pants';
+  if(id === 'Classic Jeans' || id === 'Dark Cargo Pants' || id === 'Black Jeans' || id === 'White Pants' || id === 'Pink Jeans' || id === 'Purple Pants') return 'pants';
   return 'gear';
 }
 // Texturas de ropa creada por usuarios (cacheadas por id).
@@ -1674,10 +1741,89 @@ function customClothingTexture(item){
   if(_customClothingTexCache[item.id]) return _customClothingTexCache[item.id];
   const img = new Image();
   const tex = new THREE.Texture(img);
+  tex.flipY = true;
   if(THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = THREE.ClampToEdgeWrapping; tex.wrapT = THREE.ClampToEdgeWrapping;
   img.onload = () => { tex.needsUpdate = true; };
   img.src = item.data.imageData;
   _customClothingTexCache[item.id] = tex;
+  return tex;
+}
+
+function bodyClothingMaterials(texture, baseColor){
+  const base = new THREE.MeshLambertMaterial({color: baseColor || '#1477b9'});
+  if(!texture) return base;
+  const front = new THREE.MeshLambertMaterial({map: texture, color: 0xffffff});
+  return [base, base, base, base, front, front];
+}
+
+function splitLegTexture(texture, side){
+  if(!texture) return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = 128; canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  const out = new THREE.CanvasTexture(canvas);
+  out.flipY = true;
+  if(THREE.SRGBColorSpace) out.colorSpace = THREE.SRGBColorSpace;
+  const draw = () => {
+    const src = texture.image;
+    if(!src || !src.width || !src.height) return;
+    ctx.clearRect(0,0,128,256);
+    ctx.drawImage(src, side === 'right' ? src.width/2 : 0, 0, src.width/2, src.height, 0, 0, 128, 256);
+    out.needsUpdate = true;
+  };
+  const src = texture.image;
+  if(src && typeof src.complete === 'boolean' && !src.complete){
+    const previous = src.onload;
+    src.onload = () => { if(typeof previous === 'function') previous(); draw(); };
+  } else draw();
+  return out;
+}
+
+const _customFaceTexCache = {};
+function catalogFaceTexture(item, headColor){
+  if(!item || !item.image) return null;
+  if(_customFaceTexCache[item.id]) return _customFaceTexCache[item.id];
+  const canvas = document.createElement('canvas');
+  canvas.width = 256; canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = headColor || '#f5c928';
+  ctx.fillRect(0,0,256,256);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.flipY = false;
+  if(THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
+  const img = new Image();
+  img.onload = () => {
+    ctx.clearRect(0,0,256,256);
+    ctx.fillStyle = headColor || '#f5c928'; ctx.fillRect(0,0,256,256);
+    ctx.drawImage(img,0,0,256,256);
+    tex.needsUpdate = true;
+  };
+  img.src = item.image;
+  _customFaceTexCache[item.id] = tex;
+  return tex;
+}
+function customFaceTexture(item, headColor){
+  if(!item || !item.data || !item.data.imageData) return null;
+  if(_customFaceTexCache[item.id]) return _customFaceTexCache[item.id];
+  const canvas = document.createElement('canvas');
+  canvas.width = 256; canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = headColor || '#f5c928';
+  ctx.fillRect(0,0,256,256);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.flipY = false;
+  if(THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
+  const img = new Image();
+  img.onload = () => {
+    ctx.clearRect(0,0,256,256);
+    ctx.fillStyle = headColor || '#f5c928'; ctx.fillRect(0,0,256,256);
+    ctx.drawImage(img,0,0,256,256);
+    tex.needsUpdate = true;
+  };
+  img.onerror = () => { tex.needsUpdate = true; };
+  img.src = item.data.imageData;
+  _customFaceTexCache[item.id] = tex;
   return tex;
 }
 
@@ -1711,16 +1857,22 @@ function buildAvatar3DModel(userData) {
   // Materiales con texturas 2D estilo Roblox (incluye ropa creada por la comunidad)
   const customShirtTex = customShirt ? customClothingTexture(customShirt) : null;
   const torsoTexture = customShirtTex || createShirtTexture(torsoCol, activeShirt);
-  const torsoMat = new THREE.MeshLambertMaterial({map: torsoTexture});
+  const torsoMat = bodyClothingMaterials(torsoTexture, torsoCol);
 
   const customPantsTex = customPants ? customClothingTexture(customPants) : null;
   const legsTexture = customPantsTex || createPantsTexture(legCol, activePants);
-  const legMat = new THREE.MeshLambertMaterial({map: legsTexture});
+  const leftLegMat = bodyClothingMaterials(splitLegTexture(legsTexture, 'left'), legCol);
+  const rightLegMat = bodyClothingMaterials(splitLegTexture(legsTexture, 'right'), legCol);
 
   const armMat = new THREE.MeshLambertMaterial({color: armCol});
 
   const sideHeadMat = new THREE.MeshLambertMaterial({color: headCol});
-  const faceTexture = createFaceTexture(headCol, activeFace);
+  const faceItem = catalogItemById(activeFace);
+  const faceTexture = (faceItem && faceItem.image)
+    ? catalogFaceTexture(faceItem, headCol)
+    : ((faceItem && faceItem.custom && faceItem.category === 'faces' && faceItem.data && faceItem.data.imageData)
+      ? customFaceTexture(faceItem, headCol)
+      : createFaceTexture(headCol, activeFace));
   const frontFaceMat = new THREE.MeshLambertMaterial({map: faceTexture, color: headCol});
   const headMaterials = [sideHeadMat, sideHeadMat, sideHeadMat, sideHeadMat, frontFaceMat, sideHeadMat];
   
@@ -1789,16 +1941,16 @@ function buildAvatar3DModel(userData) {
     armH = 1.35;
   } else {
     // Hombre R6 clásico: bloque 1.2 x 1.4 x 0.6, centro y=1.0
-    torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.05, 1.3, 0.6), torsoMat);
-    torsoMesh.position.set(0, 0.95, 0);
+    torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.10, 1.40, 0.60), torsoMat);
+    torsoMesh.position.set(0, 1.00, 0);
     torsoMesh.name = "torso";
     torsoMesh.castShadow = true;
     torsoMesh.receiveShadow = true;
   }
 
   // Cabeza encima del torso (torso top ~1.7)
-  const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), headMaterials);
-  headMesh.position.set(0, 2.08, 0);
+  const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.80, 0.80, 0.80), headMaterials);
+  headMesh.position.set(0, 2.10, 0);
   headMesh.name = "head";
   headMesh.castShadow = true;
   headMesh.receiveShadow = true;
@@ -1811,22 +1963,22 @@ function buildAvatar3DModel(userData) {
   // no desde el centro del bloque. Esto hace que caminar/atacar se vea natural.
   const leftArm = new THREE.Group(); leftArm.name = "leftArm"; leftArm.position.set(-armX, armY + armH/2, 0);
   leftArm.userData.bindX = -armX;
-  const leftArmMesh = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.5), armMat);
+  const leftArmMesh = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.55), armMat);
   leftArmMesh.position.y = -armH/2; leftArmMesh.castShadow = true; leftArmMesh.receiveShadow = true; leftArm.add(leftArmMesh);
 
   const rightArm = new THREE.Group(); rightArm.name = "rightArm"; rightArm.position.set(armX, armY + armH/2, 0);
   rightArm.userData.bindX = armX;
-  const rightArmMesh = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.5), armMat);
+  const rightArmMesh = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.55), armMat);
   rightArmMesh.position.y = -armH/2; rightArmMesh.castShadow = true; rightArmMesh.receiveShadow = true; rightArm.add(rightArmMesh);
 
   // Piernas DEBAJO del torso, con pivote en la cadera.
-  const leftLeg = new THREE.Group(); leftLeg.name = "leftLeg"; leftLeg.position.set(-0.3, 0.3, 0);
-  const leftLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.5), legMat);
-  leftLegMesh.position.y = -0.6; leftLegMesh.castShadow = true; leftLegMesh.receiveShadow = true; leftLeg.add(leftLegMesh);
+  const leftLeg = new THREE.Group(); leftLeg.name = "leftLeg"; leftLeg.position.set(-0.27, 0.30, 0);
+  const leftLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.52, 1.45, 0.55), leftLegMat);
+  leftLegMesh.position.y = -0.725; leftLegMesh.castShadow = true; leftLegMesh.receiveShadow = true; leftLeg.add(leftLegMesh);
 
-  const rightLeg = new THREE.Group(); rightLeg.name = "rightLeg"; rightLeg.position.set(0.3, 0.3, 0);
-  const rightLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.5), legMat);
-  rightLegMesh.position.y = -0.6; rightLegMesh.castShadow = true; rightLegMesh.receiveShadow = true; rightLeg.add(rightLegMesh);
+  const rightLeg = new THREE.Group(); rightLeg.name = "rightLeg"; rightLeg.position.set(0.27, 0.30, 0);
+  const rightLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.52, 1.45, 0.55), rightLegMat);
+  rightLegMesh.position.y = -0.725; rightLegMesh.castShadow = true; rightLegMesh.receiveShadow = true; rightLeg.add(rightLegMesh);
 
   avatarGroup.add(headMesh, torsoMesh, leftArm, rightArm, leftLeg, rightLeg);
 
@@ -1851,7 +2003,7 @@ function buildAvatar3DModel(userData) {
     accessories.forEach(accName => {
       const accCat = avatarItemCategory(accName);
       const accItem = catalogItemById(accName);
-      const isClothing = accCat === 'faces' || accCat === 'shirts' || accCat === 'pants';
+      const isClothing = accCat === 'faces' || accCat === 'shirts' || accCat === 'pants' || accCat === 'backgrounds';
       if(!isClothing && !(accItem && accItem.type === '2d')) {
         const accMesh = createAccessoryMesh(accName);
         accMesh.name = 'acc_' + String(accName).replace(/\s+/g,'_');
@@ -1928,15 +2080,21 @@ function buildGamePlayerModel(userData) {
 
   const customShirtTex = customShirt ? customClothingTexture(customShirt) : null;
   const torsoTexture = customShirtTex || createShirtTexture(torsoCol, activeShirt);
-  const torsoMat = new THREE.MeshLambertMaterial({ map: torsoTexture });
+  const torsoMat = bodyClothingMaterials(torsoTexture, torsoCol);
 
   const customPantsTex = customPants ? customClothingTexture(customPants) : null;
   const legsTexture = customPantsTex || createPantsTexture(legCol, activePants);
-  const legMat = new THREE.MeshLambertMaterial({ map: legsTexture });
+  const leftLegMat = bodyClothingMaterials(splitLegTexture(legsTexture, 'left'), legCol);
+  const rightLegMat = bodyClothingMaterials(splitLegTexture(legsTexture, 'right'), legCol);
 
   const armMat = new THREE.MeshLambertMaterial({ color: armCol });
   const sideHeadMat = new THREE.MeshLambertMaterial({ color: headCol });
-  const faceTexture = createFaceTexture(headCol, activeFace);
+  const faceItem = catalogItemById(activeFace);
+  const faceTexture = (faceItem && faceItem.image)
+    ? catalogFaceTexture(faceItem, headCol)
+    : ((faceItem && faceItem.custom && faceItem.category === 'faces' && faceItem.data && faceItem.data.imageData)
+      ? customFaceTexture(faceItem, headCol)
+      : createFaceTexture(headCol, activeFace));
   const frontFaceMat = new THREE.MeshLambertMaterial({ map: faceTexture, color: headCol });
   const headMaterials = [sideHeadMat, sideHeadMat, sideHeadMat, sideHeadMat, frontFaceMat, sideHeadMat];
 
@@ -2028,14 +2186,14 @@ function buildGamePlayerModel(userData) {
   const leftLeg = new THREE.Group();
   leftLeg.name = "leftLeg";
   leftLeg.position.set(-0.27, 0.28, 0);
-  const leftLegMesh = new THREE.Mesh(new THREE.BoxGeometry(legW, legH, legDepth), legMat);
+  const leftLegMesh = new THREE.Mesh(new THREE.BoxGeometry(legW, legH, legDepth), leftLegMat);
   leftLegMesh.position.y = -legH / 2;
   leftLeg.add(leftLegMesh);
 
   const rightLeg = new THREE.Group();
   rightLeg.name = "rightLeg";
   rightLeg.position.set(0.27, 0.28, 0);
-  const rightLegMesh = new THREE.Mesh(new THREE.BoxGeometry(legW, legH, legDepth), legMat);
+  const rightLegMesh = new THREE.Mesh(new THREE.BoxGeometry(legW, legH, legDepth), rightLegMat);
   rightLegMesh.position.y = -legH / 2;
   rightLeg.add(rightLegMesh);
 
@@ -2054,7 +2212,7 @@ function buildGamePlayerModel(userData) {
   accessories.forEach(accName => {
     const accCat = avatarItemCategory(accName);
     const accItem = catalogItemById(accName);
-    const isClothing = accCat === "faces" || accCat === "shirts" || accCat === "pants";
+    const isClothing = accCat === "faces" || accCat === "shirts" || accCat === "pants" || accCat === "backgrounds";
     if (isClothing || (accItem && accItem.type === "2d")) return;
 
     const accMesh = createAccessoryMesh(accName);
@@ -5013,6 +5171,41 @@ function refreshSettings(){
   applyTheme(u.theme||"light");
 }
 
+
+function getProfileBackgroundItem(userData){
+  const id = userData && userData.avatar && userData.avatar.profileBackground;
+  if(!id) return null;
+  return catalogDatabase.find(item => String(item.id).toLowerCase() === String(id).toLowerCase() && item.category === 'backgrounds') || null;
+}
+function profileBackgroundCSS(userData){
+  const item = getProfileBackgroundItem(userData);
+  return item && item.image ? `url("${item.image}")` : '';
+}
+function applyProfileBackground(userData){
+  const item = getProfileBackgroundItem(userData);
+  const bg = item && item.image ? `url("${item.image}")` : 'linear-gradient(180deg,#bde7ff 0%,#bde7ff 65%,#7bb957 65%)';
+  ['homeAvatar','profileAvatar','friendProfileAvatar'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el){
+      el.style.setProperty('background', bg, 'important');
+      el.style.backgroundSize='cover';
+      el.style.backgroundPosition='center';
+    }
+  });
+  const stage = document.querySelector('.avatar-stage');
+  if(stage){
+    stage.style.setProperty('background', bg, 'important');
+    stage.style.backgroundSize='cover';
+    stage.style.backgroundPosition='center';
+  }
+  const home = document.querySelector('#home .profile-header');
+  if(home) home.style.setProperty('background','linear-gradient(135deg,#31265b,#1a1730)','important');
+  const own = document.querySelector('#profile .profile-card');
+  if(own) own.style.removeProperty('background');
+  const friend = document.querySelector('#friendProfile .profile-card');
+  if(friend) friend.style.removeProperty('background');
+}
+
 function updateUI(u){
   applyTheme(u && u.theme ? u.theme : "light");
   document.getElementById('topUser').textContent=u.username;
@@ -5029,6 +5222,7 @@ function updateUI(u){
   
   updateCatalogButtons(u);
   updateAccessoryButtons(u);
+  applyProfileBackground(u);
   updatePreviewAvatar3D();
   renderTopAvatarMini(u);
   renderFriends();
@@ -5091,14 +5285,13 @@ function getAvatarPortraitDataURL(userData, size) {
 function avatarPortraitHTML(userData, size, extraStyle) {
   size = size || 128;
   const url = getAvatarPortraitDataURL(userData, size);
-  const bg = 'linear-gradient(180deg,#bde7ff 0%,#bde7ff 65%,#7bb957 65%)';
   if (url) {
-    return `<img src="${url}" alt="avatar" style="width:100%;height:100%;object-fit:contain;background:${bg};display:block;${extraStyle||''}">`;
+    return `<img src="${url}" alt="avatar" style="width:100%;height:100%;object-fit:contain;background:transparent;display:block;${extraStyle||''}">`;
   }
   // fallback 2D
   const head = (userData && userData.avatar && userData.avatar.colors && userData.avatar.colors.head) || '#f5c928';
   const torso = (userData && userData.avatar && userData.avatar.colors && userData.avatar.colors.torso) || '#1477b9';
-  return `<div style="width:100%;height:100%;background:${bg};display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px">
+  return `<div style="width:100%;height:100%;background:transparent;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px">
     <div style="width:28%;height:28%;background:${head};border-radius:4px"></div>
     <div style="width:40%;height:36%;background:${torso};border-radius:3px"></div>
   </div>`;
@@ -5479,7 +5672,8 @@ function openUserProfile(userId){
         }
       }
       const avEl=document.getElementById("friendProfileAvatar");
-      if(avEl){avEl.style.background="transparent";avEl.innerHTML=avatarPortraitHTML(friend,260);}
+      if(avEl){avEl.innerHTML=avatarPortraitHTML(friend,260);}
+      applyProfileBackground(friend);
       showPage("friendProfile");
     })
     .catch(()=>alert("Usuario no encontrado en el servidor global."));
@@ -5594,7 +5788,7 @@ function loadGames(list=games){
     const name=String(g[0]).trim();
     const safeName=name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const icon=getGameIcon(name);
-    return `<div class="game" onclick="openGameDetail('${safeName}')"><img class="game-icon" src="${icon}" alt="${escapeHTML(name)}" loading="lazy"><div class="game-info"><div class="game-name">${escapeHTML(name)}</div><div class="game-players"><span>👥 ${count} playing</span><span style="margin-left:auto">👁 ${formatVisits(_gameVisits[gid]||0)}</span></div></div></div>`;
+    return `<div class="game" onclick="openGameDetail('${safeName}')"><img class="game-icon" src="${icon}" alt="${escapeHTML(name)}" loading="lazy" onerror="this.onerror=null;this.src='/assets/games/default-game.svg'"><div class="game-info"><div class="game-name">${escapeHTML(name)}</div><div class="game-players"><span>👥 ${count} playing</span><span style="margin-left:auto">👁 ${formatVisits(_gameVisits[gid]||0)}</span></div></div></div>`;
   }).join("");
   const grid=document.getElementById('gamesGrid');
   const recent=document.getElementById('recentGames');
@@ -5666,6 +5860,7 @@ function catalogIconSVG(item) {
   const common = 'width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg"';
   // Caras: siempre SVG (el PNG roto mostraba icono de archivo vacio en el catalogo).
   if(item.category === 'faces' && item.id === 'Classic Smile') return `<svg ${common}><circle cx="48" cy="48" r="34" fill="#F5C928" stroke="#9A7B00" stroke-width="4"/><circle cx="36" cy="40" r="4" fill="#222"/><circle cx="60" cy="40" r="4" fill="#222"/><path d="M33 54C39 65 57 65 63 54" stroke="#222" stroke-width="4" stroke-linecap="round"/></svg>`;
+  if(item.id === 'Funny Smile') return `<img src="/assets/faces/funny-smile.png" style="width:96px;height:96px;object-fit:contain" alt="Funny Smile">`;
   if(item.image && !String(item.image).includes('epicbloxs_face')) return `<img src="${escapeHTML(item.image)}" style="width:96px;height:96px;object-fit:contain" alt="${escapeHTML(item.name || 'Artículo')}" onerror="this.style.display='none'">`;
   if(item.category === 'hats' && item.id === 'Epic Cap') return `<svg ${common}><path d="M18 49C24 25 72 25 78 49" fill="#1976D2" stroke="#123A63" stroke-width="4"/><path d="M16 48H80C77 61 65 67 48 67C31 67 19 61 16 48Z" fill="#2196F3" stroke="#123A63" stroke-width="4"/><path d="M25 50C38 54 58 54 71 50" stroke="#90CAF9" stroke-width="4" stroke-linecap="round"/></svg>`;
   if(item.category === 'hats' && item.id === 'Golden Crown') return `<svg ${common}><path d="M17 30L29 44L40 22L48 43L60 22L69 44L80 30L75 66H21L17 30Z" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><rect x="20" y="60" width="56" height="13" rx="4" fill="#FFC107" stroke="#9A6B00" stroke-width="4"/><circle cx="29" cy="43" r="4" fill="#E53935"/><circle cx="60" cy="42" r="4" fill="#1E88E5"/></svg>`;
@@ -5696,13 +5891,17 @@ function catalogIconSVG(item) {
   if(item.id === 'Heart Necklace') return `<svg ${common}><path d="M23 25C27 55 69 55 73 25" stroke="#777" stroke-width="5" fill="none"/><path d="M48 47C38 38 28 48 48 68C68 48 58 38 48 47Z" fill="#E91E63" stroke="#880E4F" stroke-width="3"/></svg>`;
   if(item.id === 'Shoulder Bunny') return `<svg ${common}><ellipse cx="48" cy="54" rx="25" ry="24" fill="#F5F5F5" stroke="#777" stroke-width="4"/><ellipse cx="35" cy="24" rx="8" ry="18" fill="#F5F5F5" stroke="#777" stroke-width="4"/><ellipse cx="61" cy="24" rx="8" ry="18" fill="#F5F5F5" stroke="#777" stroke-width="4"/><circle cx="40" cy="51" r="3" fill="#222"/><circle cx="56" cy="51" r="3" fill="#222"/><circle cx="48" cy="59" r="4" fill="#F48FB1"/></svg>`;
   if(item.id === 'Golden Headphones') return `<svg ${common}><path d="M25 52V43C25 15 71 15 71 43V52" stroke="#D4AF37" stroke-width="8" fill="none"/><rect x="18" y="45" width="15" height="25" rx="7" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><rect x="63" y="45" width="15" height="25" rx="7" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><path d="M33 58H63" stroke="#D4AF37" stroke-width="4"/></svg>`;
+  if(item.category === 'backgrounds') {
+    const src = item.image || '/assets/profile-backgrounds/purple-galaxy.svg';
+    return `<img src="${escapeHTML(src)}" alt="Fondo de perfil" style="width:100%;height:100%;object-fit:cover;border-radius:12px;display:block">`;
+  }
   if(item.custom && item.type === '2d' && item.data && item.data.imageData) return `<img src=\"${item.data.imageData}\" style=\"max-width:100%;max-height:150px;object-fit:contain\" alt=\"Ropa 2D\">`;
   if(item.custom && item.type === 'accessory3d') return `<div style=\"font-size:58px\">🧊</div>`;
   return `<svg ${common}><rect x="18" y="18" width="60" height="60" rx="12" fill="#E9EEF3" stroke="#9AA7B2" stroke-width="4"/><path d="M30 50H66" stroke="#1684E8" stroke-width="6" stroke-linecap="round"/></svg>`;
 }
 
 function catalogCategoryLabel(category){
-  return ({hats:'Sombrero',shirts:'Camisa 2D',pants:'Pantalón 2D',faces:'Cara',gear:'Accesorio'}[String(category||'').toLowerCase()] || 'Artículo');
+  return ({hats:'Sombrero',shirts:'Camisa 2D',pants:'Pantalón 2D',faces:'Cara',gear:'Accesorio',backgrounds:'Fondo de perfil'}[String(category||'').toLowerCase()] || 'Artículo');
 }
 function renderCatalog(category) {
   const container = document.getElementById('catalogGridContainer');
@@ -5977,6 +6176,7 @@ async function toggleAccessory(a){
     }
 
     try { Object.keys(_portraitCache).forEach(k=>delete _portraitCache[k]); } catch(e) {}
+    try { Object.keys(_customFaceTexCache).forEach(k=>delete _customFaceTexCache[k]); } catch(e) {}
     updateUI(data.user);
     try { loadInventory(); } catch(e) {}
     try { renderCatalog('all'); } catch(e) {}
@@ -6408,7 +6608,7 @@ function tradeItemInfo(id){
 }
 
 function tradeCategoryLabel(category){
-  return ({hats:'Sombrero',shirts:'Ropa',pants:'Pantalón',faces:'Cara',gear:'Accesorio'})[category] || 'Artículo';
+  return ({hats:'Sombrero',shirts:'Ropa',pants:'Pantalón',faces:'Cara',gear:'Accesorio',backgrounds:'Fondo de perfil'})[category] || 'Artículo';
 }
 
 function renderTradeFriends(){
