@@ -5,6 +5,23 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>EpicBloxs</title>
 <style>
+/* EpicBloxs visual cleanup: cohesive dark/violet UI without white legacy panels. */
+:root{--eb-bg:#0e0b1b;--eb-panel:#171329;--eb-panel2:#211a3a;--eb-border:#4b3a76;--eb-text:#f4f0ff;--eb-muted:#b9afd4;--eb-accent:#9b5cff;--eb-accent2:#35c8ff;--eb-success:#39d98a;--eb-danger:#ff5f7a}
+body,body.theme-light{background:radial-gradient(circle at 15% 0%,#30205b 0,#171329 35%,#0e0b1b 80%);color:var(--eb-text)}
+body.theme-blue{background:radial-gradient(circle at 10% 0%,#173b63 0,#12172a 40%,#090d18 100%);color:#eef7ff}
+body.theme-purple{background:radial-gradient(circle at 15% 0%,#4a2670 0,#21142f 42%,#0f0a18 100%);color:#fff3ff}
+body.theme-dark{background:radial-gradient(circle at 15% 0%,#25203e 0,#11101b 45%,#08080e 100%);color:#f3f1fa}
+.sidebar,.settings-card,.friends-actions,.friends-box,.friend-card,.catalog-item,.inventory-item,.profile-card,.bio-box,.trade-card,.trade-offer,.download-box,.creator-card,.auth-box,.inventory-slot{background:linear-gradient(145deg,rgba(34,27,58,.97),rgba(18,15,34,.97))!important;color:var(--eb-text)!important;border-color:var(--eb-border)!important;box-shadow:0 10px 30px rgba(0,0,0,.22)}
+body.theme-blue .sidebar,body.theme-blue .settings-card,body.theme-blue .friends-actions,body.theme-blue .friends-box,body.theme-blue .friend-card,body.theme-blue .catalog-item,body.theme-blue .inventory-item,body.theme-blue .profile-card,body.theme-blue .bio-box{background:linear-gradient(145deg,#17243b,#0e1628)!important;border-color:#31577f!important}
+body.theme-purple .sidebar,body.theme-purple .settings-card,body.theme-purple .friends-actions,body.theme-purple .friends-box,body.theme-purple .friend-card,body.theme-purple .catalog-item,body.theme-purple .inventory-item,body.theme-purple .profile-card,body.theme-purple .bio-box{background:linear-gradient(145deg,#2a1b43,#171025)!important;border-color:#67428f!important}
+.sidebar{border-right:1px solid var(--eb-border)!important}.side-item:hover,.friend:hover{background:rgba(155,92,255,.16)!important}.section-header h2,.creator-small,.events p,.game-players,.trade-item small,.trade-last,.presence-dot{color:var(--eb-muted)!important}
+.profile-header{background:linear-gradient(135deg,#31265b,#1a1730)!important;border-color:var(--eb-border)!important}.profile-avatar{background:#211b36!important}.profile-avatar-large{background:linear-gradient(#30265b 0 72%,#526d38 72%)!important;border-color:#66568e!important}
+.game,.trade-friend,.trade-item,.dm-row,.inventory-slot,.catalog-image,.chat-window,.chat-body,.chat-msg,.chat-input-row,.dm-msg.them,.creator-transform,.creator-2d-canvas,.auth-info{background:#18152b!important;color:var(--eb-text)!important;border-color:#3d315e!important}.game:hover,.catalog-item:hover,.inventory-item:hover{box-shadow:0 12px 28px rgba(0,0,0,.35)}
+.catalog-image{background:radial-gradient(circle,#302650 0%,#141126 100%)!important}.cat-tab{background:#2b2346;color:#ddd4f5}.cat-tab.active{background:linear-gradient(135deg,#9b5cff,#5f36c9);color:#fff}.trade-friend.selected,.trade-item.selected{background:#2b2050!important}.trade-pill{background:#30284a;color:#ddd4f5}.trade-empty{background:#1a162d;color:var(--eb-muted);border-color:#4a3a68}.creator-viewer{background:linear-gradient(#1f3150,#17132b)!important;border-color:#4b3a76}.creator-gizmo-label{background:rgba(24,20,43,.92);color:#eee;border-color:#4b3a76}.creator-tools button,.creator-transform-grid input,.friends-actions input,.auth-form input,.trade-friend,.trade-item,.search,.chat-input-row input{background:#111020!important;color:#f4f0ff!important;border-color:#4b3a76!important}.creator-tools button.active,.section-button{background:linear-gradient(135deg,#6d45d9,#422a8d);color:#fff}.auth-screen{background:radial-gradient(circle at 50% 10%,#35245d,#0b0912 70%)!important}.auth-tab{background:#241e39;color:#cfc7e4}.auth-tab.active,.auth-button{background:linear-gradient(135deg,#9b5cff,#5b35c7);color:#fff}.auth-info{color:var(--eb-muted)!important}.topbar{background:rgba(17,13,32,.94)!important;border-bottom:1px solid #443568;backdrop-filter:blur(14px)}
+/* Game HUD / chat */
+.chat-window{width:300px;height:340px;min-width:240px;min-height:260px;max-width:min(92vw,560px);max-height:70vh;resize:both;overflow:hidden;background:#151126!important;border:1px solid #58447f!important}.chat-body,.dm-list{background:#100e1e!important}.chat-msg,.dm-msg.them{background:#211a36!important;color:#eee!important}.chat-input-row{background:#151126!important;border-color:#3d315e!important}.chat{background:linear-gradient(135deg,#241b42,#141022)!important;border:1px solid #58447f}.chat-resize-handle{position:absolute;right:2px;bottom:2px;width:18px;height:18px;cursor:nwse-resize;opacity:.7;background:linear-gradient(135deg,transparent 45%,#b98cff 46%,#b98cff 54%,transparent 55%);pointer-events:auto}
+body.in-game .chat-window{max-width:92vw;max-height:70vh}
+@media(max-width:700px){.chat-window{right:8px!important;left:auto!important;width:min(300px,calc(100vw - 16px))!important;height:330px!important}.games{grid-template-columns:repeat(2,1fr)!important}.catalog-grid,.inventory-grid{grid-template-columns:repeat(2,1fr)!important}}
 *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#e5e5e5;color:#222}
 body.theme-dark{background:#171717;color:#f3f3f3}body.theme-dark .sidebar,body.theme-dark .settings-card,body.theme-dark .friends-actions,body.theme-dark .friends-box,body.theme-dark .friend-card,body.theme-dark .catalog-item,body.theme-dark .inventory-item,body.theme-dark .profile-card,body.theme-dark .bio-box{background:#222;color:#eee;border-color:#444}body.theme-dark .side-item:hover,body.theme-dark .friend:hover{background:#333}body.theme-dark .setting-row{border-color:#444}body.theme-dark input,body.theme-dark textarea,body.theme-dark select{background:#2b2b2b;color:#fff;border-color:#555}
 body.theme-blue{background:#eaf4ff;color:#17324d}body.theme-blue .sidebar,body.theme-blue .settings-card,body.theme-blue .friends-actions,body.theme-blue .friends-box,body.theme-blue .friend-card,body.theme-blue .catalog-item,body.theme-blue .inventory-item,body.theme-blue .profile-card,body.theme-blue .bio-box{background:#fff;border-color:#b9d7f5}
@@ -26,7 +43,7 @@ body.theme-purple{background:#f4efff;color:#30204d}body.theme-purple .sidebar,bo
 .profile-avatar-large{width:260px;height:340px;margin:0 auto 15px;background:linear-gradient(#bde7ff 0 72%,#7bb957 72%);border:2px solid #999;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 6px 15px rgba(0,0,0,0.15)}
 
 .bio-box{margin-top:15px;padding:15px;background:#f9f9f9;border:1px solid #ddd;border-radius:6px;text-align:left}.bio-box h3{margin-top:0;font-size:16px;color:#444}
-.games{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.game{background:#fff;border:1px solid #ddd;cursor:pointer;border-radius:6px;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s}.game:hover{transform:translateY(-3px);box-shadow:0 4px 12px rgba(0,0,0,0.15)}.game-image{height:140px;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(135deg,#1f2937,#111827);color:#ffcc00;font-weight:bold;text-shadow:0 2px 4px rgba(0,0,0,0.3)}.game-info{padding:10px}.game-name{font-size:13px;font-weight:bold}.game-players{color:#777;font-size:11px;margin-top:4px}.play-button{margin-top:8px;width:100%;border:0;background:#1684e8;color:#fff;padding:7px;cursor:pointer;border-radius:4px;font-weight:bold;transition:background 0.2s}.play-button:hover{background:#0d6efd}
+.games{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.game{background:#fff;border:1px solid #ddd;cursor:pointer;border-radius:6px;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s}.game:hover{transform:translateY(-3px);box-shadow:0 4px 12px rgba(0,0,0,0.15)}.game-image{height:140px;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(135deg,#1f2937,#111827);color:#ffcc00;font-weight:bold;text-shadow:0 2px 4px rgba(0,0,0,0.3)}.game-icon{font-size:64px!important;line-height:1;letter-spacing:0;text-shadow:0 4px 14px rgba(0,0,0,.35);background:linear-gradient(135deg,#2b2150,#161329)!important;transition:transform .2s ease,filter .2s ease}.game:hover .game-icon{transform:scale(1.08);filter:brightness(1.15)}.game-info{padding:10px}.game-name{font-size:13px;font-weight:bold}.game-players{color:#777;font-size:11px;margin-top:4px}.play-button{margin-top:8px;width:100%;border:0;background:#1684e8;color:#fff;padding:7px;cursor:pointer;border-radius:4px;font-weight:bold;transition:background 0.2s}.play-button:hover{background:#0d6efd}
 
 .catalog-categories{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
 .cat-tab{background:#ddd;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-weight:bold;font-size:13px}
@@ -188,6 +205,14 @@ body.theme-dark .admin-card{background:#292929;border-color:#444}
 .admin-row{padding:8px 2px;border-bottom:1px solid #ddd;font-size:12px}
 .admin-muted{font-size:11px;color:#777}
 @media(max-width:700px){.admin-grid{grid-template-columns:1fr}}
+
+/* Final UI overrides: legacy white cards are intentionally normalized to the EpicBloxs theme. */
+body{background:radial-gradient(circle at 15% 0%,#30205b 0,#171329 35%,#0e0b1b 80%);color:#f4f0ff}
+.sidebar,.settings-card,.friends-actions,.friends-box,.friend-card,.catalog-item,.inventory-item,.profile-card,.bio-box,.trade-card,.trade-offer,.download-box,.creator-card,.inventory-slot{background:linear-gradient(145deg,rgba(34,27,58,.97),rgba(18,15,34,.97))!important;color:#f4f0ff!important;border-color:#4b3a76!important}
+.catalog-image{background:radial-gradient(circle,#302650 0%,#141126 100%)!important}.game{background:#18152b!important;color:#f4f0ff}.game-info,.game-name{color:#f4f0ff}.game-players{color:#b9afd4!important}
+.chat-window{background:#151126!important}.chat-body,.dm-list{background:#100e1e!important}.chat-msg,.dm-row,.dm-msg.them{background:#211a36!important;color:#eee!important}.chat-input-row{background:#151126!important}.chat-window{width:300px;height:340px;min-width:240px;min-height:260px;max-width:92vw;max-height:70vh;resize:both}
+input,textarea,select{background:#111020!important;color:#f4f0ff!important;border-color:#4b3a76!important}.auth-box{background:linear-gradient(145deg,#221b3a,#120e22)!important;color:#f4f0ff!important}.auth-info{background:#1a162d!important;color:#b9afd4!important}
+
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -269,8 +294,8 @@ body.theme-dark .admin-card{background:#292929;border-color:#444}
 
 <section id="webClient" class="page">
   <div class="client-exit-bar" style="padding:15px 25px 0;">
-    <button class="section-button" onclick="exitWebClient()">← Salir del Juego 3D</button>
-    <h1 id="clientGameTitle" style="margin:10px 0 0;">Jugando en el Cliente 3D...</h1>
+    <button class="section-button" onclick="exitWebClient()">← Salir del Juego</button>
+    <h1 id="clientGameTitle" style="margin:10px 0 0;">Jugando en el Cliente...</h1>
   </div>
   
   <div class="client-container">
@@ -432,7 +457,7 @@ body.theme-dark .admin-card{background:#292929;border-color:#444}
       <div class="creator-tools">
         <button id="creatorTab2d" class="active" onclick="creatorSetMode('2d')">Ropa 2D</button>
         <button id="creatorTabFace" onclick="creatorSetMode('face')">Cara</button>
-        <button id="creatorTab3d" onclick="creatorSetMode('3d')">Sombrero 3D</button>
+        <button id="creatorTab3d" onclick="creatorSetMode('3d')">Sombrero</button>
       </div>
 
       <div id="creator2dPanel">
@@ -458,7 +483,7 @@ body.theme-dark .admin-card{background:#292929;border-color:#444}
         <input id="creatorName" maxlength="40" placeholder="Nombre del objeto" style="width:100%;padding:9px;border:1px solid #bbb;border-radius:5px">
         <textarea id="creatorDescription" maxlength="200" rows="3" placeholder="Descripcion" style="width:100%;margin-top:8px;padding:9px;border:1px solid #bbb;border-radius:5px;resize:vertical"></textarea>
         <div class="creator-tools">
-          <select id="creatorCategory" style="padding:8px;border:1px solid #bbb;border-radius:5px" onchange="creatorSetMode(this.value==='hats'?'3d':this.value==='faces'?'face':'2d')"><option value="shirts">Camisa</option><option value="pants">Pantalon</option><option value="faces">Cara</option><option value="hats">Sombrero 3D</option></select>
+          <select id="creatorCategory" style="padding:8px;border:1px solid #bbb;border-radius:5px" onchange="creatorSetMode(this.value==='hats'?'3d':this.value==='faces'?'face':'2d')"><option value="shirts">Camisa</option><option value="pants">Pantalon</option><option value="faces">Cara</option><option value="hats">Sombrero</option></select>
           <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #bbb;border-radius:5px;background:#fff;">Precio
             <input id="creatorPrice" type="number" min="0" max="1000000" step="1" value="0" inputmode="numeric" style="width:110px;padding:7px;border:1px solid #bbb;border-radius:5px">
             <span>Sunnys</span>
@@ -470,7 +495,7 @@ body.theme-dark .admin-card{background:#292929;border-color:#444}
     </div>
 
     <div class="creator-card">
-      <h3 style="margin-top:0">Vista previa 3D</h3>
+      <h3 style="margin-top:0">Vista previa</h3>
       <div id="creator3dTools" class="creator-tools" style="display:none"><input id="creatorCubeColor" class="creator-color" type="color" value="#1684e8"><button onclick="creatorAddShape('box')">Cubo</button><button onclick="creatorAddShape('cylinder')">Cilindro</button><button onclick="creatorAddShape('sphere')">Esfera</button><button onclick="creatorAddShape('cone')">Cono</button><button onclick="creatorAddShape('torus')">Aro</button><button onclick="creatorRemoveCube()">Eliminar pieza</button></div>
       <div id="creatorViewer" class="creator-viewer"></div>
       <p class="creator-small">Arrastra para rotar la camara y ver como queda tu ropa en el personaje.</p>
@@ -478,7 +503,7 @@ body.theme-dark .admin-card{background:#292929;border-color:#444}
   </div>
 </section>
 
-<section id="download" class="page"><h1>Download</h1><div class="download-box"><h2>🖥️ EpicBloxs  Client</h2><p>Fucking ChatGPT dosen't want to make a real download client so is just a web client [comming soon download client].</p><button class="section-button" onclick="launchWebClient('EpicBloxs Universe')">Launch 3D Client</button></div></section>
+<section id="download" class="page"><h1>Download</h1><div class="download-box"><h2>🖥️ EpicBloxs  Client</h2><p>Fucking ChatGPT dosen't want to make a real download client so is just a web client [comming soon download client].</p><button class="section-button" onclick="launchWebClient('EpicBloxs Universe')">Launch Client</button></div></section>
 
 <section id="avatar" class="page">
   <h1>Avatar</h1>
@@ -631,6 +656,8 @@ body.theme-dark .admin-card{background:#292929;border-color:#444}
 <script>
 let previewRenderer = null, previewScene = null, previewCamera = null, previewAnimId = null;
 let gameRenderer = null, gameScene = null, gameCamera = null, gameAnimId = null;
+let gameCameraEventsBound = false;
+let gameLaunchNonce = 0;
 let gameSun = null;
 let keysPressed = {};
 let playerMeshGroup = null;
@@ -789,7 +816,7 @@ function creatorApplyTransformInputs(){if(!creatorSelected)return; const v=id=>N
 function creatorSetTransformTool(tool){creatorTransformTool=tool;creatorUpdateTransformPanel();creatorMessage(tool==='move'?'Modo mover activo.':tool==='rotate'?'Modo rotar activo.':'Modo escalar activo.');}
 function creatorFocusSelected(resetDistance=false){if(!creatorSelected)return; const target=creatorGetObjectCenter(creatorSelected); if(resetDistance){creatorOrbit.distance=5;} const cp=Math.cos(creatorOrbit.pitch),sp=Math.sin(creatorOrbit.pitch),sy=Math.sin(creatorOrbit.yaw),cy=Math.cos(creatorOrbit.yaw); creatorCamera.position.set(target.x+sy*cp*creatorOrbit.distance,target.y+sp*creatorOrbit.distance,target.z+cy*cp*creatorOrbit.distance); creatorCamera.lookAt(target);}
 function creatorApplyDrag(dx,dy){if(!creatorSelected)return; if(creatorTransformTool==='move'){creatorSelected.position.x+=dx*.012; creatorSelected.position.y-=dy*.012;} else if(creatorTransformTool==='rotate'){creatorSelected.rotation.y+=dx*.012;creatorSelected.rotation.x+=dy*.012;} else {const factor=Math.max(.2,1-dy*.01+dx*.005);creatorSelected.scale.multiplyScalar(factor);} creatorUpdateSelectionVisual();creatorUpdateTransformPanel();}
-function renderCreatorCubeList(){const box=document.getElementById('creatorCubeList');if(!box)return;if(!creatorCubes.length){box.innerHTML='<div class="creator-small">No hay objetos 3D.</div>';return;}box.innerHTML=creatorCubes.map((c,i)=>`<div class="creator-cube-row ${creatorSelected===c?'creator-list-selected':''}"><span>${creatorShapeName(c.userData.type)} ${i+1}</span><span style="width:18px;height:18px;border-radius:3px;background:${c.userData.color};border:1px solid #999"></span><button onclick="creatorSelectCube(${i})">${creatorSelected===c?'Seleccionado':'Seleccionar'}</button></div>`).join('');}
+function renderCreatorCubeList(){const box=document.getElementById('creatorCubeList');if(!box)return;if(!creatorCubes.length){box.innerHTML='<div class="creator-small">No hay objetos.</div>';return;}box.innerHTML=creatorCubes.map((c,i)=>`<div class="creator-cube-row ${creatorSelected===c?'creator-list-selected':''}"><span>${creatorShapeName(c.userData.type)} ${i+1}</span><span style="width:18px;height:18px;border-radius:3px;background:${c.userData.color};border:1px solid #999"></span><button onclick="creatorSelectCube(${i})">${creatorSelected===c?'Seleccionado':'Seleccionar'}</button></div>`).join('');}
 function creatorMessage(text,error=false){const el=document.getElementById('creatorMessage');if(!el)return;el.textContent=text;el.className='creator-msg '+(error?'err':'ok');}
 function creatorAddClothingPreview(){
   creatorSync2DTexture();
@@ -1648,7 +1675,7 @@ function buildAvatar3DModel(userData) {
     torsoMesh.castShadow = true;
     torsoMesh.receiveShadow = true;
 
-    armX = 0.80;
+    armX = 0.88;
     armY = 1.12; // a la altura de los hombros
     armW = 0.42;
     armH = 1.35;
@@ -1672,30 +1699,26 @@ function buildAvatar3DModel(userData) {
   // createAccessoryMesh(). El antiguo bloque de sombreros se eliminó porque
   // renderizaba los mismos accesorios por segunda vez.
 
-  const leftArm = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.5), armMat);
-  leftArm.position.set(-armX, armY, 0);
-  leftArm.name = "leftArm";
-  leftArm.castShadow = true;
-  leftArm.receiveShadow = true;
+  // Pivotes en hombros/caderas: la animación rota el miembro desde su unión,
+  // no desde el centro del bloque. Esto hace que caminar/atacar se vea natural.
+  const leftArm = new THREE.Group(); leftArm.name = "leftArm"; leftArm.position.set(-armX, armY + armH/2, 0);
+  leftArm.userData.bindX = -armX;
+  const leftArmMesh = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.5), armMat);
+  leftArmMesh.position.y = -armH/2; leftArmMesh.castShadow = true; leftArmMesh.receiveShadow = true; leftArm.add(leftArmMesh);
 
-  const rightArm = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.5), armMat);
-  rightArm.position.set(armX, armY, 0);
-  rightArm.name = "rightArm";
-  rightArm.castShadow = true;
-  rightArm.receiveShadow = true;
+  const rightArm = new THREE.Group(); rightArm.name = "rightArm"; rightArm.position.set(armX, armY + armH/2, 0);
+  rightArm.userData.bindX = armX;
+  const rightArmMesh = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.5), armMat);
+  rightArmMesh.position.y = -armH/2; rightArmMesh.castShadow = true; rightArmMesh.receiveShadow = true; rightArm.add(rightArmMesh);
 
-  // Piernas DEBAJO del torso (top de pierna = bottom de torso = 0.3)
-  const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.5), legMat);
-  leftLeg.position.set(-0.3, -0.3, 0);
-  leftLeg.name = "leftLeg";
-  leftLeg.castShadow = true;
-  leftLeg.receiveShadow = true;
+  // Piernas DEBAJO del torso, con pivote en la cadera.
+  const leftLeg = new THREE.Group(); leftLeg.name = "leftLeg"; leftLeg.position.set(-0.3, 0.3, 0);
+  const leftLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.5), legMat);
+  leftLegMesh.position.y = -0.6; leftLegMesh.castShadow = true; leftLegMesh.receiveShadow = true; leftLeg.add(leftLegMesh);
 
-  const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.5), legMat);
-  rightLeg.position.set(0.3, -0.3, 0);
-  rightLeg.name = "rightLeg";
-  rightLeg.castShadow = true;
-  rightLeg.receiveShadow = true;
+  const rightLeg = new THREE.Group(); rightLeg.name = "rightLeg"; rightLeg.position.set(0.3, 0.3, 0);
+  const rightLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.5), legMat);
+  rightLegMesh.position.y = -0.6; rightLegMesh.castShadow = true; rightLegMesh.receiveShadow = true; rightLeg.add(rightLegMesh);
 
   avatarGroup.add(headMesh, torsoMesh, leftArm, rightArm, leftLeg, rightLeg);
 
@@ -1821,11 +1844,18 @@ function startPreviewAnimation() {
 
 function configureGameShadows(root) {
   if (!root) return;
+  let casterCount = 0;
   root.traverse((obj) => {
     if (!obj.isMesh) return;
-    // Todo objeto físico/visible del mapa participa en las sombras.
-    obj.castShadow = true;
+    // Solo objetos medianos/grandes proyectan sombras. Ventanas, monedas,
+    // farolas pequeñas y detalles no necesitan una shadow-map individual.
     obj.receiveShadow = true;
+    obj.castShadow = false;
+    try {
+      if (!obj.geometry.boundingSphere) obj.geometry.computeBoundingSphere();
+      const r = obj.geometry.boundingSphere ? obj.geometry.boundingSphere.radius : 1;
+      if (r >= 0.65 && casterCount < 180) { obj.castShadow = true; casterCount++; }
+    } catch(e) { if (casterCount < 180) { obj.castShadow = true; casterCount++; } }
     if (obj.material && !Array.isArray(obj.material)) obj.material.needsUpdate = true;
     if (Array.isArray(obj.material)) obj.material.forEach(mat => { if (mat) mat.needsUpdate = true; });
   });
@@ -1843,6 +1873,7 @@ function updateGameSunShadowFollow() {
 }
 
 function launchWebClient(gameName) {
+  const launchNonce = ++gameLaunchNonce;
   currentGameType = gameName;
   document.body.classList.add('in-game');
   showPage('webClient');
@@ -1879,6 +1910,7 @@ function launchWebClient(gameName) {
 
   setTimeout(() => { document.getElementById('clientBarFill').style.width = '100%'; }, 100);
   setTimeout(() => {
+    if (launchNonce !== gameLaunchNonce || !document.body.classList.contains('in-game')) return;
     document.getElementById('clientLoading').style.display = 'none';
     document.getElementById('clientGameplay').style.display = 'block';
     epicGameId = getGameId(gameName);
@@ -1894,13 +1926,34 @@ function launchWebClient(gameName) {
   }, 1200);
 }
 
+function disposeGameScene(){
+  if(!gameScene) { if(gameRenderer){ try{gameRenderer.dispose();}catch(e){} gameRenderer=null; } return; }
+  gameScene.traverse(obj=>{
+    if(!obj.isMesh) return;
+    try{ if(obj.geometry) obj.geometry.dispose(); }catch(e){}
+    const mats=Array.isArray(obj.material)?obj.material:[obj.material];
+    mats.forEach(mat=>{
+      if(!mat) return;
+      try{ if(mat.map) mat.map.dispose(); }catch(e){}
+      try{ if(mat.normalMap) mat.normalMap.dispose(); }catch(e){}
+      try{ mat.dispose(); }catch(e){}
+    });
+  });
+  try{ if(gameRenderer) gameRenderer.dispose(); }catch(e){}
+  try{ const c=document.getElementById('webGLContainer'); if(c) c.innerHTML=''; }catch(e){}
+  gameScene=null; gameCamera=null; gameRenderer=null; playerMeshGroup=null; gameSun=null; swordMesh=null;
+}
+
 function exitWebClient() {
+  gameLaunchNonce++;
   try { toggleGameInventory(false); } catch(e) {}
   disconnectMultiplayer();
   epicGameId = null;
   epicServerId = null;
   epicPlayerId = null;
   if(gameAnimId) cancelAnimationFrame(gameAnimId);
+  gameAnimId = null;
+  try { disposeGameScene(); } catch(e) {}
   Object.keys(keysPressed).forEach(key => keysPressed[key] = false);
   isRightMouseDown = false;
   joystickInput = {x:0, z:0};
@@ -1930,7 +1983,7 @@ function resizeGameRenderer() {
   gameCamera.aspect = width / height;
   gameCamera.updateProjectionMatrix();
   gameRenderer.setSize(width, height);
-  gameRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  gameRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
 }
 window.addEventListener('resize', () => {
   if(document.body.classList.contains('in-game')) resizeGameRenderer();
@@ -2311,12 +2364,19 @@ function addPetFollowers(){
 }
 function addSwordToPlayer(){
   if(!playerMeshGroup || swordMesh) return;
+  const hand=playerMeshGroup.getObjectByName('rightArm');
+  if(!hand) return;
   swordMesh=new THREE.Group();
+  swordMesh.name='sword';
   const blade=new THREE.Mesh(new THREE.BoxGeometry(0.12,1.25,0.06),new THREE.MeshLambertMaterial({color:0xd7e4ff,metalness:0.2}));
   const handle=new THREE.Mesh(new THREE.BoxGeometry(0.18,0.35,0.12),new THREE.MeshLambertMaterial({color:0x6b3f1f}));
-  blade.position.y=0.7; handle.position.y=0.0; swordMesh.add(blade,handle);
-  swordMesh.rotation.z=-0.35; swordMesh.position.set(0.65,0.95,-0.1); playerMeshGroup.add(swordMesh);
+  blade.position.y=0.72; handle.position.y=-0.08; swordMesh.add(blade,handle);
+  // La empuñadura queda en la mano; la espada sigue exactamente al brazo.
+  swordMesh.position.set(0,-armHandGripOffset(),0);
+  swordMesh.rotation.z=-0.28;
+  hand.add(swordMesh);
 }
+function armHandGripOffset(){ return 0.02; }
 function buildGameSpecificWorld(gameName){
   const n=gameName.trim();
 
@@ -2515,7 +2575,7 @@ function initGameWebGL(gameName) {
   
   gameRenderer = new THREE.WebGLRenderer({antialias: true});
   gameRenderer.setSize(width, height);
-  gameRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  gameRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
   // Sombras dinámicas en el cliente de juego
   gameRenderer.shadowMap.enabled = true;
   gameRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -2524,34 +2584,36 @@ function initGameWebGL(gameName) {
   // Skybox mejorada
   createSkybox(gameScene, gameName);
 
-  container.addEventListener('contextmenu', e => e.preventDefault());
-  container.addEventListener('mousedown', (e) => {
-    if (e.button === 2) {
-      isRightMouseDown = true;
-      mouseXOnMouseDown = e.clientX;
-      mouseYOnMouseDown = e.clientY;
-    }
-  });
+  if (container.dataset.gameMouseControls !== '1') {
+    container.dataset.gameMouseControls = '1';
+    container.addEventListener('contextmenu', e => e.preventDefault());
+    container.addEventListener('mousedown', (e) => {
+      if (e.button === 2) {
+        isRightMouseDown = true;
+        mouseXOnMouseDown = e.clientX;
+        mouseYOnMouseDown = e.clientY;
+      }
+    });
+  }
 
-  window.addEventListener('mousemove', (e) => {
-    if (isRightMouseDown) {
-      const deltaX = e.clientX - mouseXOnMouseDown;
-      const deltaY = e.clientY - mouseYOnMouseDown;
-      mouseXOnMouseDown = e.clientX;
-      mouseYOnMouseDown = e.clientY;
-      cameraAngleX -= deltaX * 0.005;
-      cameraAngleY += deltaY * 0.005;
-          // Permite mirar completamente hacia arriba y hacia abajo sin bloquear la cámara.
-          if (cameraAngleY > 1.52) cameraAngleY = 1.52;
-          if (cameraAngleY < -1.50) cameraAngleY = -1.50;
-    }
-  });
-
-  window.addEventListener('mouseup', (e) => {
-    if (e.button === 2) {
-      isRightMouseDown = false;
-    }
-  });
+  if (!gameCameraEventsBound) {
+    gameCameraEventsBound = true;
+    window.addEventListener('mousemove', (e) => {
+      if (isRightMouseDown) {
+        const deltaX = e.clientX - mouseXOnMouseDown;
+        const deltaY = e.clientY - mouseYOnMouseDown;
+        mouseXOnMouseDown = e.clientX;
+        mouseYOnMouseDown = e.clientY;
+        cameraAngleX -= deltaX * 0.005;
+        cameraAngleY += deltaY * 0.005;
+        if (cameraAngleY > 1.52) cameraAngleY = 1.52;
+        if (cameraAngleY < -1.50) cameraAngleY = -1.50;
+      }
+    });
+    window.addEventListener('mouseup', (e) => {
+      if (e.button === 2) isRightMouseDown = false;
+    });
+  }
 
   const ambient = new THREE.AmbientLight(0xffffff, 0.45);
   gameScene.add(ambient);
@@ -2862,7 +2924,7 @@ function startGameLoop() {
       }
       if(swordMesh){
         if(attackFlash>0){ attackFlash -= dt; swordMesh.rotation.z = -1.45; }
-        else swordMesh.rotation.z = -0.35;
+        else { swordMesh.rotation.z = -0.28; const ra=playerMeshGroup.getObjectByName('rightArm'); if(ra) ra.rotation.z *= Math.pow(0.05,dt); }
       }
     }
 
@@ -3135,20 +3197,72 @@ function startGameLoop() {
       const rightArm = playerMeshGroup.getObjectByName("rightArm");
       const leftLeg = playerMeshGroup.getObjectByName("leftLeg");
       const rightLeg = playerMeshGroup.getObjectByName("rightLeg");
-      if (isMovingInput && isGrounded) {
-        const time = now * 0.012;
-        if(leftArm && rightArm && leftLeg && rightLeg) {
-          leftArm.rotation.x = Math.sin(time) * 0.8;
-          rightArm.rotation.x = -Math.sin(time) * 0.8;
-          leftLeg.rotation.x = -Math.sin(time) * 0.8;
-          rightLeg.rotation.x = Math.sin(time) * 0.8;
+      const head = playerMeshGroup.getObjectByName('head');
+      const torso = playerMeshGroup.getObjectByName('torso');
+      const animT = now * 0.008;
+      // R6-style jump pose: both arms lift/back slightly while the legs tuck,
+      // with a small torso/head lean. This runs in every game, not only Battle Arena.
+      if (!isGrounded && !isLocalEmoteActive()) {
+        const jumpUp = Math.max(0, Math.min(1, velocityY > 0 ? velocityY / jumpForce : (-velocityY) / 18));
+        const legTuck = 0.28 + jumpUp * 0.10;
+
+        // R6 JUMP: los DOS brazos se levantan desde sus hombros.
+        // Los brazos descansan apuntando a -Y; Z=PI los coloca apuntando a +Y.
+        // No usamos un pequeño desfase diferente entre lados: así ambos brazos
+        // reciben exactamente la misma pose y ninguno queda abajo.
+        if(leftArm) {
+          leftArm.rotation.set(0, 0, Math.PI);
         }
-      } else if (!isMovingInput) {
-        const damp = Math.pow(0.02, dt);
-        if(leftArm) leftArm.rotation.x *= damp;
-        if(rightArm) rightArm.rotation.x *= damp;
+        if(rightArm) {
+          rightArm.rotation.set(0, 0, Math.PI);
+        }
+
+        if(leftLeg) leftLeg.rotation.x = legTuck;
+        if(rightLeg) rightLeg.rotation.x = legTuck;
+        if(torso) torso.rotation.set(0, 0, Math.sin(animT * 0.8) * 0.02);
+        if(head) head.rotation.set(0, 0, 0);
+
+      } else if (isMovingInput && isGrounded && !isLocalEmoteActive()) {
+        const swing = Math.sin(animT * 1.8) * 0.72;
+
+        // Al tocar el suelo se RESTABLECE explícitamente la rotación Z del salto.
+        // Esto evita que un brazo se quede levantado si W/A/S/D sigue presionada.
+        if(leftArm) {
+          leftArm.rotation.z = 0;
+          leftArm.rotation.x = swing;
+        }
+        if(rightArm) {
+          rightArm.rotation.z = 0;
+          rightArm.rotation.x = -swing;
+        }
+        if(leftLeg) leftLeg.rotation.x = -swing * 0.9;
+        if(rightLeg) rightLeg.rotation.x = swing * 0.9;
+
+        if(torso) torso.rotation.z = Math.sin(animT * 0.9) * 0.035;
+        if(head) {
+          head.rotation.z = Math.sin(animT * 0.7) * 0.025;
+          head.rotation.y = Math.sin(animT * 0.55) * 0.035;
+        }
+
+      } else if (!isLocalEmoteActive()) {
+        const damp = Math.pow(0.04, dt);
+
+        // Idle también fuerza Z=0 para que nunca herede la pose de salto.
+        if(leftArm) {
+          leftArm.rotation.x *= damp;
+          leftArm.rotation.z = 0;
+        }
+        if(rightArm) {
+          rightArm.rotation.x *= damp;
+          rightArm.rotation.z = 0;
+        }
         if(leftLeg) leftLeg.rotation.x *= damp;
         if(rightLeg) rightLeg.rotation.x *= damp;
+        if(torso) torso.rotation.z *= damp;
+        if(head) {
+          head.rotation.z *= damp;
+          head.rotation.y *= damp;
+        }
       }
     }
 
@@ -3203,8 +3317,12 @@ function startGameLoop() {
     if(!isGrounded && !isLocalEmoteActive()) {
       const leftArm = playerMeshGroup.getObjectByName("leftArm");
       const rightArm = playerMeshGroup.getObjectByName("rightArm");
-      if(leftArm) leftArm.rotation.x = -1.5;
-      if(rightArm) rightArm.rotation.x = -1.5;
+      const torso = playerMeshGroup.getObjectByName("torso");
+      const head = playerMeshGroup.getObjectByName("head");
+      if(leftArm) leftArm.rotation.x = -0.25;
+      if(rightArm) { rightArm.rotation.x = -1.45; rightArm.rotation.z = -0.18; }
+      if(torso) torso.rotation.z = -0.06;
+      if(head) head.rotation.y = -0.12;
     }
 
     if(playerMeshGroup) playerMeshGroup.position.set(playerPos.x, playerPos.y + 0.4, playerPos.z);
@@ -3784,17 +3902,25 @@ function updateRemotePlayers(dt) {
       resetLimbs(group);
     }
 
-    if (speed > 0.3) {
+    const prevY = group.userData.prevY == null ? group.position.y : group.userData.prevY;
+    const verticalSpeed = (group.position.y - prevY) / Math.max(dt, 0.001);
+    group.userData.prevY = group.position.y;
+    if (Math.abs(verticalSpeed) > 1.2) {
+      if(leftArm) { leftArm.rotation.x = -0.10; leftArm.rotation.z = Math.PI - 0.10; }
+      if(rightArm) { rightArm.rotation.x = -0.10; rightArm.rotation.z = Math.PI + 0.10; }
+      if(leftLeg) leftLeg.rotation.x = 0.45;
+      if(rightLeg) rightLeg.rotation.x = 0.45;
+    } else if (speed > 0.3) {
       group.userData.walkPhase = (group.userData.walkPhase || 0) + dt * 10;
       const swing = Math.sin(group.userData.walkPhase) * 0.7;
-      if(leftArm) leftArm.rotation.x = swing;
-      if(rightArm) rightArm.rotation.x = -swing;
+      if(leftArm) { leftArm.rotation.z = 0; leftArm.rotation.x = swing; }
+      if(rightArm) { rightArm.rotation.z = 0; rightArm.rotation.x = -swing; }
       if(leftLeg) leftLeg.rotation.x = -swing;
       if(rightLeg) rightLeg.rotation.x = swing;
     } else {
       const damp = Math.pow(0.01, dt);
-      if(leftArm) leftArm.rotation.x *= damp;
-      if(rightArm) rightArm.rotation.x *= damp;
+      if(leftArm) { leftArm.rotation.z = 0; leftArm.rotation.x *= damp; }
+      if(rightArm) { rightArm.rotation.z = 0; rightArm.rotation.x *= damp; }
       if(leftLeg) leftLeg.rotation.x *= damp;
       if(rightLeg) rightLeg.rotation.x *= damp;
     }
@@ -4880,7 +5006,16 @@ function loadGames(list=games){
   const render=(arr)=>arr.map(g=>{
     const gid=getGameId(g[0]);
     const count=Number(_gameStats[gid]||0);
-    return `<div class="game" onclick="launchWebClient('${g[0]}')"><div class="game-image">3D</div><div class="game-info"><div class="game-name">${g[0]}</div><div class="game-players">${g[1]}<br><b>👥 ${count} jugador(es) jugando</b></div><button class="play-button">▶ Jugar en 3D</button></div></div>`;
+        const iconMap={
+      'Epic Obby':'🏃',
+      'Bloxs City':'🏙️',
+      'Speed Race':'🏎️',
+      'Battle Arena':'⚔️',
+      'Sky Islands':'☁️',
+      'Pet World':'🐾'
+    };
+    const icon=iconMap[String(g[0]).trim()]||'🎮';
+    return `<div class="game" onclick="launchWebClient('${g[0]}')"><div class="game-image game-icon" aria-label="${g[0]}">${icon}</div><div class="game-info"><div class="game-name">${g[0]}</div><div class="game-players">${g[1]}<br><b>👥 ${count} jugador(es) jugando</b></div><button class="play-button">▶ Jugar</button></div></div>`;
   }).join("");
   const grid=document.getElementById('gamesGrid');
   const recent=document.getElementById('recentGames');
@@ -5237,6 +5372,24 @@ async function toggleAccessory(a){
     alert('❌ No se pudo equipar el accesorio: ' + (e.message || 'error de conexión'));
   }
 }
+
+// Chat: tamaño pequeño por defecto, arrastrable y redimensionable; se conserva por cuenta/navegador.
+(function setupChatWindowControls(){
+  const init=()=>{
+    const win=document.getElementById('chatWindow'); if(!win || win.dataset.controlsReady==='1') return;
+    win.dataset.controlsReady='1';
+    let state=null;
+    try{ state=JSON.parse(localStorage.getItem('epicbloxs_chat_geometry')||'null'); }catch(e){}
+    if(state){ if(Number.isFinite(state.w)) win.style.width=Math.max(240,Math.min(window.innerWidth-16,state.w))+'px'; if(Number.isFinite(state.h)) win.style.height=Math.max(260,Math.min(window.innerHeight-80,state.h))+'px'; if(Number.isFinite(state.x)) win.style.left=Math.max(8,Math.min(window.innerWidth-80,state.x))+'px'; if(Number.isFinite(state.y)) win.style.top=Math.max(8,Math.min(window.innerHeight-80,state.y))+'px'; win.style.right='auto'; win.style.bottom='auto'; }
+    const header=win.querySelector('.chat-header');
+    if(header){ header.style.cursor='grab'; header.addEventListener('mousedown',e=>{ if(e.button!==0 || e.target.closest('button')) return; const r=win.getBoundingClientRect(); const ox=e.clientX-r.left, oy=e.clientY-r.top; const move=ev=>{ const x=Math.max(8,Math.min(window.innerWidth-r.width-8,ev.clientX-ox)); const y=Math.max(8,Math.min(window.innerHeight-r.height-8,ev.clientY-oy)); win.style.left=x+'px';win.style.top=y+'px';win.style.right='auto';win.style.bottom='auto'; }; const up=()=>{ document.removeEventListener('mousemove',move);document.removeEventListener('mouseup',up);save();}; document.addEventListener('mousemove',move);document.addEventListener('mouseup',up); }); }
+    const save=()=>{ const r=win.getBoundingClientRect(); try{localStorage.setItem('epicbloxs_chat_geometry',JSON.stringify({w:Math.round(r.width),h:Math.round(r.height),x:Math.round(r.left),y:Math.round(r.top)}));}catch(e){} };
+    const ro=new ResizeObserver(save); ro.observe(win);
+    window.addEventListener('resize',()=>{ const r=win.getBoundingClientRect(); if(r.right>window.innerWidth) win.style.left=Math.max(8,window.innerWidth-r.width-8)+'px'; if(r.bottom>window.innerHeight) win.style.top=Math.max(8,window.innerHeight-r.height-8)+'px'; });
+  };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
+})();
+
 let chatUnread = 0;
 let chatOpen = false;
 
@@ -5614,7 +5767,7 @@ function sendChatMessage() {
   input.value = '';
 
   if(!multiplayerReady || !multiplayerSocket || multiplayerSocket.readyState !== WebSocket.OPEN) {
-    appendChatMessage('Sistema', 'No estás conectado. Entra a un juego 3D para chatear en tiempo real.', true);
+    appendChatMessage('Sistema', 'No estás conectado. Entra a un juego para chatear en tiempo real.', true);
     return;
   }
 
