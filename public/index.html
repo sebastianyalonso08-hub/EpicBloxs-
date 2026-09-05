@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>EpicBloxs</title>
+<link rel="icon" type="image/png" href="/assets/favicon.png">
 <style>
 /* EpicBloxs visual cleanup: cohesive dark/violet UI without white legacy panels. */
 /* EXTRA UI COLOR FIX */
@@ -509,7 +510,6 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
     <button class="cat-tab" data-category="pants" onclick="filterCatalog('pants', this)">Pantalones (2D)</button>
     <button class="cat-tab" data-category="faces" onclick="filterCatalog('faces', this)">Faces</button>
     <button class="cat-tab" data-category="gear" onclick="filterCatalog('gear', this)">Accessories / Gear</button>
-    <button class="cat-tab" data-category="backgrounds" onclick="filterCatalog('backgrounds', this)">Fondos de perfil</button>
   </div>
 
   <div class="catalog-grid" id="catalogGridContainer">
@@ -810,14 +810,7 @@ const catalogDatabase = [
   { id: 'Cool Backpack', name: 'Cool Backpack', category: 'gear', price: 180, desc: 'Mochila de aventurero' },
   { id: 'Heart Necklace', name: 'Heart Necklace', category: 'gear', price: 90, desc: 'Collar de corazón · Mujer' },
   { id: 'Shoulder Bunny', name: 'Shoulder Bunny', category: 'gear', price: 160, desc: 'Conejito para el hombro' },
-  { id: 'Golden Headphones', name: 'Golden Headphones', category: 'gear', price: 200, desc: 'Auriculares dorados' },
-
-  // Fondos de perfil
-  { id: 'Purple Galaxy', name: 'Purple Galaxy', category: 'backgrounds', price: 120, desc: 'Fondo espacial morado para tu perfil', background: 'galaxy' },
-  { id: 'Neon Grid', name: 'Neon Grid', category: 'backgrounds', price: 150, desc: 'Fondo neon futurista', background: 'neon' },
-  { id: 'Sunset', name: 'Sunset', category: 'backgrounds', price: 100, desc: 'Atardecer cálido', background: 'sunset' },
-  { id: 'Ocean', name: 'Ocean', category: 'backgrounds', price: 110, desc: 'Fondo oceánico', background: 'ocean' },
-  { id: 'Dark Void', name: 'Dark Void', category: 'backgrounds', price: 180, desc: 'Fondo oscuro espacial', background: 'void' }
+  { id: 'Golden Headphones', name: 'Golden Headphones', category: 'gear', price: 200, desc: 'Auriculares dorados' }
 ];
 
 let creatorMode = '2d';
@@ -1669,9 +1662,9 @@ function catalogItemById(id){
 function avatarItemCategory(id){
   const item = catalogItemById(id);
   if(item && item.category) return item.category;
-  if(id === 'Classic Smile' || id === 'Cool Wink' || id === 'Happy Face' || id === 'Sleepy Face' || id === 'Cute Face' || id === 'Starry Face') return 'faces';
+  if(id === 'Classic Smile' || id === 'Cool Wink') return 'faces';
   if(id === 'Blue Shirt' || id === 'Green Hoodie') return 'shirts';
-  if(id === 'Classic Jeans' || id === 'Dark Cargo Pants' || id === 'Black Jeans' || id === 'White Pants' || id === 'Pink Jeans' || id === 'Purple Pants') return 'pants';
+  if(id === 'Classic Jeans' || id === 'Dark Cargo Pants') return 'pants';
   return 'gear';
 }
 // Texturas de ropa creada por usuarios (cacheadas por id).
@@ -1681,37 +1674,10 @@ function customClothingTexture(item){
   if(_customClothingTexCache[item.id]) return _customClothingTexCache[item.id];
   const img = new Image();
   const tex = new THREE.Texture(img);
-  tex.flipY = true;
   if(THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
-  tex.wrapS = THREE.ClampToEdgeWrapping; tex.wrapT = THREE.ClampToEdgeWrapping;
   img.onload = () => { tex.needsUpdate = true; };
   img.src = item.data.imageData;
   _customClothingTexCache[item.id] = tex;
-  return tex;
-}
-
-const _customFaceTexCache = {};
-function customFaceTexture(item, headColor){
-  if(!item || !item.data || !item.data.imageData) return null;
-  if(_customFaceTexCache[item.id]) return _customFaceTexCache[item.id];
-  const canvas = document.createElement('canvas');
-  canvas.width = 256; canvas.height = 256;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = headColor || '#f5c928';
-  ctx.fillRect(0,0,256,256);
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.flipY = false;
-  if(THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
-  const img = new Image();
-  img.onload = () => {
-    ctx.clearRect(0,0,256,256);
-    ctx.fillStyle = headColor || '#f5c928'; ctx.fillRect(0,0,256,256);
-    ctx.drawImage(img,0,0,256,256);
-    tex.needsUpdate = true;
-  };
-  img.onerror = () => { tex.needsUpdate = true; };
-  img.src = item.data.imageData;
-  _customFaceTexCache[item.id] = tex;
   return tex;
 }
 
@@ -1754,10 +1720,7 @@ function buildAvatar3DModel(userData) {
   const armMat = new THREE.MeshLambertMaterial({color: armCol});
 
   const sideHeadMat = new THREE.MeshLambertMaterial({color: headCol});
-  const faceItem = catalogItemById(activeFace);
-  const faceTexture = (faceItem && faceItem.custom && faceItem.category === 'faces' && faceItem.data && faceItem.data.imageData)
-    ? customFaceTexture(faceItem, headCol)
-    : createFaceTexture(headCol, activeFace);
+  const faceTexture = createFaceTexture(headCol, activeFace);
   const frontFaceMat = new THREE.MeshLambertMaterial({map: faceTexture, color: headCol});
   const headMaterials = [sideHeadMat, sideHeadMat, sideHeadMat, sideHeadMat, frontFaceMat, sideHeadMat];
   
@@ -1826,16 +1789,16 @@ function buildAvatar3DModel(userData) {
     armH = 1.35;
   } else {
     // Hombre R6 clásico: bloque 1.2 x 1.4 x 0.6, centro y=1.0
-    torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.10, 1.40, 0.60), torsoMat);
-    torsoMesh.position.set(0, 1.00, 0);
+    torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.05, 1.3, 0.6), torsoMat);
+    torsoMesh.position.set(0, 0.95, 0);
     torsoMesh.name = "torso";
     torsoMesh.castShadow = true;
     torsoMesh.receiveShadow = true;
   }
 
   // Cabeza encima del torso (torso top ~1.7)
-  const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.80, 0.80, 0.80), headMaterials);
-  headMesh.position.set(0, 2.10, 0);
+  const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), headMaterials);
+  headMesh.position.set(0, 2.08, 0);
   headMesh.name = "head";
   headMesh.castShadow = true;
   headMesh.receiveShadow = true;
@@ -1848,22 +1811,22 @@ function buildAvatar3DModel(userData) {
   // no desde el centro del bloque. Esto hace que caminar/atacar se vea natural.
   const leftArm = new THREE.Group(); leftArm.name = "leftArm"; leftArm.position.set(-armX, armY + armH/2, 0);
   leftArm.userData.bindX = -armX;
-  const leftArmMesh = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.55), armMat);
+  const leftArmMesh = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.5), armMat);
   leftArmMesh.position.y = -armH/2; leftArmMesh.castShadow = true; leftArmMesh.receiveShadow = true; leftArm.add(leftArmMesh);
 
   const rightArm = new THREE.Group(); rightArm.name = "rightArm"; rightArm.position.set(armX, armY + armH/2, 0);
   rightArm.userData.bindX = armX;
-  const rightArmMesh = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.55), armMat);
+  const rightArmMesh = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.5), armMat);
   rightArmMesh.position.y = -armH/2; rightArmMesh.castShadow = true; rightArmMesh.receiveShadow = true; rightArm.add(rightArmMesh);
 
   // Piernas DEBAJO del torso, con pivote en la cadera.
-  const leftLeg = new THREE.Group(); leftLeg.name = "leftLeg"; leftLeg.position.set(-0.27, 0.30, 0);
-  const leftLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.52, 1.45, 0.55), legMat);
-  leftLegMesh.position.y = -0.725; leftLegMesh.castShadow = true; leftLegMesh.receiveShadow = true; leftLeg.add(leftLegMesh);
+  const leftLeg = new THREE.Group(); leftLeg.name = "leftLeg"; leftLeg.position.set(-0.3, 0.3, 0);
+  const leftLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.5), legMat);
+  leftLegMesh.position.y = -0.6; leftLegMesh.castShadow = true; leftLegMesh.receiveShadow = true; leftLeg.add(leftLegMesh);
 
-  const rightLeg = new THREE.Group(); rightLeg.name = "rightLeg"; rightLeg.position.set(0.27, 0.30, 0);
-  const rightLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.52, 1.45, 0.55), legMat);
-  rightLegMesh.position.y = -0.725; rightLegMesh.castShadow = true; rightLegMesh.receiveShadow = true; rightLeg.add(rightLegMesh);
+  const rightLeg = new THREE.Group(); rightLeg.name = "rightLeg"; rightLeg.position.set(0.3, 0.3, 0);
+  const rightLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.5), legMat);
+  rightLegMesh.position.y = -0.6; rightLegMesh.castShadow = true; rightLegMesh.receiveShadow = true; rightLeg.add(rightLegMesh);
 
   avatarGroup.add(headMesh, torsoMesh, leftArm, rightArm, leftLeg, rightLeg);
 
@@ -1888,7 +1851,7 @@ function buildAvatar3DModel(userData) {
     accessories.forEach(accName => {
       const accCat = avatarItemCategory(accName);
       const accItem = catalogItemById(accName);
-      const isClothing = accCat === 'faces' || accCat === 'shirts' || accCat === 'pants' || accCat === 'backgrounds';
+      const isClothing = accCat === 'faces' || accCat === 'shirts' || accCat === 'pants';
       if(!isClothing && !(accItem && accItem.type === '2d')) {
         const accMesh = createAccessoryMesh(accName);
         accMesh.name = 'acc_' + String(accName).replace(/\s+/g,'_');
@@ -1973,10 +1936,7 @@ function buildGamePlayerModel(userData) {
 
   const armMat = new THREE.MeshLambertMaterial({ color: armCol });
   const sideHeadMat = new THREE.MeshLambertMaterial({ color: headCol });
-  const faceItem = catalogItemById(activeFace);
-  const faceTexture = (faceItem && faceItem.custom && faceItem.category === 'faces' && faceItem.data && faceItem.data.imageData)
-    ? customFaceTexture(faceItem, headCol)
-    : createFaceTexture(headCol, activeFace);
+  const faceTexture = createFaceTexture(headCol, activeFace);
   const frontFaceMat = new THREE.MeshLambertMaterial({ map: faceTexture, color: headCol });
   const headMaterials = [sideHeadMat, sideHeadMat, sideHeadMat, sideHeadMat, frontFaceMat, sideHeadMat];
 
@@ -2094,7 +2054,7 @@ function buildGamePlayerModel(userData) {
   accessories.forEach(accName => {
     const accCat = avatarItemCategory(accName);
     const accItem = catalogItemById(accName);
-    const isClothing = accCat === "faces" || accCat === "shirts" || accCat === "pants" || accCat === "backgrounds";
+    const isClothing = accCat === "faces" || accCat === "shirts" || accCat === "pants";
     if (isClothing || (accItem && accItem.type === "2d")) return;
 
     const accMesh = createAccessoryMesh(accName);
@@ -5053,33 +5013,6 @@ function refreshSettings(){
   applyTheme(u.theme||"light");
 }
 
-
-function getProfileBackgroundItem(userData){
-  const id = userData && userData.avatar && userData.avatar.profileBackground;
-  if(!id) return null;
-  return catalogDatabase.find(item => String(item.id).toLowerCase() === String(id).toLowerCase() && item.category === 'backgrounds') || null;
-}
-function profileBackgroundCSS(userData){
-  const item = getProfileBackgroundItem(userData);
-  const b = item && item.background;
-  if(b === 'neon') return 'linear-gradient(135deg,rgba(5,12,28,.62),rgba(35,7,72,.62)),linear-gradient(135deg,#07111f,#7c3aed 55%,#22d3ee)';
-  if(b === 'sunset') return 'linear-gradient(135deg,rgba(35,7,43,.55),rgba(127,29,29,.38)),linear-gradient(135deg,#32113f,#f97316 55%,#facc15)';
-  if(b === 'ocean') return 'linear-gradient(135deg,rgba(3,24,39,.52),rgba(8,47,73,.42)),linear-gradient(135deg,#06283d,#0ea5e9 55%,#67e8f9)';
-  if(b === 'void') return 'linear-gradient(135deg,rgba(0,0,0,.58),rgba(15,23,42,.5)),linear-gradient(135deg,#030712,#111827 55%,#4c1d95)';
-  if(b === 'galaxy') return 'linear-gradient(135deg,rgba(10,5,28,.48),rgba(49,16,96,.35)),linear-gradient(135deg,#09051c,#4c1d95 55%,#c084fc)';
-  return '';
-}
-function applyProfileBackground(userData){
-  const css = profileBackgroundCSS(userData);
-  ['home','.profile-page'].forEach(()=>{});
-  const home = document.querySelector('#home .profile-header');
-  if(home) home.style.setProperty('background', css || 'linear-gradient(135deg,#31265b,#1a1730)', 'important');
-  const own = document.querySelector('#profile .profile-card');
-  if(own) own.style.setProperty('background', css || '', 'important');
-  const friend = document.querySelector('#friendProfile .profile-card');
-  if(friend && friend.dataset.profileBackgroundApplied === '1') friend.style.setProperty('background', css || '', 'important');
-}
-
 function updateUI(u){
   applyTheme(u && u.theme ? u.theme : "light");
   document.getElementById('topUser').textContent=u.username;
@@ -5096,7 +5029,6 @@ function updateUI(u){
   
   updateCatalogButtons(u);
   updateAccessoryButtons(u);
-  applyProfileBackground(u);
   updatePreviewAvatar3D();
   renderTopAvatarMini(u);
   renderFriends();
@@ -5548,8 +5480,6 @@ function openUserProfile(userId){
       }
       const avEl=document.getElementById("friendProfileAvatar");
       if(avEl){avEl.style.background="transparent";avEl.innerHTML=avatarPortraitHTML(friend,260);}
-      const friendCard = document.querySelector('#friendProfile .profile-card');
-      if(friendCard){ friendCard.dataset.profileBackgroundApplied='1'; friendCard.style.setProperty('background', profileBackgroundCSS(friend) || '', 'important'); }
       showPage("friendProfile");
     })
     .catch(()=>alert("Usuario no encontrado en el servidor global."));
@@ -5664,7 +5594,7 @@ function loadGames(list=games){
     const name=String(g[0]).trim();
     const safeName=name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const icon=getGameIcon(name);
-    return `<div class="game" onclick="openGameDetail('${safeName}')"><img class="game-icon" src="${icon}" alt="${escapeHTML(name)}" loading="lazy" onerror="this.onerror=null;this.src='/assets/games/default-game.svg'"><div class="game-info"><div class="game-name">${escapeHTML(name)}</div><div class="game-players"><span>👥 ${count} playing</span><span style="margin-left:auto">👁 ${formatVisits(_gameVisits[gid]||0)}</span></div></div></div>`;
+    return `<div class="game" onclick="openGameDetail('${safeName}')"><img class="game-icon" src="${icon}" alt="${escapeHTML(name)}" loading="lazy"><div class="game-info"><div class="game-name">${escapeHTML(name)}</div><div class="game-players"><span>👥 ${count} playing</span><span style="margin-left:auto">👁 ${formatVisits(_gameVisits[gid]||0)}</span></div></div></div>`;
   }).join("");
   const grid=document.getElementById('gamesGrid');
   const recent=document.getElementById('recentGames');
@@ -5766,18 +5696,13 @@ function catalogIconSVG(item) {
   if(item.id === 'Heart Necklace') return `<svg ${common}><path d="M23 25C27 55 69 55 73 25" stroke="#777" stroke-width="5" fill="none"/><path d="M48 47C38 38 28 48 48 68C68 48 58 38 48 47Z" fill="#E91E63" stroke="#880E4F" stroke-width="3"/></svg>`;
   if(item.id === 'Shoulder Bunny') return `<svg ${common}><ellipse cx="48" cy="54" rx="25" ry="24" fill="#F5F5F5" stroke="#777" stroke-width="4"/><ellipse cx="35" cy="24" rx="8" ry="18" fill="#F5F5F5" stroke="#777" stroke-width="4"/><ellipse cx="61" cy="24" rx="8" ry="18" fill="#F5F5F5" stroke="#777" stroke-width="4"/><circle cx="40" cy="51" r="3" fill="#222"/><circle cx="56" cy="51" r="3" fill="#222"/><circle cx="48" cy="59" r="4" fill="#F48FB1"/></svg>`;
   if(item.id === 'Golden Headphones') return `<svg ${common}><path d="M25 52V43C25 15 71 15 71 43V52" stroke="#D4AF37" stroke-width="8" fill="none"/><rect x="18" y="45" width="15" height="25" rx="7" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><rect x="63" y="45" width="15" height="25" rx="7" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><path d="M33 58H63" stroke="#D4AF37" stroke-width="4"/></svg>`;
-  if(item.category === 'backgrounds') {
-    const b = item.background || 'galaxy';
-    const bg = b === 'neon' ? ['#07111f','#7c3aed','#22d3ee'] : b === 'sunset' ? ['#32113f','#f97316','#facc15'] : b === 'ocean' ? ['#06283d','#0ea5e9','#67e8f9'] : b === 'void' ? ['#030712','#111827','#4c1d95'] : ['#09051c','#4c1d95','#c084fc'];
-    return `<svg ${common}><defs><linearGradient id=\"bgCard${String(item.id).replace(/[^a-zA-Z0-9]/g,'')}\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop stop-color=\"${bg[0]}\"/><stop offset=\"0.55\" stop-color=\"${bg[1]}\"/><stop offset=\"1\" stop-color=\"${bg[2]}\"/></linearGradient></defs><rect width=\"96\" height=\"96\" rx=\"14\" fill=\"url(#bgCard${String(item.id).replace(/[^a-zA-Z0-9]/g,'')})\"/><circle cx=\"75\" cy=\"21\" r=\"10\" fill=\"#fff\" opacity=\".8\"/><circle cx=\"25\" cy=\"68\" r=\"13\" fill=\"#fff\" opacity=\".12\"/><path d=\"M8 75L28 52L42 65L61 43L88 75Z\" fill=\"#fff\" opacity=\".16\"/></svg>`;
-  }
   if(item.custom && item.type === '2d' && item.data && item.data.imageData) return `<img src=\"${item.data.imageData}\" style=\"max-width:100%;max-height:150px;object-fit:contain\" alt=\"Ropa 2D\">`;
   if(item.custom && item.type === 'accessory3d') return `<div style=\"font-size:58px\">🧊</div>`;
   return `<svg ${common}><rect x="18" y="18" width="60" height="60" rx="12" fill="#E9EEF3" stroke="#9AA7B2" stroke-width="4"/><path d="M30 50H66" stroke="#1684E8" stroke-width="6" stroke-linecap="round"/></svg>`;
 }
 
 function catalogCategoryLabel(category){
-  return ({hats:'Sombrero',shirts:'Camisa 2D',pants:'Pantalón 2D',faces:'Cara',gear:'Accesorio',backgrounds:'Fondo de perfil'}[String(category||'').toLowerCase()] || 'Artículo');
+  return ({hats:'Sombrero',shirts:'Camisa 2D',pants:'Pantalón 2D',faces:'Cara',gear:'Accesorio'}[String(category||'').toLowerCase()] || 'Artículo');
 }
 function renderCatalog(category) {
   const container = document.getElementById('catalogGridContainer');
@@ -6052,7 +5977,6 @@ async function toggleAccessory(a){
     }
 
     try { Object.keys(_portraitCache).forEach(k=>delete _portraitCache[k]); } catch(e) {}
-    try { Object.keys(_customFaceTexCache).forEach(k=>delete _customFaceTexCache[k]); } catch(e) {}
     updateUI(data.user);
     try { loadInventory(); } catch(e) {}
     try { renderCatalog('all'); } catch(e) {}
@@ -6484,7 +6408,7 @@ function tradeItemInfo(id){
 }
 
 function tradeCategoryLabel(category){
-  return ({hats:'Sombrero',shirts:'Ropa',pants:'Pantalón',faces:'Cara',gear:'Accesorio',backgrounds:'Fondo de perfil'})[category] || 'Artículo';
+  return ({hats:'Sombrero',shirts:'Ropa',pants:'Pantalón',faces:'Cara',gear:'Accesorio'})[category] || 'Artículo';
 }
 
 function renderTradeFriends(){
