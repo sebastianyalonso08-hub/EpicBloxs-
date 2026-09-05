@@ -265,7 +265,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
   <div class="side-item" onclick="showPage('profile')"><div class="side-icon">♙</div><span>Profile</span></div>
   <div class="side-item" onclick="showPage('avatar')"><div class="side-icon">👕</div><span>Avatar</span></div>
   <div class="side-item" onclick="showPage('inventory')"><div class="side-icon">🎒</div><span>Inventory</span></div>
-  <div class="side-item" onclick="showPage('streak')"><div class="side-icon">🔥</div><span>Streak</span></div>
+  <div class="side-item" onclick="showPage('streak')"><div class="side-icon">🔥</div><span>Racha</span></div>
   <div class="side-item" onclick="showPage('catalog')"><div class="side-icon">🛒</div><span>Catalog</span></div>
   <div class="side-item" onclick="showPage('friends')"><div class="side-icon">👥</div><span>Friends</span></div>
   <div class="side-item" onclick="showPage('settings')"><div class="side-icon">⚙️</div><span>Settings</span></div>
@@ -294,14 +294,14 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 
 <section id="webClient" class="page">
   <div class="client-exit-bar" style="padding:15px 25px 0;">
-    <button class="section-button" onclick="exitWebClient()">← Salir del Juego</button>
-    <h1 id="clientGameTitle" style="margin:10px 0 0;">Jugando en el Cliente...</h1>
+    <button class="section-button" onclick="exitWebClient()">← Exit Game</button>
+    <h1 id="clientGameTitle" style="margin:10px 0 0;">Playing en el Cliente...</h1>
   </div>
   
   <div class="client-container">
     <div id="clientLoading" class="client-loading">
       <h2 style="color:#ffcc00; margin:0;">Loading Launcher...</h2>
-      <p style="color:#aaa; font-size:13px;">Loading texturas y personaje...</p>
+      <p style="color:#aaa; font-size:13px;">Loading textures and character...</p>
       <div class="client-bar-bg">
         <div id="clientBarFill" class="client-bar-fill"></div>
       </div>
@@ -312,23 +312,23 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 
       <h2 class="client-title" id="activeGameHeader">World</h2>
       <div class="client-ui">☀️ <span id="clientEarnings">0</span> &nbsp;|&nbsp; <span id="multiplayerStatusInline">👥 ...</span></div><div id="gameHint" style="margin-left:14px;color:#fff;opacity:.9;font-weight:bold"></div>
-      <div class="client-controls-hint">WASD / Flechas mover · ESPACIO saltar · Click derecho + arrastrar cámara · T chat</div>
+      <div class="client-controls-hint">WASD / Arrows move · SPACE jump · Right click + drag camera · T chat</div>
 
       <div class="game-fab-bar">
         <button class="game-fab" id="fabChatBtn" onclick="toggleChat()" title="Chat">💬<span class="fab-badge" id="fabChatBadge">0</span></button>
-        <button class="game-fab" id="fabInvBtn" onclick="toggleGameInventory()" title="Inventory">🎒</button>
-        <button class="game-fab" id="fabMenuBtn" onclick="toggleGameMenu()" title="Menu">☰</button>
+        <button class="game-fab" id="fabInvBtn" onclick="toggleGameInventory()" title="Inventario">🎒</button>
+        <button class="game-fab" id="fabMenuBtn" onclick="toggleGameMenu()" title="Menú">☰</button>
       </div>
 
       <div id="ingameChat" class="ingame-chat"></div>
 
       <div id="gameInventoryPanel" class="game-inv-panel">
         <div class="game-inv-head">
-          <span>🎒 Inventory</span>
+          <span>🎒 Inventario</span>
           <button type="button" onclick="toggleGameInventory(false)">✕</button>
         </div>
         <div id="gameInventoryGrid" class="game-inv-grid"></div>
-        <div class="game-inv-foot">9 slots · Only game items</div>
+        <div class="game-inv-foot">9 slots · Solo objetos del juego</div>
       </div>
 
       <div class="mobile-controls" id="mobileControls">
@@ -341,20 +341,20 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 
       <div class="void-death-overlay" id="voidDeathOverlay">
         <div class="void-death-box">
-          <h2>💀 Caíste al vacío</h2>
-          <p>El personaje cayó fuera del mapa.</p>
-          <button class="void-death-btn" onclick="respawnAfterVoid()">↻ Back a aparecer</button>
+          <h2>💀 You fell into the void</h2>
+          <p>The character fell outside the map.</p>
+          <button class="void-death-btn" onclick="respawnAfterVoid()">↻ Respawn</button>
         </div>
       </div>
 
       <div class="game-menu-overlay" id="gameMenuOverlay">
         <div class="game-menu-box">
-          <h2>Menu</h2>
+          <h2>Menú</h2>
           <p id="gameMenuSubtitle">EpicBloxs</p>
-          <button class="game-menu-btn primary" onclick="toggleGameMenu()">▶ Continue</button>
+          <button class="game-menu-btn primary" onclick="toggleGameMenu()">▶ Continuar</button>
           <button class="game-menu-btn secondary" onclick="toggleGameMenu(); toggleChat();">💬 Chat</button>
-          <button class="game-menu-btn secondary" onclick="toggleGameMenu(); toggleGameInventory(true);">🎒 Inventory</button>
-          <button class="game-menu-btn danger" onclick="exitWebClient()">🚪 Exit Game</button>
+          <button class="game-menu-btn secondary" onclick="toggleGameMenu(); toggleGameInventory(true);">🎒 Inventario</button>
+          <button class="game-menu-btn danger" onclick="exitWebClient()">🚪 Exit del juego</button>
         </div>
       </div>
     </div>
@@ -363,10 +363,10 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 
 <section id="friends" class="page">
   <h1>Friends</h1>
-  <p>Busca a cualquier persona registrada en EpicBloxs (tambien las cuentas creadas hace mucho tiempo), mira su perfil, envia requestes y ve si esta en linea, desconectada o jugando.</p>
+  <p>Search for anyone registered on EpicBloxs (including accounts created a long time ago), view their profile, send requests, and see if they are online, offline, or playing.</p>
 
   <div class="friends-actions">
-    <input id="userSearchInput" placeholder="Username o ID..." onkeydown="if(event.key==='Enter')runUserSearch()">
+    <input id="userSearchInput" placeholder="Name de usuario o ID..." onkeydown="if(event.key==='Enter')runUserSearch()">
     <button class="section-button" onclick="runUserSearch()">Search</button>
     <button class="section-button" style="background:#6f42c1" onclick="runUserSearch('', true)">Ver todos los usuarios</button>
   </div>
@@ -376,12 +376,12 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
   <div id="incomingRequestsBox" style="margin:0 0 18px 0"></div>
   <div id="outgoingRequestsBox" style="margin:0 0 18px 0"></div>
 
-  <h3 id="friendsPageTitle" style="margin:6px 0 8px;font-size:16px;color:#555">Mis friends</h3>
+  <h3 id="friendsPageTitle" style="margin:6px 0 8px;font-size:16px;color:#555">Mis amigos</h3>
   <div id="friendsListGrid" class="friends-list-grid"></div>
 </section>
 
 <section id="friendProfile" class="page">
-  <button class="section-button" onclick="showPage('friends')" style="margin-bottom:15px">← Back a Friends</button>
+  <button class="section-button" onclick="showPage('friends')" style="margin-bottom:15px">← Back to Friends</button>
   <div class="profile-card" style="max-width:580px;margin:auto">
     <div id="friendProfileAvatar" class="profile-avatar-large"></div>
     <h2 id="friendProfileName" style="text-align:center;margin:5px 0">Player ✓</h2>
@@ -391,12 +391,12 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
     <div id="friendProfilePresence" style="text-align:center;margin-bottom:15px"></div>
     <div id="friendProfileAction" style="text-align:center;margin-bottom:12px"></div>
     <div class="bio-box">
-      <h3>Biografía / Sobre mí</h3>
+      <h3>Bio / About Me</h3>
       <p id="friendProfileBio">No description available.</p>
     </div>
     <div style="margin-top:20px;display:flex;gap:10px">
-      <button id="friendProfileJoinBtn" class="buy" style="flex:1" disabled>Unirse al Juego</button>
-      <button id="friendProfileMsgBtn" class="section-button" style="flex:1;margin:0" onclick="alert('Abre un perfil para escribir.')">Send Mensaje</button>
+      <button id="friendProfileJoinBtn" class="buy" style="flex:1" disabled>Join Game</button>
+      <button id="friendProfileMsgBtn" class="section-button" style="flex:1;margin:0" onclick="alert('Abre un perfil para escribir.')">Send Message</button>
     </div>
   </div>
 </section>
@@ -404,21 +404,21 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 
 <section id="trade" class="page">
   <h1>Trade</h1>
-  <p>Trade Sunnys, clothing and accessories with your friends. El server comprueba la propiedad de cada artículo al completar el intercambio para evitar duplicaciones.</p>
+  <p>Trade Sunnys, clothing and accessories with your friends. The server checks item ownership when the trade is completed to prevent duplication.</p>
   <div class="trade-layout">
     <div class="trade-card">
-      <h3 style="margin-top:0">1. Elige un friend</h3>
+      <h3 style="margin-top:0">1. Elige un amigo</h3>
       <div id="tradeFriends" class="trade-friends"></div>
-      <div id="tradeFriendHint" class="trade-empty" style="margin-top:10px">Selecciona un friend para empezar.</div>
-      <h3 style="margin-top:18px">2. Tu parte del intercambio</h3>
-      <label style="font-size:12px;color:#666">Sunnys you give</label>
+      <div id="tradeFriendHint" class="trade-empty" style="margin-top:10px">Selecciona un amigo para empezar.</div>
+      <h3 style="margin-top:18px">2. Your side of the trade</h3>
+      <label style="font-size:12px;color:#666">Sunnys que das</label>
       <input id="tradeSunnysInput" type="number" min="0" max="9999999" step="1" value="0" style="width:100%;box-sizing:border-box;padding:9px;margin:5px 0 10px;border:1px solid #ccc;border-radius:5px">
       <div id="tradeMyItems" class="trade-items"></div>
       <div id="tradeSelectedCount" style="font-size:12px;color:#666;margin-top:8px">0 artículos seleccionados</div>
       <button class="buy" style="margin-top:12px" onclick="sendTradeOffer()">Send intercambio</button>
     </div>
     <div class="trade-card">
-      <h3 style="margin-top:0">Intercambios pendientes</h3>
+      <h3 style="margin-top:0">Pending Trades</h3>
       <div id="tradeIncoming"></div>
       <h3 style="margin-top:22px">Mis intercambios enviados</h3>
       <div id="tradeOutgoing"></div>
@@ -430,14 +430,14 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 
 <section id="catalog" class="page">
   <h1>Catalog</h1>
-  <p>Personaliza tu avatar con accesorios, clothing 2D y caras exclusivas.</p>
+  <p>Personaliza tu avatar con accesorios, ropa 2D y caras exclusivas.</p>
   
   <div class="catalog-categories">
     <button class="cat-tab active" data-category="all" onclick="filterCatalog('all', this)">Todos</button>
     <button class="cat-tab" data-category="hats" onclick="filterCatalog('hats', this)">Sombreros</button>
     <button class="cat-tab" data-category="shirts" onclick="filterCatalog('shirts', this)">Camisas (2D)</button>
     <button class="cat-tab" data-category="pants" onclick="filterCatalog('pants', this)">Pantalones (2D)</button>
-    <button class="cat-tab" data-category="faces" onclick="filterCatalog('faces', this)">Caras</button>
+    <button class="cat-tab" data-category="faces" onclick="filterCatalog('faces', this)">Faces</button>
     <button class="cat-tab" data-category="gear" onclick="filterCatalog('gear', this)">Accessories / Gear</button>
   </div>
 
@@ -449,7 +449,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 <section id="profile" class="page"><h1>Profile</h1><div class="profile-card" style="max-width:500px;margin:auto;"><div id="profileAvatar" class="profile-avatar" style="position:relative;left:auto;top:auto;margin:0 auto 15px;"></div><h2 id="profileName" style="text-align:center;">Player ✓</h2><p id="profileUsername" style="text-align:center;color:#777;">@Player</p><div class="bio-box" style="margin-top:12px;"><h3 style="margin-top:0;">Description</h3><p id="profileBio">No description available.</p></div><hr><p>Sunnys: <strong id="profileMoney">500</strong> ☀️</p><button class="section-button" onclick="logout()" style="width:100%;margin-top:10px;">Logout</button></div></section>
 
 <section id="create" class="page">
-  <h1>Create clothing</h1>
+  <h1>Create Clothing</h1>
   <p>Disena tu camisa o pantalon pintando sobre la plantilla o subiendo una imagen, y publicalo en el catalogo para que todos lo usen.</p>
   <div style="margin-bottom:12px" class="moderation-badge">### Moderacion activa: nombres, descripciones y chat filtrados</div>
   <div class="creator-layout">
@@ -463,14 +463,14 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
       <div id="creator2dPanel">
         <div class="creator-tools">
           <label>Color <input id="creatorBrushColor" class="creator-color" type="color" value="#1684e8"></label>
-          <label>Tool <select id="creatorBrushTool"><option value="brush">Pencil</option><option value="eraser">Eraser</option><option value="line">Line</option><option value="rect">Rectangle</option><option value="circle">Circle</option><option value="fill">Fill</option><option value="picker">Eyedropper</option><option value="text">Text</option></select></label>
+          <label>Herramienta <select id="creatorBrushTool"><option value="brush">Lapiz</option><option value="eraser">Goma</option><option value="line">Linea</option><option value="rect">Rectangulo</option><option value="circle">Circulo</option><option value="fill">Relleno</option><option value="picker">Accountgotas</option><option value="text">Texto</option></select></label>
           <label>Tamano <input id="creatorBrushSize" type="range" min="2" max="60" value="12"></label>
           <button onclick="creatorUndo()">Deshacer</button><button onclick="creatorRedo()">Rehacer</button><button onclick="creatorClear2D()">Limpiar</button>
           <label class="section-button" style="display:inline-flex;align-items:center;gap:6px;margin:0;background:#292929">Subir imagen <input id="creatorImageFile" type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="creatorLoadImage(event)"></label>
         </div>
         <div class="creator-2d-preview">
           <canvas id="creator2dCanvas" class="creator-2d-canvas" width="512" height="512"></canvas>
-          <div class="creator-small" style="max-width:280px">Dibuja sobre la plantilla y mira como cambia la clothing en el maniqui 3D en tiempo real. Tambien puedes subir una imagen para usarla como textura. Al publicar se guarda en el catalogo y podras equiparla desde tu avatar.
+          <div class="creator-small" style="max-width:280px">Dibuja sobre la plantilla y mira como cambia la ropa en el maniqui 3D en tiempo real. Tambien puedes subir una imagen para usarla como textura. Al publicar se guarda en el catalogo y podras equiparla desde tu avatar.
             <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
               <a class="section-button" href="/templates/camiseta_template.png" download="EpicBlox_Camiseta_Template.png" style="display:inline-block;margin:0;background:#1684e8;text-decoration:none">Descargar plantilla camiseta</a>
               <a class="section-button" href="/templates/pantalon_template.png" download="EpicBlox_Pantalon_Template.png" style="display:inline-block;margin:0;background:#6f42c1;text-decoration:none">Descargar plantilla pantalon</a>
@@ -496,9 +496,9 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 
     <div class="creator-card">
       <h3 style="margin-top:0">Vista previa</h3>
-      <div id="creator3dTools" class="creator-tools" style="display:none"><input id="creatorCubeColor" class="creator-color" type="color" value="#1684e8"><button onclick="creatorAddShape('box')">Cubo</button><button onclick="creatorAddShape('cylinder')">Cilindro</button><button onclick="creatorAddShape('sphere')">Esfera</button><button onclick="creatorAddShape('cone')">Cono</button><button onclick="creatorAddShape('torus')">Aro</button><button onclick="creatorRemoveCube()">Eliminar pieza</button></div>
+      <div id="creator3dTools" class="creator-tools" style="display:none"><input id="creatorCubeColor" class="creator-color" type="color" value="#1684e8"><button onclick="creatorAddShape('box')">Cubo</button><button onclick="creatorAddShape('cylinder')">Cilindro</button><button onclick="creatorAddShape('sphere')">Esfera</button><button onclick="creatorAddShape('cone')">Cono</button><button onclick="creatorAddShape('torus')">Aro</button><button onclick="creatorRemoveCube()">Delete Piece</button></div>
       <div id="creatorViewer" class="creator-viewer"></div>
-      <p class="creator-small">Arrastra para rotar la camara y ver como queda tu clothing en el personaje.</p>
+      <p class="creator-small">Arrastra para rotar la camara y ver como queda tu ropa en el personaje.</p>
     </div>
   </div>
 </section>
@@ -513,7 +513,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
       <div class="avatar-stage">
         <div id="previewCanvasContainer"></div>
       </div>
-      <p style="text-align:center;font-size:12px;color:#666;margin-top:10px;">Avatar Preview.</p>
+      <p style="text-align:center;font-size:12px;color:#666;margin-top:10px;">Avatar Prewiew.</p>
     </div>
 
     <div class="avatar-panel" style="flex:1">
@@ -541,25 +541,25 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 <section id="inventory" class="page">
   <h1>Inventory</h1>
   <div class="settings-card" style="max-width:720px">
-    <p style="font-size:15px;color:#444;margin:0 0 8px">Aquí están tus <b>clothing, accesorios, caras y demás objetos del avatar</b>.</p>
-    <p style="font-size:13px;color:#666;margin:0">Los objetos de una partida aparecen <b>solo dentro del game</b> y no se mezclan con este inventario.</p>
+    <p style="font-size:15px;color:#444;margin:0 0 8px">Here are your <b>clothing, accessories, faces and other avatar items</b>.</p>
+    <p style="font-size:13px;color:#666;margin:0">Los objetos de una partida aparecen <b>solo dentro del juego</b> y no se mezclan con este inventario.</p>
   </div>
   <div id="inventoryGrid" class="inventory-grid" style="margin-top:15px"></div>
 </section>
 
 <section id="streak" class="page">
-  <h1>☀️ Sunny Streak</h1>
+  <h1>☀️ Racha de Sunnys</h1>
   <div class="settings-card" style="max-width:520px">
     <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
       <div style="font-size:48px">🔥</div>
       <div>
-        <div style="font-size:13px;color:#666">Streak actual</div>
+        <div style="font-size:13px;color:#666">Racha actual</div>
         <div id="streakDays" style="font-size:32px;font-weight:900;color:#e67e22">0 días</div>
       </div>
     </div>
     <div class="setting-row"><span>Recompensa de hoy</span><strong id="streakReward">+50 ☀️</strong></div>
-    <div class="setting-row"><span>Próxima recompensa</span><strong id="streakNext">+75 ☀️</strong></div>
-    <div class="setting-row"><span>Última reclamación</span><strong id="streakLast">Nunca</strong></div>
+    <div class="setting-row"><span>Next Reward</span><strong id="streakNext">+75 ☀️</strong></div>
+    <div class="setting-row"><span>Last Claim</span><strong id="streakLast">Nunca</strong></div>
     <div style="margin-top:14px;background:#f3f4f6;border-radius:8px;height:12px;overflow:hidden">
       <div id="streakBar" style="height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#ef4444);transition:width .4s"></div>
     </div>
@@ -575,7 +575,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
   <div class="settings-card" style="max-width:620px;">
     <div class="setting-row"><span>Account</span><strong id="settingsUser">Player</strong></div>
     <div class="setting-row"><span>Sunnys</span><strong id="settingsMoney">500</strong> ☀️</div>
-    <div class="setting-row"><span>Avatar</span><button class="section-button" onclick="showPage('avatar')" style="margin:0;">Edit</button></div>
+    <div class="setting-row"><span>Avatar</span><button class="section-button" onclick="showPage('avatar')" style="margin:0;">Editar</button></div>
     <div style="margin-top:18px;padding-top:15px;border-top:1px solid #ddd">
       <h3 style="margin:0 0 10px">Temas</h3>
       <select id="themeSelect" onchange="changeTheme(this.value)" style="padding:9px;width:100%;border:1px solid #ccc;border-radius:5px">
@@ -585,7 +585,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
     <div style="margin-top:18px;padding-top:15px;border-top:1px solid #ddd">
       <h3 style="margin:0 0 10px">Description</h3>
       <textarea id="bioEditor" maxlength="200" rows="4" placeholder="Escribe una descripción sobre ti..." style="width:100%;resize:vertical;padding:10px;border:1px solid #ccc;border-radius:5px;font-family:Arial,sans-serif"></textarea>
-      <button class="section-button" onclick="saveDescription()" style="margin-top:8px;background:#1684e8">Save descripción</button>
+      <button class="section-button" onclick="saveDescription()" style="margin-top:8px;background:#1684e8">Save Description</button>
       <div id="bioSaveMsg" style="font-size:12px;margin-top:7px;min-height:16px"></div>
     </div>
     <div class="setting-row" style="margin-top:18px"><span>Reset local data</span><button class="section-button" onclick="resetLocalData()" style="margin:0;background:#d93025;">Reset</button></div>
@@ -600,14 +600,14 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
     <span class="chat-status" id="chatConnStatus">Offline</span>
   </div>
   <div class="chat-tabs">
-    <button id="chatTabRoom" class="active" onclick="setChatTab('room')">Sala del game</button>
-    <button id="chatTabDm" onclick="setChatTab('dm')">Chat directo <span id="dmTabBadge" class="dm-unread" style="display:none">0</span></button>
-    <button id="chatTabGroups" onclick="setChatTab('groups')">Grupos <span id="groupTabBadge" class="dm-unread" style="display:none">0</span></button>
+    <button id="chatTabRoom" class="active" onclick="setChatTab('room')">Sala del juego</button>
+    <button id="chatTabDm" onclick="setChatTab('dm')">Direct Chat <span id="dmTabBadge" class="dm-unread" style="display:none">0</span></button>
+    <button id="chatTabGroups" onclick="setChatTab('groups')">Groups <span id="groupTabBadge" class="dm-unread" style="display:none">0</span></button>
   </div>
 
   <div id="chatRoomPane" style="flex:1;display:flex;flex-direction:column;min-height:0">
     <div class="chat-body" id="chatBody">
-      <div class="chat-msg system"><span class="chat-user">Sistema:</span> Entra a un game para chatear en tiempo real con otros players.</div>
+      <div class="chat-msg system"><span class="chat-user">Sistema:</span> Entra a un juego para chatear en tiempo real con otros jugadores.</div>
     </div>
     <div class="chat-input-row">
       <input id="chatInput" type="text" maxlength="200" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendChatMessage()">
@@ -624,7 +624,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
       <div id="dmList" class="dm-list"></div>
     </div>
     <div id="dmThreadPane" style="flex:1;display:none;flex-direction:column;min-height:0">
-      <button class="dm-back" onclick="dmCloseThread()">Back a conversaciones</button>
+      <button class="dm-back" onclick="dmCloseThread()">Back to Conversations</button>
       <div class="chat-header" style="background:#3b3b3b;padding:8px 12px;font-size:13px"><span id="dmThreadName">User</span><span class="chat-status" id="dmThreadPresence"></span></div>
       <div class="chat-body" id="dmThreadBody"></div>
       <div class="chat-input-row">
@@ -644,8 +644,8 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
       <div id="groupList" class="dm-list"></div>
     </div>
     <div id="groupThreadPane" style="flex:1;display:none;flex-direction:column;min-height:0">
-      <button class="dm-back" onclick="groupCloseThread()">Back a grupos</button>
-      <div class="chat-header" style="background:#3b3b3b;padding:8px 12px;font-size:13px"><span id="groupThreadName">Grupo</span><span id="groupThreadMembers" class="chat-status"></span></div>
+      <button class="dm-back" onclick="groupCloseThread()">Back to Groups</button>
+      <div class="chat-header" style="background:#3b3b3b;padding:8px 12px;font-size:13px"><span id="groupThreadName">Group</span><span id="groupThreadMembers" class="chat-status"></span></div>
       <div class="chat-body" id="groupThreadBody"></div>
       <div class="chat-input-row"><input id="groupInput" type="text" maxlength="200" placeholder="Escribe al grupo..." onkeydown="if(event.key==='Enter')groupSend()"><button onclick="groupSend()">Send</button></div>
     </div>
@@ -711,7 +711,7 @@ const catalogDatabase = [
   { id: 'Cute Face', name: 'Cute Face', category: 'faces', price: 95, desc: 'Cara tierna · Mujer' },
   { id: 'Starry Face', name: 'Starry Face', category: 'faces', price: 120, desc: 'Cara con estrellas · Mujer' },
 
-  // Accessories
+  // Accesorios
   { id: 'Classic Shades', name: 'Classic Shades', category: 'gear', price: 100, desc: 'Gafas de sol' },
   { id: 'Cool Backpack', name: 'Cool Backpack', category: 'gear', price: 180, desc: 'Mochila de aventurero' },
   { id: 'Heart Necklace', name: 'Heart Necklace', category: 'gear', price: 90, desc: 'Collar de corazón · Mujer' },
@@ -753,7 +753,7 @@ function creatorInit2D(){
       if(tool==='brush'||tool==='eraser'){creator2dCtx.strokeStyle=tool==='eraser'?'#ffffff':document.getElementById('creatorBrushColor').value;creator2dCtx.lineWidth=Number(document.getElementById('creatorBrushSize').value);creator2dCtx.lineCap='round';creator2dCtx.lineJoin='round';creator2dCtx.beginPath();creator2dCtx.moveTo(creatorLastX,creatorLastY);creator2dCtx.lineTo(x,y);creator2dCtx.stroke();}
       creatorLastX=x; creatorLastY=y; creatorSync2DTexture();
     };
-    const end=e=>{if(!creatorDrawing)return;creatorDrawing=false;const pt=getPoint(e),tool=document.getElementById('creatorBrushTool')?.value||'brush';if(creatorDrawStart&&(tool==='line'||tool==='rect'||tool==='circle')){creator2dCtx.strokeStyle=document.getElementById('creatorBrushColor').value;creator2dCtx.lineWidth=Number(document.getElementById('creatorBrushSize').value);creator2dCtx.beginPath();if(tool==='line'){creator2dCtx.moveTo(creatorDrawStart.x,creatorDrawStart.y);creator2dCtx.lineTo(pt.x,pt.y);}else if(tool==='rect'){creator2dCtx.rect(creatorDrawStart.x,creatorDrawStart.y,pt.x-creatorDrawStart.x,pt.y-creatorDrawStart.y);}else{const r=Math.hypot(pt.x-creatorDrawStart.x,pt.y-creatorDrawStart.y);creator2dCtx.arc(creatorDrawStart.x,creatorDrawStart.y,r,0,Math.PI*2);}creator2dCtx.stroke();}else if(tool==='fill'){creator2dCtx.fillStyle=document.getElementById('creatorBrushColor').value;creator2dCtx.fillRect(0,0,canvas.width,canvas.height);}else if(tool==='picker'){const pixel=creator2dCtx.getImageData(pt.x,pt.y,1,1).data;document.getElementById('creatorBrushColor').value='#'+[pixel[0],pixel[1],pixel[2]].map(v=>v.toString(16).padStart(2,'0')).join('');}else if(tool==='text'){const text=prompt('Text para el diseño:');if(text){creator2dCtx.fillStyle=document.getElementById('creatorBrushColor').value;creator2dCtx.font='bold '+Math.max(12,Number(document.getElementById('creatorBrushSize').value)*2)+'px Arial';creator2dCtx.fillText(text,pt.x,pt.y);}}creatorDrawStart=null;try{canvas.releasePointerCapture?.(e.pointerId);}catch(_){};creatorSave2DHistory();creatorSync2DTexture();};
+    const end=e=>{if(!creatorDrawing)return;creatorDrawing=false;const pt=getPoint(e),tool=document.getElementById('creatorBrushTool')?.value||'brush';if(creatorDrawStart&&(tool==='line'||tool==='rect'||tool==='circle')){creator2dCtx.strokeStyle=document.getElementById('creatorBrushColor').value;creator2dCtx.lineWidth=Number(document.getElementById('creatorBrushSize').value);creator2dCtx.beginPath();if(tool==='line'){creator2dCtx.moveTo(creatorDrawStart.x,creatorDrawStart.y);creator2dCtx.lineTo(pt.x,pt.y);}else if(tool==='rect'){creator2dCtx.rect(creatorDrawStart.x,creatorDrawStart.y,pt.x-creatorDrawStart.x,pt.y-creatorDrawStart.y);}else{const r=Math.hypot(pt.x-creatorDrawStart.x,pt.y-creatorDrawStart.y);creator2dCtx.arc(creatorDrawStart.x,creatorDrawStart.y,r,0,Math.PI*2);}creator2dCtx.stroke();}else if(tool==='fill'){creator2dCtx.fillStyle=document.getElementById('creatorBrushColor').value;creator2dCtx.fillRect(0,0,canvas.width,canvas.height);}else if(tool==='picker'){const pixel=creator2dCtx.getImageData(pt.x,pt.y,1,1).data;document.getElementById('creatorBrushColor').value='#'+[pixel[0],pixel[1],pixel[2]].map(v=>v.toString(16).padStart(2,'0')).join('');}else if(tool==='text'){const text=prompt('Texto para el diseño:');if(text){creator2dCtx.fillStyle=document.getElementById('creatorBrushColor').value;creator2dCtx.font='bold '+Math.max(12,Number(document.getElementById('creatorBrushSize').value)*2)+'px Arial';creator2dCtx.fillText(text,pt.x,pt.y);}}creatorDrawStart=null;try{canvas.releasePointerCapture?.(e.pointerId);}catch(_){};creatorSave2DHistory();creatorSync2DTexture();};
     canvas.addEventListener('pointerdown',start); canvas.addEventListener('pointermove',move); canvas.addEventListener('pointerup',end); canvas.addEventListener('pointercancel',end); canvas.dataset.ready='1';
   }
   creatorSync2DTexture();
@@ -801,7 +801,7 @@ function creatorInitViewer(){
 function creatorGetObjectCenter(obj){const b=new THREE.Box3().setFromObject(obj); const c=new THREE.Vector3(); b.getCenter(c); return c;}
 function creatorCreateGeometry(type){switch(type){case 'cylinder':return new THREE.CylinderGeometry(.34,.34,.72,32);case 'sphere':return new THREE.SphereGeometry(.4,32,24);case 'cone':return new THREE.ConeGeometry(.4,.78,32);case 'torus':return new THREE.TorusGeometry(.34,.12,16,32);default:return new THREE.BoxGeometry(.65,.65,.65);}}
 function creatorShapeName(type){return ({box:'Cubo',cylinder:'Cilindro',sphere:'Esfera',cone:'Cono',torus:'Torus'})[type]||'Forma';}
-function creatorAddShape(type='box',first=false){if(!creatorGroup)return; const color=document.getElementById('creatorCubeColor').value||'#1684e8'; const mesh=new THREE.Mesh(creatorCreateGeometry(type),new THREE.MeshLambertMaterial({color})); const n=creatorCubes.length; mesh.position.set((n%3-1)*.9,1.25+Math.floor(n/3)*.78,0); mesh.userData.index=n; mesh.userData.color=color; mesh.userData.type=type; mesh.userData.drag=0; creatorGroup.add(mesh); creatorCubes.push(mesh); creatorSelectCube(n); if(!first)creatorMessage(creatorShapeName(type)+' added.');}
+function creatorAddShape(type='box',first=false){if(!creatorGroup)return; const color=document.getElementById('creatorCubeColor').value||'#1684e8'; const mesh=new THREE.Mesh(creatorCreateGeometry(type),new THREE.MeshLambertMaterial({color})); const n=creatorCubes.length; mesh.position.set((n%3-1)*.9,1.25+Math.floor(n/3)*.78,0); mesh.userData.index=n; mesh.userData.color=color; mesh.userData.type=type; mesh.userData.drag=0; creatorGroup.add(mesh); creatorCubes.push(mesh); creatorSelectCube(n); if(!first)creatorMessage(creatorShapeName(type)+' añadido.');}
 function creatorAddCube(first=false){creatorAddShape('box',first);}
 function creatorSelectCube(i){creatorSelected=creatorCubes[i]||null; creatorUpdateSelectionVisual(); creatorUpdateTransformPanel(); renderCreatorCubeList(); creatorFocusSelected();}
 function creatorYawUpdate(dx,dy,updateCreatorCamera){creatorOrbit.yaw-=dx*0.012;creatorOrbit.pitch-=dy*0.009;updateCreatorCamera();}
@@ -838,12 +838,12 @@ function creatorAddClothingPreview(){
 
 async function creatorPublish(){
   if(!getToken() || String(getToken()).startsWith('pending_'))return creatorMessage('Debes iniciar sesión.',true); const name=document.getElementById('creatorName').value.trim(); const description=document.getElementById('creatorDescription').value.trim(); const category=document.getElementById('creatorCategory').value; const price=Math.floor(Number(document.getElementById('creatorPrice')?.value??0));
-  if(name.length<2)return creatorMessage('Enter a name a la clothing.',true); if(!Number.isFinite(price)||price<0||price>1000000)return creatorMessage('The price must be between 0 y 1.000.000 Sunnys.',true);
+  if(name.length<2)return creatorMessage('Pon un nombre a la ropa.',true); if(!Number.isFinite(price)||price<0||price>1000000)return creatorMessage('El precio debe estar entre 0 y 1.000.000 Sunnys.',true);
   const type=category==='hats'?'3d':'2d';
   creatorSync2DTexture();
   const data=type==='3d'?{shapes:creatorCubes.map(mesh=>({type:mesh.userData.type,color:mesh.userData.color,position:mesh.position.toArray(),rotation:[mesh.rotation.x,mesh.rotation.y,mesh.rotation.z],scale:mesh.scale.toArray()}))}:{imageData:document.getElementById('creator2dCanvas').toDataURL('image/png')};
   creatorMessage('Publicando...');
-  try{await api('/api/creator/publish',{method:'POST',body:JSON.stringify({name,description,category,type,price,data})},3);creatorMessage('Published to the catalog. Price: '+price+' Sunnys. Ya puedes equiparlo desde Avatar.');await loadCustomCatalog();renderCatalog('all');if(typeof renderInventory==='function')renderInventory();}catch(err){creatorMessage(err.message||'Could not connect to the server.',true);}}
+  try{await api('/api/creator/publish',{method:'POST',body:JSON.stringify({name,description,category,type,price,data})},3);creatorMessage('Publicado en el catalogo. Precio: '+price+' Sunnys. Ya puedes equiparlo desde Avatar.');await loadCustomCatalog();renderCatalog('all');if(typeof renderInventory==='function')renderInventory();}catch(err){creatorMessage(err.message||'No se pudo conectar con el servidor.',true);}}
 async function loadCustomCatalog(){try{const r=await fetch('/api/catalog/custom',{cache:'no-store'});const data=await r.json();const custom=data.items||[];custom.forEach(item=>{const local=catalogDatabase.find(x=>x.id===item.id);const normalized={id:item.id,name:item.name,category:item.category,price:Number(item.price)||0,desc:item.description||'Creado por la comunidad',custom:true,data:item.data,type:item.type,owner:item.owner,ownerId:item.ownerId,status:item.status};if(local)Object.assign(local,normalized);else catalogDatabase.push(normalized);});if(typeof renderCatalog==='function')renderCatalog('all');return custom;}catch(_){return[];}}
 
 // Atajos del editor 3D retirados junto al creador de accesorios.
@@ -924,7 +924,7 @@ window.addEventListener('keydown', resumeAmbientMusicFromGesture, {passive:true}
 
 
 
-// ===== Sunny Streak =====
+// ===== Racha de Sunnys =====
 function streakRewardForDay(day){
   // dia 1: 50, 2:75, 3:100, ... tope 500
   const d = Math.max(1, Number(day) || 1);
@@ -997,7 +997,7 @@ function claimStreakReward(){
   updateStreakUI();
   if (elMsg) {
     elMsg.style.color = "#188038";
-    elMsg.textContent = "Streak x" + u.loginStreak + ": +" + reward + " Sunnys!";
+    elMsg.textContent = "Racha x" + u.loginStreak + ": +" + reward + " Sunnys!";
     elMsg.dataset.locked = "1";
     setTimeout(() => { elMsg.dataset.locked = ""; }, 2000);
   }
@@ -1160,7 +1160,7 @@ function createShirtTexture(torsoColor, shirtName) {
 
   if(shirtName === 'Blue Shirt') {
     // Base azul con degradado
-    const grad = ctx.createLinerGradient(0, 0, 0, 256);
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
     grad.addColorStop(0, '#42a5f5');
     grad.addColorStop(0.4, '#1e88e5');
     grad.addColorStop(1, '#1565c0');
@@ -1223,7 +1223,7 @@ function createShirtTexture(torsoColor, shirtName) {
 
   } else if(shirtName === 'Green Hoodie') {
     // Base verde con degradado
-    const grad = ctx.createLinerGradient(0, 0, 0, 256);
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
     grad.addColorStop(0, '#66bb6a');
     grad.addColorStop(0.5, '#43a047');
     grad.addColorStop(1, '#2e7d32');
@@ -1307,7 +1307,7 @@ function createShirtTexture(torsoColor, shirtName) {
   return texture;
 }
 
-// Textura 2D de pantalones estilo Roblox para las Legs (mejorada)
+// Textura 2D de pantalones estilo Roblox para las Piernas (mejorada)
 function createPantsTexture(legsColor, pantsName) {
   const canvas = document.createElement('canvas');
   canvas.width = 256;
@@ -1319,7 +1319,7 @@ function createPantsTexture(legsColor, pantsName) {
 
   if(pantsName === 'Classic Jeans') {
     // Base denim
-    const grad = ctx.createLinerGradient(0, 0, 0, 256);
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
     grad.addColorStop(0, '#5c6bc0');
     grad.addColorStop(0.3, '#3949ab');
     grad.addColorStop(1, '#283593');
@@ -1381,7 +1381,7 @@ function createPantsTexture(legsColor, pantsName) {
 
   } else if(pantsName === 'Dark Cargo Pants') {
     // Base oscura
-    const grad = ctx.createLinerGradient(0, 0, 0, 256);
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
     grad.addColorStop(0, '#546e7a');
     grad.addColorStop(0.4, '#37474f');
     grad.addColorStop(1, '#263238');
@@ -1545,7 +1545,7 @@ function createAccessoryMesh(accessoryName) {
   return group;
 }
 
-// Constructor del Avatar con soporte de clothing 2D y accesorios múltiples
+// Constructor del Avatar con soporte de ropa 2D y accesorios múltiples
 // Busca un objeto del catalogo (incluye los publicados por la comunidad).
 function catalogItemById(id){
   try { return catalogDatabase.find(it => it.id === id) || null; } catch(e) { return null; }
@@ -1559,7 +1559,7 @@ function avatarItemCategory(id){
   if(id === 'Classic Jeans' || id === 'Dark Cargo Pants') return 'pants';
   return 'gear';
 }
-// Texturas de clothing creada por usuarios (cacheadas por id).
+// Texturas de ropa creada por usuarios (cacheadas por id).
 const _customClothingTexCache = {};
 function customClothingTexture(item){
   if(!item || !item.data || !item.data.imageData) return null;
@@ -1584,7 +1584,7 @@ function buildAvatar3DModel(userData) {
   const armCol = colors.arms || "#f5c928";
   const legCol = colors.legs || "#8cae45";
 
-  // Search cara y clothing equipada en los accesorios / inventario
+  // Buscar cara y ropa equipada en los accesorios / inventario
   let activeFace = "Classic Smile";
   let activeShirt = null;
   let activePants = null;
@@ -1600,7 +1600,7 @@ function buildAvatar3DModel(userData) {
     else if(cat === 'pants') { activePants = acc; customPants = (item && item.custom) ? item : null; }
   });
 
-  // Materiales con texturas 2D estilo Roblox (incluye clothing creada por la comunidad)
+  // Materiales con texturas 2D estilo Roblox (incluye ropa creada por la comunidad)
   const customShirtTex = customShirt ? customClothingTexture(customShirt) : null;
   const torsoTexture = customShirtTex || createShirtTexture(torsoCol, activeShirt);
   const torsoMat = new THREE.MeshLambertMaterial({map: torsoTexture});
@@ -1617,14 +1617,14 @@ function buildAvatar3DModel(userData) {
   const headMaterials = [sideHeadMat, sideHeadMat, sideHeadMat, sideHeadMat, frontFaceMat, sideHeadMat];
   
   // Proporciones R6 clásicas (sin solapar torso/piernas)
-  // Torso: bottom y=0.3 · Legs: top y=0.3 · Head encima del torso
+  // Torso: bottom y=0.3 · Piernas: top y=0.3 · Cabeza encima del torso
   const torsoType = (avatarData.torsoType === "female") ? "female" : "male";
   let armX = 0.9, armY = 1.0, armW = 0.45, armH = 1.4;
   let torsoMesh;
 
   if (torsoType === "female") {
     // Classic Female R6: UNA sola malla con silueta en reloj de arena (como la referencia)
-    // Profile frontal tipo girl torso: ancha arriba, pinzada al centro, cadera media
+    // Perfil frontal tipo girl torso: ancha arriba, pinzada al centro, cadera media
     const shape = new THREE.Shape();
     // Contorno derecho (luego espejo automatico con shape cerrado)
     // Coordenadas en plano XY; se extruye en Z
@@ -1688,7 +1688,7 @@ function buildAvatar3DModel(userData) {
     torsoMesh.receiveShadow = true;
   }
 
-  // Head encima del torso (torso top ~1.7)
+  // Cabeza encima del torso (torso top ~1.7)
   const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), headMaterials);
   headMesh.position.set(0, 2.15, 0);
   headMesh.name = "head";
@@ -1711,7 +1711,7 @@ function buildAvatar3DModel(userData) {
   const rightArmMesh = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.5), armMat);
   rightArmMesh.position.y = -armH/2; rightArmMesh.castShadow = true; rightArmMesh.receiveShadow = true; rightArm.add(rightArmMesh);
 
-  // Legs DEBAJO del torso, con pivote en la cadera.
+  // Piernas DEBAJO del torso, con pivote en la cadera.
   const leftLeg = new THREE.Group(); leftLeg.name = "leftLeg"; leftLeg.position.set(-0.3, 0.3, 0);
   const leftLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.5), legMat);
   leftLegMesh.position.y = -0.6; leftLegMesh.castShadow = true; leftLegMesh.receiveShadow = true; leftLeg.add(leftLegMesh);
@@ -1847,7 +1847,7 @@ function configureGameShadows(root) {
   let casterCount = 0;
   root.traverse((obj) => {
     if (!obj.isMesh) return;
-    // Only objetos medianos/grandes proyectan sombras. Ventanas, monedas,
+    // Solo objetos medianos/grandes proyectan sombras. Ventanas, monedas,
     // farolas pequeñas y detalles no necesitan una shadow-map individual.
     obj.receiveShadow = true;
     obj.castShadow = false;
@@ -1883,12 +1883,12 @@ function launchWebClient(gameName) {
   if(hint){
     const n=gameName.trim();
     hint.textContent =
-      n==='Battle Arena' ? '⚔️ F = attack · Q = ability · hit training dummies or other players' :
-      n==='Pet World' ? '🐾 Cute pets follow you · press E near an egg to claim Sunnys' :
-      n==='Speed Race' ? '🏎️ Race con tu auto · pass 6 checkpoints y reach a la meta' :
-      n==='Epic Obby' ? '🏃 Salta, toca checkpoints, recoge monedas y reach a la meta (+Sunnys)' :
+      n==='Battle Arena' ? '⚔️ F = atacar · Q = habilidad · golpea maniquíes u otros jugadores' :
+      n==='Pet World' ? '🐾 Mascotas tiernas te siguen · E cerca de un huevo para reclamar Sunnys' :
+      n==='Speed Race' ? '🏎️ Corre con tu auto · pasa 6 checkpoints y llega a la meta' :
+      n==='Epic Obby' ? '🏃 Salta, toca checkpoints, recoge monedas y llega a la meta (+Sunnys)' :
       n==='Sky Islands' ? '☁️ Salta entre islas y recoge monedas' :
-      n==='Bloxs City' ? '🏙️ Large city · semáforos, autos · E en puestos para trabajar' : '';
+      n==='Bloxs City' ? '🏙️ Ciudad grande · semáforos, autos · E en puestos para trabajar' : '';
   }
   const sub = document.getElementById('gameMenuSubtitle');
   if(sub) sub.textContent = gameName;
@@ -2054,7 +2054,7 @@ function createSkybox(scene, gameName) {
     top = '#1e90ff'; mid = '#87ceeb'; bot = '#b0e0e6'; sunColor = '#fffde7';
   }
 
-  const grad = ctx.createLinerGradient(0, 0, 0, 512);
+  const grad = ctx.createLinearGradient(0, 0, 0, 512);
   grad.addColorStop(0, top);
   grad.addColorStop(0.45, mid);
   grad.addColorStop(1, bot);
@@ -2330,10 +2330,10 @@ function addPetFollowers(){
   defs.forEach((d,i)=>{
     const g=new THREE.Group();
     g.userData.kind=d.kind;
-    // Body ovalado (no esfera perfecta)
+    // Cuerpo ovalado (no esfera perfecta)
     const body=new THREE.Mesh(new THREE.SphereGeometry(0.42,14,12),new THREE.MeshLambertMaterial({color:d.body}));
     body.scale.set(1.15,0.95,1.25); body.position.y=0.55; g.add(body);
-    // Head más pequeña y suave
+    // Cabeza más pequeña y suave
     const head=new THREE.Mesh(new THREE.SphereGeometry(0.36,14,12),new THREE.MeshLambertMaterial({color:d.body}));
     head.position.set(0,1.12,0.08); g.add(head);
     // Orejas
@@ -2554,26 +2554,6 @@ function buildGameSpecificWorld(gameName){
     window._playerRaceCar = addRaceCar(0,32,0x1e88e5);
     addRaceCar(6,32,0x43a047);
     raceStartTime=performance.now();
-  } else if(['Zombie Survival','Treasure Island','Neon City','Lava Escape','Paintball Plaza','Castle Defense'].includes(n)) {
-    // Lightweight unique worlds for the additional games.
-    const configs={
-      'Zombie Survival':{floor:0x263238,accent:0x7cb342},
-      'Treasure Island':{floor:0xc8a66a,accent:0x2196f3},
-      'Neon City':{floor:0x202035,accent:0x9c27b0},
-      'Lava Escape':{floor:0x4a2020,accent:0xff5722},
-      'Paintball Plaza':{floor:0x34495e,accent:0xe91e63},
-      'Castle Defense':{floor:0x5d6875,accent:0xd4af37}
-    };
-    const cfg=configs[n];
-    addBox(0,-0.1,0,90,0.2,90,cfg.floor,{solid:true});
-    for(let i=-4;i<=4;i++){ addBox(i*9,0.08,0,1.2,0.16,78,cfg.accent,{solid:false}); addBox(0,0.09,i*9,78,0.16,1.2,cfg.accent,{solid:false}); }
-    for(let i=0;i<12;i++){ const x=((i*17)%64)-32, z=((i*29)%64)-32; addBox(x,1.5,z,5,3,5,cfg.accent,{solid:true}); }
-    if(n==='Zombie Survival'){ for(let i=0;i<10;i++) addBox((i%5-2)*11,1.5,((i*13)%50)-25,3,3,3,0x546e7a,{solid:true}); }
-    if(n==='Treasure Island'){ addBox(0,0.03,-38,90,0.1,8,0x2196f3,{solid:false}); for(const [x,z] of [[-25,-15],[25,-10],[-18,20],[20,24]]) addTree(x,z,1.2); }
-    if(n==='Neon City'){ for(let i=0;i<14;i++){ const x=((i*23)%70)-35,z=((i*31)%70)-35,h=4+(i%5)*2; addBox(x,h/2,z,6,h,6,cfg.accent,{solid:true}); } }
-    if(n==='Lava Escape'){ for(let i=0;i<12;i++){ const x=(i%4-1.5)*8,z=-35+i*5,y=1+i*0.55; addBox(x,y,z,5,0.6,4,[0xff7043,0xffa726,0xef5350][i%3],{solid:true}); } }
-    if(n==='Paintball Plaza'){ addBox(0,1.5,0,8,3,8,0xffffff,{solid:true}); for(const [x,z] of [[-28,-28],[28,-28],[-28,28],[28,28]]) addBox(x,2,z,7,4,7,cfg.accent,{solid:true}); }
-    if(n==='Castle Defense'){ addBox(0,3,0,14,6,14,0x8d6e63,{solid:true}); for(const [x,z] of [[-34,-34],[34,-34],[-34,34],[34,34]]) addBox(x,4,z,8,8,8,cfg.accent,{solid:true}); }
   } else if(n==='Sky Islands'){
     addBox(0,-0.5,0,20,1,20,0x79b96b,{solid:true}); addBox(-20,-2,-12,15,1,15,0x6ea85e,{solid:true}); addBox(20,-3,-6,13,1,13,0x8fbd73,{solid:true}); addBox(8,-4,18,16,1,16,0x6da96d,{solid:true});
     addBox(-10,-1,-6,8,0.8,3,0xa47c48,{solid:true}); addBox(10,-1,6,8,0.8,3,0xa47c48,{solid:true}); addBox(0,-2,10,3,0.8,10,0xa47c48,{solid:true});
@@ -2596,7 +2576,7 @@ function initGameWebGL(gameName) {
   gameRenderer = new THREE.WebGLRenderer({antialias: true});
   gameRenderer.setSize(width, height);
   gameRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
-  // Sombras dinámicas en el cliente de game
+  // Sombras dinámicas en el cliente de juego
   gameRenderer.shadowMap.enabled = true;
   gameRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
   container.appendChild(gameRenderer.domElement);
@@ -2794,7 +2774,7 @@ function startLocalEmote(name){
 function stopLocalEmote(){
   if(!localEmote) return;
   localEmote = null;
-  // Back de golpe a la postura normal (quieto), sin dejar el cuerpo torcido.
+  // Volver de golpe a la postura normal (quieto), sin dejar el cuerpo torcido.
   resetLimbs(playerMeshGroup);
 }
 
@@ -2900,7 +2880,7 @@ function startGameLoop() {
     }
 
     if(gameActionCooldown > 0) gameActionCooldown -= dt;
-    // Battle Arena: F = ataque, Q = habilidad especial; también afecta a otros players cercanos
+    // Battle Arena: F = ataque, Q = habilidad especial; también afecta a otros jugadores cercanos
     if(currentGameType.trim() === 'Battle Arena' && !voidDeathActive){
       const px=playerPos.x, pz=playerPos.z;
       const doHit = (range, dmg) => {
@@ -3076,7 +3056,7 @@ function startGameLoop() {
     }
     const isMovingInput = (moveDirX !== 0 || moveDirZ !== 0);
 
-    // Los administradores pueden volar. El server activa/desactiva esta
+    // Los administradores pueden volar. El servidor activa/desactiva esta
     // facultad y el cliente solo aplica la fisica visual cuando esta autorizada.
     if (adminIsEnabled && adminFlyEnabled) {
       const flyVertical = (keysPressed['Space'] ? 1 : 0) + ((keysPressed['ShiftLeft'] || keysPressed['ShiftRight']) ? -1 : 0);
@@ -3299,7 +3279,7 @@ function startGameLoop() {
         obbyBestCheckpoint=checkpoint;
         const hint=document.getElementById('gameHint');
         if(hint) hint.textContent=`🏁 Checkpoint ${checkpoint}/22`;
-        // Recompensa al reachr a la meta (último checkpoint)
+        // Recompensa al llegar a la meta (último checkpoint)
         if(checkpoint>=22 && !window._obbyFinished){
           window._obbyFinished=true;
           addSunnys(25);
@@ -3402,7 +3382,7 @@ function makeLocalId(prefix) {
 }
 
 function getGameId(gameName) {
-  // IDs estables por nombre de game (misma sala para todos los que juegan el mismo mapa)
+  // IDs estables por nombre de juego (misma sala para todos los que juegan el mismo mapa)
   const known = {
     "Bloxs City ":"CITY-7F42",
     "Epic Obby ":"OBBY-91AC",
@@ -3422,7 +3402,7 @@ function getGameId(gameName) {
   return "GAME-" + Math.abs(hash).toString(16).toUpperCase().padStart(8, "0").slice(0, 8);
 }
 
-// ID interno del system (sin mostrar Game ID / Server ID / Player ID en pantalla)
+// ID interno del sistema (sin mostrar Game ID / Server ID / Player ID en pantalla)
 // ================= END EPICBLOXS IDS ====================
 
 // ==================== EPICBLOXS MULTIPLAYER ====================
@@ -3552,7 +3532,7 @@ function openMultiplayerSocket() {
         setChatConnStatus(true);
         if (acc != null) {
           const el = document.getElementById('serverAccountsInfo');
-          if (el) el.textContent = 'Accounts registradas: ' + acc;
+          if (el) el.textContent = 'Cuentas registradas: ' + acc;
         }
         clearAllRemotePlayers();
         (data.players || []).forEach(p => {
@@ -3654,18 +3634,18 @@ function openMultiplayerSocket() {
         setMultiplayerStatus("👥 Reconectando...", "#facc15");
         scheduleMultiplayerReconnect();
       } else {
-        setMultiplayerStatus("👥 Offline", "#fca5a5");
+        setMultiplayerStatus("👥 Desconectado", "#fca5a5");
       }
     });
 
     multiplayerSocket.addEventListener("error", () => {
       multiplayerReady = false;
       setChatConnStatus(false);
-      setMultiplayerStatus("👥 Server no disponible", "#fca5a5");
+      setMultiplayerStatus("👥 Servidor no disponible", "#fca5a5");
     });
   } catch(e) {
     multiplayerReady = false;
-    setMultiplayerStatus("👥 Server no disponible", "#fca5a5");
+    setMultiplayerStatus("👥 Servidor no disponible", "#fca5a5");
     scheduleMultiplayerReconnect();
   }
 }
@@ -3686,10 +3666,10 @@ function refreshServerStats() {
     const players = (data && typeof data.players === 'number') ? data.players : null;
     if (accounts != null) {
       const el = document.getElementById('serverAccountsInfo');
-      if (el) el.textContent = 'Accounts registradas: ' + accounts;
+      if (el) el.textContent = 'Cuentas registradas: ' + accounts;
       // tambien en status multip si no hay sala
       const st = document.getElementById('multiplayerStatus');
-      if (st && !multiplayerReady) st.textContent = '👥 Accounts: ' + accounts;
+      if (st && !multiplayerReady) st.textContent = '👥 Cuentas: ' + accounts;
     }
   }).catch(()=>{});
 }
@@ -3829,7 +3809,7 @@ function sendMultiplayerPosition(playerPos) {
     rotation: playerMeshGroup ? Number(playerMeshGroup.rotation.y.toFixed(3)) : 0
   };
 
-  // Send siempre si se movió o rotó (umbral muy bajo)
+  // Enviar siempre si se movió o rotó (umbral muy bajo)
   if (lastSentPosition &&
       Math.abs(payload.x-lastSentPosition.x)<0.0001 &&
       Math.abs(payload.y-lastSentPosition.y)<0.0001 &&
@@ -3896,7 +3876,7 @@ function updateRemotePlayers(dt) {
       group.rotation.y += diff * Math.min(1, dt*20);
     }
 
-    // Animación de caminar en players remotos
+    // Animación de caminar en jugadores remotos
     const dx = group.position.x - prevX;
     const dz = group.position.z - prevZ;
     const speed = Math.sqrt(dx*dx + dz*dz) / Math.max(dt, 0.001);
@@ -3962,7 +3942,7 @@ function sendAvatarUpdateToMultiplayer() {
 
 const SESSION_KEY="epicbloxs_token_global_v2";
 const USER_CACHE_KEY="epicbloxs_user_cache_v2";
-// URL del server GLOBAL (Render). Si abres el HTML desde el mismo server, usa el origen actual.
+// URL del servidor GLOBAL (Render). Si abres el HTML desde el mismo server, usa el origen actual.
 const GLOBAL_SERVER = "https://epicbloxserversito.onrender.com";
 
 function getApiBase() {
@@ -4018,10 +3998,10 @@ async function api(path, opts={}, retries=3) {
       let data = {};
       const textBody = await res.text();
       try { data = textBody ? JSON.parse(textBody) : {}; } catch(e) {
-        if (!res.ok) throw new Error("Server sin API de cuentas (hay que subir el server.js nuevo).");
+        if (!res.ok) throw new Error("Servidor sin API de cuentas (hay que subir el server.js nuevo).");
       }
 
-      // Las versiones nuevas del server tienen un recoveryToken firmado.
+      // Las versiones nuevas del servidor tienen un recoveryToken firmado.
       // Si Render reinicia y el token de sesion anterior deja de ser valido,
       // recuperamos la sesion/cuenta automaticamente y repetimos la peticion.
       // Esto evita el bug de: entra -> vuelve al registro -> no deja comprar.
@@ -4063,9 +4043,9 @@ async function api(path, opts={}, retries=3) {
       const msg = (e && e.message) ? e.message : String(e);
       const retryable = e.name === "AbortError" || /fetch|network|Failed|Load failed|timeout|respond/i.test(msg);
       if (!retryable || attempt === retries) {
-        if (e.name === "AbortError") throw new Error("El server tarda en responder. Espera 30s y vuelve a intentar.");
+        if (e.name === "AbortError") throw new Error("El servidor tarda en responder. Espera 30s y vuelve a intentar.");
         if (/Failed to fetch|NetworkError|Load failed/i.test(msg)) {
-          throw new Error("No hay conexion con el server. Abre la web desde la URL de Render (no el archivo HTML) y espera a que el server despierte.");
+          throw new Error("No hay conexion con el servidor. Abre la web desde la URL de Render (no el archivo HTML) y espera a que el server despierte.");
         }
         throw (e instanceof Error ? e : new Error(msg));
       }
@@ -4210,8 +4190,8 @@ async function runNewAccountBot(username){
   if (!u.avatar.colors.arms) u.avatar.colors.arms = "#f5c928";
   if (!u.avatar.colors.torso) u.avatar.colors.torso = "#1477b9";
   if (!u.avatar.colors.legs) u.avatar.colors.legs = "#8cae45";
-  // Separar inventario del avatar del inventario de game.
-  // Compatibilidad: lo comprado anteriormente pass a avatarInventory.
+  // Separar inventario del avatar del inventario de juego.
+  // Compatibilidad: lo comprado anteriormente pasa a avatarInventory.
   u.avatarInventory = Array.isArray(u.avatarInventory) ? u.avatarInventory : (Array.isArray(u.inventory) ? u.inventory.slice() : []);
   u.gameInventory = Array.isArray(u.gameInventory) ? u.gameInventory : [];
   u.inventory = [];
@@ -4235,7 +4215,7 @@ async function runNewAccountBot(username){
   const sub = document.getElementById("epicBotSub");
   if (sub) sub.textContent = "Listo";
   const foot = document.getElementById("epicBotFoot");
-  if (foot) foot.textContent = "Avatar listo. Inventory de clothing y accesorios separado.";
+  if (foot) foot.textContent = "Avatar listo. Inventario de ropa y accesorios separado.";
 
   try {
     const done = JSON.parse(localStorage.getItem(BOT_DONE_KEY) || "{}");
@@ -4294,9 +4274,9 @@ async function register(e){
     sessionStorage.setItem("eb_pending_user", username);
   } catch(e) {}
 
-  msg(regMsg, "Account creada. Guardandola en el server...", "success");
+  msg(regMsg, "Cuenta creada. Guardandola en el servidor...", "success");
 
-  // Login automaticamente sin esperar al server.
+  // Entrar automaticamente sin esperar al servidor.
   setTimeout(() => {
     loadCurrentUser();
     setTimeout(() => runNewAccountBot(username), 400);
@@ -4351,7 +4331,7 @@ function syncRegisterGlobal(username, password) {
       }
 
       // No se pierde la cuenta local. Se vuelve a intentar hasta que Render
-      // despierte y el server acepte el registro.
+      // despierte y el servidor acepte el registro.
       setTimeout(() => {
         try {
           const u = sessionStorage.getItem("eb_pending_user");
@@ -4391,7 +4371,7 @@ function login(e){
     })
     .catch(err => {
       if (getToken() && getCachedUser() && !String(getToken()).startsWith("pending_")) return;
-      msg(loginMsg, err.message || "User o contraseña incorrectos.", "error");
+      msg(loginMsg, err.message || "Usuario o contraseña incorrectos.", "error");
     });
 }
 
@@ -4441,8 +4421,8 @@ function loadCurrentUser(){
   if (cached) enterApp(cached);
   else if (token) authScreen.style.display = "none";
 
-  // Token temporal = cuenta local pendiente de sincronizar con el server.
-  // NO se elimina: el system antiguo lo usaba para que el jugador pudiera
+  // Token temporal = cuenta local pendiente de sincronizar con el servidor.
+  // NO se elimina: el sistema antiguo lo usaba para que el jugador pudiera
   // entrar mientras Render despertaba.
   if (String(token || "").startsWith("pending_")) {
     try {
@@ -4453,10 +4433,10 @@ function loadCurrentUser(){
     return;
   }
 
-  // Para sesiones reales, refrescar silenciosamente desde el server.
+  // Para sesiones reales, refrescar silenciosamente desde el servidor.
   if (token && !String(token).startsWith("pending_")) {
     api("/api/me", {}, 2).then(data => {
-      if (!data || !data.user) throw new Error("Account no encontrada");
+      if (!data || !data.user) throw new Error("Cuenta no encontrada");
       if (data.recoveryToken) setRecoveryToken(data.recoveryToken);
       enterApp(data.user);
     }).catch(() => {
@@ -4483,23 +4463,23 @@ async function saveDescription(){
   const u=getCachedUser(), input=document.getElementById("bioEditor"), m=document.getElementById("bioSaveMsg");
   if(!u||!input) return;
   u.bio=(input.value||"").trim().slice(0,200);
-  if(m){m.textContent="Saving...";m.style.color="#666";}
+  if(m){m.textContent="Guardando...";m.style.color="#666";}
   try {
     const saved=await persistUser(u);
     const finalUser=saved || u;
     setCachedUser(finalUser);
     const profileBio=document.getElementById("profileBio");
-    if(profileBio) profileBio.textContent=finalUser.bio || "No description available.";
-    if(m){m.textContent="✅ Description guardada.";m.style.color="#188038";setTimeout(()=>m.textContent="",2200);}
+    if(profileBio) profileBio.textContent=finalUser.bio || "Sin descripción disponible.";
+    if(m){m.textContent="✅ Descripción guardada.";m.style.color="#188038";setTimeout(()=>m.textContent="",2200);}
   } catch(e) {
     setCachedUser(u);
-    if(m){m.textContent="❌ Could not guardar en el server.";m.style.color="#c62828";}
+    if(m){m.textContent="❌ No se pudo guardar en el servidor.";m.style.color="#c62828";}
   }
 }
 function refreshSettings(){
   const u=getCachedUser(); if(!u) return;
   const b=document.getElementById("bioEditor"); if(b)b.value=u.bio||"";
-  const profileBio=document.getElementById("profileBio"); if(profileBio) profileBio.textContent=u.bio||"No description available.";
+  const profileBio=document.getElementById("profileBio"); if(profileBio) profileBio.textContent=u.bio||"Sin descripción disponible.";
   applyTheme(u.theme||"light");
 }
 
@@ -4511,7 +4491,7 @@ function updateUI(u){
   document.getElementById('profileName').textContent=u.username+" ✓";
   document.getElementById('profileUsername').textContent="@"+u.username;
   const profileBio=document.getElementById('profileBio');
-  if(profileBio) profileBio.textContent=u.bio || "No description available.";
+  if(profileBio) profileBio.textContent=u.bio || "Sin descripción disponible.";
   document.getElementById('profileMoney').textContent=u.sunnys || 0;
   document.getElementById('moneyDisplay').textContent="☀️ "+(u.sunnys || 0);
   document.getElementById('settingsUser').textContent=u.username;
@@ -4627,18 +4607,18 @@ let _searchCache = [];
 // Etiqueta de estado: en linea / desconectado / jugando.
 function presenceBadgeHTML(p){
   p = p || {};
-  if(p.playing) return '<span style="background:#e8f0ff;color:#1d4ed8;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">Jugando: ' + escapeHTML(p.gameName || 'un game') + '</span>';
-  if(p.online) return '<span style="background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">Online</span>';
-  return '<span style="background:#f1f3f4;color:#666;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">Offline</span>';
+  if(p.playing) return '<span style="background:#e8f0ff;color:#1d4ed8;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">Jugando: ' + escapeHTML(p.gameName || 'un juego') + '</span>';
+  if(p.online) return '<span style="background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">En linea</span>';
+  return '<span style="background:#f1f3f4;color:#666;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold">Desconectado</span>';
 }
 function presenceDotHTML(p){
   p = p || {};
   const cls = p.playing ? 'presence-playing' : (p.online ? 'presence-online' : 'presence-offline');
-  const label = p.playing ? ('Jugando ' + escapeHTML(p.gameName || 'un game')) : (p.online ? 'Online' : 'Offline');
+  const label = p.playing ? ('Jugando ' + escapeHTML(p.gameName || 'un juego')) : (p.online ? 'En linea' : 'Desconectado');
   return '<div class="presence-dot ' + cls + '"><span class="dot"></span>' + label + '</div>';
 }
 
-// Relacion con el usuario: yo / friend / request enviada / request recibida / ninguna.
+// Relacion con el usuario: yo / amigo / solicitud enviada / solicitud recibida / ninguna.
 function relationOf(u){
   if(u && u.relation) return u.relation;
   const id = String(u && u.id);
@@ -4654,10 +4634,10 @@ function friendActionHTML(u){
   const id = escapeHTML(String(u.id));
   switch(relationOf(u)){
     case 'self': return '<span class="creator-small">Este eres tu</span>';
-    case 'friend': return '<button class="section-button" style="background:#d93025;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPclothinggation();removeFriend(\'' + id + '\')">Eliminar friend</button>';
-    case 'outgoing': return '<button class="section-button" style="background:#8a8f98;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPclothinggation();cancelFriendRequest(\'' + id + '\')">Cancel request</button>';
-    case 'incoming': return '<button class="section-button" style="background:#188038;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPclothinggation();acceptFriendRequest(\'' + id + '\')">Accept request</button>';
-    default: return '<button class="section-button" style="background:#1684e8;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPclothinggation();sendFriendRequestTo(\'' + id + '\')">Send request</button>';
+    case 'friend': return '<button class="section-button" style="background:#d93025;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPropagation();removeFriend(\'' + id + '\')">Eliminar amigo</button>';
+    case 'outgoing': return '<button class="section-button" style="background:#8a8f98;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPropagation();cancelFriendRequest(\'' + id + '\')">Cancel solicitud</button>';
+    case 'incoming': return '<button class="section-button" style="background:#188038;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPropagation();acceptFriendRequest(\'' + id + '\')">Aceptar solicitud</button>';
+    default: return '<button class="section-button" style="background:#1684e8;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPropagation();sendFriendRequestTo(\'' + id + '\')">Enviar solicitud</button>';
   }
 }
 
@@ -4666,7 +4646,7 @@ function userCardHTML(u, extraButtons){
   const created = u.createdAt ? new Date(u.createdAt) : null;
   const createdText = (created && !isNaN(created.getTime()) && created.getFullYear() > 1971)
     ? ('Miembro desde ' + created.toLocaleDateString())
-    : 'Account antigua';
+    : 'Cuenta antigua';
   return '<div class="friend-card" onclick="openUserProfile(\'' + id + '\')">' +
     '<div class="friend-card-avatar">' + avatarPortraitHTML(u, 110) + '</div>' +
     '<div class="friend-name" style="font-size:15px;font-weight:bold;margin-top:8px">' + escapeHTML(u.username || 'Player') + '</div>' +
@@ -4677,7 +4657,7 @@ function userCardHTML(u, extraButtons){
   '</div>';
 }
 
-// Busca en TODAS las cuentas registradas del server (incluidas las mas antiguas).
+// Busca en TODAS las cuentas registradas del servidor (incluidas las mas antiguas).
 async function runUserSearch(forcedQuery, showAll){
   const input = document.getElementById('userSearchInput');
   const q = typeof forcedQuery === 'string' ? forcedQuery : (input ? input.value.trim() : '');
@@ -4699,7 +4679,7 @@ async function runUserSearch(forcedQuery, showAll){
       : 'No se encontro ninguna cuenta con ese nombre o ID.';
     renderUserSearchResults();
   } catch(err){
-    if(status) status.textContent = err.message || 'Could not buscar en el server.';
+    if(status) status.textContent = err.message || 'No se pudo buscar en el servidor.';
     if(box) box.innerHTML = '';
   }
 }
@@ -4720,9 +4700,9 @@ async function sendFriendRequestTo(id){
     _searchCache = _searchCache.map(u => String(u.id) === String(id) ? { ...u, relation:'outgoing' } : u);
     renderUserSearchResults();
     await refreshFriendsFromServer();
-    alert('Request sent.');
+    alert('Solicitud enviada.');
   } catch(err){
-    alert('Could not enviar la request de amistad. ' + (err.message || 'Inténtalo de nuevo más tarde.'));
+    alert('No se pudo enviar la solicitud de amistad. ' + (err.message || 'Inténtalo de nuevo más tarde.'));
   }
 }
 
@@ -4732,17 +4712,17 @@ async function cancelFriendRequest(id){
     _searchCache = _searchCache.map(u => String(u.id) === String(id) ? { ...u, relation:'none' } : u);
     renderUserSearchResults();
     await refreshFriendsFromServer();
-  } catch(err){ alert(err.message || 'Could not cancelar la request.'); }
+  } catch(err){ alert(err.message || 'No se pudo cancelar la solicitud.'); }
 }
 
 async function removeFriend(id){
-  if(!confirm('Quitar a este usuario de tus friends?')) return;
+  if(!confirm('Quitar a este usuario de tus amigos?')) return;
   try {
     await api('/api/friends/remove', { method:'POST', body: JSON.stringify({ id: String(id) }) }, 2);
     _searchCache = _searchCache.map(u => String(u.id) === String(id) ? { ...u, relation:'none' } : u);
     renderUserSearchResults();
     await refreshFriendsFromServer();
-  } catch(err){ alert(err.message || 'Could not eliminar el friend.'); }
+  } catch(err){ alert(err.message || 'No se pudo eliminar el amigo.'); }
 }
 
 async function refreshFriendsFromServer() {
@@ -4780,14 +4760,14 @@ function renderFriends(){
   if(friendsTitle) friendsTitle.textContent = `Friends (${list.length})`;
 
   if(list.length === 0){
-    friendsBox.innerHTML = "<p style='color:#777;font-size:13px;padding-left:10px'>Aún no tienes friends. Ve a Friends para buscar players globales.</p>";
+    friendsBox.innerHTML = "<p style='color:#777;font-size:13px;padding-left:10px'>Aún no tienes amigos. Ve a Friends para buscar jugadores globales.</p>";
     return;
   }
 
   friendsBox.innerHTML = list.map(f => {
     const p = f.presence || {};
     const cls = p.playing ? 'presence-playing' : (p.online ? 'presence-online' : 'presence-offline');
-    const label = p.playing ? `Playing: ${escapeHTML(p.gameName || 'un game')}` : (p.online ? 'Online' : 'Disconected');
+    const label = p.playing ? `Playing: ${escapeHTML(p.gameName || 'un juego')}` : (p.online ? 'Online' : 'Disconected');
     return `
     <div class="friend" onclick="viewFriendProfile('${escapeHTML(f.id)}')">
       <div class="friend-avatar">${avatarPortraitHTML(f, 82)}</div>
@@ -4808,7 +4788,7 @@ function renderFriendsPage(){
   if(inBox){
     inBox.innerHTML = incoming.length
       ? '<div class="settings-card" style="padding:12px;border-color:#1684e8"><h3 style="margin:0 0 10px;font-size:16px;color:#555">Solicitudes recibidas (' + incoming.length + ')</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">' +
-        incoming.map(u => userCardHTML(u, '<button class="section-button" style="background:#d93025;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPclothinggation();rejectFriendRequest(\'' + escapeHTML(String(u.id)) + '\')">Decline</button>')).join('') +
+        incoming.map(u => userCardHTML(u, '<button class="section-button" style="background:#d93025;margin:0;padding:6px 12px;font-size:12px" onclick="event.stopPropagation();rejectFriendRequest(\'' + escapeHTML(String(u.id)) + '\')">Rechazar</button>')).join('') +
         '</div></div>'
       : '';
   }
@@ -4822,16 +4802,16 @@ function renderFriendsPage(){
   }
 
   const title = document.getElementById('friendsPageTitle');
-  if(title) title.textContent = 'Mis friends (' + list.length + ')';
+  if(title) title.textContent = 'Mis amigos (' + list.length + ')';
 
   if(!list.length){
-    grid.innerHTML = "<p style='color:#777;'>Tu lista esta vacia. Busca a cualquier usuario registrado arriba y enviale una request.</p>";
+    grid.innerHTML = "<p style='color:#777;'>Tu lista esta vacia. Busca a cualquier usuario registrado arriba y enviale una solicitud.</p>";
     return;
   }
 
   grid.innerHTML = list.map(f => {
     const p = f.presence || {};
-    const join = p.playing ? '<button class="join" onclick="event.stopPclothinggation();joinFriendGame(\'' + escapeHTML(String(f.id)) + '\')">Unirse</button>' : '';
+    const join = p.playing ? '<button class="join" onclick="event.stopPropagation();joinFriendGame(\'' + escapeHTML(String(f.id)) + '\')">Unirse</button>' : '';
     return userCardHTML({ ...f, relation:'friend' }, join);
   }).join('');
 }
@@ -4840,7 +4820,7 @@ async function searchRegisteredUsernameExact(name){
   const query=String(name||"").trim();
   if(!query) throw new Error("Escribe un nombre de usuario.");
   const lookup=await api("/api/users/lookup?username="+encodeURIComponent(query),{},2);
-  if(!lookup || !lookup.user) throw new Error("User no encontrado.");
+  if(!lookup || !lookup.user) throw new Error("Usuario no encontrado.");
   return lookup.user;
 }
 
@@ -4849,16 +4829,16 @@ async function addFriendFromInput(){
   const name=input?input.value.trim():"";
   const token=getToken();
   if(!token) return alert("Debes iniciar sesión.");
-  if(String(token).startsWith("pending_")) return alert("Tu cuenta todavía se está conectando al server. Espera a que termine de registrarse y vuelve a intentarlo.");
+  if(String(token).startsWith("pending_")) return alert("Tu cuenta todavía se está conectando al servidor. Espera a que termine de registrarse y vuelve a intentarlo.");
   if(!name) return alert("Escribe un nombre de usuario.");
 
   try {
-    // Search directamente por Username exacto en todas las cuentas registradas.
+    // Buscar directamente por Username exacto en todas las cuentas registradas.
     const data = await api("/api/users/lookup?username="+encodeURIComponent(name),{},3);
     const target = data && data.user;
-    if(!target || !target.id) throw new Error("User no encontrado.");
+    if(!target || !target.id) throw new Error("Usuario no encontrado.");
 
-    // Send la request usando el ID único encontrado por el server.
+    // Enviar la solicitud usando el ID único encontrado por el servidor.
     const sent = await api("/api/friends/request",{
       method:"POST",
       body:JSON.stringify({ id:String(target.id), username:target.username })
@@ -4867,9 +4847,9 @@ async function addFriendFromInput(){
     if(sent.user) setCachedUser(sent.user);
     if(input) input.value="";
     await refreshFriendsFromServer();
-    alert("User encontrado. Request sent");
+    alert("Usuario encontrado. Solicitud enviada");
   } catch(err) {
-    alert(err.message || "Could not enviar la request.");
+    alert(err.message || "No se pudo enviar la solicitud.");
   }
 }
 
@@ -4919,14 +4899,14 @@ function startPresenceHeartbeat(){
 function joinFriendGame(friendId){
   const friend = getMyFriends().find(f => String(f.id) === String(friendId));
   const p = friend && friend.presence;
-  if (!friend || !p || !p.playing || !p.gameName) return alert('Ese friend ya no está jugando.');
+  if (!friend || !p || !p.playing || !p.gameName) return alert('Ese amigo ya no está jugando.');
   showPage('home');
   setTimeout(() => launchWebClient(p.gameName), 50);
 }
 
 function openUserProfile(userId){
   const id=String(userId||"").trim();
-  if(!id) return alert("Profile no válido.");
+  if(!id) return alert("Perfil no válido.");
   history.pushState({profileId:id},"","/perfil/"+encodeURIComponent(id));
   api("/api/users/"+encodeURIComponent(id))
     .then(data=>{
@@ -4934,7 +4914,7 @@ function openUserProfile(userId){
       document.getElementById("friendProfileName").textContent=friend.username+" ✓";
       document.getElementById("friendProfileUsername").textContent="@"+friend.username;
       const idEl=document.getElementById("friendProfileId"); if(idEl) idEl.textContent="ID #"+friend.userId+" · /perfil/"+friend.userId;
-      document.getElementById("friendProfileBio").textContent=friend.bio || "No description available.";
+      document.getElementById("friendProfileBio").textContent=friend.bio || "Sin descripción disponible.";
       const cachedFriend=getMyFriends().find(f=>String(f.id)===String(friend.id));
       const presence=friend.presence||(cachedFriend&&cachedFriend.presence)||{online:false,playing:false};
       const presenceEl=document.getElementById("friendProfilePresence");
@@ -4943,7 +4923,7 @@ function openUserProfile(userId){
       const createdEl=document.getElementById("friendProfileCreated");
       if(createdEl){
         const created=friend.createdAt?new Date(friend.createdAt):null;
-        createdEl.textContent=(created&&!isNaN(created.getTime())&&created.getFullYear()>1971)?("Miembro desde "+created.toLocaleDateString()):"Account antigua";
+        createdEl.textContent=(created&&!isNaN(created.getTime())&&created.getFullYear()>1971)?("Miembro desde "+created.toLocaleDateString()):"Cuenta antigua";
       }
       const msgBtn=document.getElementById("friendProfileMsgBtn");
       if(msgBtn) msgBtn.onclick=()=>openDirectChatWith(friend.id, friend.username);
@@ -4954,7 +4934,7 @@ function openUserProfile(userId){
       if(avEl){avEl.style.background="transparent";avEl.innerHTML=avatarPortraitHTML(friend,260);}
       showPage("friendProfile");
     })
-    .catch(()=>alert("User no encontrado en el server global."));
+    .catch(()=>alert("Usuario no encontrado en el servidor global."));
 }
 
 function viewFriendProfile(userId){ openUserProfile(userId); }
@@ -4967,9 +4947,9 @@ window.addEventListener("popstate",()=>{
 function openFriendProfileFromUsername(username){
   api("/api/users/search?q="+encodeURIComponent(username),{},2).then(search=>{
     const hit=(search.results||[]).find(r=>String(r.username||"").toLowerCase()===String(username||"").toLowerCase());
-    if(!hit) throw new Error("User no encontrado.");
+    if(!hit) throw new Error("Usuario no encontrado.");
     openUserProfile(hit.id);
-  }).catch(e=>alert(e.message||"User no encontrado."));
+  }).catch(e=>alert(e.message||"Usuario no encontrado."));
 }
 
 function escapeHTML(s){if(!s)return"";const d=document.createElement("div");d.textContent=s;return d.innerHTML}
@@ -5014,18 +4994,18 @@ function showPage(p){
 }
 
 const games=[
-  ["Epic Obby ","🏃 A vertical obstacle tower with checkpoints, coins and a fair challenge"],
-  ["Bloxs City ","🏙️ Explore districts, parks, lakes, shops and skyscrapers"],
-  ["Speed Race ","🏎️ Race through ramps, turns and checkpoints"],
-  ["Battle Arena ","⚔️ Fight in an open arena with abilities, ultimates and training dummies"],
+  ["Epic Obby ","🏃 Complete 22 platforms, obstacles, coins and reach the finish"],
+  ["Bloxs City ","🏙️ Explore neighborhoods, parks, a lake, shops and skyscrapers"],
+  ["Speed Race ","🏎️ Race through a track with ramps, curves and checkpoints"],
+  ["Battle Arena ","⚔️ Arena with swords, walls, chests and training dummies — F attack"],
   ["Sky Islands ","☁️ Explore floating islands connected by bridges"],
-  ["Pet World ","🐾 Explore a pet park, collect eggs and discover companions"],
-  ["Zombie Survival ","🧟 Survive waves of zombies, collect coins and stay alive"],
-  ["Treasure Island ","🏝️ Explore an island, find treasure and avoid dangerous traps"],
-  ["Neon City ","🌃 Explore a glowing night city full of roads and rooftops"],
-  ["Lava Escape ","🌋 Escape rising lava by climbing platforms and reaching safety"],
-  ["Paintball Plaza ","🎨 Battle other players across a colorful arena"],
-  ["Castle Defense ","🏰 Defend the castle and survive enemy waves"]
+  ["Pet World ","🐾 Explore a pet park, eggs, lake and companions"],
+  ["Zombie Survival ","🧟 Survive waves of zombies and stay alive as long as you can"],
+  ["Treasure Island ","🏝️ Explore the island, find hidden treasure and collect coins"],
+  ["Neon City ","🌃 Explore a glowing city full of lights and futuristic streets"],
+  ["Lava Escape ","🌋 Escape the rising lava and reach the safe zone"],
+  ["Paintball Plaza ","🎨 Battle other players with paintball weapons"],
+  ["Castle Defense ","🏰 Defend the castle from incoming enemies"]
 ];
 
 function loadGames(list=games){
@@ -5117,7 +5097,7 @@ function catalogIconSVG(item) {
   if(item.id === 'Heart Necklace') return `<svg ${common}><path d="M23 25C27 55 69 55 73 25" stroke="#777" stroke-width="5" fill="none"/><path d="M48 47C38 38 28 48 48 68C68 48 58 38 48 47Z" fill="#E91E63" stroke="#880E4F" stroke-width="3"/></svg>`;
   if(item.id === 'Shoulder Bunny') return `<svg ${common}><ellipse cx="48" cy="54" rx="25" ry="24" fill="#F5F5F5" stroke="#777" stroke-width="4"/><ellipse cx="35" cy="24" rx="8" ry="18" fill="#F5F5F5" stroke="#777" stroke-width="4"/><ellipse cx="61" cy="24" rx="8" ry="18" fill="#F5F5F5" stroke="#777" stroke-width="4"/><circle cx="40" cy="51" r="3" fill="#222"/><circle cx="56" cy="51" r="3" fill="#222"/><circle cx="48" cy="59" r="4" fill="#F48FB1"/></svg>`;
   if(item.id === 'Golden Headphones') return `<svg ${common}><path d="M25 52V43C25 15 71 15 71 43V52" stroke="#D4AF37" stroke-width="8" fill="none"/><rect x="18" y="45" width="15" height="25" rx="7" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><rect x="63" y="45" width="15" height="25" rx="7" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><path d="M33 58H63" stroke="#D4AF37" stroke-width="4"/></svg>`;
-  if(item.custom && item.type === '2d' && item.data && item.data.imageData) return `<img src=\"${item.data.imageData}\" style=\"max-width:100%;max-height:150px;object-fit:contain\" alt=\"Clothing 2D\">`;
+  if(item.custom && item.type === '2d' && item.data && item.data.imageData) return `<img src=\"${item.data.imageData}\" style=\"max-width:100%;max-height:150px;object-fit:contain\" alt=\"Ropa 2D\">`;
   if(item.custom && item.type === 'accessory3d') return `<div style=\"font-size:58px\">🧊</div>`;
   return `<svg ${common}><rect x="18" y="18" width="60" height="60" rx="12" fill="#E9EEF3" stroke="#9AA7B2" stroke-width="4"/><path d="M30 50H66" stroke="#1684E8" stroke-width="6" stroke-linecap="round"/></svg>`;
 }
@@ -5135,7 +5115,7 @@ function renderCatalog(category) {
         <h3 style="margin:5px 0">${escapeHTML(item.name)}</h3>
         <div class="catalog-image">${catalogIconSVG(item)}</div>
         <p style="color:#666;font-size:12px;margin:3px 0">${escapeHTML(item.desc || '')}</p>
-        <p style="color:#777;font-size:12px;margin:3px 0">👤 Creador: ${escapeHTML(item.owner || 'EpicBlox')}</p>
+        <p style="color:#777;font-size:12px;margin:3px 0">👤 Creator: ${escapeHTML(item.owner || 'EpicBlox')}</p>
         <p style="color:#666;font-size:13px;margin:5px 0">☀️ ${price} Sunnys</p>
         <button class="buy" id="${safeId}" data-catalog-item-id="${escapeHTML(String(item.id))}">Buy</button>
       </div>
@@ -5165,13 +5145,13 @@ async function buy(item, buttonEl){
   if(button){ button.disabled = true; button.textContent = 'Comprando...'; }
 
   try {
-    // El server decide el precio real: el cliente nunca puede alterarlo.
+    // El servidor decide el precio real: el cliente nunca puede alterarlo.
     const data = await api("/api/catalog/buy", {
       method: "POST",
       body: JSON.stringify({ itemId })
     }, 4);
 
-    if(!data || !data.user) throw new Error("El server no devolvio tu inventario.");
+    if(!data || !data.user) throw new Error("El servidor no devolvio tu inventario.");
     setCachedUser(data.user);
     updateUI(data.user);
     loadInventory();
@@ -5182,7 +5162,7 @@ async function buy(item, buttonEl){
     alert("✅ Compraste " + itemId + " y ya esta en tu inventario.");
   } catch(e) {
     if(button){ button.disabled = false; button.textContent = previousText || 'Buy'; }
-    alert("❌ Could not comprar: " + (e.message || "error de conexión"));
+    alert("❌ No se pudo comprar: " + (e.message || "error de conexión"));
   }
 }
 
@@ -5208,9 +5188,9 @@ function updateCatalogButtons(u){
       btn.style.boxShadow = "none";
       btn.style.cursor = "not-allowed";
     } else {
-      btn.textContent = "Buy";
+      btn.textContent = "Comprar";
       btn.disabled = false;
-      btn.title = `Buy por ${price} Sunnys`;
+      btn.title = `Comprar por ${price} Sunnys`;
       btn.style.background = "linear-gradient(135deg,#1684e8,#0d5aa7)";
       btn.style.boxShadow = "0 2px 5px rgba(22,132,232,0.3)";
       btn.style.cursor = "pointer";
@@ -5228,7 +5208,7 @@ function updateAccessoryButtons(u){
 
   let html = `<div style="width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px"><b style="font-size:13px">Tus objetos del Avatar</b><button class="section-button" style="background:#d93025;margin:0" type="button" onclick="toggleAccessory('normal')">✕ Quitar todo</button></div>`;
   if(!items.length){
-    html += `<div style="width:100%;font-size:12px;color:#777;padding:8px 2px">No tienes clothing ni accesorios todavía. Visita el Catalog.</div>`;
+    html += `<div style="width:100%;font-size:12px;color:#777;padding:8px 2px">You have no clothing or accessories yet. Visit the Catalog.</div>`;
   } else {
     html += `<div style="width:100%;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">`;
     items.forEach(item => {
@@ -5238,7 +5218,7 @@ function updateAccessoryButtons(u){
         <h3 style="margin:2px 0;font-size:13px;text-align:center">${escapeHTML(item.name || canonId)}</h3>
         <div class="catalog-image" style="width:120px;height:120px;margin:0">${catalogIconSVG(item)}</div>
         <p style="color:#666;font-size:11px;margin:2px 0;text-align:center;min-height:26px">${escapeHTML(item.desc || 'Objeto del avatar')}</p>
-        <button type="button" class="section-button avatar-item-button ${isEquipped?'equipped':''}" style="width:100%;margin:0!important" data-avatar-equip-id="${escapeHTML(canonId)}">${isEquipped ? '✓ Quitar' : '+ Equip'}</button>
+        <button type="button" class="section-button avatar-item-button ${isEquipped?'equipped':''}" style="width:100%;margin:0!important" data-avatar-equip-id="${escapeHTML(canonId)}">${isEquipped ? '✓ Quitar' : '+ Equipar'}</button>
       </div>`;
     });
     html += `</div>`;
@@ -5303,7 +5283,7 @@ function loadInventory(){
   const equipped = (c.user.avatar && Array.isArray(c.user.avatar.accessories)) ? c.user.avatar.accessories : [];
   let html = "";
   if(!inv.length){
-    html = `<div class="settings-card" style="grid-column:1/-1;text-align:center;color:#777">Todavía no tienes clothing ni accesorios. Visita el Catalog.</div>`;
+    html = `<div class="settings-card" style="grid-column:1/-1;text-align:center;color:#777">Todavía no tienes ropa ni accesorios. Visita el Catálogo.</div>`;
   } else {
     inv.forEach((itemId) => {
       const item = itemForId(itemId) || {id:String(itemId), name:String(itemId), desc:'Objeto del avatar'};
@@ -5347,7 +5327,7 @@ async function setBodyColor(part,color){
   c.user.avatar.colors = c.user.avatar.colors || {};
   c.user.avatar.colors[part]=color;
 
-  // Save el avatar en el server para que NO se pierda al cambiar de game.
+  // Guardar el avatar en el servidor para que NO se pierda al cambiar de juego.
   try {
     const saved = await persistUser(c.user);
     if(saved) {
@@ -5355,7 +5335,7 @@ async function setBodyColor(part,color){
       setCachedUser(saved);
     }
   } catch(e) {
-    // Mantener el cambio local si el server está temporalmente desconectado.
+    // Mantener el cambio local si el servidor está temporalmente desconectado.
     setCachedUser(c.user);
   }
 
@@ -5375,18 +5355,18 @@ async function toggleAccessory(a){
   // Deshabilita el boton concreto mientras se guarda para evitar dobles clicks.
   const button = document.querySelector(`[data-avatar-equip-id="${CSS.escape(itemId)}"]`);
   const previousText = button ? button.textContent : '';
-  if(button){ button.disabled = true; button.textContent = 'Saving...'; }
+  if(button){ button.disabled = true; button.textContent = 'Guardando...'; }
 
   try {
-    // El server es la unica fuente de verdad para EQUIPAR desde Avatar.
+    // El servidor es la unica fuente de verdad para EQUIPAR desde Avatar.
     const data = await api('/api/avatar/equip', {
       method: 'POST',
       body: JSON.stringify({ itemId: itemId, action: 'toggle' })
     }, 5);
 
-    if(!data || !data.user) throw new Error('El server no devolvio el avatar actualizado.');
+    if(!data || !data.user) throw new Error('El servidor no devolvio el avatar actualizado.');
 
-    // Sustituimos TODO el usuario local por la respuesta del server.
+    // Sustituimos TODO el usuario local por la respuesta del servidor.
     // Asi el boton no puede quedarse mostrando un estado viejo.
     setCachedUser(data.user);
     if(data.recoveryToken){
@@ -5400,8 +5380,8 @@ async function toggleAccessory(a){
     try { updatePreviewAvatar3D(); } catch(e) {}
     try { sendAvatarUpdateToMultiplayer(); } catch(e) {}
   } catch(e) {
-    if(button){ button.disabled = false; button.textContent = previousText || '+ Equip'; }
-    alert('❌ Could not equipar el accesorio: ' + (e.message || 'error de conexión'));
+    if(button){ button.disabled = false; button.textContent = previousText || '+ Equipar'; }
+    alert('❌ No se pudo equipar el accesorio: ' + (e.message || 'error de conexión'));
   }
 }
 
@@ -5488,7 +5468,7 @@ async function dmLoadInbox(silent){
     box.innerHTML = '<div class="chat-msg system" style="margin:10px">Inicia sesion para usar el chat directo.</div>';
     return;
   }
-  if(!silent) box.innerHTML = '<div class="chat-msg system" style="margin:10px">Loading conversaciones...</div>';
+  if(!silent) box.innerHTML = '<div class="chat-msg system" style="margin:10px">Cargando conversaciones...</div>';
   try {
     const data = await api('/api/dm/inbox', {}, 1);
     dmUnreadTotal = data.unreadTotal || 0;
@@ -5500,19 +5480,19 @@ async function dmLoadInbox(silent){
       html += convs.map(c => dmRowHTML(c, c.lastMessage ? ((c.lastMessage.from === 'me' ? 'Tu: ' : '') + c.lastMessage.text) : '')).join('');
     }
     if(friends.length){
-      html += '<div style="padding:8px 10px;font-size:11px;color:#666;background:#eef2f6">Tus friends</div>';
+      html += '<div style="padding:8px 10px;font-size:11px;color:#666;background:#eef2f6">Tus amigos</div>';
       html += friends.map(f => dmRowHTML(f, 'Empezar conversacion')).join('');
     }
     if(!html) html = '<div class="chat-msg system" style="margin:10px">Aun no tienes conversaciones. Busca un usuario arriba para escribirle.</div>';
     box.innerHTML = html;
   } catch(err){
-    box.innerHTML = '<div class="chat-msg system" style="margin:10px">' + escapeHTML(err.message || 'Could not cargar el chat directo.') + '</div>';
+    box.innerHTML = '<div class="chat-msg system" style="margin:10px">' + escapeHTML(err.message || 'No se pudo cargar el chat directo.') + '</div>';
   }
 }
 
 function dmRowHTML(u, subtitle){
   const p = u.presence || {};
-  const dot = p.playing ? 'Jugando' : (p.online ? 'Online' : 'Offline');
+  const dot = p.playing ? 'Jugando' : (p.online ? 'En linea' : 'Desconectado');
   return '<div class="dm-row" onclick="dmOpenThread(\'' + escapeHTML(String(u.id)) + '\',\'' + escapeHTML(String(u.username || '')).replace(/'/g, '') + '\')">' +
     '<div class="dm-mini-avatar">' + avatarPortraitHTML(u, 34) + '</div>' +
     '<div class="dm-info"><div class="dm-name">' + escapeHTML(u.username || 'Player') + '</div>' +
@@ -5547,8 +5527,8 @@ async function dmOpenThread(id, username, silent){
   if(listPane) listPane.style.display = 'none';
   if(threadPane) threadPane.style.display = 'flex';
   const nameEl = document.getElementById('dmThreadName');
-  if(nameEl) nameEl.textContent = dmCurrentName || 'User';
-  if(body && !silent) body.innerHTML = '<div class="chat-msg system">Loading mensajes...</div>';
+  if(nameEl) nameEl.textContent = dmCurrentName || 'Usuario';
+  if(body && !silent) body.innerHTML = '<div class="chat-msg system">Cargando mensajes...</div>';
   try {
     const data = await api('/api/dm/thread?id=' + encodeURIComponent(dmCurrentId), {}, 1);
     if(data.user){
@@ -5556,7 +5536,7 @@ async function dmOpenThread(id, username, silent){
       if(nameEl) nameEl.textContent = dmCurrentName;
       const pres = document.getElementById('dmThreadPresence');
       const p = data.user.presence || {};
-      if(pres) pres.textContent = p.playing ? ('Jugando ' + (p.gameName || '')) : (p.online ? 'Online' : 'Offline');
+      if(pres) pres.textContent = p.playing ? ('Jugando ' + (p.gameName || '')) : (p.online ? 'En linea' : 'Desconectado');
     }
     const msgs = data.messages || [];
     if(body){
@@ -5566,7 +5546,7 @@ async function dmOpenThread(id, username, silent){
       body.scrollTop = body.scrollHeight;
     }
   } catch(err){
-    if(body) body.innerHTML = '<div class="chat-msg system">' + escapeHTML(err.message || 'Could not abrir la conversacion.') + '</div>';
+    if(body) body.innerHTML = '<div class="chat-msg system">' + escapeHTML(err.message || 'No se pudo abrir la conversacion.') + '</div>';
   }
 }
 
@@ -5588,19 +5568,19 @@ async function dmSend(){
     await api('/api/dm/send', { method:'POST', body: JSON.stringify({ id: dmCurrentId, text }) }, 1);
     await dmOpenThread(dmCurrentId, dmCurrentName, true);
   } catch(err){
-    alert('Could not enviar el mensaje. ' + (err.message || 'Inténtalo de nuevo más tarde.'));
+    alert('No se pudo enviar el mensaje. ' + (err.message || 'Inténtalo de nuevo más tarde.'));
     if(input) input.value = text;
   }
 }
 
 function groupStartPolling(){groupStopPolling();groupPollTimer=setInterval(()=>{if(chatOpen&&chatTab==='groups'){groupCurrentId?groupOpenThread(groupCurrentId,true):groupLoad(true);}},4000);}
 function groupStopPolling(){if(groupPollTimer)clearInterval(groupPollTimer);groupPollTimer=null;}
-function groupRenderPicker(){const box=document.getElementById('groupMembersPicker');if(!box)return;const friends=getMyFriends();box.innerHTML=friends.length?'<b>Friends del grupo (maximo 19):</b><br>'+friends.map(f=>'<label style="display:inline-block;margin:5px 8px 0 0"><input type="checkbox" class="group-member" value="'+escapeHTML(String(f.id))+'"> '+escapeHTML(f.username)+'</label>').join(''):'Agrega friends antes de crear un grupo.';}
-async function groupLoad(silent){const box=document.getElementById('groupList');if(!box)return;groupRenderPicker();if(!silent)box.innerHTML='<div class="chat-msg system" style="margin:10px">Loading grupos...</div>';try{const data=await api('/api/groups',{},1);const groups=data.groups||[];const badge=document.getElementById('groupTabBadge');if(badge){badge.style.display=data.unreadTotal?'inline-block':'none';badge.textContent=data.unreadTotal>9?'9+':String(data.unreadTotal||0);}box.innerHTML=groups.length?groups.map(g=>'<div class="dm-row" onclick="groupOpenThread(\''+escapeHTML(g.id)+'\')"><div class="dm-info"><div class="dm-name">'+escapeHTML(g.name)+'</div><div class="dm-last">'+g.members.length+' miembros'+(g.lastMessage?' - '+escapeHTML(g.lastMessage.text):'')+'</div></div>'+(g.unread?'<span class="dm-unread">'+g.unread+'</span>':'')+'</div>').join(''):'<div class="chat-msg system" style="margin:10px">Crea un grupo con tus friends.</div>';}catch(err){box.innerHTML='<div class="chat-msg system" style="margin:10px">'+escapeHTML(err.message||'No se pudieron cargar los grupos.')+'</div>';}}
-async function groupCreate(){const name=document.getElementById('groupNameInput')?.value.trim();const members=[...document.querySelectorAll('.group-member:checked')].map(el=>el.value);if(!name)return alert('Escribe un nombre para el grupo.');if(members.length>19)return alert('Un grupo puede tener como maximo 20 miembros contando contigo.');try{const data=await api('/api/groups',{method:'POST',body:JSON.stringify({name,memberIds:members})},1);document.getElementById('groupNameInput').value='';groupOpenThread(data.group.id);groupLoad(true);}catch(err){alert(err.message||'Could not crear el grupo.');}}
-async function groupOpenThread(id,silent){groupCurrentId=String(id);const list=document.getElementById('groupListPane'),thread=document.getElementById('groupThreadPane'),body=document.getElementById('groupThreadBody');if(list)list.style.display='none';if(thread)thread.style.display='flex';try{const data=await api('/api/groups/thread?id='+encodeURIComponent(groupCurrentId),{},1);document.getElementById('groupThreadName').textContent=data.group.name;document.getElementById('groupThreadMembers').textContent=(data.group.members||[]).length+' miembros';if(body)body.innerHTML=(data.messages||[]).map(m=>'<div class="dm-msg '+(m.from==='me'?'me':'them')+'"><b>'+escapeHTML(m.username||'User')+'</b> '+escapeHTML(m.text)+'<span class="dm-time">'+new Date(m.ts).toLocaleTimeString()+'</span></div>').join('')||'<div class="chat-msg system">No hay mensajes todavía.</div>';if(body)body.scrollTop=body.scrollHeight;}catch(err){if(body&&!silent)body.innerHTML='<div class="chat-msg system">'+escapeHTML(err.message||'Could not abrir el grupo.')+'</div>';}}
+function groupRenderPicker(){const box=document.getElementById('groupMembersPicker');if(!box)return;const friends=getMyFriends();box.innerHTML=friends.length?'<b>Amigos del grupo (maximo 19):</b><br>'+friends.map(f=>'<label style="display:inline-block;margin:5px 8px 0 0"><input type="checkbox" class="group-member" value="'+escapeHTML(String(f.id))+'"> '+escapeHTML(f.username)+'</label>').join(''):'Agrega amigos antes de crear un grupo.';}
+async function groupLoad(silent){const box=document.getElementById('groupList');if(!box)return;groupRenderPicker();if(!silent)box.innerHTML='<div class="chat-msg system" style="margin:10px">Cargando grupos...</div>';try{const data=await api('/api/groups',{},1);const groups=data.groups||[];const badge=document.getElementById('groupTabBadge');if(badge){badge.style.display=data.unreadTotal?'inline-block':'none';badge.textContent=data.unreadTotal>9?'9+':String(data.unreadTotal||0);}box.innerHTML=groups.length?groups.map(g=>'<div class="dm-row" onclick="groupOpenThread(\''+escapeHTML(g.id)+'\')"><div class="dm-info"><div class="dm-name">'+escapeHTML(g.name)+'</div><div class="dm-last">'+g.members.length+' miembros'+(g.lastMessage?' - '+escapeHTML(g.lastMessage.text):'')+'</div></div>'+(g.unread?'<span class="dm-unread">'+g.unread+'</span>':'')+'</div>').join(''):'<div class="chat-msg system" style="margin:10px">Crea un grupo con tus amigos.</div>';}catch(err){box.innerHTML='<div class="chat-msg system" style="margin:10px">'+escapeHTML(err.message||'Could not load groups.')+'</div>';}}
+async function groupCreate(){const name=document.getElementById('groupNameInput')?.value.trim();const members=[...document.querySelectorAll('.group-member:checked')].map(el=>el.value);if(!name)return alert('Escribe un nombre para el grupo.');if(members.length>19)return alert('Un grupo puede tener como maximo 20 miembros contando contigo.');try{const data=await api('/api/groups',{method:'POST',body:JSON.stringify({name,memberIds:members})},1);document.getElementById('groupNameInput').value='';groupOpenThread(data.group.id);groupLoad(true);}catch(err){alert(err.message||'No se pudo crear el grupo.');}}
+async function groupOpenThread(id,silent){groupCurrentId=String(id);const list=document.getElementById('groupListPane'),thread=document.getElementById('groupThreadPane'),body=document.getElementById('groupThreadBody');if(list)list.style.display='none';if(thread)thread.style.display='flex';try{const data=await api('/api/groups/thread?id='+encodeURIComponent(groupCurrentId),{},1);document.getElementById('groupThreadName').textContent=data.group.name;document.getElementById('groupThreadMembers').textContent=(data.group.members||[]).length+' miembros';if(body)body.innerHTML=(data.messages||[]).map(m=>'<div class="dm-msg '+(m.from==='me'?'me':'them')+'"><b>'+escapeHTML(m.username||'Usuario')+'</b> '+escapeHTML(m.text)+'<span class="dm-time">'+new Date(m.ts).toLocaleTimeString()+'</span></div>').join('')||'<div class="chat-msg system">No hay mensajes todavía.</div>';if(body)body.scrollTop=body.scrollHeight;}catch(err){if(body&&!silent)body.innerHTML='<div class="chat-msg system">'+escapeHTML(err.message||'Could not open the group.')+'</div>';}}
 function groupCloseThread(){groupCurrentId=null;document.getElementById('groupListPane').style.display='flex';document.getElementById('groupThreadPane').style.display='none';groupLoad();}
-async function groupSend(){const input=document.getElementById('groupInput'),text=input?.value.trim();if(!text||!groupCurrentId)return;input.value='';try{await api('/api/groups/message',{method:'POST',body:JSON.stringify({groupId:groupCurrentId,text})},1);groupOpenThread(groupCurrentId,true);}catch(err){alert(err.message||'Could not enviar el mensaje.');input.value=text;}}
+async function groupSend(){const input=document.getElementById('groupInput'),text=input?.value.trim();if(!text||!groupCurrentId)return;input.value='';try{await api('/api/groups/message',{method:'POST',body:JSON.stringify({groupId:groupCurrentId,text})},1);groupOpenThread(groupCurrentId,true);}catch(err){alert(err.message||'No se pudo enviar el mensaje.');input.value=text;}}
 
 // Abre el chat directo con un usuario desde su perfil.
 function openDirectChatWith(id, username){
@@ -5799,7 +5779,7 @@ function sendChatMessage() {
   input.value = '';
 
   if(!multiplayerReady || !multiplayerSocket || multiplayerSocket.readyState !== WebSocket.OPEN) {
-    appendChatMessage('Sistema', 'No estás conectado. Entra a un game para chatear en tiempo real.', true);
+    appendChatMessage('Sistema', 'No estás conectado. Entra a un juego para chatear en tiempo real.', true);
     return;
   }
 
@@ -5825,13 +5805,13 @@ function tradeItemInfo(id){
 }
 
 function tradeCategoryLabel(category){
-  return ({hats:'Sombrero',shirts:'Clothing',pants:'Pantalón',faces:'Cara',gear:'Accesorio'})[category] || 'Artículo';
+  return ({hats:'Sombrero',shirts:'Ropa',pants:'Pantalón',faces:'Cara',gear:'Accesorio'})[category] || 'Artículo';
 }
 
 function renderTradeFriends(){
   const box=document.getElementById('tradeFriends'); if(!box) return;
   const friends=getMyFriends();
-  if(!friends.length){ box.innerHTML='<div class="trade-empty" style="grid-column:1/-1">Necesitas tener al menos un friend para hacer Trade.</div>'; return; }
+  if(!friends.length){ box.innerHTML='<div class="trade-empty" style="grid-column:1/-1">Necesitas tener al menos un amigo para hacer Trade.</div>'; return; }
   box.innerHTML=friends.map(f=>{
     const id=String(f.id);
     const selected=String(tradeSelectedFriend||'')===id;
@@ -5840,7 +5820,7 @@ function renderTradeFriends(){
   }).join('');
   const chosen=friends.find(f=>String(f.id)===String(tradeSelectedFriend));
   const hint=document.getElementById('tradeFriendHint');
-  if(hint) hint.innerHTML=chosen ? `Vas a hacer Trade con <strong>${escapeHTML(chosen.username)}</strong>.` : 'Selecciona un friend para empezar.';
+  if(hint) hint.innerHTML=chosen ? `Vas a hacer Trade con <strong>${escapeHTML(chosen.username)}</strong>.` : 'Selecciona un amigo para empezar.';
 }
 
 function selectTradeFriend(id){
@@ -5857,7 +5837,7 @@ function renderTradeMyItems(){
   const c=current(); const inv=(c&&c.user&&Array.isArray(c.user.avatarInventory))?c.user.avatarInventory:[];
   const unique=[]; const seen=new Set();
   for(const id of inv){ if(seen.has(id)) continue; seen.add(id); unique.push(id); }
-  if(!unique.length){ box.innerHTML='<div class="trade-empty" style="grid-column:1/-1">No tienes clothing ni accesorios para intercambiar.</div>'; if(count) count.textContent='0 artículos seleccionados'; return; }
+  if(!unique.length){ box.innerHTML='<div class="trade-empty" style="grid-column:1/-1">No tienes ropa ni accesorios para intercambiar.</div>'; if(count) count.textContent='0 artículos seleccionados'; return; }
   box.innerHTML=unique.map(id=>{
     const item=tradeItemInfo(id); const selected=tradeSelectedItems.has(id);
     return `<button type="button" class="trade-item ${selected?'selected':''}" onclick="toggleTradeItem(${JSON.stringify(id)})"><b>${escapeHTML(item.name)}</b><small>${tradeCategoryLabel(item.category)}</small></button>`;
@@ -5882,7 +5862,7 @@ function renderTradeOffer(off, label, tradeId, isIncoming, accepted){
 function renderTradeResponseEditor(tradeId){
   const c=current(); const inv=(c&&c.user&&Array.isArray(c.user.avatarInventory))?c.user.avatarInventory:[];
   const uniq=[...new Set(inv)].slice(0,20);
-  return `<div style="margin-top:12px;border-top:1px solid #ddd;padding-top:10px"><b>Tu parte del intercambio</b><div class="trade-items" style="margin-top:8px">${uniq.length?uniq.map(id=>{const sel=tradeResponseItems.has(id);return `<button type="button" class="trade-item ${sel?'selected':''}" onclick="toggleTradeResponseItem(${JSON.stringify(id)})"><b>${escapeHTML(tradeItemInfo(id).name)}</b><small>${tradeCategoryLabel(tradeItemInfo(id).category)}</small></button>`;}).join(''):'<div class="trade-empty" style="grid-column:1/-1">No tienes artículos para ofrecer.</div>'}</div><input id="tradeResponseSunnys_${escapeHTML(tradeId)}" type="number" min="0" max="9999999" step="1" value="0" style="width:100%;box-sizing:border-box;padding:9px;margin:8px 0;border:1px solid #ccc;border-radius:5px"><button class="buy" style="width:auto" onclick="respondTrade('${escapeHTML(tradeId)}','offer')">Preparar intercambio</button><button class="buy" style="width:auto;margin-left:6px" onclick="respondTrade('${escapeHTML(tradeId)}','accept')">Accept intercambio</button><button class="section-button" style="margin-left:6px;background:#d93025" onclick="respondTrade('${escapeHTML(tradeId)}','decline')">Decline</button></div>`;
+  return `<div style="margin-top:12px;border-top:1px solid #ddd;padding-top:10px"><b>Tu parte del intercambio</b><div class="trade-items" style="margin-top:8px">${uniq.length?uniq.map(id=>{const sel=tradeResponseItems.has(id);return `<button type="button" class="trade-item ${sel?'selected':''}" onclick="toggleTradeResponseItem(${JSON.stringify(id)})"><b>${escapeHTML(tradeItemInfo(id).name)}</b><small>${tradeCategoryLabel(tradeItemInfo(id).category)}</small></button>`;}).join(''):'<div class="trade-empty" style="grid-column:1/-1">You have no items to offer.</div>'}</div><input id="tradeResponseSunnys_${escapeHTML(tradeId)}" type="number" min="0" max="9999999" step="1" value="0" style="width:100%;box-sizing:border-box;padding:9px;margin:8px 0;border:1px solid #ccc;border-radius:5px"><button class="buy" style="width:auto" onclick="respondTrade('${escapeHTML(tradeId)}','offer')">Preparar intercambio</button><button class="buy" style="width:auto;margin-left:6px" onclick="respondTrade('${escapeHTML(tradeId)}','accept')">Aceptar intercambio</button><button class="section-button" style="margin-left:6px;background:#d93025" onclick="respondTrade('${escapeHTML(tradeId)}','decline')">Rechazar</button></div>`;
 }
 
 function renderTradeState(){
@@ -5915,7 +5895,7 @@ async function refreshTradeState(){
 }
 
 async function sendTradeOffer(){
-  if(!tradeSelectedFriend) return alert('Selecciona un friend.');
+  if(!tradeSelectedFriend) return alert('Selecciona un amigo.');
   const c=current(); if(!c||!c.user) return alert('Debes iniciar sesión.');
   const input=document.getElementById('tradeSunnysInput');
   const sunnys=Math.floor(Number(input?.value||0));
@@ -5926,7 +5906,7 @@ async function sendTradeOffer(){
     tradeSelectedItems.clear(); if(input) input.value='0';
     await refreshTradeState();
     alert('✅ Intercambio enviado. El otro jugador debe preparar su parte y aceptarlo.');
-  } catch(e){ alert('❌ '+(e.message||'Could not enviar el Trade.')); }
+  } catch(e){ alert('❌ '+(e.message||'No se pudo enviar el Trade.')); }
 }
 
 async function respondTrade(tradeId, action){
@@ -5949,7 +5929,7 @@ async function respondTrade(tradeId, action){
       tradeResponseItems.clear();
       alert('✅ Tu parte del intercambio quedó preparada.');
     } else if(action==='accept') {
-      alert('✅ Intercambio aceptado. Se completará cuando ambos players hayan aceptado.');
+      alert('✅ Intercambio aceptado. Se completará cuando ambos jugadores hayan aceptado.');
     }
     await refreshTradeState();
   } catch(e){ alert('❌ '+(e.message||'El intercambio no pudo completarse. Ningún artículo se duplicó.')); await refreshTradeState(); }
@@ -5988,9 +5968,9 @@ async function loadAdminPanel(){
     const il=document.getElementById('adminItemsList');
     if(il) il.innerHTML=(data.items||[]).map(item=>
       `<div class="admin-row"><b>${escapeHTML(item.name||item.id)}</b> · ${escapeHTML(item.id)} · ${escapeHTML(item.category||'')} · creador: ${escapeHTML(item.owner||String(item.ownerId||''))} <button class="admin-btn danger" onclick="adminDeleteItem('${String(item.id).replace(/'/g,"\\'")}')">Eliminar</button></div>`
-    ).join('') || '<div class="admin-row">No hay publicaciones de players.</div>';
+    ).join('') || '<div class="admin-row">No hay publicaciones de jugadores.</div>';
   }catch(e){
-    const st=document.getElementById('adminGameStatus'); if(st) st.textContent='❌ '+(e.message||'Could not cargar el panel.');
+    const st=document.getElementById('adminGameStatus'); if(st) st.textContent='❌ '+(e.message||'No se pudo cargar el panel.');
   }
 }
 async function adminGiftSunnys(targetOverride){
@@ -6003,7 +5983,7 @@ async function adminGiftSunnys(targetOverride){
     alert(`✅ ${amount} Sunnys enviados a ${d.user.username}.`);
     if(current()?.user?.username?.toLowerCase()===d.user.username.toLowerCase()){setCachedUser(d.user);updateUI(d.user);renderCatalog('all');}
     loadAdminPanel();
-  }catch(e){alert('❌ '+(e.message||'Could not regalar Sunnys.'));}
+  }catch(e){alert('❌ '+(e.message||'No se pudo regalar Sunnys.'));}
 }
 function adminGiftSelf(){
   const c=current(); if(c?.user?.username) adminGiftSunnys(c.user.username);
@@ -6013,25 +5993,25 @@ async function adminBanUser(){
   const days=Math.floor(Number(document.getElementById('adminBanDays')?.value||1));
   const reason=document.getElementById('adminBanReason')?.value||'';
   if(!target) return alert('Pon el usuario o ID.');
-  try{await api('/api/admin/ban',{method:'POST',body:JSON.stringify({target,days,reason})},2);alert('🔨 User baneado.');loadAdminPanel();}
-  catch(e){alert('❌ '+(e.message||'Could not banear.'));}
+  try{await api('/api/admin/ban',{method:'POST',body:JSON.stringify({target,days,reason})},2);alert('🔨 Usuario baneado.');loadAdminPanel();}
+  catch(e){alert('❌ '+(e.message||'No se pudo banear.'));}
 }
 async function adminUnbanUser(){
   const target=document.getElementById('adminBanTarget')?.value?.trim();
   if(!target) return alert('Pon el usuario o ID.');
   try{await api('/api/admin/unban',{method:'POST',body:JSON.stringify({target})},2);alert('✅ Ban eliminado.');loadAdminPanel();}
-  catch(e){alert('❌ '+(e.message||'Could not quitar el ban.'));}
+  catch(e){alert('❌ '+(e.message||'No se pudo quitar el ban.'));}
 }
 async function adminDeleteItem(itemOverride){
   const itemId=itemOverride || document.getElementById('adminItemId')?.value?.trim();
   if(!itemId) return alert('Pon el ID del articulo.');
-  if(!confirm('¿Eliminar esta clothing creada por un jugador?')) return;
+  if(!confirm('¿Eliminar esta ropa creada por un jugador?')) return;
   try{
     await api('/api/admin/delete-item',{method:'POST',body:JSON.stringify({itemId})},2);
-    alert('🗑️ Clothing eliminada del catalogo e inventarios.');
+    alert('🗑️ Ropa eliminada del catalogo e inventarios.');
     try{await loadCustomCatalog();loadInventory();}catch(_){}
     loadAdminPanel();
-  }catch(e){alert('❌ '+(e.message||'Could not eliminar la clothing.'));}
+  }catch(e){alert('❌ '+(e.message||'No se pudo eliminar la ropa.'));}
 }
 function adminGameAction(action){
   const c=current();
@@ -6048,7 +6028,7 @@ function adminGameAction(action){
   multiplayerSocket.send(JSON.stringify({type:'adminAction',action,targetUsername:target,days}));
 }
 
-function resetLocalData(){if(confirm("¿Log out y borrar cache local?")){setToken('');setCachedUser(null);location.reload()}}
+function resetLocalData(){if(confirm("¿Cerrar sesión y borrar cache local?")){setToken('');setCachedUser(null);location.reload()}}
 
 function init(){
   makeColorButtons("headColors","head");makeColorButtons("armColors","arms");makeColorButtons("torsoColors","torso");makeColorButtons("legsColors","legs");
@@ -6079,7 +6059,7 @@ init();
 <div id="adminOverlay" onclick="if(event.target===this)closeAdminPanel()">
   <div id="adminPanel">
     <div class="admin-head">
-      <div><h2 style="margin:0">🛡️ Panel de Administracion</h2><div class="admin-muted">Only cuentas autorizadas por el server.</div></div>
+      <div><h2 style="margin:0">🛡️ Administration Panel</h2><div class="admin-muted">Solo cuentas autorizadas por el servidor.</div></div>
       <button class="admin-btn gray" onclick="closeAdminPanel()">Close</button>
     </div>
     <div class="admin-grid">
@@ -6099,13 +6079,13 @@ init();
         <button class="admin-btn green" onclick="adminUnbanUser()">Quitar ban</button>
       </div>
       <div class="admin-card">
-        <h3>👕 Clothing creada por players</h3>
-        <div class="admin-muted">Elimina publicaciones de clothing del catalogo y tambien las quita de los inventarios/equipamientos.</div>
+        <h3>👕 Player-created Clothing</h3>
+        <div class="admin-muted">Elimina publicaciones de ropa del catalogo y tambien las quita de los inventarios/equipamientos.</div>
         <input id="adminItemId" class="admin-input" placeholder="ID del articulo (U-...)">
-        <button class="admin-btn danger" onclick="adminDeleteItem()">Eliminar clothing</button>
+        <button class="admin-btn danger" onclick="adminDeleteItem()">Delete Clothing</button>
       </div>
       <div class="admin-card">
-        <h3>🎮 Moderacion dentro del game</h3>
+        <h3>🎮 Moderacion dentro del juego</h3>
         <input id="adminGameTarget" class="admin-input" placeholder="Username del jugador en tu sala">
         <input id="adminGameDays" class="admin-input" type="number" min="1" max="36500" value="1" placeholder="Dias de ban">
         <button class="admin-btn danger" onclick="adminGameAction('kick')">Kick</button>
@@ -6120,7 +6100,7 @@ init();
       <div id="adminUsersList" class="admin-list"></div>
     </div>
     <div class="admin-card" style="margin-top:14px">
-      <h3>👕 Publicaciones</h3>
+      <h3>👕 Posts</h3>
       <div id="adminItemsList" class="admin-list"></div>
     </div>
   </div>
