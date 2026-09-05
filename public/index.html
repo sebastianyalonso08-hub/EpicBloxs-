@@ -6,6 +6,15 @@
 <title>EpicBloxs</title>
 <style>
 /* EpicBloxs visual cleanup: cohesive dark/violet UI without white legacy panels. */
+/* EXTRA UI COLOR FIX */
+.page,.main,.section,.settings-card,.avatar-panel,.catalog-item,.inventory-item,.trade-card,.download-box,.creator-card,.auth-box,.bio-box,.friend-card,.friends-box,.friends-actions,.profile-card{background:linear-gradient(145deg,rgba(34,27,58,.97),rgba(18,15,34,.97))!important;color:var(--eb-text,#f4f0ff)!important;border-color:var(--eb-border,#4b3a76)!important}
+.section-header h2,h1,h2,h3{color:#f4f0ff!important}
+p,.creator-small,.game-players{color:#b9afd4!important}
+input,textarea,select{background:#18152b!important;color:#f4f0ff!important;border-color:#4b3a76!important}
+.section-button,.cat-tab{background:#2b2346!important;color:#ddd4f5!important;border-color:#4b3a76!important}
+.cat-tab.active{background:#7c3aed!important;color:#fff!important}
+#adminFab{background:linear-gradient(135deg,#7c3aed,#5b21b6)!important}
+
 :root{--eb-bg:#0e0b1b;--eb-panel:#171329;--eb-panel2:#211a3a;--eb-border:#4b3a76;--eb-text:#f4f0ff;--eb-muted:#b9afd4;--eb-accent:#9b5cff;--eb-accent2:#35c8ff;--eb-success:#39d98a;--eb-danger:#ff5f7a}
 body,body.theme-light{background:radial-gradient(circle at 15% 0%,#30205b 0,#171329 35%,#0e0b1b 80%);color:var(--eb-text)}
 body.theme-blue{background:radial-gradient(circle at 10% 0%,#173b63 0,#12172a 40%,#090d18 100%);color:#eef7ff}
@@ -213,8 +222,23 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 #adminFab.show{display:block}
 #adminOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:10040;align-items:center;justify-content:center;padding:20px}
 #adminOverlay.open{display:flex}
-#adminPanel{width:min(900px,96vw);max-height:90vh;overflow:auto;background:#fff;color:#222;border-radius:10px;box-shadow:0 20px 70px rgba(0,0,0,.4);padding:20px}
-body.theme-dark #adminPanel{background:#202020;color:#eee}
+#adminPanel{width:min(900px,96vw);max-height:90vh;overflow:auto;background:linear-gradient(145deg,#221b3a,#141022);color:#f4f0ff;border-radius:12px;border:1px solid #4b3a76;box-shadow:0 20px 70px rgba(0,0,0,.55);padding:20px}
+body.theme-dark #adminPanel{background:linear-gradient(145deg,#1c1c24,#121218);color:#eee;border-color:#444}
+#adminOverlay{background:rgba(8,6,18,.72)!important}
+.admin-card{background:rgba(34,27,58,.85)!important;border:1px solid #4b3a76!important;color:#f4f0ff!important}
+.admin-row{background:rgba(24,20,40,.9)!important;border:1px solid #3d315e!important;color:#e8e2f8!important}
+.admin-muted{color:#b9afd4!important}
+.admin-input{background:#18152b!important;border:1px solid #4b3a76!important;color:#f4f0ff!important}
+/* Ban/Kick overlay */
+.mod-kick-overlay{display:none;position:fixed;inset:0;z-index:20000;background:rgba(6,4,14,.88);align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.mod-kick-overlay.open{display:flex}
+.mod-kick-box{width:min(420px,92vw);background:linear-gradient(160deg,#2a1b43,#141022);border:1px solid #6b52a8;border-radius:16px;padding:28px 26px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.55);color:#f4f0ff}
+.mod-kick-box h2{margin:0 0 8px;font-size:24px;color:#ff6b81}
+.mod-kick-box .mod-reason{margin:12px 0 6px;color:#c4b5fd;font-size:14px}
+.mod-kick-box .mod-reason b{color:#fff}
+.mod-kick-box p{margin:0 0 18px;color:#b9afd4;font-size:13px;line-height:1.45}
+.mod-kick-btn{width:100%;padding:12px 16px;border:0;border-radius:10px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+.mod-kick-btn:hover{filter:brightness(1.1)}
 .admin-head{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:14px}
 .admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .admin-card{border:1px solid #ccc;border-radius:8px;padding:14px;background:#fafafa}
@@ -1768,7 +1792,23 @@ function buildAvatar3DModel(userData) {
 
   avatarGroup.add(headMesh, torsoMesh, leftArm, rightArm, leftLeg, rightLeg);
 
-  // Agregar accesorios 3D equipados
+  // Agregar accesorios 3D equipados y VINCULARLOS al hueso correcto
+  // sombrero/cara -> cabeza | espalda/torso -> torso
+  function accessoryAttachTarget(accName, cat) {
+    const n = String(accName || '');
+    // Sombreros / cara / gafas / auriculares -> cabeza
+    if (cat === 'hats' || cat === 'faces') return 'head';
+    if (/cap|crown|beanie|bow|fedora|headphones|shades|glasses|hat|sombrero/i.test(n)) return 'head';
+    // Mochila, collar, hombro, etc. -> torso
+    if (/backpack|necklace|bunny|shoulder|wing|cape|pack/i.test(n)) return 'torso';
+    if (cat === 'gear') {
+      // gear de cara vs espalda
+      if (/shades|glasses|mask|face/i.test(n)) return 'head';
+      return 'torso';
+    }
+    return 'head';
+  }
+
   if(Array.isArray(accessories)) {
     accessories.forEach(accName => {
       const accCat = avatarItemCategory(accName);
@@ -1776,13 +1816,35 @@ function buildAvatar3DModel(userData) {
       const isClothing = accCat === 'faces' || accCat === 'shirts' || accCat === 'pants';
       if(!isClothing && !(accItem && accItem.type === '2d')) {
         const accMesh = createAccessoryMesh(accName);
+        accMesh.name = 'acc_' + String(accName).replace(/\s+/g,'_');
         accMesh.traverse(child => {
           if(child.isMesh) {
             child.castShadow = true;
             child.receiveShadow = true;
           }
         });
-        avatarGroup.add(accMesh);
+        const boneName = accessoryAttachTarget(accName, accCat);
+        const bone = avatarGroup.getObjectByName(boneName);
+        if (bone) {
+          // Las mallas de accesorios usan coordenadas absolutas del avatar.
+          // Al colgarlas del hueso, restamos la posición del hueso para que queden locales.
+          const bx = bone.position.x, by = bone.position.y, bz = bone.position.z;
+          accMesh.children.forEach(ch => {
+            if (ch.position) {
+              ch.position.x -= bx;
+              ch.position.y -= by;
+              ch.position.z -= bz;
+            }
+          });
+          // Si el propio grupo tiene offset, también
+          if (accMesh.position) {
+            // keep group at origin relative to bone
+            accMesh.position.set(0, 0, 0);
+          }
+          bone.add(accMesh);
+        } else {
+          avatarGroup.add(accMesh);
+        }
       }
     });
   }
@@ -3360,16 +3422,7 @@ function startGameLoop() {
       }
     }
 
-    if(!isGrounded && !isLocalEmoteActive()) {
-      const leftArm = playerMeshGroup.getObjectByName("leftArm");
-      const rightArm = playerMeshGroup.getObjectByName("rightArm");
-      const torso = playerMeshGroup.getObjectByName("torso");
-      const head = playerMeshGroup.getObjectByName("head");
-      if(leftArm) leftArm.rotation.x = -0.25;
-      if(rightArm) { rightArm.rotation.x = -1.45; rightArm.rotation.z = -0.18; }
-      if(torso) torso.rotation.z = -0.06;
-      if(head) head.rotation.y = -0.12;
-    }
+    // (La pose de salto R6 ya se aplica arriba; no sobrescribir brazos aquí.)
 
     if(playerMeshGroup) playerMeshGroup.position.set(playerPos.x, playerPos.y + 0.4, playerPos.z);
     updateGameSunShadowFollow();
@@ -3603,8 +3656,16 @@ function openMultiplayerSocket() {
         return;
       }
       if (data.type === "kicked" || data.type === "banned") {
-        alert(data.message || 'Has sido expulsado.');
-        disconnectMultiplayer();
+        const isBan = data.type === "banned";
+        const days = Number(data.days || 0);
+        const reason = (data.reason || data.message || '').trim();
+        showModKickOverlay({
+          banned: isBan,
+          days: days,
+          reason: reason || (isBan ? 'Moderacion' : 'Expulsado por un administrador'),
+          message: data.message || ''
+        });
+        try { exitWebClient(); } catch(e) { disconnectMultiplayer(); }
         return;
       }
       if (data.type === "error" && data.code === "AUTH_REQUIRED") {
@@ -3907,6 +3968,7 @@ function updateRemotePlayers(dt) {
 
     const prevX = group.position.x;
     const prevZ = group.position.z;
+    const storedPrevY = group.userData.prevY == null ? group.position.y : group.userData.prevY;
 
     const emoteActive = group.userData.emoteUntil && performance.now() < group.userData.emoteUntil;
 
@@ -3922,7 +3984,7 @@ function updateRemotePlayers(dt) {
       group.rotation.y += diff * Math.min(1, dt*20);
     }
 
-    // Animación de caminar en jugadores remotos
+    // Animación de caminar / salto en jugadores remotos
     const dx = group.position.x - prevX;
     const dz = group.position.z - prevZ;
     const speed = Math.sqrt(dx*dx + dz*dz) / Math.max(dt, 0.001);
@@ -3930,10 +3992,11 @@ function updateRemotePlayers(dt) {
     const rightArm = group.getObjectByName("rightArm");
     const leftLeg = group.getObjectByName("leftLeg");
     const rightLeg = group.getObjectByName("rightLeg");
+    const head = group.getObjectByName("head");
+    const torso = group.getObjectByName("torso");
 
     if (emoteActive) {
       if (speed > 0.5) {
-        // El jugador remoto se movio: se corta el baile y vuelve a la postura normal.
         group.userData.emoteUntil = 0;
         group.userData.emoteName = null;
         resetLimbs(group);
@@ -3941,6 +4004,7 @@ function updateRemotePlayers(dt) {
         const et = (performance.now() - (group.userData.emoteStart || 0)) / 1000;
         const ebob = applyEmoteAnimation(group, group.userData.emoteName, et);
         group.position.y += ebob;
+        group.userData.prevY = group.position.y;
         return;
       }
     } else if (group.userData.emoteName) {
@@ -3948,14 +4012,16 @@ function updateRemotePlayers(dt) {
       resetLimbs(group);
     }
 
-    const prevY = group.userData.prevY == null ? group.position.y : group.userData.prevY;
-    const verticalSpeed = (group.position.y - prevY) / Math.max(dt, 0.001);
+    const verticalSpeed = (group.position.y - storedPrevY) / Math.max(dt, 0.001);
     group.userData.prevY = group.position.y;
-    if (Math.abs(verticalSpeed) > 1.2) {
-      if(leftArm) { leftArm.rotation.x = -0.10; leftArm.rotation.z = Math.PI - 0.10; }
-      if(rightArm) { rightArm.rotation.x = -0.10; rightArm.rotation.z = Math.PI + 0.10; }
-      if(leftLeg) leftLeg.rotation.x = 0.45;
-      if(rightLeg) rightLeg.rotation.x = 0.45;
+    // Misma pose R6 de salto que el jugador local (ambos brazos arriba)
+    if (Math.abs(verticalSpeed) > 1.0) {
+      if(leftArm) leftArm.rotation.set(0, 0, Math.PI);
+      if(rightArm) rightArm.rotation.set(0, 0, Math.PI);
+      if(leftLeg) leftLeg.rotation.x = 0.35;
+      if(rightLeg) rightLeg.rotation.x = 0.35;
+      if(torso) torso.rotation.set(0, 0, 0);
+      if(head) head.rotation.set(0, 0, 0);
     } else if (speed > 0.3) {
       group.userData.walkPhase = (group.userData.walkPhase || 0) + dt * 10;
       const swing = Math.sin(group.userData.walkPhase) * 0.7;
@@ -6073,8 +6139,10 @@ async function loadAdminPanel(){
     if(!data.isAdmin) return;
     const ul=document.getElementById('adminUsersList');
     if(ul) ul.innerHTML=(data.users||[]).map(u=>{
-      const banned=Number(u.banUntil||0)>Date.now();
-      return `<div class="admin-row"><b>${escapeHTML(u.username)}</b> · ID ${escapeHTML(String(u.id))} · ☀️ ${Number(u.sunnys||0)} ${banned?'· 🔨 BANEADO':''}<br><span class="admin-muted">${escapeHTML(u.usernameKey)}</span></div>`;
+      const banUntil=Number(u.banUntil||0);
+      const banned=banUntil>Date.now();
+      const banLabel=banned?('· 🔨 BANEADO hasta '+new Date(banUntil).toLocaleString()):'';
+      return `<div class="admin-row"><b>${escapeHTML(u.username)}</b> · ID ${escapeHTML(String(u.id))} · ☀️ ${Number(u.sunnys||0)} ${banLabel}<br><span class="admin-muted">${escapeHTML(u.usernameKey||'')}</span></div>`;
     }).join('') || '<div class="admin-row">No hay usuarios.</div>';
     const il=document.getElementById('adminItemsList');
     if(il) il.innerHTML=(data.items||[]).map(item=>
@@ -6099,6 +6167,29 @@ async function adminGiftSunnys(targetOverride){
 function adminGiftSelf(){
   const c=current(); if(c?.user?.username) adminGiftSunnys(c.user.username);
 }
+function showModKickOverlay(opts){
+  opts = opts || {};
+  const overlay = document.getElementById('modKickOverlay');
+  const title = document.getElementById('modKickTitle');
+  const reasonEl = document.getElementById('modKickReason');
+  const sub = document.getElementById('modKickSub');
+  if(!overlay) { alert((opts.message||'') + '\nRazon: ' + (opts.reason||'')); return; }
+  if(opts.banned){
+    const d = Math.max(1, Number(opts.days||1));
+    if(title) title.textContent = 'Fuiste Baneado por ' + d + ' dia' + (d===1?'':'s');
+    if(sub) sub.textContent = 'Tu cuenta no puede entrar hasta que termine el ban.';
+  } else {
+    if(title) title.textContent = 'Fuiste kickeado';
+    if(sub) sub.textContent = 'Has sido expulsado de la partida por un administrador.';
+  }
+  if(reasonEl) reasonEl.innerHTML = 'Razon: <b>' + escapeHTML(String(opts.reason||'—')) + '</b>';
+  overlay.classList.add('open');
+}
+function dismissModKickOverlay(){
+  const overlay = document.getElementById('modKickOverlay');
+  if(overlay) overlay.classList.remove('open');
+}
+
 async function adminBanUser(){
   const target=document.getElementById('adminBanTarget')?.value?.trim();
   const days=Math.floor(Number(document.getElementById('adminBanDays')?.value||1));
@@ -6110,8 +6201,12 @@ async function adminBanUser(){
 async function adminUnbanUser(){
   const target=document.getElementById('adminBanTarget')?.value?.trim();
   if(!target) return alert('Pon el usuario o ID.');
-  try{await api('/api/admin/unban',{method:'POST',body:JSON.stringify({target})},2);alert('✅ Ban eliminado.');loadAdminPanel();}
-  catch(e){alert('❌ '+(e.message||'No se pudo quitar el ban.'));}
+  try{
+    const d=await api('/api/admin/unban',{method:'POST',body:JSON.stringify({target})},2);
+    alert('✅ Ban eliminado' + (d && d.username ? (' de '+d.username) : '') + '.');
+    // Forzar recarga limpia del panel para que no quede el badge BANEADO
+    await loadAdminPanel();
+  }catch(e){alert('❌ '+(e.message||'No se pudo quitar el ban.'));}
 }
 async function adminDeleteItem(itemOverride){
   const itemId=itemOverride || document.getElementById('adminItemId')?.value?.trim();
@@ -6135,8 +6230,9 @@ function adminGameAction(action){
   const target=document.getElementById('adminGameTarget')?.value?.trim();
   if(!target) return alert('Pon el username del jugador.');
   const days=Math.floor(Number(document.getElementById('adminGameDays')?.value||1));
+  const reason=(document.getElementById('adminGameReason')?.value||document.getElementById('adminBanReason')?.value||'').trim();
   if(action==='ban' && (!Number.isSafeInteger(days)||days<1||days>36500)) return alert('Dias invalidos.');
-  multiplayerSocket.send(JSON.stringify({type:'adminAction',action,targetUsername:target,days}));
+  multiplayerSocket.send(JSON.stringify({type:'adminAction',action,targetUsername:target,days,reason}));
 }
 
 function resetLocalData(){if(confirm("¿Cerrar sesión y borrar cache local?")){setToken('');setCachedUser(null);location.reload()}}
@@ -6166,6 +6262,14 @@ init();
 </div>
 
 
+<div id="modKickOverlay" class="mod-kick-overlay" role="dialog" aria-modal="true">
+  <div class="mod-kick-box">
+    <h2 id="modKickTitle">Fuiste kickeado</h2>
+    <div class="mod-reason" id="modKickReason">Razon: —</div>
+    <p id="modKickSub">Has sido expulsado de la partida por un administrador.</p>
+    <button class="mod-kick-btn" onclick="dismissModKickOverlay()">Entendido</button>
+  </div>
+</div>
 <button id="adminFab" onclick="openAdminPanel()">🛡️ Admin</button>
 <div id="adminOverlay" onclick="if(event.target===this)closeAdminPanel()">
   <div id="adminPanel">
@@ -6199,6 +6303,7 @@ init();
         <h3>🎮 Moderacion dentro del juego</h3>
         <input id="adminGameTarget" class="admin-input" placeholder="Username del jugador en tu sala">
         <input id="adminGameDays" class="admin-input" type="number" min="1" max="36500" value="1" placeholder="Dias de ban">
+        <input id="adminGameReason" class="admin-input" maxlength="160" placeholder="Motivo (kick/ban)">
         <button class="admin-btn danger" onclick="adminGameAction('kick')">Kick</button>
         <button class="admin-btn danger" onclick="adminGameAction('ban')">Ban</button>
         <button class="admin-btn" onclick="adminGameAction('fly')">🪽 Volar ON/OFF</button>
