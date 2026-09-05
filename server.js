@@ -449,8 +449,7 @@ const BUILTIN_AVATAR_CATALOG = [
   ["Blue Shirt","shirts",75],["Green Hoodie","shirts",120],["Red Tee","shirts",65],["Black Jacket","shirts",150],["Pink Tee","shirts",70],["Lavender Hoodie","shirts",125],["White Blouse","shirts",110],
   ["Classic Jeans","pants",80],["Dark Cargo Pants","pants",110],["Black Jeans","pants",90],["White Pants","pants",85],["Pink Jeans","pants",95],["Purple Pants","pants",100],
   ["Classic Smile","faces",40],["Cool Wink","faces",90],["Happy Face","faces",60],["Sleepy Face","faces",75],["Cute Face","faces",95],["Starry Face","faces",120],
-  ["Classic Shades","gear",100],["Cool Backpack","gear",180],["Heart Necklace","gear",90],["Shoulder Bunny","gear",160],["Golden Headphones","gear",200],
-  ["Purple Galaxy","backgrounds",120],["Neon Grid","backgrounds",150],["Sunset","backgrounds",100],["Ocean","backgrounds",110],["Dark Void","backgrounds",180]
+  ["Classic Shades","gear",100],["Cool Backpack","gear",180],["Heart Necklace","gear",90],["Shoulder Bunny","gear",160],["Golden Headphones","gear",200]
 ];
 
 function findAvatarCatalogItem(itemId) {
@@ -604,7 +603,6 @@ function normalizeAvatarData(user) {
   user.avatar.colors = user.avatar.colors && typeof user.avatar.colors === "object"
     ? user.avatar.colors : { head:"#f5c928", arms:"#f5c928", torso:"#1477b9", legs:"#8cae45" };
   if (!user.avatar.torsoType) user.avatar.torsoType = "male";
-  if (user.avatar.profileBackground != null) user.avatar.profileBackground = String(user.avatar.profileBackground).trim();
 }
 
 const BANNED_TERMS = [
@@ -1201,28 +1199,21 @@ const server = http.createServer(async (req, res) => {
 
     if (rawId === "normal" || body.action === "clear") {
       user.avatar.accessories = [];
-      user.avatar.profileBackground = "";
     } else {
       const itemId = canonicalAvatarItemId(rawId);
       if (!itemId) return json(res, 400, { error: "Falta el articulo." });
 
       const existingIndex = user.avatar.accessories.findIndex(id => sameAvatarItem(id, itemId));
       // Desequipar siempre permitido si ya estaba equipado (aunque falte en inventario).
-      const item = findAvatarCatalogItem(itemId);
-      const category = item ? String(item.category || "").toLowerCase() : "";
-      if (category === "backgrounds") {
-        // Los fondos de perfil no son piezas 3D: se guarda solo el fondo equipado.
-        if (!user.avatarInventory.some(id => sameAvatarItem(id, itemId))) {
-          return json(res, 403, { error: "No tienes este fondo en tu inventario." });
-        }
-        user.avatar.profileBackground = sameAvatarItem(user.avatar.profileBackground, itemId) ? "" : itemId;
-      } else if (existingIndex >= 0) {
+      if (existingIndex >= 0) {
         user.avatar.accessories.splice(existingIndex, 1);
       } else {
         // Equipar: requiere poseer el articulo.
         if (!user.avatarInventory.some(id => sameAvatarItem(id, itemId))) {
           return json(res, 403, { error: "No tienes este articulo en tu inventario." });
         }
+        const item = findAvatarCatalogItem(itemId);
+        const category = item ? String(item.category || "").toLowerCase() : "";
         const singleEquipCategories = new Set(["faces", "shirts", "pants"]);
         if (singleEquipCategories.has(category)) {
           user.avatar.accessories = user.avatar.accessories.filter(id => {
@@ -2006,32 +1997,6 @@ const server = http.createServer(async (req, res) => {
     const requests = (me.friendRequests || []).map((k) => publicFriendUser(users[k], k)).filter(Boolean);
     const outgoing = (me.outgoingRequests || []).map((k) => publicFriendUser(users[k], k)).filter(Boolean);
     return json(res, 200, { friends, requests, outgoing });
-  }
-
-  // Archivos estaticos del cliente (iconos, plantillas y recursos).
-  // Antes solo se servia index.html, por eso /assets/games/*.svg aparecia como imagen rota.
-  if (urlPath.startsWith('/assets/') || urlPath.startsWith('/templates/')) {
-    const relative = decodeURIComponent(urlPath.replace(/^\/(assets|templates)\//, '$1/'));
-    const filePath = path.resolve(publicDir, relative);
-    const publicRoot = path.resolve(publicDir);
-    if (!filePath.startsWith(publicRoot + path.sep)) {
-      res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
-      return res.end('Forbidden');
-    }
-    fs.stat(filePath, (err, st) => {
-      if (err || !st.isFile()) {
-        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-        return res.end('Not found');
-      }
-      const ext = path.extname(filePath).toLowerCase();
-      const mime = {
-        '.svg':'image/svg+xml', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg',
-        '.webp':'image/webp', '.gif':'image/gif', '.ico':'image/x-icon', '.json':'application/json'
-      }[ext] || 'application/octet-stream';
-      res.writeHead(200, { 'Content-Type': mime, 'Cache-Control': 'public, max-age=3600' });
-      fs.createReadStream(filePath).pipe(res);
-    });
-    return;
   }
 
   if (urlPath.startsWith("/perfil/")) {
