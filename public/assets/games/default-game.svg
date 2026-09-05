@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 180" role="img" aria-label="Game">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#7c3aed"/><stop offset="1" stop-color="#111827"/></linearGradient></defs>
+<rect width="200" height="180" rx="18" fill="url(#bg)"/>
+<circle cx="160" cy="32" r="42" fill="#ffffff" opacity=".07"/>
+<rect x="30" y="48" width="140" height="104" rx="18" fill="#8b5cf6"/><circle cx="72" cy="100" r="14" fill="#f8fafc"/><circle cx="128" cy="100" r="14" fill="#facc15"/><path d="M52 127l12-18M148 127l-12-18" stroke="#e9d5ff" stroke-width="8" stroke-linecap="round"/>
+</svg>
