@@ -1,8 +1,0 @@
-CREATOR PREVIEW UPDATE
-
-- La vista previa de Crear ahora usa las proporciones del modelo R6 actualizado.
-- Caras: la textura que se dibuja/sube en el canvas se muestra directamente sobre la cara del maniquí.
-- Camisas 2D: se muestran sobre el torso con las mismas proporciones estrechas del avatar.
-- Pantalones 2D: la textura se divide entre las dos piernas largas, igual que en el avatar real.
-- Se eliminó el maniquí cuadrado antiguo de la vista previa.
-- Se mejoró el panel visual de la vista previa con iluminación/fondo oscuro y etiqueta de modelo.

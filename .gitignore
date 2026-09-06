@@ -7,7 +7,6 @@ data/sessions.json
 data/dms.json
 data/groups.json
 data/catalog.json
-data/temp
 node_modules/
 .env
 *.log

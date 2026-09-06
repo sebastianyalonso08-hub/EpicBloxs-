@@ -1640,7 +1640,7 @@ const server = http.createServer(async (req, res) => {
     const body = await readBody(req);
     const name = safeText(body.name, "", 40);
     const description = safeText(body.description, "", 200);
-    const category = ["shirts", "pants", "faces", "hats"].includes(body.category) ? body.category : "shirts";
+    const category = ["shirts", "pants", "faces", "hats", "backgrounds"].includes(body.category) ? body.category : "shirts";
     const type = category === "hats" ? "3d" : "2d";
     const price = Math.floor(Number(body.price ?? 0));
     if (!Number.isFinite(price) || price < 0 || price > 1000000) return json(res, 400, { error: "El precio debe estar entre 0 y 1.000.000 Sunnys." });
