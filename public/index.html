@@ -1743,11 +1743,11 @@ function bodyClothingMaterials(texture, baseColor){
   const base = new THREE.MeshLambertMaterial({color: baseColor || '#1477b9'});
   if(!texture) return base;
   const front = new THREE.MeshLambertMaterial({map: texture, color: 0xffffff, side: THREE.DoubleSide, transparent: true});
-  // BoxGeometry uses six material slots (front/back/left/right/top/bottom),
-  // while the new ExtrudeGeometry uses slot 0 for sides, 1 for bevels and
-  // 2 for the front/back caps.  Use a 3-slot array so shirts also render on
-  // the new extruded torso instead of falling back to the plain body color.
-  return [base, base, front];
+  // Three.js BoxGeometry has six material groups: right, left, top, bottom,
+  // front and back. The female torso uses ExtrudeGeometry, whose caps use
+  // material slot 2. Keep the same texture on every visible torso face so
+  // shirts cannot disappear on the new male/female body meshes.
+  return [base, base, front, front, front, front];
 }
 
 function splitLegTexture(texture, side){
@@ -2417,7 +2417,7 @@ async function launchWebClient(gameName) {
   startAmbientMusic(gameName);
 
   setTimeout(() => { document.getElementById('clientBarFill').style.width = '100%'; }, 100);
-  setTimeout(() => {
+  setTimeout(async () => {
     if (launchNonce !== gameLaunchNonce || !document.body.classList.contains('in-game')) return;
     // Antes de construir el mundo, aseguramos que el catalogo de la comunidad
     // este cargado. La ropa/pantalones 2D creados por usuarios viven ahi; si
