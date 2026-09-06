@@ -827,7 +827,7 @@ const catalogDatabase = [
 let creatorMode = '2d';
 let creatorScene, creatorCamera, creatorRenderer, creatorAnim;
 let creatorGroup, creatorSelected = null, creatorCubes = [];
-let creator2dCtx = null, creatorDrawing = false, creatorLastX = 0, creatorLastY = 0, creatorClothingTex = null, creatorFaceTex = null, creatorDrawStart = null, creatorHistory = [], creatorHistoryIndex = -1;
+let creator2dCtx = null, creatorDrawing = false, creatorLastX = 0, creatorLastY = 0, creatorClothingTex = null, creatorDrawStart = null, creatorHistory = [], creatorHistoryIndex = -1;
 let creatorOrbit={drag:false,lastX:0,lastY:0,yaw:0,pitch:0.18,distance:6.3}, creatorTransformTool='move', creatorRaycaster=null, creatorPointer=new THREE.Vector2(), creatorPointerDown=null, creatorTransformDrag=false, creatorSelectionOutline=null;
 
 function creatorSetMode(mode='2d'){
@@ -871,9 +871,6 @@ function creatorSync2DTexture(){
   const canvas=document.getElementById('creator2dCanvas'); if(!canvas || typeof THREE==='undefined') return;
   if(!creatorClothingTex){creatorClothingTex=new THREE.CanvasTexture(canvas); creatorClothingTex.colorSpace=THREE.SRGBColorSpace; creatorClothingTex.needsUpdate=true;}
   creatorClothingTex.needsUpdate=true;
-  // The face preview uses the SAME live canvas. Keep it updated while drawing
-  // so the 3D head changes immediately instead of only after switching tabs.
-  if(creatorFaceTex){ creatorFaceTex.needsUpdate=true; }
 }
 function creatorClear2D(){const c=document.getElementById('creator2dCanvas'); if(!c)return; creator2dCtx=c.getContext('2d'); creator2dCtx.clearRect(0,0,c.width,c.height); creator2dCtx.fillStyle='#fff'; creator2dCtx.fillRect(0,0,c.width,c.height); creatorSave2DHistory(); creatorSync2DTexture();}
 function creatorLoadImage(ev){const file=ev.target.files&&ev.target.files[0]; if(!file)return; if(file.size>1500000)return creatorMessage('La imagen es demasiado grande (máximo 1.5 MB).',true); const img=new Image(); const objectUrl=URL.createObjectURL(file); img.onload=()=>{creatorClear2D(); const c=document.getElementById('creator2dCanvas'); const scale=Math.min(c.width/img.width,c.height/img.height), w=img.width*scale,h=img.height*scale; creator2dCtx.drawImage(img,(c.width-w)/2,(c.height-h)/2,w,h); creatorSync2DTexture(); creatorMessage('Imagen sincronizada con el visualizador.'); URL.revokeObjectURL(objectUrl);}; img.src=objectUrl; try{ev.target.value='';}catch(_){} }
@@ -951,16 +948,16 @@ function creatorAddClothingPreview(){
   // Preview actualizado: usa las mismas proporciones R6 que el avatar real
   // (cabeza cuadrada, torso estrecho, brazos trapezoidales y piernas largas).
   const sideHeadMat=new THREE.MeshLambertMaterial({color:skinColor});
-  creatorFaceTex=null;
+  let previewFaceTex=null;
   if(creatorMode==='2d' && cat==='faces'){
     const faceCanvas=document.getElementById('creator2dCanvas');
     if(faceCanvas){
-      creatorFaceTex=new THREE.CanvasTexture(faceCanvas);
-      creatorFaceTex.colorSpace=THREE.SRGBColorSpace;
-      creatorFaceTex.needsUpdate=true;
+      previewFaceTex=new THREE.CanvasTexture(faceCanvas);
+      previewFaceTex.colorSpace=THREE.SRGBColorSpace;
+      previewFaceTex.needsUpdate=true;
     }
   }
-  const faceMat=creatorFaceTex ? new THREE.MeshLambertMaterial({map:creatorFaceTex,color:0xffffff}) : sideHeadMat;
+  const faceMat=previewFaceTex ? new THREE.MeshLambertMaterial({map:previewFaceTex,color:0xffffff}) : sideHeadMat;
   const headMats=[sideHeadMat,sideHeadMat,sideHeadMat,sideHeadMat,faceMat,sideHeadMat];
   const head=new THREE.Mesh(new THREE.BoxGeometry(.82,.82,.82),headMats);
   head.position.set(0,2.08,0); head.name='previewHead'; creatorGroup.add(head);
@@ -1742,31 +1739,64 @@ function customClothingTexture(item){
   return tex;
 }
 
-function addShirtFrontOverlay(parent, texture, torsoWidth, torsoHeight, z){
-  if(!parent || !texture) return null;
-  const mat = new THREE.MeshLambertMaterial({
-    map: texture,
-    color: 0xffffff,
-    side: THREE.DoubleSide,
-    transparent: true,
-    depthWrite: false
-  });
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(Math.max(0.1, torsoWidth * 0.96), Math.max(0.1, torsoHeight * 0.96)), mat);
-  mesh.position.set(0, 0, z);
-  mesh.name = 'shirt2DOverlay';
-  mesh.renderOrder = 2;
-  parent.add(mesh);
-  return mesh;
+function cropClothingTemplateTexture(texture, sx, sy, sw, sh, outW=256, outH=256){
+  if(!texture || !texture.image) return null;
+  const src=texture.image;
+  const canvas=document.createElement('canvas'); canvas.width=outW; canvas.height=outH;
+  const ctx=canvas.getContext('2d'); ctx.clearRect(0,0,outW,outH);
+  const draw=()=>{
+    if(!src || !src.width || !src.height) return;
+    ctx.clearRect(0,0,outW,outH);
+    ctx.drawImage(src, sx, sy, sw, sh, 0, 0, outW, outH);
+    const t=new THREE.CanvasTexture(canvas);
+    if(THREE.SRGBColorSpace) t.colorSpace=THREE.SRGBColorSpace;
+    t.wrapS=THREE.ClampToEdgeWrapping; t.wrapT=THREE.ClampToEdgeWrapping;
+    t.needsUpdate=true;
+    return t;
+  };
+  return draw();
+}
+
+function customShirtMaterials(texture, baseColor){
+  const base = new THREE.MeshLambertMaterial({color: baseColor || '#1477b9'});
+  if(!texture || !texture.image) return base;
+  const src=texture.image;
+  const make=(x,y,w,h)=>{
+    const c=document.createElement('canvas'); c.width=256; c.height=256;
+    const ctx=c.getContext('2d'); ctx.clearRect(0,0,256,256);
+    const t=new THREE.CanvasTexture(c);
+    if(THREE.SRGBColorSpace) t.colorSpace=THREE.SRGBColorSpace;
+    t.wrapS=THREE.ClampToEdgeWrapping; t.wrapT=THREE.ClampToEdgeWrapping;
+    const draw=()=>{
+      if(!src.width || !src.height) return;
+      ctx.clearRect(0,0,256,256);
+      ctx.drawImage(src,x,y,w,h,0,0,256,256);
+      t.needsUpdate=true;
+    };
+    if(src.complete === false){ const prev=src.onload; src.onload=()=>{if(typeof prev==='function')prev();draw();}; } else draw();
+    return t;
+  };
+  // EpicBloxs' clothing template is a 585x559 sheet: Top, Left Arm, Torso,
+  // Right Arm and Bottom. The torso artwork lives only in the center block.
+  // Using the entire sheet on the torso made the shirt appear tiny/invisible
+  // on the new body. Crop the actual torso block and use it on the visible
+  // front/back faces.
+  const torso=make(194,131,199,226);
+  const top=make(193,0,200,127);
+  const bottom=make(193,359,200,200);
+  return [
+    base, base,
+    new THREE.MeshLambertMaterial({map:top,color:0xffffff,side:THREE.DoubleSide,transparent:true}),
+    new THREE.MeshLambertMaterial({map:bottom,color:0xffffff,side:THREE.DoubleSide,transparent:true}),
+    new THREE.MeshLambertMaterial({map:torso,color:0xffffff,side:THREE.DoubleSide,transparent:true}),
+    new THREE.MeshLambertMaterial({map:torso,color:0xffffff,side:THREE.DoubleSide,transparent:true})
+  ];
 }
 
 function bodyClothingMaterials(texture, baseColor){
   const base = new THREE.MeshLambertMaterial({color: baseColor || '#1477b9'});
   if(!texture) return base;
   const front = new THREE.MeshLambertMaterial({map: texture, color: 0xffffff, side: THREE.DoubleSide, transparent: true});
-  // Three.js BoxGeometry has six material groups: right, left, top, bottom,
-  // front and back. The female torso uses ExtrudeGeometry, whose caps use
-  // material slot 2. Keep the same texture on every visible torso face so
-  // shirts cannot disappear on the new male/female body meshes.
   return [base, base, front, front, front, front];
 }
 
@@ -1829,11 +1859,7 @@ function customFaceTexture(item, headColor){
   img.onload = () => {
     ctx.clearRect(0,0,256,256);
     ctx.fillStyle = headColor || '#f5c928'; ctx.fillRect(0,0,256,256);
-    ctx.save();
-    ctx.translate(0,256);
-    ctx.scale(1,-1);
     ctx.drawImage(img,0,0,256,256);
-    ctx.restore();
     tex.needsUpdate = true;
   };
   img.onerror = () => { tex.needsUpdate = true; };
@@ -1872,7 +1898,7 @@ function buildAvatar3DModel(userData) {
   // Materiales con texturas 2D estilo Roblox (incluye ropa creada por la comunidad)
   const customShirtTex = customShirt ? customClothingTexture(customShirt) : null;
   const torsoTexture = customShirtTex || createShirtTexture(torsoCol, activeShirt);
-  const torsoMat = bodyClothingMaterials(torsoTexture, torsoCol);
+  const torsoMat = customShirtTex ? customShirtMaterials(customShirtTex, torsoCol) : bodyClothingMaterials(torsoTexture, torsoCol);
 
   const customPantsTex = customPants ? customClothingTexture(customPants) : null;
   const legsTexture = customPantsTex || createPantsTexture(legCol, activePants);
@@ -1961,13 +1987,6 @@ function buildAvatar3DModel(userData) {
     torsoMesh.name = "torso";
     torsoMesh.castShadow = true;
     torsoMesh.receiveShadow = true;
-  }
-
-  // Camisa 2D: la mostramos en una capa frontal independiente. Esto evita
-  // depender de los grupos de materiales de ExtrudeGeometry y funciona igual
-  // para el torso masculino y femenino.
-  if(activeShirt){
-    addShirtFrontOverlay(torsoMesh, torsoTexture, torsoType === 'female' ? 1.10 : 1.10, 1.30, 0.305);
   }
 
   // Cabeza encima del torso (torso top ~1.7)
@@ -2102,7 +2121,7 @@ function buildGamePlayerModel(userData) {
 
   const customShirtTex = customShirt ? customClothingTexture(customShirt) : null;
   const torsoTexture = customShirtTex || createShirtTexture(torsoCol, activeShirt);
-  const torsoMat = bodyClothingMaterials(torsoTexture, torsoCol);
+  const torsoMat = customShirtTex ? customShirtMaterials(customShirtTex, torsoCol) : bodyClothingMaterials(torsoTexture, torsoCol);
 
   const customPantsTex = customPants ? customClothingTexture(customPants) : null;
   const legsTexture = customPantsTex || createPantsTexture(legCol, activePants);
@@ -2166,12 +2185,6 @@ function buildGamePlayerModel(userData) {
   }
   torsoMesh.name = "torso";
   torsoMesh.position.set(0, 0.95, 0);
-
-  // Camisa 2D: capa frontal independiente para que las texturas de usuario
-  // y las camisas del catalogo sean visibles sobre el torso nuevo.
-  if (activeShirt) {
-    addShirtFrontOverlay(torsoMesh, torsoTexture, 1.10, 1.30, 0.305);
-  }
 
   // Same cube head in both models.
   const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.82, 0.82), headMaterials);
