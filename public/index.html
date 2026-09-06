@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <script src="https://pl31207091.profitableratecpmnetwork.com/22/d4/62/22d462968cc36dfeab56e1de785c2933.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>EpicBloxs</title>
@@ -524,8 +523,8 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 <section id="profile" class="page"><h1>Profile</h1><div class="profile-card" style="max-width:500px;margin:auto;"><div id="profileAvatar" class="profile-avatar" style="position:relative;left:auto;top:auto;margin:0 auto 15px;"></div><h2 id="profileName" style="text-align:center;">Player ✓</h2><p id="profileUsername" style="text-align:center;color:#777;">@Player</p><div class="bio-box" style="margin-top:12px;"><h3 style="margin-top:0;">Description</h3><p id="profileBio">No description available.</p></div><hr><p>Sunnys: <strong id="profileMoney">500</strong> ☀️</p><button class="section-button" onclick="logout()" style="width:100%;margin-top:10px;">Logout</button></div></section>
 
 <section id="create" class="page">
-  <h1>Create</h1>
-  <p>Disena ropa, caras, sombreros o fondos para tu perfil, y publicalos en el catalogo para que todos puedan usarlos.</p>
+  <h1>Create Clothing</h1>
+  <p>Disena tu camisa o pantalon pintando sobre la plantilla o subiendo una imagen, y publicalo en el catalogo para que todos lo usen.</p>
   <div style="margin-bottom:12px" class="moderation-badge">### Moderacion activa: nombres, descripciones y chat filtrados</div>
   <div class="creator-layout">
     <div class="creator-card">
@@ -558,7 +557,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
         <input id="creatorName" maxlength="40" placeholder="Name del objeto" style="width:100%;padding:9px;border:1px solid #bbb;border-radius:5px">
         <textarea id="creatorDescription" maxlength="200" rows="3" placeholder="Descripcion" style="width:100%;margin-top:8px;padding:9px;border:1px solid #bbb;border-radius:5px;resize:vertical"></textarea>
         <div class="creator-tools">
-          <select id="creatorCategory" style="padding:8px;border:1px solid #bbb;border-radius:5px" onchange="creatorSetMode(this.value==='hats'?'3d':this.value==='faces'?'face':this.value==='backgrounds'?'backgrounds':'2d')"><option value="shirts">Camisa</option><option value="pants">Pantalon</option><option value="faces">Cara</option><option value="hats">Sombrero</option><option value="backgrounds">Fondo de perfil</option></select>
+          <select id="creatorCategory" style="padding:8px;border:1px solid #bbb;border-radius:5px" onchange="creatorSetMode(this.value==='hats'?'3d':this.value==='faces'?'face':'2d')"><option value="shirts">Camisa</option><option value="pants">Pantalon</option><option value="faces">Cara</option><option value="hats">Sombrero</option></select>
           <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #bbb;border-radius:5px;background:#fff;">Price
             <input id="creatorPrice" type="number" min="0" max="1000000" step="1" value="0" inputmode="numeric" style="width:110px;padding:7px;border:1px solid #bbb;border-radius:5px">
             <span>Sunnys</span>
@@ -832,7 +831,6 @@ let creator2dCtx = null, creatorDrawing = false, creatorLastX = 0, creatorLastY 
 let creatorOrbit={drag:false,lastX:0,lastY:0,yaw:0,pitch:0.18,distance:6.3}, creatorTransformTool='move', creatorRaycaster=null, creatorPointer=new THREE.Vector2(), creatorPointerDown=null, creatorTransformDrag=false, creatorSelectionOutline=null;
 
 function creatorSetMode(mode='2d'){
-  const isBackground = mode === 'backgrounds';
   creatorMode = mode === '3d' ? '3d' : '2d';
   const panel = document.getElementById('creator2dPanel');
   if(panel) panel.style.display = creatorMode === '3d' ? 'none' : '';
@@ -841,7 +839,7 @@ function creatorSetMode(mode='2d'){
   ['creatorTab2d','creatorTabFace','creatorTab3d'].forEach(id => document.getElementById(id)?.classList.remove('active'));
   document.getElementById(creatorMode === '3d' ? 'creatorTab3d' : (mode === 'face' ? 'creatorTabFace' : 'creatorTab2d'))?.classList.add('active');
   const category = document.getElementById('creatorCategory');
-  if(category) category.value = creatorMode === '3d' ? 'hats' : (mode === 'face' ? 'faces' : (isBackground ? 'backgrounds' : 'shirts'));
+  if(category) category.value = creatorMode === '3d' ? 'hats' : (mode === 'face' ? 'faces' : 'shirts');
   creatorInitViewer();
 }
 
@@ -955,7 +953,6 @@ function creatorAddClothingPreview(){
     const faceCanvas=document.getElementById('creator2dCanvas');
     if(faceCanvas){
       previewFaceTex=new THREE.CanvasTexture(faceCanvas);
-      previewFaceTex.flipY=false;
       previewFaceTex.colorSpace=THREE.SRGBColorSpace;
       previewFaceTex.needsUpdate=true;
     }
@@ -1204,8 +1201,8 @@ function createFaceTexture(headColor, faceName) {
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
 
-  // Classic Smile: dibuja cara procedural YA (para perfiles/retratos) y luego
-  // intenta superponer el PNG personalizado si carga.
+  // Classic Smile is the default face. It is intentionally procedural so
+  // the default avatar does not use any custom/community face image.
   if (faceName === 'Classic Smile' || !faceName) {
     ctx.fillStyle = '#111111';
     ctx.beginPath();
@@ -1219,16 +1216,6 @@ function createFaceTexture(headColor, faceName) {
     ctx.arc(128, 120, 45, 0.15 * Math.PI, 0.85 * Math.PI);
     ctx.stroke();
     texture.needsUpdate = true;
-
-    const customFace = new Image();
-    customFace.onload = () => {
-      ctx.clearRect(0, 0, 256, 256);
-      ctx.fillStyle = headColor || '#f5c928';
-      ctx.fillRect(0, 0, 256, 256);
-      ctx.drawImage(customFace, 0, 0, 256, 256);
-      texture.needsUpdate = true;
-    };
-    customFace.src = 'assets/epicbloxs_face.png';
     return texture;
   }
 
@@ -1755,8 +1742,12 @@ function customClothingTexture(item){
 function bodyClothingMaterials(texture, baseColor){
   const base = new THREE.MeshLambertMaterial({color: baseColor || '#1477b9'});
   if(!texture) return base;
-  const front = new THREE.MeshLambertMaterial({map: texture, color: 0xffffff});
-  return [base, base, base, base, front, front];
+  const front = new THREE.MeshLambertMaterial({map: texture, color: 0xffffff, side: THREE.DoubleSide, transparent: true});
+  // BoxGeometry uses six material slots (front/back/left/right/top/bottom),
+  // while the new ExtrudeGeometry uses slot 0 for sides, 1 for bevels and
+  // 2 for the front/back caps.  Use a 3-slot array so shirts also render on
+  // the new extruded torso instead of falling back to the plain body color.
+  return [base, base, front];
 }
 
 function splitLegTexture(texture, side){
@@ -1792,7 +1783,6 @@ function catalogFaceTexture(item, headColor){
   ctx.fillStyle = headColor || '#f5c928';
   ctx.fillRect(0,0,256,256);
   const tex = new THREE.CanvasTexture(canvas);
-  tex.flipY = false;
   if(THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
   const img = new Image();
   img.onload = () => {
@@ -1814,7 +1804,6 @@ function customFaceTexture(item, headColor){
   ctx.fillStyle = headColor || '#f5c928';
   ctx.fillRect(0,0,256,256);
   const tex = new THREE.CanvasTexture(canvas);
-  tex.flipY = false;
   if(THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
   const img = new Image();
   img.onload = () => {
@@ -2385,7 +2374,7 @@ function updateGameSunShadowFollow() {
   gameSun.shadow.camera.updateMatrixWorld();
 }
 
-function launchWebClient(gameName) {
+async function launchWebClient(gameName) {
   const launchNonce = ++gameLaunchNonce;
   currentGameType = gameName;
   document.body.classList.add('in-game');
@@ -2429,6 +2418,12 @@ function launchWebClient(gameName) {
 
   setTimeout(() => { document.getElementById('clientBarFill').style.width = '100%'; }, 100);
   setTimeout(() => {
+    if (launchNonce !== gameLaunchNonce || !document.body.classList.contains('in-game')) return;
+    // Antes de construir el mundo, aseguramos que el catalogo de la comunidad
+    // este cargado. La ropa/pantalones 2D creados por usuarios viven ahi; si
+    // entrabamos demasiado rapido al juego, el avatar solo conocia el ID y
+    // terminaba usando el cuerpo sin la textura equipada.
+    try { await loadCustomCatalog(); } catch (e) {}
     if (launchNonce !== gameLaunchNonce || !document.body.classList.contains('in-game')) return;
     document.getElementById('clientLoading').style.display = 'none';
     document.getElementById('clientGameplay').style.display = 'block';
@@ -4116,7 +4111,10 @@ function getAvatarSnapshot() {
     colors: a.colors || {
       head:"#f5c928", arms:"#f5c928", torso:"#1477b9", legs:"#8cae45"
     },
-    accessories: a.accessories || []
+    // El servidor conserva el tipo de torso para que el personaje del juego
+    // use exactamente el mismo cuerpo que el Avatar/Perfil.
+    torsoType: a.torsoType === "female" ? "female" : "male",
+    accessories: Array.isArray(a.accessories) ? a.accessories.slice() : []
   };
 }
 
@@ -5181,13 +5179,11 @@ function getProfileBackgroundItem(userData){
 }
 function profileBackgroundCSS(userData){
   const item = getProfileBackgroundItem(userData);
-  const image = item && (item.image || (item.data && item.data.imageData));
-  return image ? `url("${image}")` : '';
+  return item && item.image ? `url("${item.image}")` : '';
 }
 function applyProfileBackground(userData){
   const item = getProfileBackgroundItem(userData);
-  const image = item && (item.image || (item.data && item.data.imageData));
-  const bg = image ? `url("${image}")` : 'linear-gradient(180deg,#bde7ff 0%,#bde7ff 65%,#7bb957 65%)';
+  const bg = item && item.image ? `url("${item.image}")` : 'linear-gradient(180deg,#bde7ff 0%,#bde7ff 65%,#7bb957 65%)';
   ['homeAvatar','profileAvatar','friendProfileAvatar'].forEach(id => {
     const el = document.getElementById(id);
     if(el){
@@ -5896,7 +5892,7 @@ function catalogIconSVG(item) {
   if(item.id === 'Shoulder Bunny') return `<svg ${common}><ellipse cx="48" cy="54" rx="25" ry="24" fill="#F5F5F5" stroke="#777" stroke-width="4"/><ellipse cx="35" cy="24" rx="8" ry="18" fill="#F5F5F5" stroke="#777" stroke-width="4"/><ellipse cx="61" cy="24" rx="8" ry="18" fill="#F5F5F5" stroke="#777" stroke-width="4"/><circle cx="40" cy="51" r="3" fill="#222"/><circle cx="56" cy="51" r="3" fill="#222"/><circle cx="48" cy="59" r="4" fill="#F48FB1"/></svg>`;
   if(item.id === 'Golden Headphones') return `<svg ${common}><path d="M25 52V43C25 15 71 15 71 43V52" stroke="#D4AF37" stroke-width="8" fill="none"/><rect x="18" y="45" width="15" height="25" rx="7" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><rect x="63" y="45" width="15" height="25" rx="7" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><path d="M33 58H63" stroke="#D4AF37" stroke-width="4"/></svg>`;
   if(item.category === 'backgrounds') {
-    const src = item.image || (item.data && item.data.imageData) || '/assets/profile-backgrounds/purple-galaxy.svg';
+    const src = item.image || '/assets/profile-backgrounds/purple-galaxy.svg';
     return `<img src="${escapeHTML(src)}" alt="Fondo de perfil" style="width:100%;height:100%;object-fit:cover;border-radius:12px;display:block">`;
   }
   if(item.custom && item.type === '2d' && item.data && item.data.imageData) return `<img src=\"${item.data.imageData}\" style=\"max-width:100%;max-height:150px;object-fit:contain\" alt=\"Ropa 2D\">`;
@@ -6009,7 +6005,6 @@ function updateAccessoryButtons(u){
   if(!accContainer) return;
   const inv = Array.isArray(u && u.avatarInventory) ? u.avatarInventory.map(String) : [];
   const equipped = Array.isArray(u && u.avatar && u.avatar.accessories) ? u.avatar.accessories.map(String) : [];
-  if(u && u.avatar && u.avatar.profileBackground) equipped.push(String(u.avatar.profileBackground));
   const itemForId = id => catalogDatabase.find(item => String(item.id).toLowerCase() === String(id).toLowerCase());
   const items = inv.map(id => itemForId(id) || {id, name:id, desc:'Objeto del avatar', category:'item'});
 
@@ -6087,8 +6082,7 @@ function loadInventory(){
   if(!c){ inventoryGrid.innerHTML=""; return; }
   const inv = Array.isArray(c.user.avatarInventory) ? c.user.avatarInventory : [];
   const itemForId = id => catalogDatabase.find(it => String(it.id).toLowerCase() === String(id).toLowerCase());
-  const equipped = (c.user.avatar && Array.isArray(c.user.avatar.accessories)) ? c.user.avatar.accessories.slice() : [];
-  if(c.user.avatar && c.user.avatar.profileBackground) equipped.push(String(c.user.avatar.profileBackground));
+  const equipped = (c.user.avatar && Array.isArray(c.user.avatar.accessories)) ? c.user.avatar.accessories : [];
   let html = "";
   if(!inv.length){
     html = `<div class="settings-card" style="grid-column:1/-1;text-align:center;color:#777">Todavía no tienes ropa ni accesorios. Visita el Catálogo.</div>`;
