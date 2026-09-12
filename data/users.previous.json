@@ -77,35 +77,5 @@
     "gameInventory": [],
     "banUntil": 0,
     "banReason": ""
-  },
-  "testuserabc": {
-    "username": "TestUserABC",
-    "userId": 1003,
-    "passwordHash": "b46d75ff3cc1af38f49422835351bdfe74558833ea1cdfcc1968574a4258fef7",
-    "sunnys": 500,
-    "bio": "Insert Bio.",
-    "theme": "light",
-    "avatar": {
-      "accessories": [],
-      "torsoType": "male",
-      "colors": {
-        "head": "#f5c928",
-        "arms": "#f5c928",
-        "torso": "#1477b9",
-        "legs": "#8cae45"
-      }
-    },
-    "avatarInventory": [],
-    "gameInventory": [],
-    "inventory": [],
-    "loginStreak": 0,
-    "lastStreakClaim": "",
-    "friends": [],
-    "friendRequests": [],
-    "outgoingRequests": [],
-    "lastDailyLogin": "",
-    "banUntil": 0,
-    "banReason": "",
-    "createdAt": "2026-09-08T19:20:35.516Z"
   }
 }
