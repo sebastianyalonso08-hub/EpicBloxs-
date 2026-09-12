@@ -1,5 +1,5 @@
 {
-  "Epicbloxs": {
+  "EpicBloxs": {
     "username": "EpicBloxs",
     "passwordHash": "ca7afd6a5b83ee0bc412d15c060f8388fa35e192e7d9086fa8bb4ebe88695166",
     "sunnys": 676767,
@@ -19,93 +19,15 @@
       }
     },
     "inventory": [
-      "Classic Smile",
-      "Blue Shirt",
-      "Classic Jeans",
-      "Classic Shades"
-    ],
-    "friends": [],
-    "friendRequests": [],
-    "outgoingRequests": [],
-    "lastDailyLogin": "Tue Aug 18 2026",
-    "createdAt": "2026-08-18T23:20:23.848Z",
-    "userId": 1002,
-    "avatarInventory": [
-      "Classic Smile",
-      "Blue Shirt",
-      "Classic Jeans",
-      "Classic Shades"
-    ],
-    "gameInventory": [],
-    "banUntil": 0,
-    "banReason": ""
-  },
-  "sebuser": {
-    "username": "SebUser",
-    "passwordHash": "ca7afd6a5b83ee0bc412d15c060f8388fa35e192e7d9086fa8bb4ebe88695166",
-    "sunnys": 600,
-    "bio": "Insert Bio.",
-    "avatar": {
-      "accessories": [
         "Classic Smile",
         "Blue Shirt",
-        "Classic Jeans"
-      ],
-      "colors": {
-        "head": "#f5c928",
-        "arms": "#f5c928",
-        "torso": "#1477b9",
-        "legs": "#8cae45"
-      }
-    },
-    "inventory": [
-      "Classic Smile",
-      "Blue Shirt",
-      "Classic Jeans"
+        "Classic Jeans",
+        "Classic Shades"
     ],
     "friends": [],
     "friendRequests": [],
     "outgoingRequests": [],
     "lastDailyLogin": "Tue Aug 18 2026",
-    "createdAt": "2026-08-18T23:20:23.848Z",
-    "userId": 1001,
-    "avatarInventory": [
-      "Classic Smile",
-      "Blue Shirt",
-      "Classic Jeans"
-    ],
-    "gameInventory": [],
-    "banUntil": 0,
-    "banReason": ""
-  },
-  "testuserabc": {
-    "username": "TestUserABC",
-    "userId": 1003,
-    "passwordHash": "b46d75ff3cc1af38f49422835351bdfe74558833ea1cdfcc1968574a4258fef7",
-    "sunnys": 500,
-    "bio": "Insert Bio.",
-    "theme": "light",
-    "avatar": {
-      "accessories": [],
-      "torsoType": "male",
-      "colors": {
-        "head": "#f5c928",
-        "arms": "#f5c928",
-        "torso": "#1477b9",
-        "legs": "#8cae45"
-      }
-    },
-    "avatarInventory": [],
-    "gameInventory": [],
-    "inventory": [],
-    "loginStreak": 0,
-    "lastStreakClaim": "",
-    "friends": [],
-    "friendRequests": [],
-    "outgoingRequests": [],
-    "lastDailyLogin": "",
-    "banUntil": 0,
-    "banReason": "",
-    "createdAt": "2026-09-08T19:20:35.516Z"
+    "createdAt": "2026-08-18T23:20:23.848Z"
   }
 }
