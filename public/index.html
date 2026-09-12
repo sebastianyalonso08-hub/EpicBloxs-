@@ -106,7 +106,25 @@ body.in-game #webClient.page.active { display: block !important; padding: 0 !imp
 body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display: none !important; }
 
 .client-container { width: 100%; height: 100%; max-width: none; background: #000; margin: 0; border: none; border-radius: 0; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; color: #fff; }
-.client-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(180deg,#0a1628,#1a1a2e); position: absolute; z-index: 10; }
+/* Pantalla de carga estilo cliente: icono del juego arriba + logo EpicBloxs animado en la esquina */
+.client-loading { display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%; background:radial-gradient(circle at 50% 38%,rgba(48,48,48,.98) 0,rgba(38,38,38,.99) 48%,#242424 100%); position:absolute; z-index:10; overflow:hidden; color:#fff; }
+.client-loading::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 50% 42%,rgba(31,132,232,.10),transparent 34%),linear-gradient(180deg,rgba(255,255,255,.025),transparent 26%,rgba(0,0,0,.16)); pointer-events:none; }
+.client-loading-game-wrap { position:relative; z-index:2; width:128px; height:128px; margin-bottom:16px; display:flex; align-items:center; justify-content:center; }
+.client-loading-game-icon { width:128px; height:128px; object-fit:cover; border-radius:8px; display:block; box-shadow:0 10px 28px rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.12); }
+.client-loading-logo-wrap { position:absolute; right:28px; bottom:28px; width:46px; height:72px; display:flex; align-items:center; justify-content:center; perspective:900px; z-index:3; }
+.client-loading-logo-wrap::before { content:""; position:absolute; inset:-6px; border-radius:10px; border:1px solid rgba(255,255,255,.10); box-shadow:0 0 18px rgba(0,0,0,.22); animation:epicLoadingFrameSpin 3.2s linear infinite; transform-origin:center; }
+.client-loading-logo { width:38px; height:58px; object-fit:contain; border-radius:7px; display:block; box-shadow:0 7px 18px rgba(0,0,0,.42); transform-style:preserve-3d; animation:epicLoadingSpin 3.2s linear infinite; backface-visibility:visible; }
+@keyframes epicLoadingSpin { 0%{transform:rotateZ(0deg)} 100%{transform:rotateZ(360deg)} }
+@keyframes epicLoadingFrameSpin { 0%{transform:rotateZ(0deg)} 100%{transform:rotateZ(360deg)} }
+@media(max-width:520px){ .client-loading-game-wrap{width:108px;height:108px}.client-loading-game-icon{width:108px;height:108px}.client-loading-logo-wrap{right:18px;bottom:18px} }
+.client-loading-title { position:relative; z-index:1; margin:0; font-size:24px; font-weight:800; letter-spacing:.4px; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.45); }
+.client-loading-subtitle { position:relative; z-index:1; margin:5px 0 0; color:#cfcfcf; font-size:13px; }
+.client-loading-status { position:relative; z-index:1; margin-top:10px; color:#9fd8ff; font-size:11px; min-height:16px; text-align:center; }
+.client-loading-spinner { position:relative; z-index:1; width:30px; height:30px; margin-top:14px; border-radius:50%; border:3px solid rgba(255,255,255,.16); border-top-color:#4bb6ff; animation:epicLoadingSpinner .9s linear infinite; }
+@keyframes epicLoadingSpinner { to { transform:rotate(360deg); } }
+.client-loading .client-bar-bg { position:relative; z-index:1; width:min(300px,76vw); height:8px; background:rgba(255,255,255,.12); margin-top:15px; border-radius:99px; overflow:hidden; border:1px solid rgba(255,255,255,.12); box-shadow:inset 0 1px 4px rgba(0,0,0,.28); }
+.client-loading .client-bar-fill { width:0%; height:100%; background:linear-gradient(90deg,#37a8ff,#78d0ff); transition:width .45s ease; box-shadow:0 0 12px rgba(55,168,255,.45); }
+@media (prefers-reduced-motion: reduce) { .client-loading-logo, .client-loading-logo-wrap::before { animation:none; } .client-loading-spinner { animation:none; } }
 .client-bar-bg { width: min(280px,80vw); height: 12px; background: #444; margin-top: 15px; border-radius: 6px; overflow: hidden; border: 1px solid #666; }
 .client-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg,#ffcc00,#ff8800); transition: width 1s ease-in-out; }
 .client-gameplay { display: none; width: 100%; height: 100%; position: relative; overflow: hidden; }
@@ -262,6 +280,33 @@ body{background:radial-gradient(circle at 15% 0%,#30205b 0,#171329 35%,#0e0b1b 8
 .chat-window{background:#151126!important}.chat-body,.dm-list{background:#100e1e!important}.chat-msg,.dm-row,.dm-msg.them{background:#211a36!important;color:#eee!important}.chat-input-row{background:#151126!important}.chat-window{width:300px;height:340px;min-width:240px;min-height:260px;max-width:92vw;max-height:70vh;resize:both}
 input,textarea,select{background:#111020!important;color:#f4f0ff!important;border-color:#4b3a76!important}.auth-box{background:linear-gradient(145deg,#221b3a,#120e22)!important;color:#f4f0ff!important}.auth-info{background:#1a162d!important;color:#b9afd4!important}
 
+
+/* Custom profile backgrounds: keep them visible in Friends / Add Friends too. */
+#friends, #friendProfile, #profile{background-repeat:no-repeat!important;background-size:cover!important;background-position:center!important;background-attachment:fixed!important;}
+#friends .friends-actions, #friends .settings-card, #friends .friend-card, #friendProfile .profile-card, #friendProfile .bio-box, #profile .profile-card{background:rgba(18,15,34,.78)!important;border-color:rgba(155,92,255,.45)!important;color:#f4f0ff!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+#friends #friendsPageTitle, #friends .section-header h2, #friends h1, #friends h3, #friendProfile h2, #friendProfile p, #profile h1, #profile h2{color:#f4f0ff!important;text-shadow:0 1px 3px rgba(0,0,0,.55);}
+#friends .creator-small, #friendProfile .creator-small{color:#ddd4f5!important;}
+#friends #friendsListGrid>p{color:#f4f0ff!important;background:rgba(18,15,34,.72);padding:10px 12px;border-radius:8px;}
+/* Friends / Add Friends: remove the opaque white avatar canvases. */
+#friends .friend-avatar,
+#friends .friend-card-avatar,
+#friends .friends-box,
+#friends .friends-actions,
+#friends #userSearchResults .settings-card,
+#friends #incomingRequestsBox .settings-card,
+#friends #outgoingRequestsBox .settings-card,
+#friendProfile .profile-avatar-large,
+#profile .profile-avatar{
+  background:linear-gradient(145deg,rgba(43,33,73,.86),rgba(15,12,28,.78))!important;
+  border-color:rgba(155,92,255,.34)!important;
+}
+#friends .friend-avatar, #friends .friend-card-avatar, #friendProfile .profile-avatar-large{
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.035),inset 0 -16px 30px rgba(0,0,0,.16)!important;
+}
+#friends .friend-avatar img, #friends .friend-card-avatar img,
+#friendProfile .profile-avatar-large img, #profile .profile-avatar img{
+  background:transparent!important;
+}
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -279,14 +324,14 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
     <form id="loginForm" class="auth-form active" onsubmit="login(event)">
       <label>Username</label><input id="loginUsername" required>
       <label>Password</label><input id="loginPassword" type="password" required>
-      <button class="auth-button">Login</button>
+      <button type="submit" class="auth-button">Login</button>
       <div id="loginMessage" class="auth-message"></div>
     </form>
     <form id="registerForm" class="auth-form" onsubmit="register(event)">
       <label>Username</label><input id="registerUsername" minlength="3" maxlength="20" required>
       <label>Password</label><input id="registerPassword" type="password" minlength="6" required>
       <label>Confirm Password</label><input id="registerConfirmPassword" type="password" minlength="6" required>
-      <button class="auth-button">Create Account</button>
+      <button type="submit" class="auth-button">Create Account</button>
       <div id="registerMessage" class="auth-message"></div>
     </form>
     <div class="auth-info">Crea tu cuenta e inicia sesion. Usa la web desde tu URL de Render.</div>
@@ -349,8 +394,16 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
   
   <div class="client-container">
     <div id="clientLoading" class="client-loading">
-      <h2 style="color:#ffcc00; margin:0;">Loading Launcher...</h2>
-      <p style="color:#aaa; font-size:13px;">Loading textures and character...</p>
+      <div class="client-loading-game-wrap" aria-label="Icono del juego">
+        <img id="clientLoadingGameIcon" class="client-loading-game-icon" src="/assets/games/default-game.svg" alt="Juego">
+      </div>
+      <div class="client-loading-logo-wrap" aria-label="EpicBloxs">
+        <img class="client-loading-logo" src="/assets/favicon.png" alt="EpicBloxs">
+      </div>
+      <h2 class="client-loading-title">EpicBloxs</h2>
+      <p class="client-loading-subtitle">Preparando el juego...</p>
+      <div id="clientLoadingStatus" class="client-loading-status">Cargando mundo y personaje...</div>
+      <div class="client-loading-spinner" aria-hidden="true"></div>
       <div class="client-bar-bg">
         <div id="clientBarFill" class="client-bar-fill"></div>
       </div>
@@ -2452,6 +2505,8 @@ async function launchWebClient(gameName) {
   showPage('webClient');
   document.getElementById('clientGameTitle').textContent = `Jugando: ${gameName}`;
   document.getElementById('activeGameHeader').textContent = gameName;
+  const loadingGameIcon = document.getElementById('clientLoadingGameIcon');
+  if (loadingGameIcon) { loadingGameIcon.src = getGameIcon(gameName); loadingGameIcon.alt = gameName; }
   const hint=document.getElementById('gameHint');
   if(hint){
     const n=gameName.trim();
@@ -4990,63 +5045,77 @@ async function runNewAccountBot(username){
 
 async function register(e){
   e.preventDefault();
+  const form = document.getElementById("registerForm");
+  const button = form ? form.querySelector("button[type='submit'], .auth-button") : null;
   const regMsg = document.getElementById("registerMessage");
+  if (form && form.dataset.busy === "1") return;
+  if (form) form.dataset.busy = "1";
+
   const username = document.getElementById("registerUsername").value.trim();
   const password = document.getElementById("registerPassword").value;
   const confirm = document.getElementById("registerConfirmPassword").value;
-  if (username.length < 3) return msg(regMsg, "Minimo 3 caracteres en el usuario.", "error");
-  if (password.length < 6) return msg(regMsg, "Minimo 6 caracteres en la contraseña.", "error");
-  if (password !== confirm) return msg(regMsg, "Las contraseñas no coinciden.", "error");
 
-  // Si habia una sesion vieja de otra cuenta, no debe contaminar el registro nuevo.
-  if (!String(getToken() || "").startsWith("pending_")) setToken("");
+  if (username.length < 3) { if(form) form.dataset.busy="0"; return msg(regMsg, "Minimo 3 caracteres en el usuario.", "error"); }
+  if (password.length < 6) { if(form) form.dataset.busy="0"; return msg(regMsg, "Minimo 6 caracteres en la contraseña.", "error"); }
+  if (password !== confirm) { if(form) form.dataset.busy="0"; return msg(regMsg, "Las contraseñas no coinciden.", "error"); }
 
-  // Registro inmediato local, como en la version que funcionaba:
-  // el jugador entra sin esperar a que Render despierte.
-  const key = username.toLowerCase();
-  const tempUser = {
-    id: key,
-    username: username,
-    sunnys: 500,
-    bio: "Insert Bio.",
-    theme: "light",
-    avatar: {
-      accessories: [],
-      torsoType: "male",
-      colors: { head: "#f5c928", arms: "#f5c928", torso: "#1477b9", legs: "#8cae45" }
-    },
-    avatarInventory: [],
-    gameInventory: [],
-    inventory: [],
-    friends: [],
-    friendRequests: [],
-    outgoingRequests: [],
-    loginStreak: 0,
-    lastStreakClaim: "",
-    createdAt: new Date().toISOString()
-  };
+  if(button){ button.disabled=true; button.textContent="Creando..."; }
+  // Nunca usamos una sesion anterior al registrar una cuenta nueva.
+  setToken("");
 
-  setToken("pending_" + key);
-  setCachedUser(tempUser);
+  msg(regMsg, "Creando cuenta...", "success");
   try {
-    sessionStorage.setItem("eb_pending_pw", password);
-    sessionStorage.setItem("eb_pending_user", username);
-  } catch(e) {}
+    const data = await api("/api/register", {
+      method: "POST",
+      body: JSON.stringify({ username, password })
+    }, 4);
+    if (!data || !data.token || !data.user) throw new Error("Respuesta de registro invalida.");
 
-  msg(regMsg, "Cuenta creada. Guardandola en el servidor...", "success");
+    setToken(data.token);
+    setCachedUser(data.user);
+    if (data.recoveryToken) setRecoveryToken(data.recoveryToken);
+    try {
+      sessionStorage.removeItem("eb_pending_pw");
+      sessionStorage.removeItem("eb_pending_user");
+    } catch(e) {}
 
-  // Entrar automaticamente sin esperar al servidor.
-  setTimeout(() => {
+    msg(regMsg, "Cuenta creada correctamente.", "success");
     loadCurrentUser();
-    setTimeout(() => runNewAccountBot(username), 400);
-  }, 50);
-
-  // Registro global en segundo plano. Si Render esta dormido, reintenta.
-  syncRegisterGlobal(username, password);
+    setTimeout(() => { try { runNewAccountBot(username); } catch(e) {} }, 250);
+  } catch(err) {
+    // Solo mantenemos la cuenta temporal si el problema es que Render esta dormido
+    // o hubo un fallo de red. Los errores 4xx del servidor se muestran al usuario.
+    const text = String(err && err.message || "");
+    const transient = !/usuario minimo|ese nombre|contrasena minimo|ya existe|400|401|403|409/i.test(text);
+    if (transient) {
+      const key = username.toLowerCase();
+      const tempUser = {
+        id:key, username, sunnys:500, bio:"Insert Bio.", theme:"light",
+        avatar:{accessories:[],torsoType:"male",colors:{head:"#f5c928",arms:"#f5c928",torso:"#1477b9",legs:"#8cae45"}},
+        avatarInventory:[], gameInventory:[], inventory:[], friends:[], friendRequests:[], outgoingRequests:[],
+        loginStreak:0,lastStreakClaim:"",createdAt:new Date().toISOString()
+      };
+      setToken("pending_" + key);
+      setCachedUser(tempUser);
+      try {
+        sessionStorage.setItem("eb_pending_pw", password);
+        sessionStorage.setItem("eb_pending_user", username);
+      } catch(e) {}
+      msg(regMsg, "Servidor despertando. Tu cuenta se guardara automaticamente en cuanto responda...", "success");
+      loadCurrentUser();
+      setTimeout(() => { try { syncRegisterGlobal(username, password); } catch(e) {} }, 100);
+    } else {
+      msg(regMsg, text || "No se pudo crear la cuenta.", "error");
+      setToken("");
+      setCachedUser(null);
+    }
+  } finally {
+    if(button){ button.disabled=false; button.textContent="Create Account"; }
+    if(form) form.dataset.busy="0";
+  }
 }
 
 function syncRegisterGlobal(username, password) {
-  const key = String(username || "").toLowerCase();
   api("/api/register", {
     method: "POST",
     body: JSON.stringify({ username, password })
@@ -5060,51 +5129,30 @@ function syncRegisterGlobal(username, password) {
         sessionStorage.removeItem("eb_pending_pw");
         sessionStorage.removeItem("eb_pending_user");
       } catch(e) {}
-      try { updateUI(data.user); } catch(e) {}
-      try { updateAdminFab(data.user); } catch(e) {}
-      try { loadCurrentUser(); } catch(e) {}
+      loadCurrentUser();
     })
     .catch(err => {
-      // Si el usuario ya existe porque el registro termino antes de una
-      // actualizacion/refresco, no dejamos la cuenta atrapada en pending_:
-      // iniciamos sesion automaticamente con las credenciales que acabamos
-      // de introducir.
+      // Si la cuenta se creo en un intento anterior, inicia sesion con la misma clave.
       if (err && /ya existe/i.test(String(err.message || ""))) {
-        api("/api/login", {
-          method: "POST",
-          body: JSON.stringify({ username, password })
-        }, 4).then(data => {
-          setToken(data.token);
-          setCachedUser(data.user);
-          if (data.recoveryToken) setRecoveryToken(data.recoveryToken);
-          try { sessionStorage.removeItem("eb_pending_pw"); sessionStorage.removeItem("eb_pending_user"); } catch(e) {}
-          try { loadCurrentUser(); } catch(e) {}
-        }).catch(() => {
-          setTimeout(() => {
-            const u = sessionStorage.getItem("eb_pending_user");
-            const p = sessionStorage.getItem("eb_pending_pw");
-            if (u && p) syncRegisterGlobal(u, p);
-          }, 5000);
-        });
+        api("/api/login", { method:"POST", body:JSON.stringify({username,password}) }, 4)
+          .then(data => {
+            setToken(data.token);
+            setCachedUser(data.user);
+            if (data.recoveryToken) setRecoveryToken(data.recoveryToken);
+            try { sessionStorage.removeItem("eb_pending_pw"); sessionStorage.removeItem("eb_pending_user"); } catch(e) {}
+            loadCurrentUser();
+          })
+          .catch(() => setTimeout(() => syncRegisterGlobal(username,password), 5000));
         return;
       }
-
-      // No se pierde la cuenta local. Se vuelve a intentar hasta que Render
-      // despierte y el servidor acepte el registro.
       setTimeout(() => {
         try {
-          const u = sessionStorage.getItem("eb_pending_user");
-          const p = sessionStorage.getItem("eb_pending_pw");
-          if (u && p && String(getToken() || "").toLowerCase() === "pending_" + u.toLowerCase()) {
-            syncRegisterGlobal(u, p);
-          } else if (u && p && String(getToken() || "").startsWith("pending_")) {
-            syncRegisterGlobal(u, p);
-          }
+          const u=sessionStorage.getItem("eb_pending_user"), p=sessionStorage.getItem("eb_pending_pw");
+          if(u && p && String(getToken()||"").toLowerCase()==="pending_"+u.toLowerCase()) syncRegisterGlobal(u,p);
         } catch(e) {}
       }, 5000);
     });
 }
-
 function login(e){
   e.preventDefault();
   const loginMsg = document.getElementById("loginMessage");
@@ -5271,10 +5319,21 @@ function applyProfileBackground(userData){
   }
   const home = document.querySelector('#home .profile-header');
   if(home) home.style.setProperty('background','linear-gradient(135deg,#31265b,#1a1730)','important');
+
+  // Mantener el fondo personalizado visible tambien en las paginas de Amigos
+  // y en los perfiles, sin reemplazar el contenido ni los controles.
+  ['#profile','#friends','#friendProfile'].forEach(sel => {
+    const page = document.querySelector(sel);
+    if(!page) return;
+    page.style.setProperty('background', bg, 'important');
+    page.style.backgroundSize = 'cover';
+    page.style.backgroundPosition = 'center';
+    page.style.backgroundAttachment = 'fixed';
+  });
   const own = document.querySelector('#profile .profile-card');
-  if(own) own.style.removeProperty('background');
+  if(own) own.style.setProperty('background','rgba(18,15,34,.78)','important');
   const friend = document.querySelector('#friendProfile .profile-card');
-  if(friend) friend.style.removeProperty('background');
+  if(friend) friend.style.setProperty('background','rgba(18,15,34,.78)','important');
 }
 
 function updateUI(u){
