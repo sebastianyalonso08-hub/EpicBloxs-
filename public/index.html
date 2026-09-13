@@ -1843,6 +1843,94 @@ function loadDataImageTexture(dataUrl, key, flipY=false){
   _customClothingTexCache[key]=tex;
   return tex;
 }
+// Roblox-style classic clothing UV layout. Custom 2D clothes are stored as a
+// PNG, so the game must sample the individual panels instead of putting the
+// whole template on one face of the new rig. The editor may use 512x512 while
+// published classic templates can be 585x559; coordinates are normalized below.
+const CLASSIC_CLOTHING_REGIONS = {
+  torso: {
+    top:    {x:231/585,y:8/559,w:128/585,h:64/559},
+    right:  {x:361/585,y:74/559,w:64/585,h:128/559},
+    front:  {x:231/585,y:74/559,w:128/585,h:128/559},
+    left:   {x:165/585,y:74/559,w:64/585,h:128/559},
+    back:   {x:427/585,y:74/559,w:128/585,h:128/559},
+    bottom: {x:231/585,y:204/559,w:128/585,h:64/559}
+  },
+  rightArm: {
+    top:    {x:217/585,y:289/559,w:64/585,h:64/559},
+    left:   {x:19/585,y:355/559,w:64/585,h:128/559},
+    back:   {x:85/585,y:355/559,w:64/585,h:128/559},
+    right:  {x:151/585,y:355/559,w:64/585,h:128/559},
+    front:  {x:217/585,y:355/559,w:64/585,h:128/559},
+    bottom: {x:217/585,y:485/559,w:64/585,h:64/559}
+  },
+  leftArm: {
+    top:    {x:308/585,y:289/559,w:64/585,h:64/559},
+    front:  {x:308/585,y:355/559,w:64/585,h:128/559},
+    left:   {x:374/585,y:355/559,w:64/585,h:128/559},
+    back:   {x:440/585,y:355/559,w:64/585,h:128/559},
+    right:  {x:506/585,y:355/559,w:64/585,h:128/559},
+    bottom: {x:308/585,y:485/559,w:64/585,h:64/559}
+  },
+  rightLeg: {
+    top:    {x:217/585,y:289/559,w:64/585,h:64/559},
+    left:   {x:19/585,y:355/559,w:64/585,h:128/559},
+    back:   {x:85/585,y:355/559,w:64/585,h:128/559},
+    right:  {x:151/585,y:355/559,w:64/585,h:128/559},
+    front:  {x:217/585,y:355/559,w:64/585,h:128/559},
+    bottom: {x:217/585,y:485/559,w:64/585,h:64/559}
+  },
+  leftLeg: {
+    top:    {x:308/585,y:289/559,w:64/585,h:64/559},
+    front:  {x:308/585,y:355/559,w:64/585,h:128/559},
+    left:   {x:374/585,y:355/559,w:64/585,h:128/559},
+    back:   {x:440/585,y:355/559,w:64/585,h:128/559},
+    right:  {x:506/585,y:355/559,w:64/585,h:128/559},
+    bottom: {x:308/585,y:485/559,w:64/585,h:64/559}
+  }
+};
+// Keep the old name as an alias because the creator preview already uses it.
+const SHIRT_TEMPLATE_REGIONS = CLASSIC_CLOTHING_REGIONS;
+
+function cropClassicClothingTexture(imageData, region, key, mirror=false){
+  if(!imageData || !region) return null;
+  const cacheKey='classic:'+key+':'+(mirror?'m':'n');
+  if(_customClothingPartCache[cacheKey]) return _customClothingPartCache[cacheKey];
+  const canvas=document.createElement('canvas'); canvas.width=256; canvas.height=256;
+  const ctx=canvas.getContext('2d');
+  const tex=new THREE.CanvasTexture(canvas);
+  tex.colorSpace=THREE.SRGBColorSpace;
+  tex.wrapS=THREE.ClampToEdgeWrapping; tex.wrapT=THREE.ClampToEdgeWrapping;
+  const img=new Image();
+  img.onload=()=>{
+    const sx=img.width*region.x, sy=img.height*region.y;
+    const sw=img.width*region.w, sh=img.height*region.h;
+    ctx.clearRect(0,0,256,256);
+    if(mirror){ctx.save();ctx.translate(256,0);ctx.scale(-1,1);}
+    ctx.drawImage(img,sx,sy,sw,sh,0,0,256,256);
+    if(mirror)ctx.restore();
+    tex.needsUpdate=true;
+  };
+  img.onerror=()=>{tex.needsUpdate=true;};
+  img.src=imageData;
+  _customClothingPartCache[cacheKey]=tex;
+  return tex;
+}
+
+function customClassicFaceMaterials(item, part){
+  if(!item || !item.data || !item.data.imageData) return null;
+  const regions=CLASSIC_CLOTHING_REGIONS[part];
+  if(!regions) return null;
+  return {
+    front: cropClassicClothingTexture(item.data.imageData,regions.front,part+':front'),
+    back: cropClassicClothingTexture(item.data.imageData,regions.back,part+':back'),
+    left: cropClassicClothingTexture(item.data.imageData,regions.left,part+':left'),
+    right: cropClassicClothingTexture(item.data.imageData,regions.right,part+':right'),
+    top: cropClassicClothingTexture(item.data.imageData,regions.top,part+':top'),
+    bottom: cropClassicClothingTexture(item.data.imageData,regions.bottom,part+':bottom')
+  };
+}
+
 function customClothingTexture(item){
   if(!item || !item.data || !item.data.imageData) return null;
   return loadDataImageTexture(item.data.imageData,String(item.id||'')+':full',true);
@@ -1888,25 +1976,17 @@ function bodyClothingMaterials(texture,baseColor,isExtruded=false){
 }
 function customShirtMaterials(item){
   if(!item || !item.data || !item.data.imageData) return null;
-  return {
-    torso:customClothingPartTexture(item,'torso',false),
-    torsoBack:customClothingPartTexture(item,'torso',true),
-    leftArm:customClothingPartTexture(item,'leftArm',false),
-    leftArmBack:customClothingPartTexture(item,'leftArm',true),
-    rightArm:customClothingPartTexture(item,'rightArm',false),
-    rightArmBack:customClothingPartTexture(item,'rightArm',true)
-  };
+  const torso=customClassicFaceMaterials(item,'torso');
+  const rightArm=customClassicFaceMaterials(item,'rightArm');
+  const leftArm=customClassicFaceMaterials(item,'leftArm');
+  return {torso,rightArm,leftArm};
 }
+
 function customPantsMaterials(item){
   if(!item || !item.data || !item.data.imageData) return null;
-  const full=customClothingTexture(item);
-  const canvasL=document.createElement('canvas'), canvasR=document.createElement('canvas');
-  canvasL.width=canvasR.width=128; canvasL.height=canvasR.height=256;
-  const make=(canvas,side,mirror)=>{
-    const ctx=canvas.getContext('2d'); const tex=new THREE.CanvasTexture(canvas); tex.colorSpace=THREE.SRGBColorSpace; tex.wrapS=THREE.ClampToEdgeWrapping; tex.wrapT=THREE.ClampToEdgeWrapping;
-    const img=new Image(); img.onload=()=>{ctx.clearRect(0,0,128,256);if(mirror){ctx.save();ctx.translate(128,0);ctx.scale(-1,1);}ctx.drawImage(img,side==='right'?img.width/2:0,0,img.width/2,img.height,0,0,128,256);if(mirror)ctx.restore();tex.needsUpdate=true;}; img.src=item.data.imageData; return tex;
-  };
-  return {left:make(canvasL,'left',false),right:make(canvasR,'right',false),leftBack:make(document.createElement('canvas'),'left',true),rightBack:make(document.createElement('canvas'),'right',true),full};
+  const left=customClassicFaceMaterials(item,'leftLeg');
+  const right=customClassicFaceMaterials(item,'rightLeg');
+  return {left,right,full:customClothingTexture(item)};
 }
 
 function splitLegTexture(texture, side){
@@ -2008,17 +2088,47 @@ function buildAvatar3DModel(userData) {
 
   // Materiales con texturas 2D estilo Roblox (incluye ropa creada por la comunidad)
   const customShirtTex = customShirt ? customShirtMaterials(customShirt) : null;
-  const torsoTexture = customShirtTex ? customShirtTex.torso : createShirtTexture(torsoCol, activeShirt);
-  const torsoMat = customShirtTex ? clothingBoxMaterials(clothingMaterial(customShirtTex.torso,torsoCol),clothingMaterial(customShirtTex.torsoBack,torsoCol),new THREE.MeshLambertMaterial({color:torsoCol})) : bodyClothingMaterials(torsoTexture, torsoCol, avatarData.torsoType === 'female');
+  const torsoTexture = customShirt ? null : createShirtTexture(torsoCol, activeShirt);
+  const torsoMat = customShirtTex
+    ? [
+        clothingMaterial(customShirtTex.torso.right,torsoCol),
+        clothingMaterial(customShirtTex.torso.left,torsoCol),
+        clothingMaterial(customShirtTex.torso.top,torsoCol),
+        clothingMaterial(customShirtTex.torso.bottom,torsoCol),
+        clothingMaterial(customShirtTex.torso.front,torsoCol),
+        clothingMaterial(customShirtTex.torso.back,torsoCol)
+      ]
+    : bodyClothingMaterials(torsoTexture, torsoCol, avatarData.torsoType === 'female');
 
   const customPantsMats = customPants ? customPantsMaterials(customPants) : null;
-  const legsTexture = customPantsMats ? customPantsMats.full : null;
-  const leftLegMat = customPantsMats ? clothingBoxMaterials(clothingMaterial(customPantsMats.left,legCol),clothingMaterial(customPantsMats.leftBack,legCol),new THREE.MeshLambertMaterial({color:legCol})) : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
-  const rightLegMat = customPantsMats ? clothingBoxMaterials(clothingMaterial(customPantsMats.right,legCol),clothingMaterial(customPantsMats.rightBack,legCol),new THREE.MeshLambertMaterial({color:legCol})) : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
+  const leftLegMat = customPantsMats
+    ? [
+        clothingMaterial(customPantsMats.left.right,legCol),
+        clothingMaterial(customPantsMats.left.left,legCol),
+        clothingMaterial(customPantsMats.left.top,legCol),
+        clothingMaterial(customPantsMats.left.bottom,legCol),
+        clothingMaterial(customPantsMats.left.front,legCol),
+        clothingMaterial(customPantsMats.left.back,legCol)
+      ]
+    : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
+  const rightLegMat = customPantsMats
+    ? [
+        clothingMaterial(customPantsMats.right.right,legCol),
+        clothingMaterial(customPantsMats.right.left,legCol),
+        clothingMaterial(customPantsMats.right.top,legCol),
+        clothingMaterial(customPantsMats.right.bottom,legCol),
+        clothingMaterial(customPantsMats.right.front,legCol),
+        clothingMaterial(customPantsMats.right.back,legCol)
+      ]
+    : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
 
   const armMat = new THREE.MeshLambertMaterial({color: armCol});
-  const shirtLeftArmMat = customShirtTex ? clothingBoxMaterials(clothingMaterial(customShirtTex.leftArm,armCol),clothingMaterial(customShirtTex.leftArmBack,armCol),new THREE.MeshLambertMaterial({color:armCol})) : armMat;
-  const shirtRightArmMat = customShirtTex ? clothingBoxMaterials(clothingMaterial(customShirtTex.rightArm,armCol),clothingMaterial(customShirtTex.rightArmBack,armCol),new THREE.MeshLambertMaterial({color:armCol})) : armMat;
+  const shirtLeftArmMat = customShirtTex
+    ? [clothingMaterial(customShirtTex.leftArm.right,armCol),clothingMaterial(customShirtTex.leftArm.left,armCol),clothingMaterial(customShirtTex.leftArm.top,armCol),clothingMaterial(customShirtTex.leftArm.bottom,armCol),clothingMaterial(customShirtTex.leftArm.front,armCol),clothingMaterial(customShirtTex.leftArm.back,armCol)]
+    : armMat;
+  const shirtRightArmMat = customShirtTex
+    ? [clothingMaterial(customShirtTex.rightArm.right,armCol),clothingMaterial(customShirtTex.rightArm.left,armCol),clothingMaterial(customShirtTex.rightArm.top,armCol),clothingMaterial(customShirtTex.rightArm.bottom,armCol),clothingMaterial(customShirtTex.rightArm.front,armCol),clothingMaterial(customShirtTex.rightArm.back,armCol)]
+    : armMat;
 
   const sideHeadMat = new THREE.MeshLambertMaterial({color: headCol});
   const faceItem = catalogItemById(activeFace);
@@ -2233,17 +2343,40 @@ function buildGamePlayerModel(userData) {
   });
 
   const customShirtTex = customShirt ? customShirtMaterials(customShirt) : null;
-  const torsoTexture = customShirtTex ? customShirtTex.torso : createShirtTexture(torsoCol, activeShirt);
-  const torsoMat = customShirtTex ? clothingBoxMaterials(clothingMaterial(customShirtTex.torso,torsoCol),clothingMaterial(customShirtTex.torsoBack,torsoCol),new THREE.MeshLambertMaterial({color:torsoCol})) : bodyClothingMaterials(torsoTexture, torsoCol, avatarData.torsoType === 'female');
-
   const customPantsMats = customPants ? customPantsMaterials(customPants) : null;
-  const legsTexture = customPantsMats ? customPantsMats.full : null;
-  const leftLegMat = customPantsMats ? clothingBoxMaterials(clothingMaterial(customPantsMats.left,legCol),clothingMaterial(customPantsMats.leftBack,legCol),new THREE.MeshLambertMaterial({color:legCol})) : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
-  const rightLegMat = customPantsMats ? clothingBoxMaterials(clothingMaterial(customPantsMats.right,legCol),clothingMaterial(customPantsMats.rightBack,legCol),new THREE.MeshLambertMaterial({color:legCol})) : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
+
+  // Custom classic clothing is a UV template, not one texture for the whole
+  // cube. Build the six BoxGeometry materials from the six panels so every
+  // face of the new in-game rig receives the correct part of the template.
+  function classicBoxMaterials(parts, baseColor) {
+    if (!parts) return null;
+    const fallback = new THREE.MeshLambertMaterial({color:baseColor});
+    const mat = (tex) => tex ? clothingMaterial(tex,baseColor) : fallback;
+    return [
+      mat(parts.right), mat(parts.left), mat(parts.top), mat(parts.bottom),
+      mat(parts.front), mat(parts.back)
+    ];
+  }
+
+  const torsoTexture = createShirtTexture(torsoCol, activeShirt);
+  const torsoMat = customShirtTex
+    ? classicBoxMaterials(customShirtTex.torso, torsoCol)
+    : bodyClothingMaterials(torsoTexture, torsoCol, avatarData.torsoType === 'female');
+
+  const leftLegMat = customPantsMats
+    ? classicBoxMaterials(customPantsMats.left, legCol)
+    : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
+  const rightLegMat = customPantsMats
+    ? classicBoxMaterials(customPantsMats.right, legCol)
+    : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
 
   const armMat = new THREE.MeshLambertMaterial({ color: armCol });
-  const shirtLeftArmMat = customShirtTex ? clothingBoxMaterials(clothingMaterial(customShirtTex.leftArm,armCol),clothingMaterial(customShirtTex.leftArmBack,armCol),new THREE.MeshLambertMaterial({color:armCol})) : armMat;
-  const shirtRightArmMat = customShirtTex ? clothingBoxMaterials(clothingMaterial(customShirtTex.rightArm,armCol),clothingMaterial(customShirtTex.rightArmBack,armCol),new THREE.MeshLambertMaterial({color:armCol})) : armMat;
+  const shirtLeftArmMat = customShirtTex
+    ? classicBoxMaterials(customShirtTex.leftArm, armCol)
+    : armMat;
+  const shirtRightArmMat = customShirtTex
+    ? classicBoxMaterials(customShirtTex.rightArm, armCol)
+    : armMat;
   const sideHeadMat = new THREE.MeshLambertMaterial({ color: headCol });
   const faceItem = catalogItemById(activeFace);
   const faceTexture = (faceItem && faceItem.image)
@@ -2324,14 +2457,14 @@ function buildGamePlayerModel(userData) {
   leftArm.name = "leftArm";
   leftArm.position.set(-armX, 1.70, 0);
   leftArm.userData.bindX = -armX;
-  const leftArmMesh = new THREE.Mesh(extrudedShape(armShape, armDepth, 0.018), shirtLeftArmMat);
+  const leftArmMesh = new THREE.Mesh(extrudedShape(armShape, armDepth, 0.018), customShirtTex ? [clothingMaterial(customShirtTex.leftArm.front,armCol), clothingMaterial(customShirtTex.leftArm.left,armCol)] : shirtLeftArmMat);
   leftArm.add(leftArmMesh);
 
   const rightArm = new THREE.Group();
   rightArm.name = "rightArm";
   rightArm.position.set(armX, 1.70, 0);
   rightArm.userData.bindX = armX;
-  const rightArmMesh = new THREE.Mesh(extrudedShape(armShape, armDepth, 0.018), shirtRightArmMat);
+  const rightArmMesh = new THREE.Mesh(extrudedShape(armShape, armDepth, 0.018), customShirtTex ? [clothingMaterial(customShirtTex.rightArm.front,armCol), clothingMaterial(customShirtTex.rightArm.right,armCol)] : shirtRightArmMat);
   rightArm.add(rightArmMesh);
 
   // Two independent straight legs with a small central gap, black by default.
