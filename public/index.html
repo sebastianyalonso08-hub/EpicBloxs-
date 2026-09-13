@@ -186,11 +186,12 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 .avatar-item-button.equipped{background:#188038!important}
 .avatar-wrap{display:flex;gap:35px;align-items:flex-start;flex-wrap:wrap}.avatar-panel{background:#fff;border:1px solid #ccc;padding:20px;min-width:330px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
 .avatar-stage{width:300px;height:390px;margin:auto;background:linear-gradient(#bde7ff 0 72%,#7bb957 72%);border:1px solid #aaa;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-radius:6px;box-shadow:inset 0 4px 10px rgba(0,0,0,0.1)}
+.avatar-preview-controls{position:absolute;left:10px;right:10px;bottom:10px;display:flex;justify-content:center;gap:7px;z-index:5;pointer-events:none}.avatar-preview-controls button{pointer-events:auto;border:1px solid rgba(0,0,0,.25);background:rgba(255,255,255,.92);color:#222;border-radius:7px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15)}.avatar-preview-controls button:hover{background:#fff}.avatar-preview-controls button.locked{background:#292929;color:#fff}
 #previewCanvasContainer{width:100%;height:100%;position:absolute;top:0;left:0;}
 
 .color-section{margin-top:20px}.color-buttons{display:flex;flex-wrap:wrap;gap:7px}.color-button{width:34px;height:34px;border:2px solid #888;cursor:pointer;border-radius:50%;transition:transform 0.15s}.color-button:hover{transform:scale(1.1);border-color:#111}.setting-row{padding:12px 0;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center}
 
-@media(max-width:1000px){.games{grid-template-columns:repeat(4,1fr)}.catalog-grid,.inventory-grid{grid-template-columns:repeat(3,1fr)}}
+.catalog-rig-preview{height:210px;border:1px solid #d8dee5;border-radius:12px;overflow:hidden;background:radial-gradient(circle at 50% 28%,#ffffff 0,#eef1f5 48%,#d9dee5 100%);display:flex;align-items:center;justify-content:center;margin:8px 0;position:relative;box-shadow:inset 0 -34px 55px rgba(0,0,0,.08)}.catalog-rig-preview img{width:100%;height:100%;object-fit:contain;display:block}.catalog-preview-label{font-size:10px;color:#777;text-align:center;margin-top:-3px;margin-bottom:5px}.catalog-preview-badge{position:absolute;right:8px;bottom:8px;padding:4px 7px;border-radius:999px;background:rgba(255,255,255,.88);border:1px solid rgba(0,0,0,.1);font-size:9px;font-weight:800;color:#555;pointer-events:none}\n@media(max-width:1000px){.games{grid-template-columns:repeat(4,1fr)}.catalog-grid,.inventory-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:700px){.sidebar{width:60px}.sidebar-user,.side-item span,.upgrade,.events{display:none}.side-item{justify-content:center}.main{margin-left:60px}.profile-header{padding-left:120px}.profile-avatar{width:105px;height:105px}.games{grid-template-columns:repeat(2,1fr)}.catalog-grid,.inventory-grid{grid-template-columns:repeat(2,1fr)}.top-link{display:none}}
 
 /* Mini Bot setup automatico */
@@ -662,6 +663,10 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
       <h2>Your avatar</h2>
       <div class="avatar-stage">
         <div id="previewCanvasContainer"></div>
+        <div class="avatar-preview-controls">
+          <button id="avatarRotateToggle" type="button" onclick="toggleAvatarAutoRotate()">⏸ Bloquear giro</button>
+          <button type="button" onclick="resetAvatarPreviewCamera()">↻ Restablecer</button>
+        </div>
       </div>
       <p style="text-align:center;font-size:12px;color:#666;margin-top:10px;">Avatar Prewiew.</p>
     </div>
@@ -728,10 +733,10 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
     <div style="margin-top:18px;padding-top:15px;border-top:1px solid #ddd">
       <h3 style="margin:0 0 10px">Verificar email</h3>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <input id="emailVerifyInput" type="email" autocomplete="email" placeholder="tu@email.com" style="flex:1;min-width:220px;padding:9px;border:1px solid #ccc;border-radius:5px">
+        <input id="emailVerifyInput" name="email" type="email" autocomplete="email" spellcheck="false" inputmode="email" placeholder="tu@email.com" style="flex:1;min-width:220px;padding:9px;border:1px solid #ccc;border-radius:5px">
         <button id="emailVerifyButton" class="section-button" onclick="sendEmailVerification()" style="margin:0;background:#1684e8">Enviar verificacion</button>
       </div>
-      <div id="emailVerifyStatus" style="font-size:12px;margin-top:8px;min-height:18px"></div>
+      <div id="emailVerifyStatus" style="font-size:12px;margin-top:8px;min-height:18px"></div><div style="font-size:11px;color:#777;margin-top:5px">Escribe tu correo y pulsa “Enviar verificacion”. El servidor debe tener RESEND_API_KEY y EMAIL_FROM configurados en Render para recibir el mensaje.</div>
     </div>
     <div class="setting-row"><span>Avatar</span><button class="section-button" onclick="showPage('avatar')" style="margin:0;">Editar</button></div>
     <div style="margin-top:18px;padding-top:15px;border-top:1px solid #ddd">
@@ -813,6 +818,9 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 
 <script>
 let previewRenderer = null, previewScene = null, previewCamera = null, previewAnimId = null;
+let previewAutoRotate = true;
+let previewOrbitYaw = 0, previewOrbitPitch = 0.02, previewOrbitDistance = 3.0;
+let previewDragging = false, previewLastX = 0, previewLastY = 0;
 let gameRenderer = null, gameScene = null, gameCamera = null, gameAnimId = null;
 let gameCameraEventsBound = false;
 let gameLaunchNonce = 0;
@@ -1107,6 +1115,8 @@ async function loadCustomCatalog(force=false){
   _customCatalogLoadedAt=now;
   _customCatalogPromise=fetch('/api/catalog/custom',{cache:'no-store'}).then(r=>r.json()).then(data=>{
     const custom=data.items||[];
+    _catalogPreviewRevision++;
+    _portraitCache={};
     custom.forEach(item=>{const local=catalogDatabase.find(x=>x.id===item.id);const normalized={id:item.id,name:item.name,category:item.category,price:Number(item.price)||0,desc:item.description||'Creado por la comunidad',custom:true,data:item.data,type:item.type,owner:item.owner,ownerId:item.ownerId,status:item.status,image:item.image};if(local)Object.assign(local,normalized);else catalogDatabase.push(normalized);});
     return custom;
   }).catch(()=>[]);
@@ -1892,20 +1902,36 @@ const CLASSIC_CLOTHING_REGIONS = {
 // Keep the old name as an alias because the creator preview already uses it.
 const SHIRT_TEMPLATE_REGIONS = CLASSIC_CLOTHING_REGIONS;
 
+// The pants creator uses a deliberately simple template: the complete left
+// half is the left-leg artwork and the complete right half is the right-leg
+// artwork. It is NOT the Roblox shirt/torso net above. Treating it as the
+// classic net was the main reason custom pants were sampling unrelated areas.
+const PANTS_TEMPLATE_REGIONS = {
+  leftLeg:  {x:0,   y:0, w:0.5, h:1},
+  rightLeg: {x:0.5, y:0, w:0.5, h:1}
+};
+
 function cropClassicClothingTexture(imageData, region, key, mirror=false){
   if(!imageData || !region) return null;
+  // IMPORTANT: the cache key must include the actual clothing item.
+  // Otherwise the first custom shirt/pants texture loaded for a face
+  // (front/back/left/right/etc.) is reused by every other item, making
+  // clothing appear swapped, corrupted or "glitched" in-game.
   const cacheKey='classic:'+key+':'+(mirror?'m':'n');
   if(_customClothingPartCache[cacheKey]) return _customClothingPartCache[cacheKey];
   const canvas=document.createElement('canvas'); canvas.width=256; canvas.height=256;
   const ctx=canvas.getContext('2d');
   const tex=new THREE.CanvasTexture(canvas);
+  tex.flipY=true;
   tex.colorSpace=THREE.SRGBColorSpace;
   tex.wrapS=THREE.ClampToEdgeWrapping; tex.wrapT=THREE.ClampToEdgeWrapping;
+  tex.minFilter=THREE.LinearFilter; tex.magFilter=THREE.LinearFilter;
   const img=new Image();
   img.onload=()=>{
-    const sx=img.width*region.x, sy=img.height*region.y;
-    const sw=img.width*region.w, sh=img.height*region.h;
+    const sx=Math.round(img.width*region.x), sy=Math.round(img.height*region.y);
+    const sw=Math.max(1,Math.round(img.width*region.w)), sh=Math.max(1,Math.round(img.height*region.h));
     ctx.clearRect(0,0,256,256);
+    ctx.imageSmoothingEnabled=true;
     if(mirror){ctx.save();ctx.translate(256,0);ctx.scale(-1,1);}
     ctx.drawImage(img,sx,sy,sw,sh,0,0,256,256);
     if(mirror)ctx.restore();
@@ -1916,18 +1942,18 @@ function cropClassicClothingTexture(imageData, region, key, mirror=false){
   _customClothingPartCache[cacheKey]=tex;
   return tex;
 }
-
 function customClassicFaceMaterials(item, part){
   if(!item || !item.data || !item.data.imageData) return null;
   const regions=CLASSIC_CLOTHING_REGIONS[part];
   if(!regions) return null;
+  const itemKey=String(item.id || item.name || 'custom');
   return {
-    front: cropClassicClothingTexture(item.data.imageData,regions.front,part+':front'),
-    back: cropClassicClothingTexture(item.data.imageData,regions.back,part+':back'),
-    left: cropClassicClothingTexture(item.data.imageData,regions.left,part+':left'),
-    right: cropClassicClothingTexture(item.data.imageData,regions.right,part+':right'),
-    top: cropClassicClothingTexture(item.data.imageData,regions.top,part+':top'),
-    bottom: cropClassicClothingTexture(item.data.imageData,regions.bottom,part+':bottom')
+    front: cropClassicClothingTexture(item.data.imageData,regions.front,itemKey+':'+part+':front'),
+    back: cropClassicClothingTexture(item.data.imageData,regions.back,itemKey+':'+part+':back'),
+    left: cropClassicClothingTexture(item.data.imageData,regions.left,itemKey+':'+part+':left'),
+    right: cropClassicClothingTexture(item.data.imageData,regions.right,itemKey+':'+part+':right'),
+    top: cropClassicClothingTexture(item.data.imageData,regions.top,itemKey+':'+part+':top'),
+    bottom: cropClassicClothingTexture(item.data.imageData,regions.bottom,itemKey+':'+part+':bottom')
   };
 }
 
@@ -1972,7 +1998,21 @@ function bodyClothingMaterials(texture,baseColor,isExtruded=false){
   const base=new THREE.MeshLambertMaterial({color:baseColor||'#1477b9'});
   if(!texture) return base;
   const shirt=clothingMaterial(texture,baseColor);
-  return isExtruded ? [shirt,shirt] : [shirt,shirt,shirt,shirt,shirt,shirt];
+  // ExtrudeGeometry (used by the in-game torso/arms) has THREE material
+  // groups: front, back, and the extrusion sides. The previous code supplied
+  // only two materials, which caused the side faces to have no valid material
+  // and could make the shirt look broken/offset at the edges.
+  return isExtruded ? [shirt,shirt,base] : [shirt,shirt,shirt,shirt,shirt,shirt];
+}
+function gameBoxClothingMaterials(frontTexture, backTexture, baseColor){
+  const base=new THREE.MeshLambertMaterial({color:baseColor||'#1477b9'});
+  const front=frontTexture ? clothingMaterial(frontTexture,baseColor) : base;
+  const back=backTexture ? clothingMaterial(backTexture,baseColor) : front;
+  // THREE.BoxGeometry material order: right, left, top, bottom, front, back.
+  // Classic 2D clothing is a FRONT/BACK artwork; putting that full canvas on
+  // the right/left faces was the source of the visible texture glitch in the
+  // actual game character. Keep the side faces as the body color.
+  return [base,base,base,base,front,back];
 }
 function customShirtMaterials(item){
   if(!item || !item.data || !item.data.imageData) return null;
@@ -1981,12 +2021,32 @@ function customShirtMaterials(item){
   const leftArm=customClassicFaceMaterials(item,'leftArm');
   return {torso,rightArm,leftArm};
 }
+function customExtrudedClothingMaterials(parts,baseColor){
+  const base=new THREE.MeshLambertMaterial({color:baseColor||'#1477b9'});
+  if(!parts) return base;
+  // ExtrudeGeometry groups are: front (+Z), back (-Z), sides. Never put the
+  // complete clothing template on a side face; that is what creates the
+  // stretched/glitched strips visible on the character.
+  const front=clothingMaterial(parts.front,baseColor);
+  const back=clothingMaterial(parts.back,baseColor);
+  return [front,back,base];
+}
 
 function customPantsMaterials(item){
   if(!item || !item.data || !item.data.imageData) return null;
-  const left=customClassicFaceMaterials(item,'leftLeg');
-  const right=customClassicFaceMaterials(item,'rightLeg');
-  return {left,right,full:customClothingTexture(item)};
+  const itemKey=String(item.id || item.name || 'customPants');
+  const makeLeg=(side)=>{
+    const region=PANTS_TEMPLATE_REGIONS[side];
+    const texture=cropClassicClothingTexture(item.data.imageData,region,itemKey+':pants:'+side);
+    if(!texture) return null;
+    const mat=clothingMaterial(texture,'#8cae45');
+    // The simplified pants template supplies one complete artwork per leg.
+    // Reusing that artwork consistently on the leg faces avoids sampling the
+    // shirt net's unrelated torso/arm regions and prevents stretched/glitched
+    // patches.
+    return {front:mat,back:mat,left:mat,right:mat,top:mat,bottom:mat};
+  };
+  return {left:makeLeg('leftLeg'),right:makeLeg('rightLeg'),full:customClothingTexture(item)};
 }
 
 function splitLegTexture(texture, side){
@@ -2090,15 +2150,8 @@ function buildAvatar3DModel(userData) {
   const customShirtTex = customShirt ? customShirtMaterials(customShirt) : null;
   const torsoTexture = customShirt ? null : createShirtTexture(torsoCol, activeShirt);
   const torsoMat = customShirtTex
-    ? [
-        clothingMaterial(customShirtTex.torso.right,torsoCol),
-        clothingMaterial(customShirtTex.torso.left,torsoCol),
-        clothingMaterial(customShirtTex.torso.top,torsoCol),
-        clothingMaterial(customShirtTex.torso.bottom,torsoCol),
-        clothingMaterial(customShirtTex.torso.front,torsoCol),
-        clothingMaterial(customShirtTex.torso.back,torsoCol)
-      ]
-    : bodyClothingMaterials(torsoTexture, torsoCol, avatarData.torsoType === 'female');
+    ? customExtrudedClothingMaterials(customShirtTex.torso,torsoCol)
+    : bodyClothingMaterials(torsoTexture, torsoCol, true);
 
   const customPantsMats = customPants ? customPantsMaterials(customPants) : null;
   const leftLegMat = customPantsMats
@@ -2124,10 +2177,10 @@ function buildAvatar3DModel(userData) {
 
   const armMat = new THREE.MeshLambertMaterial({color: armCol});
   const shirtLeftArmMat = customShirtTex
-    ? [clothingMaterial(customShirtTex.leftArm.right,armCol),clothingMaterial(customShirtTex.leftArm.left,armCol),clothingMaterial(customShirtTex.leftArm.top,armCol),clothingMaterial(customShirtTex.leftArm.bottom,armCol),clothingMaterial(customShirtTex.leftArm.front,armCol),clothingMaterial(customShirtTex.leftArm.back,armCol)]
+    ? customExtrudedClothingMaterials(customShirtTex.leftArm,armCol)
     : armMat;
   const shirtRightArmMat = customShirtTex
-    ? [clothingMaterial(customShirtTex.rightArm.right,armCol),clothingMaterial(customShirtTex.rightArm.left,armCol),clothingMaterial(customShirtTex.rightArm.top,armCol),clothingMaterial(customShirtTex.rightArm.bottom,armCol),clothingMaterial(customShirtTex.rightArm.front,armCol),clothingMaterial(customShirtTex.rightArm.back,armCol)]
+    ? customExtrudedClothingMaterials(customShirtTex.rightArm,armCol)
     : armMat;
 
   const sideHeadMat = new THREE.MeshLambertMaterial({color: headCol});
@@ -2361,14 +2414,21 @@ function buildGamePlayerModel(userData) {
   const torsoTexture = createShirtTexture(torsoCol, activeShirt);
   const torsoMat = customShirtTex
     ? classicBoxMaterials(customShirtTex.torso, torsoCol)
-    : bodyClothingMaterials(torsoTexture, torsoCol, avatarData.torsoType === 'female');
+    : gameBoxClothingMaterials(torsoTexture, torsoTexture, torsoCol);
 
+  // The built-in pants texture contains BOTH legs in one 256px canvas. The
+  // previous renderer placed that complete canvas on every face of BOTH legs,
+  // which can show the other leg or stretched seams on the sides. Split the
+  // canvas once per leg and use it only on front/back; sides stay clean.
+  const pantsTexture = createPantsTexture(legCol, activePants);
+  const leftPantsTexture = splitLegTexture(pantsTexture, 'left');
+  const rightPantsTexture = splitLegTexture(pantsTexture, 'right');
   const leftLegMat = customPantsMats
     ? classicBoxMaterials(customPantsMats.left, legCol)
-    : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
+    : gameBoxClothingMaterials(leftPantsTexture, leftPantsTexture, legCol);
   const rightLegMat = customPantsMats
     ? classicBoxMaterials(customPantsMats.right, legCol)
-    : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
+    : gameBoxClothingMaterials(rightPantsTexture, rightPantsTexture, legCol);
 
   const armMat = new THREE.MeshLambertMaterial({ color: armCol });
   const shirtLeftArmMat = customShirtTex
@@ -2457,14 +2517,14 @@ function buildGamePlayerModel(userData) {
   leftArm.name = "leftArm";
   leftArm.position.set(-armX, 1.70, 0);
   leftArm.userData.bindX = -armX;
-  const leftArmMesh = new THREE.Mesh(extrudedShape(armShape, armDepth, 0.018), customShirtTex ? [clothingMaterial(customShirtTex.leftArm.front,armCol), clothingMaterial(customShirtTex.leftArm.left,armCol)] : shirtLeftArmMat);
+  const leftArmMesh = new THREE.Mesh(extrudedShape(armShape, armDepth, 0.018), shirtLeftArmMat);
   leftArm.add(leftArmMesh);
 
   const rightArm = new THREE.Group();
   rightArm.name = "rightArm";
   rightArm.position.set(armX, 1.70, 0);
   rightArm.userData.bindX = armX;
-  const rightArmMesh = new THREE.Mesh(extrudedShape(armShape, armDepth, 0.018), customShirtTex ? [clothingMaterial(customShirtTex.rightArm.front,armCol), clothingMaterial(customShirtTex.rightArm.right,armCol)] : shirtRightArmMat);
+  const rightArmMesh = new THREE.Mesh(extrudedShape(armShape, armDepth, 0.018), shirtRightArmMat);
   rightArm.add(rightArmMesh);
 
   // Two independent straight legs with a small central gap, black by default.
@@ -2555,7 +2615,8 @@ function initPreviewRenderer() {
 
   previewScene = new THREE.Scene();
   previewCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-  previewCamera.position.set(0, 1.0, 3);
+  previewOrbitDistance=3.0; previewOrbitYaw=0; previewOrbitPitch=0.02;
+  updateAvatarPreviewCamera();
 
   previewRenderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
   previewRenderer.setSize(width, height);
@@ -2563,6 +2624,33 @@ function initPreviewRenderer() {
   previewRenderer.shadowMap.enabled = true;
   previewRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
   container.appendChild(previewRenderer.domElement);
+  previewRenderer.domElement.style.cursor='grab';
+  previewRenderer.domElement.style.touchAction='none';
+  previewRenderer.domElement.addEventListener('pointerdown',e=>{
+    previewDragging=true; previewLastX=e.clientX; previewLastY=e.clientY;
+    try{previewRenderer.domElement.setPointerCapture(e.pointerId);}catch(_){}
+    previewRenderer.domElement.style.cursor='grabbing';
+  });
+  previewRenderer.domElement.addEventListener('pointermove',e=>{
+    if(!previewDragging)return;
+    const dx=e.clientX-previewLastX, dy=e.clientY-previewLastY;
+    previewLastX=e.clientX; previewLastY=e.clientY;
+    previewOrbitYaw-=dx*0.012;
+    previewOrbitPitch=Math.max(-0.9,Math.min(0.9,previewOrbitPitch-dy*0.009));
+    updateAvatarPreviewCamera();
+  });
+  const stopPreviewDrag=e=>{
+    previewDragging=false;
+    try{previewRenderer.domElement.releasePointerCapture(e.pointerId);}catch(_){}
+    previewRenderer.domElement.style.cursor='grab';
+  };
+  previewRenderer.domElement.addEventListener('pointerup',stopPreviewDrag);
+  previewRenderer.domElement.addEventListener('pointercancel',stopPreviewDrag);
+  previewRenderer.domElement.addEventListener('wheel',e=>{
+    e.preventDefault();
+    previewOrbitDistance=Math.max(2.1,Math.min(4.8,previewOrbitDistance+e.deltaY*0.0025));
+    updateAvatarPreviewCamera();
+  },{passive:false});
 
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
   previewScene.add(ambientLight);
@@ -2621,23 +2709,40 @@ function updatePreviewAvatar3D() {
   if(oldAvatar) previewScene.remove(oldAvatar);
 
   const c = current();
-  const avatarGroup = buildAvatar3DModel(c ? c.user : null);
+  // Use the exact same character renderer as the game so the website Avatar page stays synchronized.
+  const avatarGroup = buildGamePlayerModel(c ? c.user : null);
   avatarGroup.name = "playerAvatar3D";
   avatarGroup.position.set(0, 0.04, 0);
   previewScene.add(avatarGroup);
 }
 
+function updateAvatarPreviewCamera(){
+  if(!previewCamera)return;
+  const targetY=0.72;
+  const cp=Math.cos(previewOrbitPitch), sp=Math.sin(previewOrbitPitch);
+  const sy=Math.sin(previewOrbitYaw), cy=Math.cos(previewOrbitYaw);
+  previewCamera.position.set(sy*cp*previewOrbitDistance,targetY+sp*previewOrbitDistance,cy*cp*previewOrbitDistance);
+  previewCamera.lookAt(0,targetY,0);
+}
+function toggleAvatarAutoRotate(){
+  previewAutoRotate=!previewAutoRotate;
+  const b=document.getElementById('avatarRotateToggle');
+  if(b){
+    b.textContent=previewAutoRotate?'⏸ Bloquear giro':'▶ Desbloquear giro';
+    b.classList.toggle('locked',!previewAutoRotate);
+  }
+}
+function resetAvatarPreviewCamera(){
+  previewOrbitYaw=0; previewOrbitPitch=0.02; previewOrbitDistance=3.0;
+  updateAvatarPreviewCamera();
+}
 function startPreviewAnimation() {
   if(previewAnimId) cancelAnimationFrame(previewAnimId);
   function animate() {
-    previewAnimId = requestAnimationFrame(animate);
-    const avatar = previewScene?.getObjectByName("playerAvatar3D");
-    if(avatar) {
-      avatar.rotation.y += 0.012;
-    }
-    if(previewRenderer && previewScene && previewCamera) {
-      previewRenderer.render(previewScene, previewCamera);
-    }
+    previewAnimId=requestAnimationFrame(animate);
+    const avatar=previewScene?.getObjectByName("playerAvatar3D");
+    if(avatar && previewAutoRotate && !previewDragging) avatar.rotation.y+=0.012;
+    if(previewRenderer && previewScene && previewCamera) previewRenderer.render(previewScene,previewCamera);
   }
   animate();
 }
@@ -5578,11 +5683,13 @@ let _portraitScene = null;
 let _portraitCamera = null;
 const _portraitCache = {};
 
+let _catalogPreviewRevision = 1;
 function getAvatarPortraitDataURL(userData, size) {
   size = size || 128;
   const cacheKey = JSON.stringify({
     a: (userData && userData.avatar) || {},
-    s: size
+    s: size,
+    cr: _catalogPreviewRevision
   });
   if (_portraitCache[cacheKey]) return _portraitCache[cacheKey];
 
@@ -5605,7 +5712,8 @@ function getAvatarPortraitDataURL(userData, size) {
     const old = _portraitScene.getObjectByName('portraitAvatar');
     if (old) _portraitScene.remove(old);
 
-    const group = buildAvatar3DModel(userData);
+    // Website portraits use the same model as the game.
+    const group = buildGamePlayerModel(userData);
     group.name = 'portraitAvatar';
     group.rotation.y = 0; // mirando al frente (hacia +Z / cámara)
     group.position.set(0, -0.55, 0);
@@ -6248,6 +6356,54 @@ function catalogIconSVG(item) {
 function catalogCategoryLabel(category){
   return ({hats:'Sombrero',shirts:'Camisa 2D',pants:'Pantalón 2D',faces:'Cara',gear:'Accesorio',backgrounds:'Fondo de perfil'}[String(category||'').toLowerCase()] || 'Artículo');
 }
+function catalogRigPreviewDataURL(item){
+  if(!item || (item.category!=='shirts' && item.category!=='pants')) return '';
+  try{
+    const cacheKey='catalogRigV4:'+String(item.id)+':'+_catalogPreviewRevision;
+    if(_portraitCache[cacheKey]) return _portraitCache[cacheKey];
+
+    const size=220;
+    const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true});
+    renderer.setSize(size,size,false);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+    renderer.setClearColor(0xe8ebef,1);
+
+    const scene=new THREE.Scene();
+    const camera=new THREE.PerspectiveCamera(30,1,0.1,100);
+    camera.position.set(0,0.72,4.15);
+    camera.lookAt(0,0.78,0);
+
+    scene.add(new THREE.HemisphereLight(0xffffff,0xb7bec8,1.55));
+    const key=new THREE.DirectionalLight(0xffffff,1.15);
+    key.position.set(3.5,5.5,4.5);
+    scene.add(key);
+    const fill=new THREE.DirectionalLight(0xffffff,0.45);
+    fill.position.set(-3,2,-2);
+    scene.add(fill);
+
+    const floor=new THREE.Mesh(new THREE.CircleGeometry(1.25,48),new THREE.MeshLambertMaterial({color:0xcfd4db}));
+    floor.rotation.x=-Math.PI/2;
+    floor.position.y=-0.43;
+    scene.add(floor);
+
+    const avatar={colors:{head:'#f5c928',torso:'#1477b9',arms:'#f5c928',legs:'#171820'},torsoType:'male',accessories:[String(item.id)]};
+    // Catalog previews intentionally use the game model: what users buy is
+    // exactly what they will see on their character in an experience.
+    const group=buildGamePlayerModel({avatar});
+    group.rotation.y=-0.18;
+    group.position.set(0,-0.38,0);
+    group.scale.multiplyScalar(1.12);
+    scene.add(group);
+
+    renderer.render(scene,camera);
+    const url=renderer.domElement.toDataURL('image/png');
+    renderer.dispose();
+    _portraitCache[cacheKey]=url;
+    return url;
+  }catch(e){
+    return '';
+  }
+}
 function renderCatalog(category) {
   const container = document.getElementById('catalogGridContainer');
   if(!container) return;
@@ -6259,7 +6415,7 @@ function renderCatalog(category) {
     return `
       <div class="catalog-item">
         <h3 style="margin:5px 0">${escapeHTML(item.name)}</h3>
-        <div class="catalog-image">${catalogIconSVG(item)}</div>
+        ${item.category==='shirts'||item.category==='pants' ? (()=>{const preview=catalogRigPreviewDataURL(item);return preview?`<div class="catalog-rig-preview"><img src="${preview}" alt="Rig preview de ${escapeHTML(item.name)}"><div class="catalog-preview-badge">3D PREVIEW</div></div><div class="catalog-preview-label">Vista previa en el avatar</div>`:`<div class="catalog-image">${catalogIconSVG(item)}</div>`})() : `<div class="catalog-image">${catalogIconSVG(item)}</div>`}
         <div style="display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;background:rgba(124,58,237,.16);border:1px solid rgba(124,58,237,.35);font-size:11px;font-weight:800;color:#c4b5fd;margin:2px 0 7px">${escapeHTML(catalogCategoryLabel(item.category))}${item.type==='3d'?' · 3D':''}</div>
         <p style="color:#666;font-size:12px;margin:3px 0">${escapeHTML(item.desc || '')}</p>
         <p style="color:#777;font-size:12px;margin:3px 0">👤 Creator: ${escapeHTML(item.owner || 'EpicBlox')}</p>
