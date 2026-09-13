@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>EpicBloxs</title>
-<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon.png?v=3">
-<link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon.png?v=3">
-<link rel="apple-touch-icon" href="/assets/favicon.png?v=3">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon.png?v=5">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon.png?v=5">
+<link rel="apple-touch-icon" href="/assets/favicon.png?v=5">
 <style>
 /* EpicBloxs visual cleanup: cohesive dark/violet UI without white legacy panels. */
 /* EXTRA UI COLOR FIX */
@@ -29,7 +29,7 @@ body.theme-purple .sidebar,body.theme-purple .settings-card,body.theme-purple .f
 .sidebar{border-right:1px solid var(--eb-border)!important}.side-item:hover,.friend:hover{background:rgba(155,92,255,.16)!important}.section-header h2,.creator-small,.events p,.game-players,.trade-item small,.trade-last,.presence-dot{color:var(--eb-muted)!important}
 .profile-header{background:linear-gradient(135deg,#31265b,#1a1730)!important;border-color:var(--eb-border)!important}.profile-avatar{background:#211b36!important}.profile-avatar-large{background:linear-gradient(#30265b 0 72%,#526d38 72%)!important;border-color:#66568e!important}
 .game,.trade-friend,.trade-item,.dm-row,.inventory-slot,.catalog-image,.chat-window,.chat-body,.chat-msg,.chat-input-row,.dm-msg.them,.creator-transform,.creator-2d-canvas,.auth-info{background:#18152b!important;color:var(--eb-text)!important;border-color:#3d315e!important}.game:hover,.catalog-item:hover,.inventory-item:hover{box-shadow:0 12px 28px rgba(0,0,0,.35)}
-.catalog-image{background:radial-gradient(circle,#302650 0%,#141126 100%)!important}.catalog-rig-preview{width:100%;height:210px;position:relative;overflow:hidden;border-radius:8px;background:radial-gradient(circle at 50% 28%,#3a315c 0%,#18142b 58%,#0e0c18 100%);border:1px solid #4b3a76;margin-bottom:8px}.catalog-rig-preview canvas{display:block;width:100%;height:100%;cursor:grab}.catalog-rig-preview canvas:active{cursor:grabbing}.cat-tab{background:#2b2346;color:#ddd4f5}.cat-tab.active{background:linear-gradient(135deg,#9b5cff,#5f36c9);color:#fff}.trade-friend.selected,.trade-item.selected{background:#2b2050!important}.trade-pill{background:#30284a;color:#ddd4f5}.trade-empty{background:#1a162d;color:var(--eb-muted);border-color:#4a3a68}.creator-viewer{background:radial-gradient(circle at 50% 28%,#302452 0,#17142a 48%,#0e0c18 100%)!important;border-color:#4b3a76}.creator-gizmo-label{background:rgba(24,20,43,.92);color:#eee;border-color:#4b3a76}.creator-tools button,.creator-transform-grid input,.friends-actions input,.auth-form input,.trade-friend,.trade-item,.search,.chat-input-row input{background:#111020!important;color:#f4f0ff!important;border-color:#4b3a76!important}.creator-tools button.active,.section-button{background:linear-gradient(135deg,#6d45d9,#422a8d);color:#fff}.auth-screen{background:radial-gradient(circle at 50% 10%,#35245d,#0b0912 70%)!important}.auth-tab{background:#241e39;color:#cfc7e4}.auth-tab.active,.auth-button{background:linear-gradient(135deg,#9b5cff,#5b35c7);color:#fff}.auth-info{color:var(--eb-muted)!important}.topbar{background:rgba(17,13,32,.94)!important;border-bottom:1px solid #443568;backdrop-filter:blur(14px)}
+.catalog-image{background:radial-gradient(circle,#302650 0%,#141126 100%)!important}.cat-tab{background:#2b2346;color:#ddd4f5}.cat-tab.active{background:linear-gradient(135deg,#9b5cff,#5f36c9);color:#fff}.trade-friend.selected,.trade-item.selected{background:#2b2050!important}.trade-pill{background:#30284a;color:#ddd4f5}.trade-empty{background:#1a162d;color:var(--eb-muted);border-color:#4a3a68}.creator-viewer{background:radial-gradient(circle at 50% 28%,#302452 0,#17142a 48%,#0e0c18 100%)!important;border-color:#4b3a76}.creator-gizmo-label{background:rgba(24,20,43,.92);color:#eee;border-color:#4b3a76}.creator-tools button,.creator-transform-grid input,.friends-actions input,.auth-form input,.trade-friend,.trade-item,.search,.chat-input-row input{background:#111020!important;color:#f4f0ff!important;border-color:#4b3a76!important}.creator-tools button.active,.section-button{background:linear-gradient(135deg,#6d45d9,#422a8d);color:#fff}.auth-screen{background:radial-gradient(circle at 50% 10%,#35245d,#0b0912 70%)!important}.auth-tab{background:#241e39;color:#cfc7e4}.auth-tab.active,.auth-button{background:linear-gradient(135deg,#9b5cff,#5b35c7);color:#fff}.auth-info{color:var(--eb-muted)!important}.topbar{background:rgba(17,13,32,.94)!important;border-bottom:1px solid #443568;backdrop-filter:blur(14px)}
 /* Game HUD / chat */
 .chat-window{width:300px;height:340px;min-width:240px;min-height:260px;max-width:min(92vw,560px);max-height:70vh;resize:both;overflow:hidden;background:#151126!important;border:1px solid #58447f!important}.chat-body,.dm-list{background:#100e1e!important}.chat-msg,.dm-msg.them{background:#211a36!important;color:#eee!important}.chat-input-row{background:#151126!important;border-color:#3d315e!important}.chat{background:linear-gradient(135deg,#241b42,#141022)!important;border:1px solid #58447f}.chat-resize-handle{position:absolute;right:2px;bottom:2px;width:18px;height:18px;cursor:nwse-resize;opacity:.7;background:linear-gradient(135deg,transparent 45%,#b98cff 46%,#b98cff 54%,transparent 55%);pointer-events:auto}
 body.in-game .chat-window{max-width:92vw;max-height:70vh}
@@ -725,6 +725,14 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
   <div class="settings-card" style="max-width:620px;">
     <div class="setting-row"><span>Account</span><strong id="settingsUser">Player</strong></div>
     <div class="setting-row"><span>Sunnys</span><strong id="settingsMoney">500</strong> ☀️</div>
+    <div style="margin-top:18px;padding-top:15px;border-top:1px solid #ddd">
+      <h3 style="margin:0 0 10px">Verificar email</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="emailVerifyInput" type="email" autocomplete="email" placeholder="tu@email.com" style="flex:1;min-width:220px;padding:9px;border:1px solid #ccc;border-radius:5px">
+        <button id="emailVerifyButton" class="section-button" onclick="sendEmailVerification()" style="margin:0;background:#1684e8">Enviar verificacion</button>
+      </div>
+      <div id="emailVerifyStatus" style="font-size:12px;margin-top:8px;min-height:18px"></div>
+    </div>
     <div class="setting-row"><span>Avatar</span><button class="section-button" onclick="showPage('avatar')" style="margin:0;">Editar</button></div>
     <div style="margin-top:18px;padding-top:15px;border-top:1px solid #ddd">
       <h3 style="margin:0 0 10px">Temas</h3>
@@ -1091,7 +1099,19 @@ async function creatorPublish(){
   const data=type==='3d'?{shapes:creatorCubes.map(mesh=>({type:mesh.userData.type,color:mesh.userData.color,position:mesh.position.toArray(),rotation:[mesh.rotation.x,mesh.rotation.y,mesh.rotation.z],scale:mesh.scale.toArray()}))}:{imageData:document.getElementById('creator2dCanvas').toDataURL('image/png')};
   creatorMessage('Publicando...');
   try{await api('/api/creator/publish',{method:'POST',body:JSON.stringify({name,description,category,type,price,data})},3);creatorMessage('Publicado en el catalogo. Precio: '+price+' Sunnys. Ya puedes equiparlo desde Avatar.');await loadCustomCatalog();renderCatalog('all');if(typeof renderInventory==='function')renderInventory();}catch(err){creatorMessage(err.message||'No se pudo conectar con el servidor.',true);}}
-async function loadCustomCatalog(){try{const r=await fetch('/api/catalog/custom',{cache:'no-store'});const data=await r.json();const custom=data.items||[];custom.forEach(item=>{const local=catalogDatabase.find(x=>x.id===item.id);const normalized={id:item.id,name:item.name,category:item.category,price:Number(item.price)||0,desc:item.description||'Creado por la comunidad',custom:true,data:item.data,type:item.type,owner:item.owner,ownerId:item.ownerId,status:item.status,image:item.image};if(local)Object.assign(local,normalized);else catalogDatabase.push(normalized);});if(typeof renderCatalog==='function')renderCatalog('all');return custom;}catch(_){return[];}}
+let _customCatalogPromise=null;
+let _customCatalogLoadedAt=0;
+async function loadCustomCatalog(force=false){
+  const now=Date.now();
+  if(!force && _customCatalogPromise && now-_customCatalogLoadedAt<30000) return _customCatalogPromise;
+  _customCatalogLoadedAt=now;
+  _customCatalogPromise=fetch('/api/catalog/custom',{cache:'no-store'}).then(r=>r.json()).then(data=>{
+    const custom=data.items||[];
+    custom.forEach(item=>{const local=catalogDatabase.find(x=>x.id===item.id);const normalized={id:item.id,name:item.name,category:item.category,price:Number(item.price)||0,desc:item.description||'Creado por la comunidad',custom:true,data:item.data,type:item.type,owner:item.owner,ownerId:item.ownerId,status:item.status,image:item.image};if(local)Object.assign(local,normalized);else catalogDatabase.push(normalized);});
+    return custom;
+  }).catch(()=>[]);
+  return _customCatalogPromise;
+}
 
 // Atajos del editor 3D retirados junto al creador de accesorios.
 
@@ -1704,7 +1724,16 @@ function createPantsTexture(legsColor, pantsName) {
 // Creación de accesorios 3D
 function createAccessoryMesh(accessoryName) {
   const group = new THREE.Group();
-  if(accessoryName === "Epic Cap") {
+  if(accessoryName === "Epic Green Cap") {
+    const capMat = new THREE.MeshLambertMaterial({color: 0x22b85a});
+    const capTop = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.35, 0.86), capMat);
+    capTop.position.set(0, 2.62, 0);
+    const visor = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.08, 0.5), new THREE.MeshLambertMaterial({color: 0x16823d}));
+    visor.position.set(0, 2.47, 0.48);
+    const button = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.06, 0.12), new THREE.MeshLambertMaterial({color: 0xc8ffd8}));
+    button.position.set(0, 2.81, 0);
+    group.add(capTop, visor, button);
+  } else if(accessoryName === "Epic Cap") {
     const capMat = new THREE.MeshLambertMaterial({color: 0x1684e8});
     const capTop = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.35, 0.86), capMat);
     capTop.position.set(0, 2.62, 0);
@@ -1798,52 +1827,43 @@ function avatarItemCategory(id){
 }
 // Texturas de ropa creada por usuarios (cacheadas por id).
 const _customClothingTexCache = {};
-function customClothingTexture(item){
-  if(!item || !item.data || !item.data.imageData) return null;
-  const key=String(item.id||'')+':full';
+const _customClothingPartCache = {};
+function loadDataImageTexture(dataUrl, key, flipY=false){
+  if(!dataUrl) return null;
   if(_customClothingTexCache[key]) return _customClothingTexCache[key];
-  const img = new Image();
-  const tex = new THREE.Texture(img);
-  tex.flipY = true;
-  if(THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
-  tex.wrapS = THREE.ClampToEdgeWrapping; tex.wrapT = THREE.ClampToEdgeWrapping;
-  img.onload = () => { tex.needsUpdate = true; };
-  img.src = item.data.imageData;
-  _customClothingTexCache[key] = tex;
+  const canvas=document.createElement('canvas'); canvas.width=256; canvas.height=256;
+  const ctx=canvas.getContext('2d');
+  const tex=new THREE.CanvasTexture(canvas);
+  tex.flipY=flipY;
+  tex.colorSpace=THREE.SRGBColorSpace;
+  tex.wrapS=THREE.ClampToEdgeWrapping; tex.wrapT=THREE.ClampToEdgeWrapping;
+  const img=new Image();
+  img.onload=()=>{ctx.clearRect(0,0,256,256);ctx.drawImage(img,0,0,256,256);tex.needsUpdate=true;};
+  img.src=dataUrl;
+  _customClothingTexCache[key]=tex;
   return tex;
 }
-
-// La plantilla de camiseta tiene regiones separadas para torso y mangas.
-// El modelo nuevo también separa esas piezas, por lo que no se debe poner
-// el atlas completo encima de un cuerpo más grande: hay que usar cada región
-// en su pieza correspondiente.
-const SHIRT_TEMPLATE_REGIONS={
-  torso:{x:194/587,y:131/562,w:199/587,h:225/562},
-  leftArm:{x:0/587,y:131/562,w:191/587,h:225/562},
-  rightArm:{x:394/587,y:131/562,w:190/587,h:225/562},
-  top:{x:194/587,y:0/562,w:199/587,h:128/562},
-  bottom:{x:194/587,y:357/562,w:199/587,h:203/562}
-};
-const _customClothingPartCache={};
-function customClothingPartTexture(item,part){
+function customClothingTexture(item){
   if(!item || !item.data || !item.data.imageData) return null;
-  const key=String(item.id||'')+':'+part;
+  return loadDataImageTexture(item.data.imageData,String(item.id||'')+':full',true);
+}
+function customClothingPartTexture(item,part,mirror=false){
+  if(!item || !item.data || !item.data.imageData) return null;
+  const key=String(item.id||'')+':'+part+':'+(mirror?'m':'n');
   if(_customClothingPartCache[key]) return _customClothingPartCache[key];
   const region=SHIRT_TEMPLATE_REGIONS[part]||SHIRT_TEMPLATE_REGIONS.torso;
   const canvas=document.createElement('canvas'); canvas.width=256; canvas.height=256;
   const ctx=canvas.getContext('2d');
-  const tex=new THREE.CanvasTexture(canvas);
-  tex.colorSpace=THREE.SRGBColorSpace;
+  const tex=new THREE.CanvasTexture(canvas); tex.colorSpace=THREE.SRGBColorSpace;
   tex.wrapS=THREE.ClampToEdgeWrapping; tex.wrapT=THREE.ClampToEdgeWrapping;
   const img=new Image();
   img.onload=()=>{
     ctx.clearRect(0,0,256,256);
-    const sx=img.width*region.x, sy=img.height*region.y;
-    const sw=img.width*region.w, sh=img.height*region.h;
-    ctx.drawImage(img,sx,sy,sw,sh,0,0,256,256);
+    if(mirror){ctx.save();ctx.translate(256,0);ctx.scale(-1,1);}
+    ctx.drawImage(img,img.width*region.x,img.height*region.y,img.width*region.w,img.height*region.h,0,0,256,256);
+    if(mirror)ctx.restore();
     tex.needsUpdate=true;
   };
-  img.onerror=()=>{ tex.needsUpdate=true; };
   img.src=item.data.imageData;
   _customClothingPartCache[key]=tex;
   return tex;
@@ -1851,21 +1871,42 @@ function customClothingPartTexture(item,part){
 function clothingMaterial(texture,baseColor){
   return texture ? new THREE.MeshLambertMaterial({map:texture,color:0xffffff,side:THREE.DoubleSide,transparent:true}) : new THREE.MeshLambertMaterial({color:baseColor||'#1477b9'});
 }
+function clothingBoxMaterials(front,back,sideFallback){
+  const f=front || sideFallback;
+  const b=back || f;
+  // BoxGeometry has six material groups. Using only two materials makes
+  // groups 2-5 render without a material, which is why custom shirts/pants
+  // could disappear on the new rig.
+  return [f,f,f,f,f,b];
+}
+
 function bodyClothingMaterials(texture,baseColor,isExtruded=false){
   const base=new THREE.MeshLambertMaterial({color:baseColor||'#1477b9'});
   if(!texture) return base;
   const shirt=clothingMaterial(texture,baseColor);
-  // BoxGeometry: right, left, top, bottom, front, back.
-  // ExtrudeGeometry: caps are material 0 and side walls material 1.
   return isExtruded ? [shirt,shirt] : [shirt,shirt,shirt,shirt,shirt,shirt];
 }
 function customShirtMaterials(item){
   if(!item || !item.data || !item.data.imageData) return null;
   return {
-    torso:customClothingPartTexture(item,'torso'),
-    leftArm:customClothingPartTexture(item,'leftArm'),
-    rightArm:customClothingPartTexture(item,'rightArm')
+    torso:customClothingPartTexture(item,'torso',false),
+    torsoBack:customClothingPartTexture(item,'torso',true),
+    leftArm:customClothingPartTexture(item,'leftArm',false),
+    leftArmBack:customClothingPartTexture(item,'leftArm',true),
+    rightArm:customClothingPartTexture(item,'rightArm',false),
+    rightArmBack:customClothingPartTexture(item,'rightArm',true)
   };
+}
+function customPantsMaterials(item){
+  if(!item || !item.data || !item.data.imageData) return null;
+  const full=customClothingTexture(item);
+  const canvasL=document.createElement('canvas'), canvasR=document.createElement('canvas');
+  canvasL.width=canvasR.width=128; canvasL.height=canvasR.height=256;
+  const make=(canvas,side,mirror)=>{
+    const ctx=canvas.getContext('2d'); const tex=new THREE.CanvasTexture(canvas); tex.colorSpace=THREE.SRGBColorSpace; tex.wrapS=THREE.ClampToEdgeWrapping; tex.wrapT=THREE.ClampToEdgeWrapping;
+    const img=new Image(); img.onload=()=>{ctx.clearRect(0,0,128,256);if(mirror){ctx.save();ctx.translate(128,0);ctx.scale(-1,1);}ctx.drawImage(img,side==='right'?img.width/2:0,0,img.width/2,img.height,0,0,128,256);if(mirror)ctx.restore();tex.needsUpdate=true;}; img.src=item.data.imageData; return tex;
+  };
+  return {left:make(canvasL,'left',false),right:make(canvasR,'right',false),leftBack:make(document.createElement('canvas'),'left',true),rightBack:make(document.createElement('canvas'),'right',true),full};
 }
 
 function splitLegTexture(texture, side){
@@ -1968,16 +2009,16 @@ function buildAvatar3DModel(userData) {
   // Materiales con texturas 2D estilo Roblox (incluye ropa creada por la comunidad)
   const customShirtTex = customShirt ? customShirtMaterials(customShirt) : null;
   const torsoTexture = customShirtTex ? customShirtTex.torso : createShirtTexture(torsoCol, activeShirt);
-  const torsoMat = bodyClothingMaterials(torsoTexture, torsoCol, avatarData.torsoType === 'female');
+  const torsoMat = customShirtTex ? clothingBoxMaterials(clothingMaterial(customShirtTex.torso,torsoCol),clothingMaterial(customShirtTex.torsoBack,torsoCol),new THREE.MeshLambertMaterial({color:torsoCol})) : bodyClothingMaterials(torsoTexture, torsoCol, avatarData.torsoType === 'female');
 
-  const customPantsTex = customPants ? customClothingTexture(customPants) : null;
-  const legsTexture = customPantsTex || createPantsTexture(legCol, activePants);
-  const leftLegMat = bodyClothingMaterials(splitLegTexture(legsTexture, 'left'), legCol);
-  const rightLegMat = bodyClothingMaterials(splitLegTexture(legsTexture, 'right'), legCol);
+  const customPantsMats = customPants ? customPantsMaterials(customPants) : null;
+  const legsTexture = customPantsMats ? customPantsMats.full : null;
+  const leftLegMat = customPantsMats ? clothingBoxMaterials(clothingMaterial(customPantsMats.left,legCol),clothingMaterial(customPantsMats.leftBack,legCol),new THREE.MeshLambertMaterial({color:legCol})) : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
+  const rightLegMat = customPantsMats ? clothingBoxMaterials(clothingMaterial(customPantsMats.right,legCol),clothingMaterial(customPantsMats.rightBack,legCol),new THREE.MeshLambertMaterial({color:legCol})) : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
 
   const armMat = new THREE.MeshLambertMaterial({color: armCol});
-  const shirtLeftArmMat = customShirtTex ? clothingMaterial(customShirtTex.leftArm, armCol) : armMat;
-  const shirtRightArmMat = customShirtTex ? clothingMaterial(customShirtTex.rightArm, armCol) : armMat;
+  const shirtLeftArmMat = customShirtTex ? clothingBoxMaterials(clothingMaterial(customShirtTex.leftArm,armCol),clothingMaterial(customShirtTex.leftArmBack,armCol),new THREE.MeshLambertMaterial({color:armCol})) : armMat;
+  const shirtRightArmMat = customShirtTex ? clothingBoxMaterials(clothingMaterial(customShirtTex.rightArm,armCol),clothingMaterial(customShirtTex.rightArmBack,armCol),new THREE.MeshLambertMaterial({color:armCol})) : armMat;
 
   const sideHeadMat = new THREE.MeshLambertMaterial({color: headCol});
   const faceItem = catalogItemById(activeFace);
@@ -2193,16 +2234,16 @@ function buildGamePlayerModel(userData) {
 
   const customShirtTex = customShirt ? customShirtMaterials(customShirt) : null;
   const torsoTexture = customShirtTex ? customShirtTex.torso : createShirtTexture(torsoCol, activeShirt);
-  const torsoMat = bodyClothingMaterials(torsoTexture, torsoCol, avatarData.torsoType === 'female');
+  const torsoMat = customShirtTex ? clothingBoxMaterials(clothingMaterial(customShirtTex.torso,torsoCol),clothingMaterial(customShirtTex.torsoBack,torsoCol),new THREE.MeshLambertMaterial({color:torsoCol})) : bodyClothingMaterials(torsoTexture, torsoCol, avatarData.torsoType === 'female');
 
-  const customPantsTex = customPants ? customClothingTexture(customPants) : null;
-  const legsTexture = customPantsTex || createPantsTexture(legCol, activePants);
-  const leftLegMat = bodyClothingMaterials(splitLegTexture(legsTexture, 'left'), legCol);
-  const rightLegMat = bodyClothingMaterials(splitLegTexture(legsTexture, 'right'), legCol);
+  const customPantsMats = customPants ? customPantsMaterials(customPants) : null;
+  const legsTexture = customPantsMats ? customPantsMats.full : null;
+  const leftLegMat = customPantsMats ? clothingBoxMaterials(clothingMaterial(customPantsMats.left,legCol),clothingMaterial(customPantsMats.leftBack,legCol),new THREE.MeshLambertMaterial({color:legCol})) : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
+  const rightLegMat = customPantsMats ? clothingBoxMaterials(clothingMaterial(customPantsMats.right,legCol),clothingMaterial(customPantsMats.rightBack,legCol),new THREE.MeshLambertMaterial({color:legCol})) : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
 
   const armMat = new THREE.MeshLambertMaterial({ color: armCol });
-  const shirtLeftArmMat = customShirtTex ? clothingMaterial(customShirtTex.leftArm, armCol) : armMat;
-  const shirtRightArmMat = customShirtTex ? clothingMaterial(customShirtTex.rightArm, armCol) : armMat;
+  const shirtLeftArmMat = customShirtTex ? clothingBoxMaterials(clothingMaterial(customShirtTex.leftArm,armCol),clothingMaterial(customShirtTex.leftArmBack,armCol),new THREE.MeshLambertMaterial({color:armCol})) : armMat;
+  const shirtRightArmMat = customShirtTex ? clothingBoxMaterials(clothingMaterial(customShirtTex.rightArm,armCol),clothingMaterial(customShirtTex.rightArmBack,armCol),new THREE.MeshLambertMaterial({color:armCol})) : armMat;
   const sideHeadMat = new THREE.MeshLambertMaterial({ color: headCol });
   const faceItem = catalogItemById(activeFace);
   const faceTexture = (faceItem && faceItem.image)
@@ -5215,8 +5256,7 @@ function loadCurrentUser(){
     try { updateAdminFab(user); } catch(e) {}
     loadGames();
     loadInventory();
-    renderCatalog("all");
-    try { initPreviewRenderer(); } catch(e) {}
+    loadCustomCatalog().catch(()=>{});
     try { renderFriends(); } catch(e) {}
     try { refreshFriendsFromServer(); } catch(e) {}
     try { refreshServerStats(); } catch(e) {}
@@ -5287,7 +5327,47 @@ function refreshSettings(){
   const u=getCachedUser(); if(!u) return;
   const b=document.getElementById("bioEditor"); if(b)b.value=u.bio||"";
   const profileBio=document.getElementById("profileBio"); if(profileBio) profileBio.textContent=u.bio||"Sin descripción disponible.";
+  const emailInput=document.getElementById("emailVerifyInput");
+  const emailStatus=document.getElementById("emailVerifyStatus");
+  const emailButton=document.getElementById("emailVerifyButton");
+  if(emailInput) emailInput.value=u.email||"";
+  if(u.emailVerified){
+    if(emailStatus){emailStatus.textContent="✅ Email verificado.";emailStatus.style.color="#39d98a";}
+    if(emailButton){emailButton.textContent="Verificado";emailButton.disabled=true;}
+  } else if(u.email){
+    if(emailStatus){emailStatus.textContent="📨 Te enviaremos un enlace de verificacion a este email.";emailStatus.style.color="#b9afd4";}
+    if(emailButton){emailButton.textContent="Enviar de nuevo";emailButton.disabled=false;}
+  } else {
+    if(emailStatus){emailStatus.textContent="";}
+    if(emailButton){emailButton.textContent="Enviar verificacion";emailButton.disabled=false;}
+  }
   applyTheme(u.theme||"light");
+}
+
+async function sendEmailVerification(){
+  const input=document.getElementById("emailVerifyInput");
+  const status=document.getElementById("emailVerifyStatus");
+  const button=document.getElementById("emailVerifyButton");
+  const email=(input?.value||"").trim();
+  if(!email) return msg(status,"Escribe tu email.","error");
+  if(button){button.disabled=true;button.textContent="Enviando...";}
+  try{
+    const data=await api("/api/email/send-verification",{method:"POST",body:JSON.stringify({email})},2);
+    if(data.user){setCachedUser(data.user);updateUI(data.user);refreshSettings();}
+    if(status){status.textContent=data.alreadyVerified?"✅ Tu email ya estaba verificado.":"📨 Correo enviado. Revisa tu bandeja y haz click en Verificar email.";status.style.color="#39d98a";}
+  }catch(e){
+    if(status){status.textContent="❌ "+(e.message||"No se pudo enviar el correo.");status.style.color="#ff6b81";}
+  } finally {
+    if(button && !getCachedUser()?.emailVerified){button.disabled=false;button.textContent="Enviar de nuevo";}
+  }
+}
+function showEmailVerifyPopup(){const p=document.getElementById("emailVerifyPopup");if(p)p.style.display="flex";}
+function closeEmailVerifyPopup(){const p=document.getElementById("emailVerifyPopup");if(p)p.style.display="none";}
+function handleEmailVerifyResult(){
+  const params=new URLSearchParams(location.search);
+  const result=params.get("emailVerified");
+  if(result==="1"){showEmailVerifyPopup();history.replaceState({},"",location.pathname+location.hash);setTimeout(()=>{try{loadCurrentUser();}catch(e){}},100);}
+  else if(result==="0"||result==="expired"){alert(result==="expired"?"El enlace de verificacion ya caduco.":"El enlace de verificacion no es valido.");history.replaceState({},"",location.pathname+location.hash);}
 }
 
 
@@ -5855,12 +5935,13 @@ function showPage(p){
   if(p==="settings") { refreshSettings(); }
   if(p==="catalog") {
     renderCatalog('all');
+    loadCustomCatalog().then(()=>renderCatalog('all'));
   }
   if(p==="create") {
     setTimeout(() => creatorInitViewer(), 80);
   }
   if(p==="avatar") {
-    setTimeout(() => initPreviewRenderer(), 100);
+    loadCustomCatalog().then(()=>setTimeout(() => initPreviewRenderer(), 50));
   }
   window.scrollTo(0,0);
 }
@@ -5992,6 +6073,7 @@ function catalogIconSVG(item) {
   if(item.category === 'faces' && item.id === 'Classic Smile') return `<svg ${common}><circle cx="48" cy="48" r="34" fill="#F5C928" stroke="#9A7B00" stroke-width="4"/><circle cx="36" cy="40" r="4" fill="#222"/><circle cx="60" cy="40" r="4" fill="#222"/><path d="M33 54C39 65 57 65 63 54" stroke="#222" stroke-width="4" stroke-linecap="round"/></svg>`;
   if(item.id === 'Funny Smile') return `<img src="/assets/faces/funny-smile.png" style="width:96px;height:96px;object-fit:contain" alt="Funny Smile">`;
   if(item.image && !String(item.image).includes('epicbloxs_face')) return `<img src="${escapeHTML(item.image)}" style="width:96px;height:96px;object-fit:contain" alt="${escapeHTML(item.name || 'Artículo')}" onerror="this.style.display='none'">`;
+  if(item.category === 'hats' && item.id === 'Epic Green Cap') return `<svg ${common}><path d="M18 49C24 25 72 25 78 49" fill="#22B85A" stroke="#145A30" stroke-width="4"/><path d="M16 48H80C77 61 65 67 48 67C31 67 19 61 16 48Z" fill="#35D66E" stroke="#145A30" stroke-width="4"/><path d="M25 50C38 54 58 54 71 50" stroke="#B9FFD0" stroke-width="4" stroke-linecap="round"/></svg>`;
   if(item.category === 'hats' && item.id === 'Epic Cap') return `<svg ${common}><path d="M18 49C24 25 72 25 78 49" fill="#1976D2" stroke="#123A63" stroke-width="4"/><path d="M16 48H80C77 61 65 67 48 67C31 67 19 61 16 48Z" fill="#2196F3" stroke="#123A63" stroke-width="4"/><path d="M25 50C38 54 58 54 71 50" stroke="#90CAF9" stroke-width="4" stroke-linecap="round"/></svg>`;
   if(item.category === 'hats' && item.id === 'Golden Crown') return `<svg ${common}><path d="M17 30L29 44L40 22L48 43L60 22L69 44L80 30L75 66H21L17 30Z" fill="#FFD54F" stroke="#9A6B00" stroke-width="4"/><rect x="20" y="60" width="56" height="13" rx="4" fill="#FFC107" stroke="#9A6B00" stroke-width="4"/><circle cx="29" cy="43" r="4" fill="#E53935"/><circle cx="60" cy="42" r="4" fill="#1E88E5"/></svg>`;
   if(item.category === 'shirts' && item.id === 'Blue Shirt') return `<svg ${common}><defs><linearGradient id="bsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#42A5F5"/><stop offset="100%" stop-color="#1565C0"/></linearGradient></defs><path d="M25 20L39 14H57L71 20L84 34L70 45L64 36V78H32V36L26 45L12 34L25 20Z" fill="url(#bsg)" stroke="#0D47A1" stroke-width="3.5"/><path d="M39 14L48 42L57 14" fill="#F5F5F5" stroke="#CFD8DC" stroke-width="2"/><rect x="36" y="48" width="24" height="26" rx="2" fill="#0D47A1"/><text x="48" y="66" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="Arial">EB</text><circle cx="48" cy="52" r="2" fill="#ECEFF1"/><circle cx="48" cy="60" r="2" fill="#ECEFF1"/><circle cx="48" cy="68" r="2" fill="#ECEFF1"/></svg>`;
@@ -6033,62 +6115,18 @@ function catalogIconSVG(item) {
 function catalogCategoryLabel(category){
   return ({hats:'Sombrero',shirts:'Camisa 2D',pants:'Pantalón 2D',faces:'Cara',gear:'Accesorio',backgrounds:'Fondo de perfil'}[String(category||'').toLowerCase()] || 'Artículo');
 }
-let _catalogRigInstances = [];
-function cleanupCatalogRigPreviews(){
-  _catalogRigInstances.forEach(x=>{
-    try{ if(x.anim) cancelAnimationFrame(x.anim); }catch(e){}
-    try{ x.scene && x.scene.traverse(o=>{ if(o.geometry) o.geometry.dispose(); if(o.material){ const ms=Array.isArray(o.material)?o.material:[o.material]; ms.forEach(m=>{ if(m.map) m.map.dispose(); m.dispose(); }); }}); }catch(e){}
-    try{ x.renderer && x.renderer.dispose(); }catch(e){}
-  });
-  _catalogRigInstances=[];
-}
-function createCatalogRigPreview(container,item){
-  if(!container || typeof THREE==='undefined') return;
-  const user = current()?.user;
-  const torsoType = user?.avatar?.torsoType === 'female' ? 'female' : 'male';
-  const rigUser = { avatar:{ torsoType, colors:{ head:'#f5c928', torso:'#1477b9', arms:'#f5c928', legs:'#222831' }, accessories:[String(item.id)] } };
-  const scene=new THREE.Scene();
-  const w=Math.max(1,container.clientWidth||220), h=Math.max(1,container.clientHeight||210);
-  const camera=new THREE.PerspectiveCamera(30,w/h,.1,100); camera.position.set(2.65,1.0,4.5); camera.lookAt(0,.65,0);
-  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:false});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5)); renderer.setSize(w,h,false); renderer.outputEncoding=THREE.sRGBEncoding;
-  renderer.shadowMap.enabled=false; container.innerHTML=''; container.appendChild(renderer.domElement);
-  scene.add(new THREE.HemisphereLight(0xffffff,0x353047,1.7));
-  const key=new THREE.DirectionalLight(0xffffff,1.15); key.position.set(3,5,4); scene.add(key);
-  const rim=new THREE.DirectionalLight(0x78bfff,.7); rim.position.set(-3,3,-4); scene.add(rim);
-  const floor=new THREE.Mesh(new THREE.CircleGeometry(1.25,32),new THREE.MeshBasicMaterial({color:0x0d0b17,transparent:true,opacity:.72})); floor.rotation.x=-Math.PI/2; floor.position.y=-.59; scene.add(floor);
-  const group=buildAvatar3DModel(rigUser); group.scale.multiplyScalar(1.55); group.position.y=.05; scene.add(group);
-  // La prenda se muestra sobre el mismo rig del avatar, nunca como plantilla plana.
-  let yaw=0,drag=false,lastX=0;
-  renderer.domElement.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;renderer.domElement.setPointerCapture?.(e.pointerId);});
-  renderer.domElement.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-lastX)*.012;lastX=e.clientX;});
-  renderer.domElement.addEventListener('pointerup',()=>drag=false);
-  const started=performance.now();
-  const inst={scene,renderer,anim:0}; _catalogRigInstances.push(inst);
-  const loop=()=>{
-    if(!document.body.contains(renderer.domElement)) return;
-    if(!drag) yaw += 0.006;
-    group.rotation.y=yaw;
-    // respiración/pose mínima para que el rig se sienta vivo, sin distraer del artículo.
-    group.position.y=.05 + Math.sin((performance.now()-started)*.002)*.012;
-    renderer.render(scene,camera); inst.anim=requestAnimationFrame(loop);
-  };
-  loop();
-}
 function renderCatalog(category) {
   const container = document.getElementById('catalogGridContainer');
   if(!container) return;
-  cleanupCatalogRigPreviews();
   const currentCategory = category || 'all';
   const filtered = currentCategory === 'all' ? catalogDatabase : catalogDatabase.filter(item => item.category === currentCategory);
   container.innerHTML = filtered.map((item, index) => {
     const safeId = `catalog-buy-${index}-${item.id.replace(/[^a-zA-Z0-9_-]/g,'_')}`;
     const price = Math.max(0, Math.floor(Number(item.price) || 0));
-    const isWearable = item.category === 'shirts' || item.category === 'pants';
     return `
       <div class="catalog-item">
         <h3 style="margin:5px 0">${escapeHTML(item.name)}</h3>
-        ${isWearable ? `<div class="catalog-rig-preview" data-rig-item-id="${escapeHTML(String(item.id))}"></div>` : `<div class="catalog-image">${catalogIconSVG(item)}</div>`}
+        <div class="catalog-image">${catalogIconSVG(item)}</div>
         <div style="display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;background:rgba(124,58,237,.16);border:1px solid rgba(124,58,237,.35);font-size:11px;font-weight:800;color:#c4b5fd;margin:2px 0 7px">${escapeHTML(catalogCategoryLabel(item.category))}${item.type==='3d'?' · 3D':''}</div>
         <p style="color:#666;font-size:12px;margin:3px 0">${escapeHTML(item.desc || '')}</p>
         <p style="color:#777;font-size:12px;margin:3px 0">👤 Creator: ${escapeHTML(item.owner || 'EpicBlox')}</p>
@@ -6097,10 +6135,6 @@ function renderCatalog(category) {
       </div>
     `;
   }).join('');
-  container.querySelectorAll('[data-rig-item-id]').forEach(el=>{
-    const item=catalogDatabase.find(x=>String(x.id)===String(el.dataset.rigItemId));
-    if(item) createCatalogRigPreview(el,item);
-  });
 
   // Eventos reales sobre los botones: evita que un ID/nombre de artículo
   // rompa un onclick inline y permite bloquear dobles clics durante la compra.
@@ -7045,9 +7079,9 @@ function init(){
   makeColorButtons("headColors","head");makeColorButtons("armColors","arms");makeColorButtons("torsoColors","torso");makeColorButtons("legsColors","legs");
   const c=current();if(c)loadCurrentUser();else document.getElementById('authScreen').style.display="flex";
   loadGames();
-  loadCustomCatalog();
+  loadCustomCatalog().catch(()=>{});
   startTradePolling();
-  setTimeout(creatorInitViewer, 250);
+  handleEmailVerifyResult();
 }
 init();
 </script>
@@ -7123,6 +7157,14 @@ init();
       <h3>👕 Posts</h3>
       <div id="adminItemsList" class="admin-list"></div>
     </div>
+  </div>
+</div>
+<div id="emailVerifyPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:99999;align-items:center;justify-content:center;padding:20px">
+  <div style="width:min(440px,100%);background:#171329;border:1px solid #4b3a76;border-radius:16px;padding:26px;text-align:center;box-shadow:0 20px 70px rgba(0,0,0,.45)">
+    <div style="font-size:48px">🎉</div>
+    <h2 style="margin:8px 0;color:#f4f0ff">¡Email verificado!</h2>
+    <p style="color:#d8d0e8;line-height:1.5">Gracias por verificar tu email! de recompensa te dimos un <strong style="color:#58e878">Epic Green Cap</strong>.</p>
+    <button class="section-button" onclick="closeEmailVerifyPopup()" style="margin-top:10px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff">¡Genial!</button>
   </div>
 </div>
 </body>
