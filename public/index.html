@@ -29,7 +29,7 @@ body.theme-purple .sidebar,body.theme-purple .settings-card,body.theme-purple .f
 .sidebar{border-right:1px solid var(--eb-border)!important}.side-item:hover,.friend:hover{background:rgba(155,92,255,.16)!important}.section-header h2,.creator-small,.events p,.game-players,.trade-item small,.trade-last,.presence-dot{color:var(--eb-muted)!important}
 .profile-header{background:linear-gradient(135deg,#31265b,#1a1730)!important;border-color:var(--eb-border)!important}.profile-avatar{background:#211b36!important}.profile-avatar-large{background:linear-gradient(#30265b 0 72%,#526d38 72%)!important;border-color:#66568e!important}
 .game,.trade-friend,.trade-item,.dm-row,.inventory-slot,.catalog-image,.chat-window,.chat-body,.chat-msg,.chat-input-row,.dm-msg.them,.creator-transform,.creator-2d-canvas,.auth-info{background:#18152b!important;color:var(--eb-text)!important;border-color:#3d315e!important}.game:hover,.catalog-item:hover,.inventory-item:hover{box-shadow:0 12px 28px rgba(0,0,0,.35)}
-.catalog-image{background:radial-gradient(circle,#302650 0%,#141126 100%)!important}.cat-tab{background:#2b2346;color:#ddd4f5}.cat-tab.active{background:linear-gradient(135deg,#9b5cff,#5f36c9);color:#fff}.trade-friend.selected,.trade-item.selected{background:#2b2050!important}.trade-pill{background:#30284a;color:#ddd4f5}.trade-empty{background:#1a162d;color:var(--eb-muted);border-color:#4a3a68}.creator-viewer{background:radial-gradient(circle at 50% 28%,#302452 0,#17142a 48%,#0e0c18 100%)!important;border-color:#4b3a76}.creator-gizmo-label{background:rgba(24,20,43,.92);color:#eee;border-color:#4b3a76}.creator-tools button,.creator-transform-grid input,.friends-actions input,.auth-form input,.trade-friend,.trade-item,.search,.chat-input-row input{background:#111020!important;color:#f4f0ff!important;border-color:#4b3a76!important}.creator-tools button.active,.section-button{background:linear-gradient(135deg,#6d45d9,#422a8d);color:#fff}.auth-screen{background:radial-gradient(circle at 50% 10%,#35245d,#0b0912 70%)!important}.auth-tab{background:#241e39;color:#cfc7e4}.auth-tab.active,.auth-button{background:linear-gradient(135deg,#9b5cff,#5b35c7);color:#fff}.auth-info{color:var(--eb-muted)!important}.topbar{background:rgba(17,13,32,.94)!important;border-bottom:1px solid #443568;backdrop-filter:blur(14px)}
+.catalog-image{background:radial-gradient(circle,#302650 0%,#141126 100%)!important}.catalog-rig-preview{width:100%;height:210px;position:relative;overflow:hidden;border-radius:8px;background:radial-gradient(circle at 50% 28%,#3a315c 0%,#18142b 58%,#0e0c18 100%);border:1px solid #4b3a76;margin-bottom:8px}.catalog-rig-preview canvas{display:block;width:100%;height:100%;cursor:grab}.catalog-rig-preview canvas:active{cursor:grabbing}.cat-tab{background:#2b2346;color:#ddd4f5}.cat-tab.active{background:linear-gradient(135deg,#9b5cff,#5f36c9);color:#fff}.trade-friend.selected,.trade-item.selected{background:#2b2050!important}.trade-pill{background:#30284a;color:#ddd4f5}.trade-empty{background:#1a162d;color:var(--eb-muted);border-color:#4a3a68}.creator-viewer{background:radial-gradient(circle at 50% 28%,#302452 0,#17142a 48%,#0e0c18 100%)!important;border-color:#4b3a76}.creator-gizmo-label{background:rgba(24,20,43,.92);color:#eee;border-color:#4b3a76}.creator-tools button,.creator-transform-grid input,.friends-actions input,.auth-form input,.trade-friend,.trade-item,.search,.chat-input-row input{background:#111020!important;color:#f4f0ff!important;border-color:#4b3a76!important}.creator-tools button.active,.section-button{background:linear-gradient(135deg,#6d45d9,#422a8d);color:#fff}.auth-screen{background:radial-gradient(circle at 50% 10%,#35245d,#0b0912 70%)!important}.auth-tab{background:#241e39;color:#cfc7e4}.auth-tab.active,.auth-button{background:linear-gradient(135deg,#9b5cff,#5b35c7);color:#fff}.auth-info{color:var(--eb-muted)!important}.topbar{background:rgba(17,13,32,.94)!important;border-bottom:1px solid #443568;backdrop-filter:blur(14px)}
 /* Game HUD / chat */
 .chat-window{width:300px;height:340px;min-width:240px;min-height:260px;max-width:min(92vw,560px);max-height:70vh;resize:both;overflow:hidden;background:#151126!important;border:1px solid #58447f!important}.chat-body,.dm-list{background:#100e1e!important}.chat-msg,.dm-msg.them{background:#211a36!important;color:#eee!important}.chat-input-row{background:#151126!important;border-color:#3d315e!important}.chat{background:linear-gradient(135deg,#241b42,#141022)!important;border:1px solid #58447f}.chat-resize-handle{position:absolute;right:2px;bottom:2px;width:18px;height:18px;cursor:nwse-resize;opacity:.7;background:linear-gradient(135deg,transparent 45%,#b98cff 46%,#b98cff 54%,transparent 55%);pointer-events:auto}
 body.in-game .chat-window{max-width:92vw;max-height:70vh}
@@ -6033,18 +6033,62 @@ function catalogIconSVG(item) {
 function catalogCategoryLabel(category){
   return ({hats:'Sombrero',shirts:'Camisa 2D',pants:'Pantalón 2D',faces:'Cara',gear:'Accesorio',backgrounds:'Fondo de perfil'}[String(category||'').toLowerCase()] || 'Artículo');
 }
+let _catalogRigInstances = [];
+function cleanupCatalogRigPreviews(){
+  _catalogRigInstances.forEach(x=>{
+    try{ if(x.anim) cancelAnimationFrame(x.anim); }catch(e){}
+    try{ x.scene && x.scene.traverse(o=>{ if(o.geometry) o.geometry.dispose(); if(o.material){ const ms=Array.isArray(o.material)?o.material:[o.material]; ms.forEach(m=>{ if(m.map) m.map.dispose(); m.dispose(); }); }}); }catch(e){}
+    try{ x.renderer && x.renderer.dispose(); }catch(e){}
+  });
+  _catalogRigInstances=[];
+}
+function createCatalogRigPreview(container,item){
+  if(!container || typeof THREE==='undefined') return;
+  const user = current()?.user;
+  const torsoType = user?.avatar?.torsoType === 'female' ? 'female' : 'male';
+  const rigUser = { avatar:{ torsoType, colors:{ head:'#f5c928', torso:'#1477b9', arms:'#f5c928', legs:'#222831' }, accessories:[String(item.id)] } };
+  const scene=new THREE.Scene();
+  const w=Math.max(1,container.clientWidth||220), h=Math.max(1,container.clientHeight||210);
+  const camera=new THREE.PerspectiveCamera(30,w/h,.1,100); camera.position.set(2.65,1.0,4.5); camera.lookAt(0,.65,0);
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:false});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5)); renderer.setSize(w,h,false); renderer.outputEncoding=THREE.sRGBEncoding;
+  renderer.shadowMap.enabled=false; container.innerHTML=''; container.appendChild(renderer.domElement);
+  scene.add(new THREE.HemisphereLight(0xffffff,0x353047,1.7));
+  const key=new THREE.DirectionalLight(0xffffff,1.15); key.position.set(3,5,4); scene.add(key);
+  const rim=new THREE.DirectionalLight(0x78bfff,.7); rim.position.set(-3,3,-4); scene.add(rim);
+  const floor=new THREE.Mesh(new THREE.CircleGeometry(1.25,32),new THREE.MeshBasicMaterial({color:0x0d0b17,transparent:true,opacity:.72})); floor.rotation.x=-Math.PI/2; floor.position.y=-.59; scene.add(floor);
+  const group=buildAvatar3DModel(rigUser); group.scale.multiplyScalar(1.55); group.position.y=.05; scene.add(group);
+  // La prenda se muestra sobre el mismo rig del avatar, nunca como plantilla plana.
+  let yaw=0,drag=false,lastX=0;
+  renderer.domElement.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;renderer.domElement.setPointerCapture?.(e.pointerId);});
+  renderer.domElement.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-lastX)*.012;lastX=e.clientX;});
+  renderer.domElement.addEventListener('pointerup',()=>drag=false);
+  const started=performance.now();
+  const inst={scene,renderer,anim:0}; _catalogRigInstances.push(inst);
+  const loop=()=>{
+    if(!document.body.contains(renderer.domElement)) return;
+    if(!drag) yaw += 0.006;
+    group.rotation.y=yaw;
+    // respiración/pose mínima para que el rig se sienta vivo, sin distraer del artículo.
+    group.position.y=.05 + Math.sin((performance.now()-started)*.002)*.012;
+    renderer.render(scene,camera); inst.anim=requestAnimationFrame(loop);
+  };
+  loop();
+}
 function renderCatalog(category) {
   const container = document.getElementById('catalogGridContainer');
   if(!container) return;
+  cleanupCatalogRigPreviews();
   const currentCategory = category || 'all';
   const filtered = currentCategory === 'all' ? catalogDatabase : catalogDatabase.filter(item => item.category === currentCategory);
   container.innerHTML = filtered.map((item, index) => {
     const safeId = `catalog-buy-${index}-${item.id.replace(/[^a-zA-Z0-9_-]/g,'_')}`;
     const price = Math.max(0, Math.floor(Number(item.price) || 0));
+    const isWearable = item.category === 'shirts' || item.category === 'pants';
     return `
       <div class="catalog-item">
         <h3 style="margin:5px 0">${escapeHTML(item.name)}</h3>
-        <div class="catalog-image">${catalogIconSVG(item)}</div>
+        ${isWearable ? `<div class="catalog-rig-preview" data-rig-item-id="${escapeHTML(String(item.id))}"></div>` : `<div class="catalog-image">${catalogIconSVG(item)}</div>`}
         <div style="display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;background:rgba(124,58,237,.16);border:1px solid rgba(124,58,237,.35);font-size:11px;font-weight:800;color:#c4b5fd;margin:2px 0 7px">${escapeHTML(catalogCategoryLabel(item.category))}${item.type==='3d'?' · 3D':''}</div>
         <p style="color:#666;font-size:12px;margin:3px 0">${escapeHTML(item.desc || '')}</p>
         <p style="color:#777;font-size:12px;margin:3px 0">👤 Creator: ${escapeHTML(item.owner || 'EpicBlox')}</p>
@@ -6053,6 +6097,10 @@ function renderCatalog(category) {
       </div>
     `;
   }).join('');
+  container.querySelectorAll('[data-rig-item-id]').forEach(el=>{
+    const item=catalogDatabase.find(x=>String(x.id)===String(el.dataset.rigItemId));
+    if(item) createCatalogRigPreview(el,item);
+  });
 
   // Eventos reales sobre los botones: evita que un ID/nombre de artículo
   // rompa un onclick inline y permite bloquear dobles clics durante la compra.
