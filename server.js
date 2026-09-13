@@ -930,6 +930,8 @@ function defaultUser(username, passwordHash, userId) {
     friendRequests: [],
     outgoingRequests: [],
     lastDailyLogin: "",
+    email: "",
+    emailVerification: { verified: false, tokenHash: "", expiresAt: 0, rewardGranted: false },
     banUntil: 0,
     banReason: "",
     createdAt: new Date().toISOString()
@@ -943,6 +945,8 @@ function publicUser(user, key) {
     userId: Number(user.userId),
     usernameKey: key,
     username: user.username,
+    email: user.email || "",
+    emailVerified: !!(user.emailVerification && user.emailVerification.verified),
     bio: user.bio || "",
     theme: user.theme || "light",
     sunnys: user.sunnys || 0,
@@ -1061,6 +1065,61 @@ function json(res, status, obj) {
   res.end(JSON.stringify(obj));
 }
 
+
+function normalizeEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function validEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
+}
+
+function verificationHash(token) {
+  return crypto.createHash("sha256").update(String(token || "")).digest("hex");
+}
+
+function publicBaseUrl(req) {
+  const configured = String(process.env.PUBLIC_URL || process.env.RENDER_EXTERNAL_URL || "").trim().replace(/\/$/, "");
+  if (configured) return configured;
+  const proto = String(req.headers["x-forwarded-proto"] || "https").split(",")[0].trim();
+  const host = String(req.headers.host || "").trim();
+  return host ? `${proto}://${host}` : "http://localhost:" + PORT;
+}
+
+async function sendVerificationEmail(email, username, verifyUrl) {
+  const apiKey = String(process.env.RESEND_API_KEY || "").trim();
+  const from = String(process.env.EMAIL_FROM || process.env.RESEND_FROM || "").trim();
+  if (!apiKey || !from) {
+    throw new Error("El envio de correo no esta configurado en Render. Falta RESEND_API_KEY o EMAIL_FROM.");
+  }
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from,
+      to: [email],
+      subject: "Verifica tu email de EpicBloxs",
+      html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:24px;background:#171329;color:#f4f0ff;border-radius:14px"><h1 style="margin-top:0">EpicBloxs</h1><p>Hola ${String(username).replace(/[<>&\"]/g, "")}!</p><p>Haz click en el boton para verificar tu email.</p><p><a href="${verifyUrl}" style="display:inline-block;padding:12px 20px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-weight:700">Verificar email</a></p><p style="font-size:12px;opacity:.7">Este enlace caduca en 24 horas.</p></div>`
+    })
+  });
+  if (!response.ok) {
+    let detail = "No se pudo enviar el correo.";
+    try { const data = await response.json(); detail = data.message || data.error || detail; } catch {}
+    throw new Error(detail);
+  }
+}
+
+function grantEmailVerificationReward(user) {
+  normalizeAvatarData(user);
+  if (!Array.isArray(user.avatarInventory)) user.avatarInventory = [];
+  if (!user.avatarInventory.some(id => sameAvatarItem(id, "Epic Green Cap"))) {
+    user.avatarInventory.push("Epic Green Cap");
+  }
+  if (!user.avatar || typeof user.avatar !== "object") user.avatar = {};
+  if (!Array.isArray(user.avatar.accessories)) user.avatar.accessories = [];
+  return user;
+}
+
 const server = http.createServer(async (req, res) => {
   const urlPath = (req.url || "/").split("?")[0];
 
@@ -1129,6 +1188,78 @@ const server = http.createServer(async (req, res) => {
     const token = makeToken(key);
     registerSession(token, key);
     return json(res, 200, authPayload(user, key));
+  }
+
+
+  if (urlPath === "/api/email/send-verification" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const body = await readBody(req);
+    const email = normalizeEmail(body.email);
+    if (!validEmail(email)) return json(res, 400, { error: "Escribe un email valido." });
+    const users = sess.users;
+    const user = users[sess.key];
+    normalizeAvatarData(user);
+    if (user.emailVerification && user.emailVerification.verified && normalizeEmail(user.email) === email) {
+      return json(res, 200, { ok: true, alreadyVerified: true, user: publicUser(user, sess.key) });
+    }
+    for (const [key, other] of Object.entries(users)) {
+      if (key !== sess.key && normalizeEmail(other.email) === email) {
+        return json(res, 409, { error: "Ese email ya esta vinculado a otra cuenta." });
+      }
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const verifyUrl = publicBaseUrl(req) + "/api/email/verify?token=" + encodeURIComponent(token);
+    try {
+      await sendVerificationEmail(email, user.username, verifyUrl);
+    } catch (err) {
+      return json(res, 503, { error: err.message || "No se pudo enviar el correo." });
+    }
+
+    user.email = email;
+    user.emailVerification = {
+      verified: false,
+      tokenHash: verificationHash(token),
+      expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+      rewardGranted: !!(user.emailVerification && user.emailVerification.rewardGranted)
+    };
+    users[sess.key] = user;
+    saveUsersDisk(users);
+    return json(res, 200, { ok: true, sent: true, user: publicUser(user, sess.key) });
+  }
+
+  if (urlPath === "/api/email/verify" && req.method === "GET") {
+    const parsed = new URL(req.url || "/api/email/verify", publicBaseUrl(req));
+    const token = String(parsed.searchParams.get("token") || "");
+    const tokenHash = verificationHash(token);
+    const users = syncUserRegistry();
+    let matchedKey = null;
+    for (const [key, user] of Object.entries(users)) {
+      const ev = user && user.emailVerification;
+      if (ev && ev.tokenHash === tokenHash) { matchedKey = key; break; }
+    }
+    if (!matchedKey) {
+      res.writeHead(302, { Location: "/?emailVerified=0" });
+      return res.end();
+    }
+    const user = users[matchedKey];
+    const ev = user.emailVerification;
+    if (Number(ev.expiresAt || 0) < Date.now()) {
+      res.writeHead(302, { Location: "/?emailVerified=expired" });
+      return res.end();
+    }
+    ev.verified = true;
+    ev.tokenHash = "";
+    ev.expiresAt = 0;
+    if (!ev.rewardGranted) {
+      grantEmailVerificationReward(user);
+      ev.rewardGranted = true;
+    }
+    users[matchedKey] = user;
+    saveUsersDisk(users);
+    res.writeHead(302, { Location: "/?emailVerified=1" });
+    return res.end();
   }
 
   if (urlPath === "/api/recover" && req.method === "POST") {

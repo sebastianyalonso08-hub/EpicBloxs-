@@ -16,6 +16,11 @@ services:
           property: connectionString
       - key: SESSION_SECRET
         generateValue: true
+      # Configura estos valores en Render para activar el verificador de email.
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
 
 databases:
   - name: epicbloxs-db
