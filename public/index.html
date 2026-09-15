@@ -1055,7 +1055,7 @@ function creatorUndo(){if(creatorHistoryIndex>0){creatorHistoryIndex--;creatorRe
 function creatorRedo(){if(creatorHistoryIndex<creatorHistory.length-1){creatorHistoryIndex++;creatorRestore2D(creatorHistoryIndex);}}
 function creatorSync2DTexture(){
   const canvas=document.getElementById('creator2dCanvas'); if(!canvas || typeof THREE==='undefined') return;
-  if(!creatorClothingTex){creatorClothingTex=new THREE.CanvasTexture(canvas); creatorClothingTex.colorSpace=THREE.SRGBColorSpace; creatorClothingTex.needsUpdate=true;}
+  if(!creatorClothingTex){creatorClothingTex=new THREE.CanvasTexture(canvas); if(typeof THREE.sRGBEncoding !== 'undefined') creatorClothingTex.encoding=THREE.sRGBEncoding; if('colorSpace' in creatorClothingTex && typeof THREE.SRGBColorSpace !== 'undefined') creatorClothingTex.colorSpace=THREE.SRGBColorSpace; creatorClothingTex.needsUpdate=true;}
   creatorClothingTex.needsUpdate=true;
   if(creatorMode==='face' && creatorGroup){
     const head=creatorGroup.getObjectByName('previewHead');
@@ -1146,8 +1146,7 @@ function creatorAddClothingPreview(){
     if(faceCanvas){
       previewFaceTex=creatorClothingTex || new THREE.CanvasTexture(faceCanvas);
       previewFaceTex.flipY=false;
-      previewFaceTex.colorSpace=THREE.SRGBColorSpace;
-      previewFaceTex.needsUpdate=true;
+      clothingSRGB(previewFaceTex);
     }
   }
   const faceMat=previewFaceTex ? new THREE.MeshLambertMaterial({map:previewFaceTex,color:0xffffff}) : sideHeadMat;
@@ -1186,14 +1185,14 @@ function creatorAddClothingPreview(){
     ctx.clearRect(0,0,c.width,c.height);
     ctx.drawImage(src,side==='right'?src.width/2:0,0,src.width/2,src.height,0,0,c.width,c.height);
     const t=new THREE.CanvasTexture(c);
-    t.colorSpace=THREE.SRGBColorSpace; t.needsUpdate=true;
+    clothingSRGB(t);
     return t;
   };
 
   if(cat==='pants'){
     const lt=makeHalfTexture('left'), rt=makeHalfTexture('right');
-    const lm=lt?new THREE.MeshLambertMaterial({map:lt,color:0xffffff,side:THREE.DoubleSide,transparent:true}):legMat;
-    const rm=rt?new THREE.MeshLambertMaterial({map:rt,color:0xffffff,side:THREE.DoubleSide,transparent:true}):legMat;
+    const lm=lt?new THREE.MeshBasicMaterial({map:lt,color:0xffffff,side:THREE.DoubleSide,transparent:false,toneMapped:false}):legMat;
+    const rm=rt?new THREE.MeshBasicMaterial({map:rt,color:0xffffff,side:THREE.DoubleSide,transparent:false,toneMapped:false}):legMat;
     const lp=new THREE.Mesh(new THREE.PlaneGeometry(.50,1.30),lm); lp.position.set(-.27,-.39,.256); lp.userData.creator2D=true; creatorGroup.add(lp);
     const rp=new THREE.Mesh(new THREE.PlaneGeometry(.50,1.30),rm); rp.position.set(.27,-.39,.256); rp.userData.creator2D=true; creatorGroup.add(rp);
   } else {
@@ -1204,13 +1203,13 @@ function creatorAddClothingPreview(){
       const c=document.createElement('canvas'); c.width=256; c.height=256;
       const ctx=c.getContext('2d');
       ctx.drawImage(src,src.width*r.x,src.height*r.y,src.width*r.w,src.height*r.h,0,0,256,256);
-      const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.needsUpdate=true; return t;
+      const t=new THREE.CanvasTexture(c); clothingSRGB(t); return t;
     };
-    const tm=new THREE.MeshLambertMaterial({map:makePreviewCrop('torso'),color:0xffffff,side:THREE.DoubleSide,transparent:true});
+    const tm=new THREE.MeshBasicMaterial({map:makePreviewCrop('torso'),color:0xffffff,side:THREE.DoubleSide,transparent:false,toneMapped:false});
     const plane=new THREE.Mesh(new THREE.PlaneGeometry(1.05,1.30),tm);
     plane.position.set(0,.95,.306); plane.userData.creator2D=true; creatorGroup.add(plane);
-    const lm=new THREE.MeshLambertMaterial({map:makePreviewCrop('leftArm'),color:0xffffff,side:THREE.DoubleSide,transparent:true});
-    const rm=new THREE.MeshLambertMaterial({map:makePreviewCrop('rightArm'),color:0xffffff,side:THREE.DoubleSide,transparent:true});
+    const lm=new THREE.MeshBasicMaterial({map:makePreviewCrop('leftArm'),color:0xffffff,side:THREE.DoubleSide,transparent:false,toneMapped:false});
+    const rm=new THREE.MeshBasicMaterial({map:makePreviewCrop('rightArm'),color:0xffffff,side:THREE.DoubleSide,transparent:false,toneMapped:false});
     const lp=new THREE.Mesh(new THREE.PlaneGeometry(.45,1.35),lm); lp.position.set(-.79,1.02,.281); lp.userData.creator2D=true; creatorGroup.add(lp);
     const rp=new THREE.Mesh(new THREE.PlaneGeometry(.45,1.35),rm); rp.position.set(.79,1.02,.281); rp.userData.creator2D=true; creatorGroup.add(rp);
   }
@@ -1544,8 +1543,16 @@ function roundRectPath(ctx, x, y, w, h, r) {
 const _epicBuiltInClothingCache = {};
 
 function epicTex(canvas){
+  // IMPORTANT: Three.js r128 uses texture.encoding rather than colorSpace.
+  // Setting only colorSpace can leave CanvasTexture color handling undefined.
   const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.flipY = true;
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  if (typeof THREE.sRGBEncoding !== 'undefined') tex.encoding = THREE.sRGBEncoding;
+  if ('colorSpace' in tex && typeof THREE.SRGBColorSpace !== 'undefined') tex.colorSpace = THREE.SRGBColorSpace;
   tex.needsUpdate = true;
   return tex;
 }
@@ -1569,98 +1576,6 @@ function epicEB(ctx,x,y,size,fill='#fff'){
   ctx.fillStyle=fill; ctx.font=`900 ${size}px Arial`; ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText('EB',x,y);
 }
-function epicShirtStyle(name, front, back, leftArm, rightArm){
-  const key=String(name||'none');
-  if(_epicBuiltInClothingCache[key]) return _epicBuiltInClothingCache[key];
-  const palettes={
-    'Blue Shirt':['#2468d8','#17428d','#ffffff'],
-    'Green Hoodie':['#31a96b','#17613f','#d8ffe8'],
-    'Red Tee':['#e63f46','#9f2027','#ffffff'],
-    'Black Jacket':['#292b38','#11121a','#a78bfa'],
-    'Pink Tee':['#ef6d9f','#b83d70','#fff0f6'],
-    'Lavender Hoodie':['#a98be8','#6947a4','#f2eaff'],
-    'White Blouse':['#f5f4fa','#d7d4e2','#805fc0']
-  }[key] || ['#2468d8','#17428d','#ffffff'];
-  const [main,dark,accent]=palettes;
-  const f=epicPanel(256,256,main), b=epicPanel(256,256,main);
-  const l=epicPanel(128,256,main), r=epicPanel(128,256,main);
-  const F=f.ctx,B=b.ctx,L=l.ctx,R=r.ctx;
-
-  function base(ctx,w,h){
-    ctx.fillStyle=main;ctx.fillRect(0,0,w,h);
-    ctx.fillStyle=dark;ctx.fillRect(0,0,w,18);ctx.fillRect(0,h-18,w,18);
-    ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(0,18,10,h-36);ctx.fillRect(w-10,18,10,h-36);
-  }
-  [ [F,256,256],[B,256,256],[L,128,256],[R,128,256] ].forEach(v=>base(...v));
-
-  if(key==='Blue Shirt'){
-    F.fillStyle=accent;F.fillRect(0,30,256,5);F.fillRect(0,222,256,5);
-    epicRound(F,48,72,160,122,12,'#1b5bc0','#0e3475',4);
-    epicEB(F,128,133,42,'#fff');
-    F.fillStyle='#8ec5ff';F.fillRect(112,82,32,5);
-    epicEB(B,128,130,32,'rgba(255,255,255,.9)');
-  } else if(key==='Green Hoodie'){
-    F.fillStyle=accent;F.fillRect(0,30,256,5);F.fillRect(0,222,256,5);
-    ctx=F; ctx.strokeStyle=accent;ctx.lineWidth=6;ctx.beginPath();ctx.arc(128,18,55,0,Math.PI);ctx.stroke();
-    epicRound(F,55,142,146,62,14,'#155b3b','#0c3b27',4);
-    F.fillStyle=accent;F.fillRect(92,78,5,72);F.fillRect(159,78,5,72);
-    epicEB(F,128,113,24,'#eafff0');
-    epicEB(B,128,130,32,'rgba(216,255,232,.8)');
-  } else if(key==='Red Tee'){
-    F.fillStyle='#ff8b8f';F.fillRect(0,31,256,5);F.fillStyle=dark;F.fillRect(0,221,256,5);
-    epicRound(F,55,78,146,112,10,'#c72f36','#7f171d',4);
-    epicEB(F,128,132,48,'#fff');
-    F.fillStyle=accent;F.beginPath();F.moveTo(128,72);F.lineTo(154,102);F.lineTo(102,102);F.closePath();F.fill();
-    epicEB(B,128,130,32,'rgba(255,255,255,.75)');
-  } else if(key==='Black Jacket'){
-    F.fillStyle='#3b3d50';F.fillRect(0,30,256,5);F.fillRect(0,221,256,5);
-    F.strokeStyle=accent;F.lineWidth=4;F.beginPath();F.moveTo(128,35);F.lineTo(128,221);F.stroke();
-    epicRound(F,45,96,66,54,7,'#20222c','#5b5d70',3);epicRound(F,145,96,66,54,7,'#20222c','#5b5d70',3);
-    epicEB(F,128,78,20,'#e8ddff');
-    B.fillStyle='#181923';B.fillRect(0,30,256,5);epicEB(B,128,132,32,'rgba(167,139,250,.75)');
-  } else if(key==='Pink Tee'){
-    F.fillStyle=accent;F.fillRect(0,31,256,5);F.fillStyle=dark;F.fillRect(0,221,256,5);
-    epicRound(F,55,80,146,112,14,'#d75486','#9b2e5b',4);
-    F.fillStyle=accent;F.beginPath();F.moveTo(128,112);F.bezierCurveTo(102,90,78,116,128,164);F.bezierCurveTo(178,116,154,90,128,112);F.fill();
-    epicEB(B,128,130,32,'rgba(255,240,246,.8)');
-  } else if(key==='Lavender Hoodie'){
-    F.fillStyle=accent;F.fillRect(0,31,256,5);F.fillStyle=dark;F.fillRect(0,221,256,5);
-    F.strokeStyle=accent;F.lineWidth=6;F.beginPath();F.arc(128,18,55,0,Math.PI);F.stroke();
-    epicRound(F,55,142,146,62,14,'#7655b8','#4f367e',4);
-    F.strokeStyle=accent;F.lineWidth=4;F.beginPath();F.moveTo(128,66);F.lineTo(128,142);F.stroke();
-    epicEB(B,128,130,32,'rgba(242,234,255,.8)');
-  } else if(key==='White Blouse'){
-    F.fillStyle=accent;F.fillRect(0,30,256,5);F.fillRect(0,221,256,5);
-    F.fillStyle='#e3e1ec';F.fillRect(18,35,12,186);F.fillRect(226,35,12,186);
-    F.strokeStyle=accent;F.lineWidth=4;F.beginPath();F.moveTo(128,38);F.lineTo(128,221);F.stroke();
-    for(let y=78;y<190;y+=30){F.fillStyle=accent;F.beginPath();F.arc(128,y,4,0,Math.PI*2);F.fill();}
-    epicEB(B,128,130,32,'rgba(128,95,192,.65)');
-  }
-
-  // Sleeves are part of the shirt artwork, not skin-colored overlays.
-  [L,R].forEach(ctx=>{
-    ctx.fillStyle=dark;ctx.fillRect(0,0,128,18);ctx.fillRect(0,238,128,18);
-    ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(10,18,8,220);ctx.fillRect(110,18,8,220);
-    ctx.fillStyle=accent;ctx.fillRect(0,30,128,5);
-  });
-  const out={
-    torso:{front:epicTex(F),back:epicTex(B)},
-    leftArm:{front:epicTex(L),back:epicTex(L)},
-    rightArm:{front:epicTex(R),back:epicTex(R)}
-  };
-  _epicBuiltInClothingCache[key]=out;
-  return out;
-}
-
-function createBuiltInShirtParts(torsoColor, shirtName){
-  if(!shirtName) return null;
-  return epicShirtStyle(shirtName);
-}
-function createShirtTexture(torsoColor, shirtName){
-  const parts=createBuiltInShirtParts(torsoColor,shirtName);
-  return parts ? parts.torso.front : null;
-}
-
 function epicPantsStyle(name){
   const key=String(name||'none');
   const cacheKey='pants:'+key;
@@ -1829,7 +1744,7 @@ function loadDataImageTexture(dataUrl, key, flipY=false){
   const ctx=canvas.getContext('2d');
   const tex=new THREE.CanvasTexture(canvas);
   tex.flipY=flipY;
-  tex.colorSpace=THREE.SRGBColorSpace;
+  if(typeof THREE.sRGBEncoding !== 'undefined') tex.encoding=THREE.sRGBEncoding; if('colorSpace' in tex && typeof THREE.SRGBColorSpace !== 'undefined') tex.colorSpace=THREE.SRGBColorSpace;
   tex.wrapS=THREE.ClampToEdgeWrapping; tex.wrapT=THREE.ClampToEdgeWrapping;
   const img=new Image();
   img.onload=()=>{ctx.clearRect(0,0,256,256);ctx.drawImage(img,0,0,256,256);tex.needsUpdate=true;};
@@ -1837,247 +1752,297 @@ function loadDataImageTexture(dataUrl, key, flipY=false){
   _customClothingTexCache[key]=tex;
   return tex;
 }
-// Roblox-style classic clothing UV layout. Custom 2D clothes are stored as a
-// PNG, so the game must sample the individual panels instead of putting the
-// whole template on one face of the new rig. The editor may use 512x512 while
-// published classic templates can be 585x559; coordinates are normalized below.
-const CLASSIC_CLOTHING_REGIONS = {
-  torso: {
-    top:    {x:231/585,y:8/559,w:128/585,h:64/559},
-    right:  {x:361/585,y:74/559,w:64/585,h:128/559},
-    front:  {x:231/585,y:74/559,w:128/585,h:128/559},
-    left:   {x:165/585,y:74/559,w:64/585,h:128/559},
-    back:   {x:427/585,y:74/559,w:128/585,h:128/559},
-    bottom: {x:231/585,y:204/559,w:128/585,h:64/559}
-  },
-  rightArm: {
-    top:    {x:217/585,y:289/559,w:64/585,h:64/559},
-    left:   {x:19/585,y:355/559,w:64/585,h:128/559},
-    back:   {x:85/585,y:355/559,w:64/585,h:128/559},
-    right:  {x:151/585,y:355/559,w:64/585,h:128/559},
-    front:  {x:217/585,y:355/559,w:64/585,h:128/559},
-    bottom: {x:217/585,y:485/559,w:64/585,h:64/559}
-  },
-  leftArm: {
-    top:    {x:308/585,y:289/559,w:64/585,h:64/559},
-    front:  {x:308/585,y:355/559,w:64/585,h:128/559},
-    left:   {x:374/585,y:355/559,w:64/585,h:128/559},
-    back:   {x:440/585,y:355/559,w:64/585,h:128/559},
-    right:  {x:506/585,y:355/559,w:64/585,h:128/559},
-    bottom: {x:308/585,y:485/559,w:64/585,h:64/559}
-  },
-  rightLeg: {
-    top:    {x:217/585,y:289/559,w:64/585,h:64/559},
-    left:   {x:19/585,y:355/559,w:64/585,h:128/559},
-    back:   {x:85/585,y:355/559,w:64/585,h:128/559},
-    right:  {x:151/585,y:355/559,w:64/585,h:128/559},
-    front:  {x:217/585,y:355/559,w:64/585,h:128/559},
-    bottom: {x:217/585,y:485/559,w:64/585,h:64/559}
-  },
-  leftLeg: {
-    top:    {x:308/585,y:289/559,w:64/585,h:64/559},
-    front:  {x:308/585,y:355/559,w:64/585,h:128/559},
-    left:   {x:374/585,y:355/559,w:64/585,h:128/559},
-    back:   {x:440/585,y:355/559,w:64/585,h:128/559},
-    right:  {x:506/585,y:355/559,w:64/585,h:128/559},
-    bottom: {x:308/585,y:485/559,w:64/585,h:64/559}
-  }
-};
-// Keep the old name as an alias because the creator preview already uses it.
-const SHIRT_TEMPLATE_REGIONS = CLASSIC_CLOTHING_REGIONS;
+// ============================================================================
+// EPICBLOXS CLOTHING SYSTEM V33
+// One clothing format for the new male/female models.
+// The old system mixed Roblox's 585x559 UV layout with EpicBloxs' own
+// simplified creator template. That made the shirt sample empty/unrelated
+// pixels and then tried to put those textures on different geometries.
+//
+// V32 uses ONE source format: the EpicBloxs shirt template. The torso panel is
+// the visible shirt artwork; the two arm panels are the sleeve artwork. The
+// top/bottom panels are used only on six-sided block geometry. Every generated
+// material is unlit so the artwork can never become black because of a light.
+// ============================================================================
 
-// The pants creator uses a deliberately simple template: the complete left
-// half is the left-leg artwork and the complete right half is the right-leg
-// artwork. It is NOT the Roblox shirt/torso net above. Treating it as the
-// classic net was the main reason custom pants were sampling unrelated areas.
+const CLOTHING_SYSTEM_VERSION = 'v33';
+const _clothingTextureCache = {};
+const _clothingPartCache = {};
+
+// Coordinates match public/templates/camiseta_template.png (585x559).
+// They are normalized so 512x512 creator canvases work too.
+const EPIC_SHIRT_TEMPLATE = {
+  top:      {x:193/585, y:0/559,   w:200/585, h:126/559},
+  leftArm:  {x:0/585,   y:126/559, w:193/585, h:230/559},
+  torso:    {x:193/585, y:126/559, w:200/585, h:230/559},
+  rightArm: {x:393/585, y:126/559, w:192/585, h:230/559},
+  bottom:   {x:193/585, y:356/559, w:200/585, h:203/559}
+};
+const SHIRT_TEMPLATE_REGIONS = EPIC_SHIRT_TEMPLATE;
+const CLASSIC_CLOTHING_REGIONS = EPIC_SHIRT_TEMPLATE;
+
+// Pants creator format: left half = left leg, right half = right leg.
 const PANTS_TEMPLATE_REGIONS = {
-  leftLeg:  {x:0,   y:0, w:0.5, h:1},
-  rightLeg: {x:0.5, y:0, w:0.5, h:1}
+  leftLeg:  {x:0, y:0, w:.5, h:1},
+  rightLeg: {x:.5, y:0, w:.5, h:1}
 };
 
-function cropClassicClothingTexture(imageData, region, key, mirror=false){
-  if(!imageData || !region) return null;
-  // IMPORTANT: the cache key must include the actual clothing item.
-  // Otherwise the first custom shirt/pants texture loaded for a face
-  // (front/back/left/right/etc.) is reused by every other item, making
-  // clothing appear swapped, corrupted or "glitched" in-game.
-  const cacheKey='classic:'+key+':'+(mirror?'m':'n');
-  if(_customClothingPartCache[cacheKey]) return _customClothingPartCache[cacheKey];
+function clothingSRGB(texture){
+  if(!texture) return texture;
+  if(typeof THREE.sRGBEncoding !== 'undefined') texture.encoding=THREE.sRGBEncoding;
+  if('colorSpace' in texture && typeof THREE.SRGBColorSpace !== 'undefined') texture.colorSpace=THREE.SRGBColorSpace;
+  texture.needsUpdate=true;
+  return texture;
+}
+
+function clothingMaterial(texture, fallback){
+  if(!texture) return new THREE.MeshBasicMaterial({color:fallback||'#1477b9',side:THREE.DoubleSide,toneMapped:false});
+  clothingSRGB(texture);
+  return new THREE.MeshBasicMaterial({
+    map:texture, color:0xffffff, side:THREE.DoubleSide,
+    transparent:false, opacity:1, depthWrite:true, toneMapped:false
+  });
+}
+
+function clothingImageTexture(dataUrl, cacheKey){
+  if(!dataUrl) return null;
+  const key=CLOTHING_SYSTEM_VERSION+':full:'+cacheKey;
+  if(_clothingTextureCache[key]) return _clothingTextureCache[key];
+  const canvas=document.createElement('canvas'); canvas.width=512; canvas.height=512;
+  const ctx=canvas.getContext('2d');
+  const tex=clothingSRGB(new THREE.CanvasTexture(canvas));
+  tex.wrapS=THREE.ClampToEdgeWrapping; tex.wrapT=THREE.ClampToEdgeWrapping;
+  const img=new Image();
+  img.onload=()=>{ctx.clearRect(0,0,512,512);ctx.drawImage(img,0,0,512,512);tex.needsUpdate=true;};
+  img.onerror=()=>{tex.needsUpdate=true;};
+  img.src=dataUrl;
+  _clothingTextureCache[key]=tex;
+  return tex;
+}
+
+function clothingCrop(dataUrl, region, cacheKey, mirror){
+  if(!dataUrl || !region) return null;
+  const key=CLOTHING_SYSTEM_VERSION+':crop:'+cacheKey+':'+(mirror?'m':'n');
+  if(_clothingPartCache[key]) return _clothingPartCache[key];
   const canvas=document.createElement('canvas'); canvas.width=256; canvas.height=256;
   const ctx=canvas.getContext('2d');
-  const tex=new THREE.CanvasTexture(canvas);
-  tex.flipY=true;
-  tex.colorSpace=THREE.SRGBColorSpace;
+  const tex=clothingSRGB(new THREE.CanvasTexture(canvas));
   tex.wrapS=THREE.ClampToEdgeWrapping; tex.wrapT=THREE.ClampToEdgeWrapping;
-  tex.minFilter=THREE.LinearFilter; tex.magFilter=THREE.LinearFilter;
   const img=new Image();
   img.onload=()=>{
-    const sx=Math.round(img.width*region.x), sy=Math.round(img.height*region.y);
-    const sw=Math.max(1,Math.round(img.width*region.w)), sh=Math.max(1,Math.round(img.height*region.h));
     ctx.clearRect(0,0,256,256);
-    ctx.imageSmoothingEnabled=true;
+    const sx=img.width*region.x, sy=img.height*region.y;
+    const sw=img.width*region.w, sh=img.height*region.h;
     if(mirror){ctx.save();ctx.translate(256,0);ctx.scale(-1,1);}
     ctx.drawImage(img,sx,sy,sw,sh,0,0,256,256);
     if(mirror)ctx.restore();
     tex.needsUpdate=true;
   };
   img.onerror=()=>{tex.needsUpdate=true;};
-  img.src=imageData;
-  _customClothingPartCache[cacheKey]=tex;
+  img.src=dataUrl;
+  _clothingPartCache[key]=tex;
   return tex;
 }
-function customClassicFaceMaterials(item, part){
-  if(!item || !item.data || !item.data.imageData) return null;
-  const regions=CLASSIC_CLOTHING_REGIONS[part];
-  if(!regions) return null;
-  const itemKey=String(item.id || item.name || 'custom');
-  return {
-    front: cropClassicClothingTexture(item.data.imageData,regions.front,itemKey+':'+part+':front'),
-    back: cropClassicClothingTexture(item.data.imageData,regions.back,itemKey+':'+part+':back'),
-    left: cropClassicClothingTexture(item.data.imageData,regions.left,itemKey+':'+part+':left'),
-    right: cropClassicClothingTexture(item.data.imageData,regions.right,itemKey+':'+part+':right'),
-    top: cropClassicClothingTexture(item.data.imageData,regions.top,itemKey+':'+part+':top'),
-    bottom: cropClassicClothingTexture(item.data.imageData,regions.bottom,itemKey+':'+part+':bottom')
-  };
-}
 
-function customClothingTexture(item){
-  if(!item || !item.data || !item.data.imageData) return null;
-  return loadDataImageTexture(item.data.imageData,String(item.id||'')+':full',true);
-}
-function customClothingPartTexture(item,part,mirror=false){
-  if(!item || !item.data || !item.data.imageData) return null;
-  const key=String(item.id||'')+':'+part+':'+(mirror?'m':'n');
-  if(_customClothingPartCache[key]) return _customClothingPartCache[key];
-  const region=SHIRT_TEMPLATE_REGIONS[part]||SHIRT_TEMPLATE_REGIONS.torso;
-  const canvas=document.createElement('canvas'); canvas.width=256; canvas.height=256;
-  const ctx=canvas.getContext('2d');
-  const tex=new THREE.CanvasTexture(canvas); tex.colorSpace=THREE.SRGBColorSpace;
-  tex.wrapS=THREE.ClampToEdgeWrapping; tex.wrapT=THREE.ClampToEdgeWrapping;
-  const img=new Image();
-  img.onload=()=>{
-    ctx.clearRect(0,0,256,256);
-    if(mirror){ctx.save();ctx.translate(256,0);ctx.scale(-1,1);}
-    ctx.drawImage(img,img.width*region.x,img.height*region.y,img.width*region.w,img.height*region.h,0,0,256,256);
-    if(mirror)ctx.restore();
-    tex.needsUpdate=true;
-  };
-  img.src=item.data.imageData;
-  _customClothingPartCache[key]=tex;
-  return tex;
-}
-function clothingMaterial(texture,baseColor){
-  return texture ? new THREE.MeshLambertMaterial({map:texture,color:0xffffff,side:THREE.DoubleSide,transparent:true}) : new THREE.MeshLambertMaterial({color:baseColor||'#1477b9'});
-}
-function clothingBoxMaterials(front,back,sideFallback){
-  const f=front || sideFallback;
-  const b=back || f;
-  // BoxGeometry has six material groups. Using only two materials makes
-  // groups 2-5 render without a material, which is why custom shirts/pants
-  // could disappear on the new rig.
-  return [f,f,f,f,f,b];
-}
-
-function bodyClothingMaterials(texture,baseColor,isExtruded=false){
-  const base=new THREE.MeshLambertMaterial({color:baseColor||'#1477b9'});
-  if(!texture) return base;
-  const shirt=clothingMaterial(texture,baseColor);
-  // ExtrudeGeometry (used by the in-game torso/arms) has THREE material
-  // groups: front, back, and the extrusion sides. The previous code supplied
-  // only two materials, which caused the side faces to have no valid material
-  // and could make the shirt look broken/offset at the edges.
-  return isExtruded ? [shirt,shirt,base] : [shirt,shirt,shirt,shirt,shirt,shirt];
-}
-function gameBoxClothingMaterials(frontTexture, backTexture, baseColor){
-  const base=new THREE.MeshLambertMaterial({color:baseColor||'#1477b9'});
-  const front=frontTexture ? clothingMaterial(frontTexture,baseColor) : base;
-  const back=backTexture ? clothingMaterial(backTexture,baseColor) : front;
-  // THREE.BoxGeometry material order: right, left, top, bottom, front, back.
-  // Classic 2D clothing is a FRONT/BACK artwork; putting that full canvas on
-  // the right/left faces was the source of the visible texture glitch in the
-  // actual game character. Keep the side faces as the body color.
-  return [base,base,base,base,front,back];
-}
+// Convert one published 2D shirt into the exact panels needed by either rig.
 function customShirtMaterials(item){
   if(!item || !item.data || !item.data.imageData) return null;
-  const torso=customClassicFaceMaterials(item,'torso');
-  const rightArm=customClassicFaceMaterials(item,'rightArm');
-  const leftArm=customClassicFaceMaterials(item,'leftArm');
-  return {torso,rightArm,leftArm};
-}
-function customExtrudedClothingMaterials(parts,baseColor){
-  const base=new THREE.MeshLambertMaterial({color:baseColor||'#1477b9'});
-  if(!parts) return base;
+  const id=String(item.id||item.name||'custom-shirt');
+  const src=item.data.imageData;
 
-  // The official shirts are drawn onto CanvasTexture panels and then applied
-  // to ExtrudeGeometry. In r128, lighting a canvas-textured extruded face can
-  // make the clothing appear almost completely black when the generated
-  // normals point away from the scene light. Use an unlit material for the
-  // actual clothing artwork so its colors are preserved exactly as designed.
-  // The body itself remains Lambert-lit.
-  const makeVisible = tex => tex
-    ? new THREE.MeshBasicMaterial({
-        map:tex,
-        color:0xffffff,
-        side:THREE.DoubleSide,
-        transparent:true,
-        depthWrite:true
-      })
-    : new THREE.MeshBasicMaterial({color:baseColor||'#1477b9',side:THREE.DoubleSide});
+  // The EpicBloxs template is a FRONT-FACING net.  Each labelled panel has
+  // exactly one job: torso front, left sleeve front, right sleeve front,
+  // torso top and torso bottom.  We deliberately do NOT smear the torso
+  // artwork over every face anymore; that was what made the shirt look
+  // shifted/wrapped onto the wrong parts of the new bodies.
+  const torsoFront=clothingCrop(src,EPIC_SHIRT_TEMPLATE.torso,id+':torso:front');
+  const torsoBack=clothingCrop(src,EPIC_SHIRT_TEMPLATE.torso,id+':torso:back',true);
+  const torsoSide=clothingCrop(src,EPIC_SHIRT_TEMPLATE.torso,id+':torso:side',false);
 
-  const front=makeVisible(parts.front);
-  const back=makeVisible(parts.back);
-  // Keep the side faces unlit too. The Catalog preview is rendered in its own
-  // WebGL scene and can make Lambert-lit side faces look black depending on
-  // the camera/light direction. The clothing artwork must keep its exact
-  // designed colors in the preview.
-  const side=new THREE.MeshBasicMaterial({
-    color:baseColor||'#1477b9',
-    side:THREE.DoubleSide
-  });
-  return [front,back,side];
+  const leftFront=clothingCrop(src,EPIC_SHIRT_TEMPLATE.leftArm,id+':left:front');
+  const leftBack=clothingCrop(src,EPIC_SHIRT_TEMPLATE.leftArm,id+':left:back',true);
+  const rightFront=clothingCrop(src,EPIC_SHIRT_TEMPLATE.rightArm,id+':right:front');
+  const rightBack=clothingCrop(src,EPIC_SHIRT_TEMPLATE.rightArm,id+':right:back',true);
+
+  const top=clothingCrop(src,EPIC_SHIRT_TEMPLATE.top,id+':top');
+  const bottom=clothingCrop(src,EPIC_SHIRT_TEMPLATE.bottom,id+':bottom');
+
+  function panel(front,back,side,topTex,bottomTex){
+    return {
+      front:front,
+      back:back||front,
+      left:side||front,
+      right:side||front,
+      top:topTex||front,
+      bottom:bottomTex||front
+    };
+  }
+
+  return {
+    torso:panel(torsoFront,torsoBack,torsoSide,top,bottom),
+    leftArm:panel(leftFront,leftBack,leftFront,leftFront,leftFront),
+    rightArm:panel(rightFront,rightBack,rightFront,rightFront,rightFront)
+  };
 }
 
 function customPantsMaterials(item){
   if(!item || !item.data || !item.data.imageData) return null;
-  const itemKey=String(item.id || item.name || 'customPants');
-  const makeLeg=(side)=>{
-    const region=PANTS_TEMPLATE_REGIONS[side];
-    const texture=cropClassicClothingTexture(item.data.imageData,region,itemKey+':pants:'+side);
-    if(!texture) return null;
-    const mat=clothingMaterial(texture,'#8cae45');
-    // The simplified pants template supplies one complete artwork per leg.
-    // Reusing that artwork consistently on the leg faces avoids sampling the
-    // shirt net's unrelated torso/arm regions and prevents stretched/glitched
-    // patches.
-    return {front:mat,back:mat,left:mat,right:mat,top:mat,bottom:mat};
-  };
-  return {left:makeLeg('leftLeg'),right:makeLeg('rightLeg'),full:customClothingTexture(item)};
+  const id=String(item.id||item.name||'custom-pants');
+  function leg(side){
+    const tex=clothingCrop(item.data.imageData,PANTS_TEMPLATE_REGIONS[side],id+':'+side);
+    if(!tex) return null;
+    return {front:tex,back:tex,left:tex,right:tex,top:tex,bottom:tex};
+  }
+  return {left:leg('leftLeg'),right:leg('rightLeg'),full:clothingImageTexture(item.data.imageData,id)};
 }
 
-function splitLegTexture(texture, side){
-  if(!texture) return null;
-  const canvas = document.createElement('canvas');
-  canvas.width = 128; canvas.height = 256;
-  const ctx = canvas.getContext('2d');
-  const out = new THREE.CanvasTexture(canvas);
-  out.flipY = true;
-  if(THREE.SRGBColorSpace) out.colorSpace = THREE.SRGBColorSpace;
-  const draw = () => {
-    const src = texture.image;
-    if(!src || !src.width || !src.height) return;
-    ctx.clearRect(0,0,128,256);
-    ctx.drawImage(src, side === 'right' ? src.width/2 : 0, 0, src.width/2, src.height, 0, 0, 128, 256);
-    out.needsUpdate = true;
-  };
-  const src = texture.image;
-  if(src && typeof src.complete === 'boolean' && !src.complete){
-    const previous = src.onload;
-    src.onload = () => { if(typeof previous === 'function') previous(); draw(); };
-  } else draw();
-  return out;
+// Geometry adapter. This is the ONLY function the avatar builders need to
+// know about. BoxGeometry = 6 groups; ExtrudeGeometry = 3 groups.
+function prepareExtrudeClothingGeometry(geometry){
+  if(!geometry || !geometry.attributes || !geometry.attributes.position) return geometry;
+
+  // ExtrudeGeometry's default UV generator uses the model's raw X/Y
+  // coordinates. Our bodies use coordinates such as -0.56..0.56, so with
+  // ClampToEdgeWrapping almost the whole shirt texture collapses into a
+  // corner. That is the real reason artwork such as "EB" was appearing at
+  // the upper-left of the torso.
+  // Make every cap/side face have proper 0..1 UVs instead.
+  const g = geometry.index ? geometry.toNonIndexed() : geometry;
+  const pos = g.attributes.position;
+  const count = pos.count;
+  const uv = new Float32Array(count * 2);
+
+  g.computeBoundingBox();
+  const bb = g.boundingBox;
+  const minX = bb ? bb.min.x : -0.5;
+  const maxX = bb ? bb.max.x : 0.5;
+  const minY = bb ? bb.min.y : -0.5;
+  const maxY = bb ? bb.max.y : 0.5;
+  const minZ = bb ? bb.min.z : -0.5;
+  const maxZ = bb ? bb.max.z : 0.5;
+  const dx = Math.max(0.0001, maxX-minX);
+  const dy = Math.max(0.0001, maxY-minY);
+  const dz = Math.max(0.0001, maxZ-minZ);
+
+  function setUV(i,u,v){
+    uv[i*2] = Math.max(0,Math.min(1,u));
+    uv[i*2+1] = Math.max(0,Math.min(1,v));
+  }
+
+  // The project assigns ExtrudeGeometry groups as:
+  // 0 = front cap, 1 = back cap, 2 = side walls.
+  // After toNonIndexed(), group.start/count are direct vertex ranges.
+  const groups = Array.isArray(g.groups) ? g.groups : [];
+  for(let gi=0; gi<groups.length; gi++){
+    const group = groups[gi];
+    const start = group.start || 0;
+    const end = Math.min(count, start + (group.count || 0));
+    for(let i=start; i<end; i++){
+      const x=pos.getX(i), y=pos.getY(i), z=pos.getZ(i);
+      if(gi===0 || gi===1){
+        // Front/back: the complete shirt panel fills the complete cap.
+        setUV(i,(x-minX)/dx,(y-minY)/dy);
+      }else{
+        // Side wall: map vertical body position to V and depth to U.
+        setUV(i,(z-minZ)/dz,(y-minY)/dy);
+      }
+    }
+  }
+
+  // Fallback for any vertices not covered by a group.
+  if(!groups.length){
+    for(let i=0;i<count;i++){
+      const x=pos.getX(i),y=pos.getY(i);
+      setUV(i,(x-minX)/dx,(y-minY)/dy);
+    }
+  }
+
+  g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+  g.attributes.uv.needsUpdate=true;
+  return g;
 }
 
+function clothingMaterialsForGeometry(geometry, parts, fallback){
+  if(!parts) return new THREE.MeshBasicMaterial({color:fallback||'#1477b9',side:THREE.DoubleSide,toneMapped:false});
+  const base=fallback||'#1477b9';
+
+  // Three.js BoxGeometry material order is:
+  // right, left, top, bottom, front, back.
+  // ExtrudeGeometry has three groups in this project:
+  // front cap, back cap, side walls.
+  const front=clothingMaterial(parts.front,base);
+  const back=clothingMaterial(parts.back||parts.front,base);
+  const right=clothingMaterial(parts.right||parts.front,base);
+  const left=clothingMaterial(parts.left||parts.front,base);
+  const top=clothingMaterial(parts.top||parts.front,base);
+  const bottom=clothingMaterial(parts.bottom||parts.front,base);
+
+  const groups=geometry && Array.isArray(geometry.groups) ? geometry.groups.length : 0;
+  if(groups===6) return [right,left,top,bottom,front,back];
+  if(groups===3) return [front,back,right];
+  return front;
+}
+
+function gameBoxClothingMaterials(frontTexture,backTexture,fallback){
+  return clothingMaterialsForGeometry(new THREE.BoxGeometry(1,1,1),{
+    front:frontTexture,back:backTexture,
+    left:frontTexture,right:frontTexture,top:frontTexture,bottom:frontTexture
+  },fallback);
+}
+
+function customClothingTexture(item){
+  if(!item || !item.data || !item.data.imageData) return null;
+  return clothingImageTexture(item.data.imageData,String(item.id||item.name||'custom'));
+}
+function customClothingPartTexture(item,part,mirror){
+  if(!item || !item.data || !item.data.imageData) return null;
+  return clothingCrop(item.data.imageData,EPIC_SHIRT_TEMPLATE[part]||EPIC_SHIRT_TEMPLATE.torso,String(item.id||item.name||'custom')+':'+part,!!mirror);
+}
+function cropClassicClothingTexture(imageData,region,key,mirror){
+  return clothingCrop(imageData,region,key,mirror);
+}
+function customClassicFaceMaterials(item,part){
+  if(!item || !item.data || !item.data.imageData) return null;
+  const regions=EPIC_SHIRT_TEMPLATE;
+  const r=regions[part]||regions.torso;
+  const id=String(item.id||item.name||'custom');
+  return {front:clothingCrop(item.data.imageData,r,id+':'+part+':front'),back:clothingCrop(item.data.imageData,r,id+':'+part+':back'),left:clothingCrop(item.data.imageData,r,id+':'+part+':left'),right:clothingCrop(item.data.imageData,r,id+':'+part+':right'),top:clothingCrop(item.data.imageData,r,id+':'+part+':top'),bottom:clothingCrop(item.data.imageData,r,id+':'+part+':bottom')};
+}
+function customExtrudedClothingMaterials(parts,baseColor){
+  if(!parts) return new THREE.MeshBasicMaterial({color:baseColor||'#1477b9',side:THREE.DoubleSide,toneMapped:false});
+  return [clothingMaterial(parts.front,baseColor),clothingMaterial(parts.back||parts.front,baseColor),clothingMaterial(parts.right||parts.front,baseColor)];
+}
+function officialBoxClothingMaterials(parts,baseColor){
+  if(!parts) return new THREE.MeshBasicMaterial({color:baseColor||'#1477b9',side:THREE.DoubleSide,toneMapped:false});
+  return clothingMaterialsForGeometry(new THREE.BoxGeometry(1,1,1),parts,baseColor);
+}
+
+// Built-in shirts use the same panel contract as community shirts.
+function epicPanel(w,h,bg){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle=bg;x.fillRect(0,0,w,h);return {canvas:c,ctx:x};}
+function epicEB(ctx,x,y,size,fill){ctx.fillStyle=fill||'#fff';ctx.font=`900 ${size}px Arial`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('EB',x,y);}
+function epicShirtStyle(name){
+  const key=String(name||'none');
+  const cache='builtin-shirt:'+CLOTHING_SYSTEM_VERSION+':'+key;
+  if(_epicBuiltInClothingCache[cache]) return _epicBuiltInClothingCache[cache];
+  const palettes={'Blue Shirt':['#2468d8','#17428d','#ffffff'],'Green Hoodie':['#31a96b','#17613f','#d8ffe8'],'Red Tee':['#e63f46','#9f2027','#ffffff'],'Black Jacket':['#292b38','#11121a','#a78bfa'],'Pink Tee':['#ef6d9f','#b83d70','#fff0f6'],'Lavender Hoodie':['#a98be8','#6947a4','#f2eaff'],'White Blouse':['#f5f4fa','#d7d4e2','#805fc0']}[key]||['#2468d8','#17428d','#ffffff'];
+  const [main,dark,accent]=palettes;
+  const f=epicPanel(256,256,main),b=epicPanel(256,256,main),l=epicPanel(256,256,main),r=epicPanel(256,256,main);
+  [f.ctx,b.ctx,l.ctx,r.ctx].forEach(c=>{c.fillStyle=dark;c.fillRect(0,0,256,18);c.fillRect(0,238,256,18);c.fillStyle='rgba(255,255,255,.08)';c.fillRect(0,18,10,220);c.fillRect(246,18,10,220);});
+  if(key==='Blue Shirt'){f.ctx.fillStyle=accent;f.ctx.fillRect(0,30,256,5);f.ctx.fillRect(0,221,256,5);epicEB(f.ctx,128,130,46,'#fff');epicEB(b.ctx,128,130,32,'#fff');}
+  if(key==='Green Hoodie'){f.ctx.strokeStyle=accent;f.ctx.lineWidth=7;f.ctx.beginPath();f.ctx.arc(128,18,58,0,Math.PI);f.ctx.stroke();epicEB(f.ctx,128,130,26,'#eafff0');}
+  if(key==='Red Tee'){f.ctx.fillStyle='#ff8b8f';f.ctx.fillRect(0,30,256,5);epicEB(f.ctx,128,132,48,'#fff');}
+  if(key==='Black Jacket'){f.ctx.strokeStyle=accent;f.ctx.lineWidth=5;f.ctx.beginPath();f.ctx.moveTo(128,30);f.ctx.lineTo(128,226);f.ctx.stroke();epicEB(f.ctx,128,80,20,'#fff');}
+  if(key==='Pink Tee'){f.ctx.fillStyle=accent;f.ctx.fillRect(0,30,256,5);epicEB(f.ctx,128,130,40,'#fff');}
+  if(key==='Lavender Hoodie'){f.ctx.strokeStyle=accent;f.ctx.lineWidth=7;f.ctx.beginPath();f.ctx.arc(128,18,58,0,Math.PI);f.ctx.stroke();epicEB(f.ctx,128,130,26,'#fff');}
+  if(key==='White Blouse'){f.ctx.strokeStyle=accent;f.ctx.lineWidth=4;f.ctx.beginPath();f.ctx.moveTo(128,30);f.ctx.lineTo(128,226);f.ctx.stroke();for(let y=78;y<190;y+=30){f.ctx.fillStyle=accent;f.ctx.beginPath();f.ctx.arc(128,y,4,0,Math.PI*2);f.ctx.fill();}}
+  const tex=(p)=>clothingSRGB(new THREE.CanvasTexture(p.canvas));
+  const out={torso:{front:tex(f),back:tex(b),left:tex(f),right:tex(f),top:tex(f),bottom:tex(f)},leftArm:{front:tex(l),back:tex(l),left:tex(l),right:tex(l),top:tex(l),bottom:tex(l)},rightArm:{front:tex(r),back:tex(r),left:tex(r),right:tex(r),top:tex(r),bottom:tex(r)}};
+  _epicBuiltInClothingCache[cache]=out; return out;
+}
+function createBuiltInShirtParts(torsoColor,shirtName){return shirtName?epicShirtStyle(shirtName):null;}
+function createShirtTexture(torsoColor,shirtName){const p=createBuiltInShirtParts(torsoColor,shirtName);return p?p.torso.front:null;}
+
+function epicVisibleMaterial(texture,fallback){return clothingMaterial(texture,fallback);}
 const _customFaceTexCache = {};
 function catalogFaceTexture(item, headColor){
   if(!item || !item.image) return null;
@@ -2125,6 +2090,10 @@ function customFaceTexture(item, headColor){
   return tex;
 }
 
+function torsoTypeForAvatarBuild(userData){
+  return ((userData && userData.avatar && userData.avatar.torsoType) || 'male') === 'female' ? 'female' : 'male';
+}
+
 function buildAvatar3DModel(userData) {
   const avatarGroup = new THREE.Group();
   const avatarData = (userData && userData.avatar) || {};
@@ -2156,9 +2125,15 @@ function buildAvatar3DModel(userData) {
   // Community clothing keeps the custom renderer/data untouched.
   const customShirtTex = customShirt ? customShirtMaterials(customShirt) : null;
   const builtInShirt = (!customShirt && activeShirt) ? createBuiltInShirtParts(torsoCol, activeShirt) : null;
-  const torsoMat = customShirtTex
-    ? customExtrudedClothingMaterials(customShirtTex.torso,torsoCol)
-    : (builtInShirt ? customExtrudedClothingMaterials(builtInShirt.torso,torsoCol) : new THREE.MeshLambertMaterial({color:torsoCol}));
+  const avatarTorsoType = torsoTypeForAvatarBuild(userData);
+
+  // IMPORTANT: the male Avatar menu torso is BoxGeometry (6 material groups),
+  // while the female torso is ExtrudeGeometry (3 material groups). Custom 2D
+  // shirts used to send the 3-material ExtrudeGeometry array into the male
+  // BoxGeometry, so the actual front face (group 4) had no material at all.
+  // That is the real reason community shirts could appear black/missing in the
+  // Avatar preview even though their CanvasTexture itself was valid.
+  let torsoMat = new THREE.MeshLambertMaterial({color:torsoCol});
 
   const customPantsMats = customPants ? customPantsMaterials(customPants) : null;
   const builtInPants = (!customPants && activePants) ? createBuiltInPantsParts(legCol, activePants) : null;
@@ -2171,12 +2146,11 @@ function buildAvatar3DModel(userData) {
     : avatarPantsBox(builtInPants && builtInPants.right,legCol);
 
   const armMat = new THREE.MeshLambertMaterial({color: armCol});
-  const shirtLeftArmMat = customShirtTex
-    ? customExtrudedClothingMaterials(customShirtTex.leftArm,armCol)
-    : (builtInShirt ? gameBoxClothingMaterials(builtInShirt.leftArm.front,builtInShirt.leftArm.back,armCol) : armMat);
-  const shirtRightArmMat = customShirtTex
-    ? customExtrudedClothingMaterials(customShirtTex.rightArm,armCol)
-    : (builtInShirt ? gameBoxClothingMaterials(builtInShirt.rightArm.front,builtInShirt.rightArm.back,armCol) : armMat);
+  // Avatar menu arms are always BoxGeometry, so custom 2D shirts also need
+  // the six-face material layout here. Passing the 3-face extruded layout was
+  // leaving the visible front face without a material.
+  let shirtLeftArmMat = armMat;
+  let shirtRightArmMat = armMat;
 
   const sideHeadMat = new THREE.MeshLambertMaterial({color: headCol});
   const faceItem = catalogItemById(activeFace);
@@ -2233,14 +2207,16 @@ function buildAvatar3DModel(userData) {
       bevelSize: 0.03,
       bevelSegments: 1
     };
-    const geo = new THREE.ExtrudeGeometry(full, extrudeSettings);
+    let geo = new THREE.ExtrudeGeometry(full, extrudeSettings);
     geo.translate(0, 0, -0.275); // centrar en Z
     // Centrar pivote en Y del bounding box
     geo.computeBoundingBox();
     const bb = geo.boundingBox;
     const cy = (bb.min.y + bb.max.y) / 2;
     geo.translate(0, -cy, 0);
+    geo = prepareExtrudeClothingGeometry(geo);
 
+    torsoMat = customShirtTex ? clothingMaterialsForGeometry(geo,customShirtTex.torso,torsoCol) : (builtInShirt ? clothingMaterialsForGeometry(geo,builtInShirt.torso,torsoCol) : torsoMat);
     torsoMesh = new THREE.Mesh(geo, torsoMat);
     torsoMesh.name = "torso";
     torsoMesh.position.set(0, 1.0, 0); // bottom ~0.3, top ~1.7
@@ -2253,7 +2229,9 @@ function buildAvatar3DModel(userData) {
     armH = 1.35;
   } else {
     // Hombre R6 clásico: bloque 1.2 x 1.4 x 0.6, centro y=1.0
-    torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.10, 1.40, 0.60), torsoMat);
+    const maleTorsoGeo = new THREE.BoxGeometry(1.10, 1.40, 0.60);
+    torsoMat = customShirtTex ? clothingMaterialsForGeometry(maleTorsoGeo,customShirtTex.torso,torsoCol) : (builtInShirt ? clothingMaterialsForGeometry(maleTorsoGeo,builtInShirt.torso,torsoCol) : torsoMat);
+    torsoMesh = new THREE.Mesh(maleTorsoGeo, torsoMat);
     torsoMesh.position.set(0, 1.00, 0);
     torsoMesh.name = "torso";
     torsoMesh.castShadow = true;
@@ -2275,12 +2253,16 @@ function buildAvatar3DModel(userData) {
   // no desde el centro del bloque. Esto hace que caminar/atacar se vea natural.
   const leftArm = new THREE.Group(); leftArm.name = "leftArm"; leftArm.position.set(-armX, armY + armH/2, 0);
   leftArm.userData.bindX = -armX;
-  const leftArmMesh = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.55), shirtLeftArmMat);
+  const leftArmGeo = new THREE.BoxGeometry(armW, armH, 0.55);
+  shirtLeftArmMat = customShirtTex ? clothingMaterialsForGeometry(leftArmGeo,customShirtTex.leftArm,armCol) : (builtInShirt ? clothingMaterialsForGeometry(leftArmGeo,builtInShirt.leftArm,armCol) : armMat);
+  const leftArmMesh = new THREE.Mesh(leftArmGeo, shirtLeftArmMat);
   leftArmMesh.position.y = -armH/2; leftArmMesh.castShadow = true; leftArmMesh.receiveShadow = true; leftArm.add(leftArmMesh);
 
   const rightArm = new THREE.Group(); rightArm.name = "rightArm"; rightArm.position.set(armX, armY + armH/2, 0);
   rightArm.userData.bindX = armX;
-  const rightArmMesh = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, 0.55), shirtRightArmMat);
+  const rightArmGeo = new THREE.BoxGeometry(armW, armH, 0.55);
+  shirtRightArmMat = customShirtTex ? clothingMaterialsForGeometry(rightArmGeo,customShirtTex.rightArm,armCol) : (builtInShirt ? clothingMaterialsForGeometry(rightArmGeo,builtInShirt.rightArm,armCol) : armMat);
+  const rightArmMesh = new THREE.Mesh(rightArmGeo, shirtRightArmMat);
   rightArmMesh.position.y = -armH/2; rightArmMesh.castShadow = true; rightArmMesh.receiveShadow = true; rightArm.add(rightArmMesh);
 
   // Piernas DEBAJO del torso, con pivote en la cadera.
@@ -2397,9 +2379,7 @@ function buildGamePlayerModel(userData) {
 
   // Built-in EpicBlox clothes are designed specifically for this R6 body.
   // Community clothing still uses its own classic-template renderer.
-  const torsoMat = customShirtTex
-    ? customExtrudedClothingMaterials(customShirtTex.torso, torsoCol)
-    : (builtInShirt ? customExtrudedClothingMaterials(builtInShirt.torso, torsoCol) : new THREE.MeshLambertMaterial({color:torsoCol}));
+  let torsoMat = new THREE.MeshLambertMaterial({color:torsoCol});
 
   function pantsBoxMaterials(parts, baseColor){
     if(!parts) return new THREE.MeshLambertMaterial({color:baseColor});
@@ -2413,12 +2393,8 @@ function buildGamePlayerModel(userData) {
     : pantsBoxMaterials(builtInPants && builtInPants.right, legCol);
 
   const armMat = new THREE.MeshLambertMaterial({ color: armCol });
-  const shirtLeftArmMat = customShirtTex
-    ? customExtrudedClothingMaterials(customShirtTex.leftArm, armCol)
-    : (builtInShirt ? customExtrudedClothingMaterials(builtInShirt.leftArm, armCol) : armMat);
-  const shirtRightArmMat = customShirtTex
-    ? customExtrudedClothingMaterials(customShirtTex.rightArm, armCol)
-    : (builtInShirt ? customExtrudedClothingMaterials(builtInShirt.rightArm, armCol) : armMat);
+  let shirtLeftArmMat = armMat;
+  let shirtRightArmMat = armMat;
   const sideHeadMat = new THREE.MeshLambertMaterial({ color: headCol });
   const faceItem = catalogItemById(activeFace);
   const faceTexture = (faceItem && faceItem.image)
@@ -2449,7 +2425,7 @@ function buildGamePlayerModel(userData) {
       curveSegments: 1
     });
     geo.translate(0, 0, -depth / 2);
-    return geo;
+    return prepareExtrudeClothingGeometry(geo);
   }
 
   // Torso proportions from the references.
@@ -2464,14 +2440,18 @@ function buildGamePlayerModel(userData) {
       [-0.46, -0.70], [-0.33, -0.12],
       [-0.40,  0.08], [-0.56,  0.28]
     ];
-    torsoMesh = new THREE.Mesh(extrudedShape(femaleTorso, 0.56, 0.02), torsoMat);
+    const femaleTorsoGeo = extrudedShape(femaleTorso, 0.56, 0.02);
+    torsoMat = customShirtTex ? clothingMaterialsForGeometry(femaleTorsoGeo,customShirtTex.torso,torsoCol) : (builtInShirt ? clothingMaterialsForGeometry(femaleTorsoGeo,builtInShirt.torso,torsoCol) : torsoMat);
+    torsoMesh = new THREE.Mesh(femaleTorsoGeo, torsoMat);
   } else {
     // Masculine reference: simple straight rectangular torso.
     const maleTorso = [
       [-0.525,  0.65], [ 0.525,  0.65],
       [ 0.525, -0.65], [-0.525, -0.65]
     ];
-    torsoMesh = new THREE.Mesh(extrudedShape(maleTorso, 0.60, 0.015), torsoMat);
+    const maleTorsoGeo = extrudedShape(maleTorso, 0.60, 0.015);
+    torsoMat = customShirtTex ? clothingMaterialsForGeometry(maleTorsoGeo,customShirtTex.torso,torsoCol) : (builtInShirt ? clothingMaterialsForGeometry(maleTorsoGeo,builtInShirt.torso,torsoCol) : torsoMat);
+    torsoMesh = new THREE.Mesh(maleTorsoGeo, torsoMat);
   }
   torsoMesh.name = "torso";
   torsoMesh.position.set(0, 0.95, 0);
@@ -2499,14 +2479,18 @@ function buildGamePlayerModel(userData) {
   leftArm.name = "leftArm";
   leftArm.position.set(-armX, 1.70, 0);
   leftArm.userData.bindX = -armX;
-  const leftArmMesh = new THREE.Mesh(extrudedShape(armShape, armDepth, 0.018), shirtLeftArmMat);
+  const leftArmGeo = extrudedShape(armShape, armDepth, 0.018);
+  shirtLeftArmMat = customShirtTex ? clothingMaterialsForGeometry(leftArmGeo,customShirtTex.leftArm,armCol) : (builtInShirt ? clothingMaterialsForGeometry(leftArmGeo,builtInShirt.leftArm,armCol) : armMat);
+  const leftArmMesh = new THREE.Mesh(leftArmGeo, shirtLeftArmMat);
   leftArm.add(leftArmMesh);
 
   const rightArm = new THREE.Group();
   rightArm.name = "rightArm";
   rightArm.position.set(armX, 1.70, 0);
   rightArm.userData.bindX = armX;
-  const rightArmMesh = new THREE.Mesh(extrudedShape(armShape, armDepth, 0.018), shirtRightArmMat);
+  const rightArmGeo = extrudedShape(armShape, armDepth, 0.018);
+  shirtRightArmMat = customShirtTex ? clothingMaterialsForGeometry(rightArmGeo,customShirtTex.rightArm,armCol) : (builtInShirt ? clothingMaterialsForGeometry(rightArmGeo,builtInShirt.rightArm,armCol) : armMat);
+  const rightArmMesh = new THREE.Mesh(rightArmGeo, shirtRightArmMat);
   rightArm.add(rightArmMesh);
 
   // Two independent straight legs with a small central gap, black by default.
@@ -5901,16 +5885,42 @@ function profileBackgroundCSS(userData){
   const item = getProfileBackgroundItem(userData);
   return item && item.image ? `url("${item.image}")` : '';
 }
-function applyProfileBackground(userData){
+function profileBackgroundValue(userData){
   const item = getProfileBackgroundItem(userData);
-  const bg = item && item.image ? `url("${item.image}")` : 'linear-gradient(180deg,#bde7ff 0%,#bde7ff 65%,#7bb957 65%)';
-  ['homeAvatar','profileAvatar','friendProfileAvatar'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el){
-      el.style.setProperty('background', bg, 'important');
-      el.style.backgroundSize='cover';
-      el.style.backgroundPosition='center';
-    }
+  return item && item.image
+    ? `url("${item.image}")`
+    : 'linear-gradient(180deg,#bde7ff 0%,#bde7ff 65%,#7bb957 65%)';
+}
+
+function setProfileBackgroundElement(el, bg){
+  if(!el) return;
+  el.style.setProperty('background', bg, 'important');
+  el.style.backgroundSize='cover';
+  el.style.backgroundPosition='center';
+  el.style.backgroundAttachment='fixed';
+}
+
+// IMPORTANTE: los fondos de perfiles son solo una apariencia del perfil que
+// estamos viendo. Nunca deben copiarse al avatar/perfil propio.
+// Antes este metodo aplicaba el fondo recibido a homeAvatar, profileAvatar Y
+// friendProfileAvatar al mismo tiempo. Por eso al visitar a otra persona, su
+// fondo parecia "equiparse" en nuestra cuenta.
+function applyProfileBackground(userData, mode){
+  mode = mode === 'friend' ? 'friend' : 'own';
+  const bg = profileBackgroundValue(userData);
+
+  if(mode === 'friend'){
+    // Solo el perfil ajeno. No tocar #home, #profile ni #friends.
+    setProfileBackgroundElement(document.getElementById('friendProfileAvatar'), bg);
+    setProfileBackgroundElement(document.getElementById('friendProfile'), bg);
+    const friend = document.querySelector('#friendProfile .profile-card');
+    if(friend) friend.style.setProperty('background','rgba(18,15,34,.78)','important');
+    return;
+  }
+
+  // Solo el perfil propio y sus vistas propias.
+  ['homeAvatar','profileAvatar'].forEach(id => {
+    setProfileBackgroundElement(document.getElementById(id), bg);
   });
   const stage = document.querySelector('.avatar-stage');
   if(stage){
@@ -5921,20 +5931,11 @@ function applyProfileBackground(userData){
   const home = document.querySelector('#home .profile-header');
   if(home) home.style.setProperty('background','linear-gradient(135deg,#31265b,#1a1730)','important');
 
-  // Mantener el fondo personalizado visible tambien en las paginas de Amigos
-  // y en los perfiles, sin reemplazar el contenido ni los controles.
-  ['#profile','#friends','#friendProfile'].forEach(sel => {
-    const page = document.querySelector(sel);
-    if(!page) return;
-    page.style.setProperty('background', bg, 'important');
-    page.style.backgroundSize = 'cover';
-    page.style.backgroundPosition = 'center';
-    page.style.backgroundAttachment = 'fixed';
+  ['#profile','#friends'].forEach(sel => {
+    setProfileBackgroundElement(document.querySelector(sel), bg);
   });
   const own = document.querySelector('#profile .profile-card');
   if(own) own.style.setProperty('background','rgba(18,15,34,.78)','important');
-  const friend = document.querySelector('#friendProfile .profile-card');
-  if(friend) friend.style.setProperty('background','rgba(18,15,34,.78)','important');
 }
 
 function updateUI(u){
@@ -6432,7 +6433,8 @@ async function toggleFollowFromProfile(event){
   const id=String(openedProfileUserId||'');
   if(!id) return;
   try{
-    const data=await api('/api/follow/toggle',{method:'POST',body:{id}});
+    const friend=getCachedUser();
+    const data=await api('/api/follow/toggle',{method:'POST',body:{id:id,userId:id,username:(friend&&friend.username)||''}});
     if(data && data.user){ setCachedUser(data.user); }
     const b=document.getElementById('friendProfileFollowBtn');
     if(b) b.textContent=data.following?'Dejar de seguir':'Seguir';
@@ -6486,7 +6488,7 @@ function openUserProfile(userId){
       renderProfileWearing('friendProfile',friend);
       const creations=document.getElementById('friendProfileCreations'); if(creations)creations.innerHTML=profileCreationsHTML(friend);
       switchUserProfileTab('about',document.getElementById('friendAboutTab'));
-      applyProfileBackground(friend);
+      applyProfileBackground(friend, 'friend');
       showPage("friendProfile");
     })
     .catch(()=>alert("Usuario no encontrado en el servidor global."));
@@ -6532,7 +6534,8 @@ function showPage(p){
   if(p==="streak") updateStreakUI();
   if(p==="avatar") { try { const t=(current()&&current().user.avatar&&current().user.avatar.torsoType)||"male"; const mb=document.getElementById("torsoTypeMale"); const fb=document.getElementById("torsoTypeFemale"); if(mb) mb.style.background=t==="male"?"#1684e8":"#292929"; if(fb) fb.style.background=t==="female"?"#e91e8c":"#292929"; } catch(e){} }
   if(p==="games") loadGames();
-  if(p==="friends") { refreshFriendsFromServer(); renderFriendsPage(); }
+  if(p==="friends") { refreshFriendsFromServer(); renderFriendsPage(); applyProfileBackground(getCachedUser(), 'own'); }
+  if(p==="profile") { applyProfileBackground(getCachedUser(), 'own'); }
   if(p==="trade") { refreshFriendsFromServer(); refreshTradeState(); renderTradeFriends(); renderTradeMyItems(); }
   if(p==="settings") { refreshSettings(); }
   if(p==="catalog") {
@@ -6720,7 +6723,7 @@ function catalogCategoryLabel(category){
 function catalogRigPreviewDataURL(item){
   if(!item || (item.category!=='shirts' && item.category!=='pants')) return '';
   try{
-    const cacheKey='catalogRigV17:'+String(item.id)+':'+_catalogPreviewRevision;
+    const cacheKey='catalogRigV30:'+String(item.id)+':'+_catalogPreviewRevision;
     if(_portraitCache[cacheKey]) return _portraitCache[cacheKey];
 
     // Render at 2x resolution and downsample in the <img>. This makes the
@@ -6775,6 +6778,7 @@ function catalogRigPreviewDataURL(item){
     group.traverse(obj=>{
       if(!obj.isMesh || !obj.material) return;
       const convert=mat=>{
+        if(!mat) return new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.DoubleSide,toneMapped:false});
         const basic=new THREE.MeshBasicMaterial({
           map:mat.map || null,
           color:mat.color ? mat.color.getHex() : 0xffffff,
@@ -6782,7 +6786,8 @@ function catalogRigPreviewDataURL(item){
           opacity:mat.opacity==null?1:mat.opacity,
           side:mat.side==null?THREE.FrontSide:mat.side,
           depthWrite:mat.depthWrite!==false,
-          alphaTest:mat.alphaTest||0
+          alphaTest:mat.alphaTest||0,
+          toneMapped:false
         });
         if(mat.map){ basic.map=mat.map; basic.map.needsUpdate=true; }
         return basic;
