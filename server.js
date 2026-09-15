@@ -1022,6 +1022,8 @@ function publicUser(user, key) {
     friends: user.friends || [],
     friendRequests: user.friendRequests || [],
     outgoingRequests: user.outgoingRequests || [],
+    followers: user.followers || [],
+    following: user.following || [],
     bannedUntil: Number(user.banUntil || 0),
     isAdmin: isAdminUser(user, key),
     isCreator: isCreatorUser(user, key),
@@ -1975,8 +1977,11 @@ const server = http.createServer(async (req, res) => {
     const sess = getSessionUser(req);
     if (!sess) return json(res, 401, { error: "No autenticado." });
     const body = await readBody(req);
-    const users = ensureUserIds(sess.users);
-    const targetKey = resolveUserKey(users, safeText(body.id || body.username, "", 80));
+    const users = ensureUserIds(loadUsers());
+    // Aceptamos ID numérico, username o clave interna. Esto evita que el botón
+    // de Seguir falle cuando el perfil viene de una tarjeta que usa userId.
+    const rawTarget = safeText(body.id ?? body.userId ?? body.username ?? body.usernameKey, "", 120);
+    const targetKey = resolveUserKey(users, rawTarget);
     if (!targetKey) return json(res, 404, { error: "Usuario no encontrado." });
     if (targetKey === sess.key) return json(res, 400, { error: "No puedes seguirte a ti mismo." });
     const me = users[sess.key];
