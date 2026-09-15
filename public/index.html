@@ -191,7 +191,7 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 
 .color-section{margin-top:20px}.color-buttons{display:flex;flex-wrap:wrap;gap:7px}.color-button{width:34px;height:34px;border:2px solid #888;cursor:pointer;border-radius:50%;transition:transform 0.15s}.color-button:hover{transform:scale(1.1);border-color:#111}.setting-row{padding:12px 0;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center}
 
-.catalog-rig-preview{height:210px;border:1px solid #d8dee5;border-radius:12px;overflow:hidden;background:radial-gradient(circle at 50% 28%,#ffffff 0,#eef1f5 48%,#d9dee5 100%);display:flex;align-items:center;justify-content:center;margin:8px 0;position:relative;box-shadow:inset 0 -34px 55px rgba(0,0,0,.08)}.catalog-rig-preview img{width:100%;height:100%;object-fit:contain;display:block}.catalog-preview-label{font-size:10px;color:#777;text-align:center;margin-top:-3px;margin-bottom:5px}.catalog-preview-badge{position:absolute;right:8px;bottom:8px;padding:4px 7px;border-radius:999px;background:rgba(255,255,255,.88);border:1px solid rgba(0,0,0,.1);font-size:9px;font-weight:800;color:#555;pointer-events:none}\n@media(max-width:1000px){.games{grid-template-columns:repeat(4,1fr)}.catalog-grid,.inventory-grid{grid-template-columns:repeat(3,1fr)}}
+.catalog-rig-preview{height:255px;border:1px solid #4b3a76;border-radius:14px;overflow:hidden;background:radial-gradient(circle at 50% 24%,#40306a 0,#211a3b 46%,#0d0a17 100%);display:flex;align-items:center;justify-content:center;margin:8px 0;position:relative;box-shadow:inset 0 -45px 80px rgba(0,0,0,.28),0 10px 24px rgba(0,0,0,.2)}.catalog-rig-preview img{width:100%;height:100%;object-fit:contain;display:block}.catalog-preview-label{font-size:10px;color:#b9afd4;text-align:center;margin-top:-3px;margin-bottom:5px}.catalog-preview-badge{position:absolute;right:8px;bottom:8px;padding:5px 8px;border-radius:999px;background:rgba(20,16,36,.86);border:1px solid #665095;font-size:9px;font-weight:800;color:#eee;pointer-events:none}\n@media(max-width:1000px){.games{grid-template-columns:repeat(4,1fr)}.catalog-grid,.inventory-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:700px){.sidebar{width:60px}.sidebar-user,.side-item span,.upgrade,.events{display:none}.side-item{justify-content:center}.main{margin-left:60px}.profile-header{padding-left:120px}.profile-avatar{width:105px;height:105px}.games{grid-template-columns:repeat(2,1fr)}.catalog-grid,.inventory-grid{grid-template-columns:repeat(2,1fr)}.top-link{display:none}}
 
 /* Mini Bot setup automatico */
@@ -308,6 +308,47 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 #friendProfile .profile-avatar-large img, #profile .profile-avatar img{
   background:transparent!important;
 }
+
+/* EpicBloxs profile theme: classic profile layout, rebuilt for the dark/violet EpicBloxs UI */
+.profile-modern{max-width:980px;margin:0 auto;color:#f4f0ff}
+.profile-modern-header{background:linear-gradient(145deg,rgba(39,30,68,.98),rgba(20,16,38,.98));border:1px solid #4b3a76;border-radius:10px;padding:18px 22px;display:grid;grid-template-columns:150px 1fr auto;gap:20px;align-items:center;box-shadow:0 14px 36px rgba(0,0,0,.30);position:relative;overflow:hidden}
+.profile-more-wrap{position:absolute;top:14px;right:14px;z-index:20}.profile-more-btn{width:34px;height:30px;border:1px solid #5a4783;border-radius:6px;background:rgba(18,15,34,.78);color:#eee7ff;font-size:17px;line-height:1;letter-spacing:2px;cursor:pointer}.profile-more-btn:hover{background:#302451;border-color:#9b5cff}.profile-more-menu{display:none;position:absolute;right:0;top:36px;min-width:190px;background:linear-gradient(145deg,#2c2250,#19142d);border:1px solid #5a4783;border-radius:7px;box-shadow:0 12px 28px rgba(0,0,0,.4);padding:5px}.profile-more-menu.open{display:block}.profile-more-menu button{display:block;width:100%;text-align:left;border:0;background:transparent;color:#f4f0ff;padding:9px 11px;border-radius:5px;cursor:pointer;font-size:12px}.profile-more-menu button:hover{background:rgba(155,92,255,.16);color:#fff}
+.profile-modern-header:before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:3px;background:linear-gradient(90deg,#9b5cff,#6d45d9,#25a9ff);opacity:.9}
+.profile-modern-avatar{width:150px;height:150px;background:radial-gradient(circle at 50% 35%,#3b2b65 0,#211a3b 58%,#151126 100%);border:1px solid #66568e;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 0 25px rgba(155,92,255,.10)}
+.profile-modern-avatar img{width:100%!important;height:100%!important;object-fit:contain}
+.profile-modern-name{font-size:30px;font-weight:800;margin:0 0 5px;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.3)}
+.profile-modern-handle{font-size:13px;color:#b9afd4;margin-bottom:18px}
+.profile-modern-stats{display:flex;gap:26px;flex-wrap:wrap}
+.profile-stat{text-align:left;min-width:58px}
+.profile-stat b{display:block;font-size:19px;font-weight:800;color:#b98cff}
+.profile-stat span{font-size:11px;color:#9388aa;text-transform:uppercase;letter-spacing:.4px}
+.profile-modern-actions{display:flex;gap:8px;justify-content:flex-end;align-self:end;flex-wrap:wrap}
+.profile-modern-btn{background:linear-gradient(135deg,#2c2350,#211a3c);border:1px solid #5a4783;padding:8px 13px;font-size:12px;font-weight:700;cursor:pointer;color:#f4f0ff;border-radius:6px;transition:.18s ease;box-shadow:0 4px 12px rgba(0,0,0,.16)}
+.profile-modern-btn:hover{background:linear-gradient(135deg,#3a2b65,#29204b);border-color:#8b68c9;transform:translateY(-1px)}
+.profile-tabs{display:flex;background:#171329;border:1px solid #4b3a76;border-radius:8px;margin:12px 0 14px;overflow:hidden;box-shadow:0 8px 22px rgba(0,0,0,.18)}
+.profile-tab{flex:1;padding:11px;border:0;border-bottom:3px solid transparent;background:transparent;cursor:pointer;font-size:12px;font-weight:700;color:#a99dbf;transition:.18s ease}
+.profile-tab:hover{background:rgba(155,92,255,.08);color:#eee7ff}
+.profile-tab.active{border-bottom-color:#9b5cff;background:rgba(155,92,255,.12);color:#fff}
+.profile-section-title{font-size:17px;font-weight:800;color:#eee7ff;margin:12px 0 8px;-webkit-text-stroke:1px #000;text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000,0 2px 4px rgba(0,0,0,.45)}
+.profile-about-box{background:linear-gradient(145deg,rgba(34,27,58,.96),rgba(18,15,34,.96));border:1px solid #4b3a76;min-height:62px;padding:15px;margin-bottom:14px;border-radius:8px;box-shadow:0 8px 22px rgba(0,0,0,.18);color:#ddd4f5}
+.profile-wearing{display:grid;grid-template-columns:360px 1fr;gap:12px}
+.profile-wearing-avatar{background:radial-gradient(circle at 50% 35%,#342754 0,#1b1630 58%,#100d1d 100%);border:1px solid #4b3a76;min-height:330px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:8px;box-shadow:0 10px 28px rgba(0,0,0,.25);position:relative}
+.profile-wearing-avatar:after{content:"3D AVATAR";position:absolute;left:12px;bottom:10px;font-size:9px;font-weight:800;letter-spacing:1px;color:#8f80aa;background:rgba(10,8,18,.55);border:1px solid #49396b;padding:5px 7px;border-radius:5px}
+.profile-wearing-avatar img{width:100%!important;height:100%!important;object-fit:contain}
+.profile-wearing-items{background:linear-gradient(145deg,#2c2250,#19142d);border:1px solid #4f3b76;padding:12px;display:grid;grid-template-columns:repeat(4,minmax(70px,1fr));gap:8px;align-content:start;min-height:330px;border-radius:8px;box-shadow:0 10px 28px rgba(0,0,0,.22)}
+.profile-wearing-item{background:linear-gradient(145deg,#251c40,#171329);border:1px solid #4b3a76;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px;overflow:hidden;border-radius:6px;transition:.18s ease}
+.profile-wearing-item:hover{border-color:#8b68c9;background:linear-gradient(145deg,#302451,#1d1734);transform:translateY(-1px)}
+.profile-wearing-item .wear-icon{width:100%;height:58px;display:flex;align-items:center;justify-content:center}
+.profile-wearing-item .wear-icon svg{max-width:100%;max-height:100%}
+.profile-wearing-item span{font-size:9px;color:#c7bddb;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}
+.profile-creations{background:linear-gradient(145deg,rgba(34,27,58,.96),rgba(18,15,34,.96));border:1px solid #4b3a76;padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;border-radius:8px;box-shadow:0 8px 22px rgba(0,0,0,.18)}
+.profile-creation{border:1px solid #4b3a76;padding:10px;text-align:center;background:linear-gradient(145deg,#251c40,#171329);border-radius:6px;color:#ddd4f5}
+.profile-creation .creation-icon{height:90px;display:flex;align-items:center;justify-content:center}
+.profile-creation .creation-icon svg{max-width:100%;max-height:100%}
+.profile-report{text-align:right;font-size:9px;color:#d58cff;margin:5px 0 12px;cursor:pointer}
+.profile-idline{font-size:10px;color:#887c9e;margin-top:8px}
+.profile-empty{padding:20px;text-align:center;color:#887c9e;grid-column:1/-1}
+@media(max-width:760px){.profile-modern-header{grid-template-columns:105px 1fr}.profile-modern-avatar{width:105px;height:105px}.profile-modern-actions{grid-column:1/-1;justify-content:flex-start}.profile-wearing{grid-template-columns:1fr}.profile-wearing-items{grid-template-columns:repeat(4,1fr)}}
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -484,22 +525,55 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 </section>
 
 <section id="friendProfile" class="page">
-  <button class="section-button" onclick="showPage('friends')" style="margin-bottom:15px">← Back to Friends</button>
-  <div class="profile-card" style="max-width:580px;margin:auto">
-    <div id="friendProfileAvatar" class="profile-avatar-large"></div>
-    <h2 id="friendProfileName" style="text-align:center;margin:5px 0">Player ✓</h2>
-    <p id="friendProfileUsername" style="text-align:center;color:#777;margin:0 0 10px">@Player</p>
-    <p id="friendProfileId" style="text-align:center;color:#999;font-size:12px;margin:0 0 6px">ID #-</p>
-    <p id="friendProfileCreated" style="text-align:center;color:#999;font-size:12px;margin:0 0 10px"></p>
-    <div id="friendProfilePresence" style="text-align:center;margin-bottom:15px"></div>
-    <div id="friendProfileAction" style="text-align:center;margin-bottom:12px"></div>
-    <div class="bio-box">
-      <h3>Bio / About Me</h3>
-      <p id="friendProfileBio">No description available.</p>
+  <div class="profile-modern">
+    <button class="profile-modern-btn" onclick="showPage('friends')" style="margin-bottom:10px">← Back to Friends</button>
+    <div class="profile-modern-header">
+      <div id="friendProfileAvatar" class="profile-modern-avatar"></div>
+      <div>
+        <h2 id="friendProfileName" class="profile-modern-name">Player ✓</h2>
+        <div id="friendProfileUsername" class="profile-modern-handle">@Player</div>
+        <div class="profile-modern-stats">
+          <div class="profile-stat"><b id="friendProfileFriendsCount">0</b><span>Friends</span></div>
+          <div class="profile-stat"><b id="friendProfileFollowersCount">0</b><span>Followers</span></div>
+          <div class="profile-stat"><b id="friendProfileFollowingCount">0</b><span>Following</span></div>
+        </div>
+        <div id="friendProfileId" class="profile-idline">ID #-</div>
+      </div>
+      <div class="profile-modern-actions">
+        <button id="friendProfileMsgBtn" class="profile-modern-btn">Message</button>
+        <div id="friendProfileAction"></div>
+      </div>
+      <div class="profile-more-wrap">
+        <button class="profile-more-btn" aria-label="Más opciones" onclick="toggleProfileMoreMenu(event)">•••</button>
+        <div id="friendProfileMoreMenu" class="profile-more-menu">
+          <button id="friendProfileFollowBtn" onclick="toggleFollowFromProfile(event)">Seguir</button>
+        </div>
+      </div>
     </div>
-    <div style="margin-top:20px;display:flex;gap:10px">
-      <button id="friendProfileJoinBtn" class="buy" style="flex:1" disabled>Join Game</button>
-      <button id="friendProfileMsgBtn" class="section-button" style="flex:1;margin:0" onclick="alert('Abre un perfil para escribir.')">Send Message</button>
+    <div class="profile-tabs">
+      <button class="profile-tab active" id="friendAboutTab" onclick="switchUserProfileTab('about',this)">About</button>
+      <button class="profile-tab" id="friendCreationsTab" onclick="switchUserProfileTab('creations',this)">Creations</button>
+    </div>
+    <div id="friendProfileAboutTab">
+      <div class="profile-section-title">About</div>
+      <div class="profile-about-box">
+        <div id="friendProfileBio">No description available.</div>
+        <div id="friendProfileCreated" class="profile-idline"></div>
+        <div id="friendProfilePresence" style="margin-top:8px"></div>
+      </div>
+      <div class="profile-report">Report Abuse</div>
+      <div class="profile-section-title">Currently Wearing</div>
+      <div class="profile-wearing">
+        <div id="friendProfileWearingAvatar" class="profile-wearing-avatar"></div>
+        <div id="friendProfileWearingItems" class="profile-wearing-items"></div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button id="friendProfileJoinBtn" class="profile-modern-btn" style="flex:1" disabled>Join Game</button>
+      </div>
+    </div>
+    <div id="friendProfileCreationsTab" style="display:none">
+      <div class="profile-section-title">Creations</div>
+      <div id="friendProfileCreations" class="profile-creations"></div>
     </div>
   </div>
 </section>
@@ -574,7 +648,49 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
   </div>
 </section>
 
-<section id="profile" class="page"><h1>Profile</h1><div class="profile-card" style="max-width:500px;margin:auto;"><div id="profileAvatar" class="profile-avatar" style="position:relative;left:auto;top:auto;margin:0 auto 15px;"></div><h2 id="profileName" style="text-align:center;">Player ✓</h2><p id="profileUsername" style="text-align:center;color:#777;">@Player</p><div class="bio-box" style="margin-top:12px;"><h3 style="margin-top:0;">Description</h3><p id="profileBio">No description available.</p></div><hr><p>Sunnys: <strong id="profileMoney">500</strong> ☀️</p><button class="section-button" onclick="logout()" style="width:100%;margin-top:10px;">Logout</button></div></section>
+<section id="profile" class="page">
+  <div class="profile-modern">
+    <div class="profile-modern-header">
+      <div id="profileAvatar" class="profile-modern-avatar"></div>
+      <div>
+        <h2 id="profileName" class="profile-modern-name">Player ✓</h2>
+        <div id="profileUsername" class="profile-modern-handle">@Player</div>
+        <div class="profile-modern-stats">
+          <div class="profile-stat"><b id="profileFriendsCount">0</b><span>Friends</span></div>
+          <div class="profile-stat"><b id="profileFollowersCount">0</b><span>Followers</span></div>
+          <div class="profile-stat"><b id="profileFollowingCount">0</b><span>Following</span></div>
+        </div>
+      </div>
+      <div class="profile-modern-actions">
+        <button class="profile-modern-btn" onclick="showPage('avatar')">Edit Avatar</button>
+        <button class="profile-modern-btn" onclick="logout()">Logout</button>
+      </div>
+      <div class="profile-more-wrap">
+        <button class="profile-more-btn" aria-label="Más opciones" onclick="toggleProfileMoreMenu(event)">•••</button>
+        <div id="profileMoreMenu" class="profile-more-menu">
+          <button onclick="copyOwnProfileLink(event)">Copiar enlace del perfil</button>
+        </div>
+      </div>
+    </div>
+    <div class="profile-tabs">
+      <button class="profile-tab active" onclick="switchOwnProfileTab('about',this)">About</button>
+      <button class="profile-tab" onclick="switchOwnProfileTab('creations',this)">Creations</button>
+    </div>
+    <div id="ownProfileAboutTab">
+      <div class="profile-section-title">About</div>
+      <div class="profile-about-box"><div id="profileBio">No description available.</div><div style="margin-top:8px;font-size:12px">Sunnys: <strong id="profileMoney">500</strong> ☀️</div></div>
+      <div class="profile-section-title">Currently Wearing</div>
+      <div class="profile-wearing">
+        <div id="profileWearingAvatar" class="profile-wearing-avatar"></div>
+        <div id="profileWearingItems" class="profile-wearing-items"></div>
+      </div>
+    </div>
+    <div id="ownProfileCreationsTab" style="display:none">
+      <div class="profile-section-title">Creations</div>
+      <div id="profileCreations" class="profile-creations"></div>
+    </div>
+  </div>
+</section>
 
 <section id="create" class="page">
   <h1>Create Clothing</h1>
@@ -731,12 +847,10 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
     <div class="setting-row"><span>Account</span><strong id="settingsUser">Player</strong></div>
     <div class="setting-row"><span>Sunnys</span><strong id="settingsMoney">500</strong> ☀️</div>
     <div style="margin-top:18px;padding-top:15px;border-top:1px solid #ddd">
-      <h3 style="margin:0 0 10px">Verificar email</h3>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <input id="emailVerifyInput" name="email" type="email" autocomplete="email" spellcheck="false" inputmode="email" placeholder="tu@email.com" style="flex:1;min-width:220px;padding:9px;border:1px solid #ccc;border-radius:5px">
-        <button id="emailVerifyButton" class="section-button" onclick="sendEmailVerification()" style="margin:0;background:#1684e8">Enviar verificacion</button>
-      </div>
-      <div id="emailVerifyStatus" style="font-size:12px;margin-top:8px;min-height:18px"></div><div style="font-size:11px;color:#777;margin-top:5px">Escribe tu correo y pulsa “Enviar verificacion”. El servidor debe tener RESEND_API_KEY y EMAIL_FROM configurados en Render para recibir el mensaje.</div>
+      <h3 style="margin:0 0 10px">Verificar con Discord</h3>
+      <button id="discordVerifyButton" class="section-button" onclick="startDiscordVerification()" style="margin:0;background:#5865F2;color:#fff">🎮 Unirse al Discord</button>
+      <div id="discordVerifyStatus" style="font-size:12px;margin-top:8px;min-height:18px"></div>
+      <div style="font-size:11px;color:#777;margin-top:5px">Haz click en el botón para recibir la Epic Green Cap y abrir el servidor de Discord. No necesitas entrar al servidor para reclamarla.</div>
     </div>
     <div class="setting-row"><span>Avatar</span><button class="section-button" onclick="showPage('avatar')" style="margin:0;">Editar</button></div>
     <div style="margin-top:18px;padding-top:15px;border-top:1px solid #ddd">
@@ -845,6 +959,9 @@ let musicInterval = null;
 
 // Catalog database with categories and prices
 const catalogDatabase = [
+  // Recompensa por verificar el email (no se vende en el Catalog).
+  { id: 'Epic Green Cap', name: 'Epic Green Cap', category: 'hats', price: 0, rewardOnly: true, desc: 'Recompensa por verificar tu email' },
+
   // Sombreros
   { id: 'Epic Cap', name: 'Epic Cap', category: 'hats', price: 50, desc: 'Gorra azul clásica' },
   { id: 'Golden Crown', name: 'Golden Crown', category: 'hats', price: 250, desc: 'Corona dorada' },
@@ -853,21 +970,21 @@ const catalogDatabase = [
   { id: 'White Fedora', name: 'White Fedora', category: 'hats', price: 140, desc: 'Sombrero fedora blanco' },
 
   // Camisas
-  { id: 'Blue Shirt', name: 'Blue Shirt', category: 'shirts', price: 75, desc: 'Camisa azul 2D' },
-  { id: 'Green Hoodie', name: 'Green Hoodie', category: 'shirts', price: 120, desc: 'Sudadera verde 2D' },
-  { id: 'Red Tee', name: 'Red Tee', category: 'shirts', price: 65, desc: 'Camiseta roja 2D' },
-  { id: 'Black Jacket', name: 'Black Jacket', category: 'shirts', price: 150, desc: 'Chaqueta negra 2D' },
-  { id: 'Pink Tee', name: 'Pink Tee', category: 'shirts', price: 70, desc: 'Camiseta rosa 2D · Mujer' },
-  { id: 'Lavender Hoodie', name: 'Lavender Hoodie', category: 'shirts', price: 125, desc: 'Sudadera lavanda 2D · Mujer' },
-  { id: 'White Blouse', name: 'White Blouse', category: 'shirts', price: 110, desc: 'Blusa blanca 2D · Mujer' },
+  { id: 'Blue Shirt', name: 'Blue Shirt', category: 'shirts', price: 75, desc: 'Camisa oficial EpicBlox · diseño varsity' },
+  { id: 'Green Hoodie', name: 'Green Hoodie', category: 'shirts', price: 120, desc: 'Sudadera oficial EpicBlox · hoodie' },
+  { id: 'Red Tee', name: 'Red Tee', category: 'shirts', price: 65, desc: 'Camiseta oficial EpicBlox · EB Lightning' },
+  { id: 'Black Jacket', name: 'Black Jacket', category: 'shirts', price: 150, desc: 'Chaqueta oficial EpicBlox · bomber' },
+  { id: 'Pink Tee', name: 'Pink Tee', category: 'shirts', price: 70, desc: 'Camiseta oficial EpicBlox · Pink Heart' },
+  { id: 'Lavender Hoodie', name: 'Lavender Hoodie', category: 'shirts', price: 125, desc: 'Sudadera oficial EpicBlox · Lavender' },
+  { id: 'White Blouse', name: 'White Blouse', category: 'shirts', price: 110, desc: 'Blusa oficial EpicBlox · White Trim' },
 
   // Pantalones
-  { id: 'Classic Jeans', name: 'Classic Jeans', category: 'pants', price: 80, desc: 'Pantalones de mezclilla 2D' },
-  { id: 'Dark Cargo Pants', name: 'Dark Cargo Pants', category: 'pants', price: 110, desc: 'Pantalones cargo oscuros 2D' },
-  { id: 'Black Jeans', name: 'Black Jeans', category: 'pants', price: 90, desc: 'Jeans negros 2D' },
-  { id: 'White Pants', name: 'White Pants', category: 'pants', price: 85, desc: 'Pantalones blancos 2D' },
-  { id: 'Pink Jeans', name: 'Pink Jeans', category: 'pants', price: 95, desc: 'Jeans rosas 2D · Mujer' },
-  { id: 'Purple Pants', name: 'Purple Pants', category: 'pants', price: 100, desc: 'Pantalones morados 2D · Mujer' },
+  { id: 'Classic Jeans', name: 'Classic Jeans', category: 'pants', price: 80, desc: 'Pantalón oficial EpicBlox · Classic Jeans' },
+  { id: 'Dark Cargo Pants', name: 'Dark Cargo Pants', category: 'pants', price: 110, desc: 'Pantalón oficial EpicBlox · Dark Cargo' },
+  { id: 'Black Jeans', name: 'Black Jeans', category: 'pants', price: 90, desc: 'Pantalón oficial EpicBlox · Black Jeans' },
+  { id: 'White Pants', name: 'White Pants', category: 'pants', price: 85, desc: 'Pantalón oficial EpicBlox · White Pants' },
+  { id: 'Pink Jeans', name: 'Pink Jeans', category: 'pants', price: 95, desc: 'Pantalón oficial EpicBlox · Pink Jeans' },
+  { id: 'Purple Pants', name: 'Purple Pants', category: 'pants', price: 100, desc: 'Pantalón oficial EpicBlox · Purple Pants' },
 
   // Caras
   { id: 'Classic Smile', name: 'Classic Smile', category: 'faces', price: 40, desc: 'Cara feliz clásica' },
@@ -1129,57 +1246,58 @@ function startAmbientMusic(gameName) {
   stopAmbientMusic();
   try {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    const name = String(gameName || '').trim();
-    const presets = {
-      'Epic Obby':   { notes:[261.63,329.63,392.00,523.25], wave:'sine', tempo:700 },
-      'Bloxs City':  { notes:[196.00,246.94,293.66,392.00], wave:'triangle', tempo:850 },
-      'Pet World':   { notes:[261.63,329.63,392.00,440.00,523.25], wave:'sine', tempo:900 },
-      'Battle Arena':{ notes:[146.83,174.61,220.00,293.66], wave:'triangle', tempo:500 },
-      'Speed Race':  { notes:[293.66,369.99,440.00,587.33], wave:'triangle', tempo:380 },
-      'Sky Islands':{ notes:[220.00,277.18,329.63,440.00], wave:'sine', tempo:1000 }
+    const name=String(gameName||'').trim();
+    // Música procedural: acordes + bajo + melodía con variaciones. No repite una sola nota.
+    const presets={
+      'Epic Obby':   {root:261.63,chords:[[0,4,7],[5,9,12],[3,7,10],[7,11,14]],scale:[0,2,4,7,9,12,14,16],tempo:260,wave:'triangle'},
+      'Bloxs City':  {root:196.00,chords:[[0,3,7],[5,8,12],[3,7,10],[7,10,14]],scale:[0,2,3,5,7,10,12,14],tempo:300,wave:'sine'},
+      'Pet World':   {root:261.63,chords:[[0,4,7],[2,5,9],[5,9,12],[7,11,14]],scale:[0,2,4,5,7,9,11,12],tempo:320,wave:'sine'},
+      'Battle Arena':{root:146.83,chords:[[0,3,7],[5,8,12],[3,7,10],[1,5,8]],scale:[0,1,3,5,7,8,10,12],tempo:190,wave:'sawtooth'},
+      'Speed Race':  {root:220.00,chords:[[0,4,7],[7,11,14],[5,9,12],[9,12,16]],scale:[0,2,4,7,9,11,12,14],tempo:170,wave:'square'},
+      'Sky Islands':{root:220.00,chords:[[0,4,7],[9,12,16],[5,9,12],[7,11,14]],scale:[0,2,4,7,9,12,14,16],tempo:360,wave:'sine'},
+      'Zombie Survival':{root:164.81,chords:[[0,3,6],[5,8,12],[3,6,10],[1,4,8]],scale:[0,1,3,6,8,10,12],tempo:230,wave:'sawtooth'},
+      'Treasure Island':{root:220.00,chords:[[0,4,7],[5,9,12],[7,11,14],[2,5,9]],scale:[0,2,4,5,7,9,11,12,14],tempo:300,wave:'triangle'},
+      'Neon City': {root:185.00,chords:[[0,3,7],[8,11,15],[5,9,12],[10,14,17]],scale:[0,3,5,7,10,12,15,17],tempo:210,wave:'sine'},
+      'Lava Escape':{root:130.81,chords:[[0,3,7],[1,5,8],[5,8,12],[3,6,10]],scale:[0,1,3,5,7,8,10,12],tempo:180,wave:'sawtooth'},
+      'Paintball Plaza':{root:233.08,chords:[[0,4,7],[2,5,9],[7,11,14],[5,9,12]],scale:[0,2,4,5,7,9,11,12,14],tempo:220,wave:'triangle'},
+      'Castle Defense':{root:174.61,chords:[[0,3,7],[5,8,12],[7,10,14],[3,7,10]],scale:[0,2,3,5,7,10,12,14],tempo:280,wave:'triangle'}
     };
-    const preset = presets[name] || {notes:[220,277.18,329.63,440], wave:'sine', tempo:850};
-
-    let noteIndex = 0;
-    const playNote = () => {
-      if (!audioCtx || audioCtx.state === 'closed') return;
-      const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      const filter = audioCtx.createBiquadFilter();
-
-      osc.type = preset.wave;
-      osc.frequency.setValueAtTime(preset.notes[noteIndex % preset.notes.length], now);
-      noteIndex++;
-
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(1800, now);
-      filter.Q.setValueAtTime(0.35, now);
-
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.035, now + 0.08);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start(now);
-      osc.stop(now + 1.9);
+    const preset=presets[name]||presets['Epic Obby'];
+    let step=0, bar=0;
+    const semitone=n=>preset.root*Math.pow(2,n/12);
+    const tone=(freq,dur,type,volume,when,detune=0)=>{
+      const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+      osc.type=type; osc.frequency.setValueAtTime(freq,when); osc.detune.setValueAtTime(detune,when);
+      gain.gain.setValueAtTime(0.0001,when);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002,volume),when+0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001,when+dur);
+      osc.connect(gain); gain.connect(audioCtx.destination); osc.start(when); osc.stop(when+dur+.03);
     };
-
-    if (audioCtx.state === 'suspended') {
-      // El navegador exige una interacción del usuario para comenzar el audio.
-      audioCtx.resume().catch(() => {});
-    }
-
-    playNote();
-    musicInterval = setInterval(playNote, preset.tempo);
-  } catch(e) {
-    console.log("Audio no soportado o bloqueado por navegador", e);
-  }
+    const playStep=()=>{
+      if(!audioCtx||audioCtx.state==='closed') return;
+      const now=audioCtx.currentTime;
+      const chord=preset.chords[bar%preset.chords.length];
+      const rootNote=chord[0];
+      // Acorde suave en pulsos alternos.
+      if(step%4===0){
+        chord.forEach((n,i)=>tone(semitone(n),.75,preset.wave,.018,now+i*.015));
+        tone(semitone(rootNote-12),.55,'sine',.022,now);
+      }
+      // Melodía con pequeñas variaciones y silencios, para que nunca sea un tono fijo.
+      const pattern=[0,2,4,7,5,4,2,9,7,5,4,2,11,9,7,4];
+      const idx=(pattern[(step+bar*3)%pattern.length] + (bar%3===2?2:0))%preset.scale.length;
+      if(step%3!==2 || bar%2===1){
+        const note=preset.scale[idx]+(bar%4===3?12:0);
+        tone(semitone(note),.22,preset.wave,.026,now,Math.random()*4-2);
+      }
+      // Pulso grave cada dos pasos.
+      if(step%2===0) tone(semitone(rootNote-12),.18,'sine',.025,now);
+      step++; if(step>=16){step=0;bar++;}
+    };
+    if(audioCtx.state==='suspended') audioCtx.resume().catch(()=>{});
+    playStep(); musicInterval=setInterval(playStep,preset.tempo);
+  } catch(e){ console.log('Audio no soportado o bloqueado por navegador',e); }
 }
-
 function stopAmbientMusic() {
   if(musicInterval) clearInterval(musicInterval);
   if(audioCtx && audioCtx.state !== 'closed') {
@@ -1415,320 +1533,186 @@ function roundRectPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function createShirtTexture(torsoColor, shirtName) {
-  const canvas = document.createElement('canvas');
-  canvas.width = 256;
-  canvas.height = 256;
-  const ctx = canvas.getContext('2d');
+/*
+ * EpicBlox built-in clothing pack v2
+ * ----------------------------------
+ * These are the official EpicBlox clothes only. Community clothing keeps its
+ * original renderer and data. Built-in clothing is generated as separate
+ * front/back panels for the new R6 body so it never relies on the old full
+ * 256x256 shirt/pants net.
+ */
+const _epicBuiltInClothingCache = {};
 
-  // Fondo base (color del torso si no hay camisa)
-  ctx.fillStyle = torsoColor || '#1477b9';
-  ctx.fillRect(0, 0, 256, 256);
+function epicTex(canvas){
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  return tex;
+}
+function epicPanel(w=256,h=256,bg='#fff'){
+  const c=document.createElement('canvas'); c.width=w; c.height=h;
+  const x=c.getContext('2d'); x.fillStyle=bg; x.fillRect(0,0,w,h);
+  return {canvas:c,ctx:x};
+}
+function epicGradient(ctx,a,b,w,h,vertical=true){
+  const g=vertical?ctx.createLinearGradient(0,0,0,h):ctx.createLinearGradient(0,0,w,0);
+  g.addColorStop(0,a); g.addColorStop(1,b); ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+}
+function epicRound(ctx,x,y,w,h,r,fill,stroke=null,lw=1){
+  ctx.beginPath();
+  if(ctx.roundRect) ctx.roundRect(x,y,w,h,r);
+  else roundRectPath(ctx,x,y,w,h,r);
+  if(fill){ctx.fillStyle=fill;ctx.fill();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke();}
+}
+function epicEB(ctx,x,y,size,fill='#fff'){
+  ctx.fillStyle=fill; ctx.font=`900 ${size}px Arial`; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('EB',x,y);
+}
+function epicShirtStyle(name, front, back, leftArm, rightArm){
+  const key=String(name||'none');
+  if(_epicBuiltInClothingCache[key]) return _epicBuiltInClothingCache[key];
+  const palettes={
+    'Blue Shirt':['#2468d8','#17428d','#ffffff'],
+    'Green Hoodie':['#31a96b','#17613f','#d8ffe8'],
+    'Red Tee':['#e63f46','#9f2027','#ffffff'],
+    'Black Jacket':['#292b38','#11121a','#a78bfa'],
+    'Pink Tee':['#ef6d9f','#b83d70','#fff0f6'],
+    'Lavender Hoodie':['#a98be8','#6947a4','#f2eaff'],
+    'White Blouse':['#f5f4fa','#d7d4e2','#805fc0']
+  }[key] || ['#2468d8','#17428d','#ffffff'];
+  const [main,dark,accent]=palettes;
+  const f=epicPanel(256,256,main), b=epicPanel(256,256,main);
+  const l=epicPanel(128,256,main), r=epicPanel(128,256,main);
+  const F=f.ctx,B=b.ctx,L=l.ctx,R=r.ctx;
 
-  if(shirtName === 'Blue Shirt') {
-    // Base azul con degradado
-    const grad = ctx.createLinearGradient(0, 0, 0, 256);
-    grad.addColorStop(0, '#42a5f5');
-    grad.addColorStop(0.4, '#1e88e5');
-    grad.addColorStop(1, '#1565c0');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 256, 256);
+  function base(ctx,w,h){
+    ctx.fillStyle=main;ctx.fillRect(0,0,w,h);
+    ctx.fillStyle=dark;ctx.fillRect(0,0,w,18);ctx.fillRect(0,h-18,w,18);
+    ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(0,18,10,h-36);ctx.fillRect(w-10,18,10,h-36);
+  }
+  [ [F,256,256],[B,256,256],[L,128,256],[R,128,256] ].forEach(v=>base(...v));
 
-    // Sombra lateral suave
-    ctx.fillStyle = 'rgba(0,0,0,0.12)';
-    ctx.fillRect(0, 0, 40, 256);
-    ctx.fillRect(216, 0, 40, 256);
-
-    // Cuello en V blanco
-    ctx.fillStyle = '#f5f5f5';
-    ctx.beginPath();
-    ctx.moveTo(78, 0);
-    ctx.lineTo(128, 52);
-    ctx.lineTo(178, 0);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = '#cfd8dc';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(78, 0);
-    ctx.lineTo(128, 52);
-    ctx.lineTo(178, 0);
-    ctx.stroke();
-
-    // Panel central más oscuro
-    ctx.fillStyle = '#0d47a1';
-    ctx.fillRect(48, 70, 160, 150);
-    ctx.fillStyle = 'rgba(255,255,255,0.08)';
-    ctx.fillRect(48, 70, 160, 20);
-
-    // Costuras verticales
-    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(70, 70); ctx.lineTo(70, 220);
-    ctx.moveTo(186, 70); ctx.lineTo(186, 220);
-    ctx.stroke();
-
-    // Logo EB con sombra
-    ctx.fillStyle = 'rgba(0,0,0,0.25)';
-    ctx.font = 'bold 42px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('EB', 130, 158);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText('EB', 128, 155);
-
-    // Botones
-    ctx.fillStyle = '#eceff1';
-    for(let y of [90, 120, 150, 180]) {
-      ctx.beginPath();
-      ctx.arc(128, y, 5, 0, Math.PI*2);
-      ctx.fill();
-      ctx.strokeStyle = '#90a4ae';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    }
-
-  } else if(shirtName === 'Green Hoodie') {
-    // Base verde con degradado
-    const grad = ctx.createLinearGradient(0, 0, 0, 256);
-    grad.addColorStop(0, '#66bb6a');
-    grad.addColorStop(0.5, '#43a047');
-    grad.addColorStop(1, '#2e7d32');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 256, 256);
-
-    // Capucha central más oscura
-    ctx.fillStyle = '#1b5e20';
-    ctx.fillRect(72, 0, 112, 256);
-    ctx.fillStyle = 'rgba(255,255,255,0.06)';
-    ctx.fillRect(80, 0, 20, 256);
-
-    // Cuello de capucha
-    ctx.fillStyle = '#0d3b12';
-    ctx.beginPath();
-    ctx.ellipse(128, 18, 55, 28, 0, 0, Math.PI*2);
-    ctx.fill();
-    ctx.fillStyle = '#2e7d32';
-    ctx.beginPath();
-    ctx.ellipse(128, 22, 42, 18, 0, 0, Math.PI*2);
-    ctx.fill();
-
-    // Cierre dorado con detalle
-    ctx.fillStyle = '#ffc107';
-    ctx.fillRect(120, 70, 16, 140);
-    ctx.fillStyle = '#ff8f00';
-    ctx.fillRect(122, 72, 12, 136);
-    ctx.fillStyle = '#ffe082';
-    for(let y = 80; y < 200; y += 10) {
-      ctx.fillRect(122, y, 12, 3);
-    }
-
-    // Cordones de la capucha
-    ctx.strokeStyle = '#c8e6c9';
-    ctx.lineWidth = 4;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(100, 40); ctx.lineTo(95, 95);
-    ctx.moveTo(156, 40); ctx.lineTo(161, 95);
-    ctx.stroke();
-    ctx.fillStyle = '#a5d6a7';
-    ctx.beginPath(); ctx.arc(95, 98, 6, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(161, 98, 6, 0, Math.PI*2); ctx.fill();
-
-    // Bolsillo canguro
-    ctx.fillStyle = '#1b5e20';
-    ctx.beginPath();
-    roundRectPath(ctx, 70, 150, 116, 55, 8);
-    ctx.fill();
-    ctx.strokeStyle = '#0d3b12';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    roundRectPath(ctx, 70, 150, 116, 55, 8);
-    ctx.stroke();
-    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-    ctx.beginPath();
-    ctx.moveTo(85, 165); ctx.lineTo(171, 165);
-    ctx.stroke();
+  if(key==='Blue Shirt'){
+    F.fillStyle=accent;F.fillRect(0,30,256,5);F.fillRect(0,222,256,5);
+    epicRound(F,48,72,160,122,12,'#1b5bc0','#0e3475',4);
+    epicEB(F,128,133,42,'#fff');
+    F.fillStyle='#8ec5ff';F.fillRect(112,82,32,5);
+    epicEB(B,128,130,32,'rgba(255,255,255,.9)');
+  } else if(key==='Green Hoodie'){
+    F.fillStyle=accent;F.fillRect(0,30,256,5);F.fillRect(0,222,256,5);
+    ctx=F; ctx.strokeStyle=accent;ctx.lineWidth=6;ctx.beginPath();ctx.arc(128,18,55,0,Math.PI);ctx.stroke();
+    epicRound(F,55,142,146,62,14,'#155b3b','#0c3b27',4);
+    F.fillStyle=accent;F.fillRect(92,78,5,72);F.fillRect(159,78,5,72);
+    epicEB(F,128,113,24,'#eafff0');
+    epicEB(B,128,130,32,'rgba(216,255,232,.8)');
+  } else if(key==='Red Tee'){
+    F.fillStyle='#ff8b8f';F.fillRect(0,31,256,5);F.fillStyle=dark;F.fillRect(0,221,256,5);
+    epicRound(F,55,78,146,112,10,'#c72f36','#7f171d',4);
+    epicEB(F,128,132,48,'#fff');
+    F.fillStyle=accent;F.beginPath();F.moveTo(128,72);F.lineTo(154,102);F.lineTo(102,102);F.closePath();F.fill();
+    epicEB(B,128,130,32,'rgba(255,255,255,.75)');
+  } else if(key==='Black Jacket'){
+    F.fillStyle='#3b3d50';F.fillRect(0,30,256,5);F.fillRect(0,221,256,5);
+    F.strokeStyle=accent;F.lineWidth=4;F.beginPath();F.moveTo(128,35);F.lineTo(128,221);F.stroke();
+    epicRound(F,45,96,66,54,7,'#20222c','#5b5d70',3);epicRound(F,145,96,66,54,7,'#20222c','#5b5d70',3);
+    epicEB(F,128,78,20,'#e8ddff');
+    B.fillStyle='#181923';B.fillRect(0,30,256,5);epicEB(B,128,132,32,'rgba(167,139,250,.75)');
+  } else if(key==='Pink Tee'){
+    F.fillStyle=accent;F.fillRect(0,31,256,5);F.fillStyle=dark;F.fillRect(0,221,256,5);
+    epicRound(F,55,80,146,112,14,'#d75486','#9b2e5b',4);
+    F.fillStyle=accent;F.beginPath();F.moveTo(128,112);F.bezierCurveTo(102,90,78,116,128,164);F.bezierCurveTo(178,116,154,90,128,112);F.fill();
+    epicEB(B,128,130,32,'rgba(255,240,246,.8)');
+  } else if(key==='Lavender Hoodie'){
+    F.fillStyle=accent;F.fillRect(0,31,256,5);F.fillStyle=dark;F.fillRect(0,221,256,5);
+    F.strokeStyle=accent;F.lineWidth=6;F.beginPath();F.arc(128,18,55,0,Math.PI);F.stroke();
+    epicRound(F,55,142,146,62,14,'#7655b8','#4f367e',4);
+    F.strokeStyle=accent;F.lineWidth=4;F.beginPath();F.moveTo(128,66);F.lineTo(128,142);F.stroke();
+    epicEB(B,128,130,32,'rgba(242,234,255,.8)');
+  } else if(key==='White Blouse'){
+    F.fillStyle=accent;F.fillRect(0,30,256,5);F.fillRect(0,221,256,5);
+    F.fillStyle='#e3e1ec';F.fillRect(18,35,12,186);F.fillRect(226,35,12,186);
+    F.strokeStyle=accent;F.lineWidth=4;F.beginPath();F.moveTo(128,38);F.lineTo(128,221);F.stroke();
+    for(let y=78;y<190;y+=30){F.fillStyle=accent;F.beginPath();F.arc(128,y,4,0,Math.PI*2);F.fill();}
+    epicEB(B,128,130,32,'rgba(128,95,192,.65)');
   }
 
-  else if (shirtName === 'Red Tee') {
-    ctx.fillStyle='#d32f2f'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#ef5350'; ctx.fillRect(0,0,256,30);
-    ctx.fillStyle='#fff'; ctx.font='bold 38px Arial'; ctx.textAlign='center'; ctx.fillText('EB',128,150);
-  } else if (shirtName === 'Black Jacket') {
-    ctx.fillStyle='#171717'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#2c2c2c'; ctx.fillRect(25,0,206,256);
-    ctx.strokeStyle='#aaa'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(128,25); ctx.lineTo(128,235); ctx.stroke();
-  } else if (shirtName === 'Pink Tee') {
-    ctx.fillStyle='#f06292'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#ec407a'; ctx.fillRect(0,0,256,30);
-    ctx.fillStyle='#fff'; ctx.font='bold 32px Arial'; ctx.textAlign='center'; ctx.fillText('♥',128,150);
-  } else if (shirtName === 'Lavender Hoodie') {
-    ctx.fillStyle='#9575cd'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#7e57c2'; ctx.fillRect(65,0,126,256);
-    ctx.strokeStyle='#d1c4e9'; ctx.lineWidth=5; ctx.beginPath(); ctx.arc(128,20,48,0,Math.PI*2); ctx.stroke();
-    ctx.fillStyle='#6a4caf'; ctx.fillRect(72,150,112,55);
-  } else if (shirtName === 'White Blouse') {
-    ctx.fillStyle='#fafafa'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#e0e0e0'; ctx.fillRect(0,0,256,8);
-    ctx.fillStyle='#f8bbd0'; ctx.beginPath(); ctx.moveTo(128,35); ctx.lineTo(155,70); ctx.lineTo(128,92); ctx.lineTo(101,70); ctx.closePath(); ctx.fill();
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
+  // Sleeves are part of the shirt artwork, not skin-colored overlays.
+  [L,R].forEach(ctx=>{
+    ctx.fillStyle=dark;ctx.fillRect(0,0,128,18);ctx.fillRect(0,238,128,18);
+    ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(10,18,8,220);ctx.fillRect(110,18,8,220);
+    ctx.fillStyle=accent;ctx.fillRect(0,30,128,5);
+  });
+  const out={
+    torso:{front:epicTex(F),back:epicTex(B)},
+    leftArm:{front:epicTex(L),back:epicTex(L)},
+    rightArm:{front:epicTex(R),back:epicTex(R)}
+  };
+  _epicBuiltInClothingCache[key]=out;
+  return out;
 }
 
-// Textura 2D de pantalones estilo Roblox para las Piernas (mejorada)
-function createPantsTexture(legsColor, pantsName) {
-  const canvas = document.createElement('canvas');
-  canvas.width = 256;
-  canvas.height = 256;
-  const ctx = canvas.getContext('2d');
+function createBuiltInShirtParts(torsoColor, shirtName){
+  if(!shirtName) return null;
+  return epicShirtStyle(shirtName);
+}
+function createShirtTexture(torsoColor, shirtName){
+  const parts=createBuiltInShirtParts(torsoColor,shirtName);
+  return parts ? parts.torso.front : null;
+}
 
-  ctx.fillStyle = legsColor || '#8cae45';
-  ctx.fillRect(0, 0, 256, 256);
-
-  if(pantsName === 'Classic Jeans') {
-    // Base denim
-    const grad = ctx.createLinearGradient(0, 0, 0, 256);
-    grad.addColorStop(0, '#5c6bc0');
-    grad.addColorStop(0.3, '#3949ab');
-    grad.addColorStop(1, '#283593');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 256, 256);
-
-    // Textura sutil de denim
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-    ctx.lineWidth = 1;
-    for(let i = -256; i < 512; i += 8) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0); ctx.lineTo(i + 256, 256);
-      ctx.stroke();
+function epicPantsStyle(name){
+  const key=String(name||'none');
+  const cacheKey='pants:'+key;
+  if(_epicBuiltInClothingCache[cacheKey]) return _epicBuiltInClothingCache[cacheKey];
+  const palettes={
+    'Classic Jeans':['#3d6ea8','#203f6d','#9fc4ec'],
+    'Dark Cargo Pants':['#39434c','#20262c','#8798a6'],
+    'Black Jeans':['#272933','#111218','#737887'],
+    'White Pants':['#f4f4f7','#c8c8d1','#8d74c7'],
+    'Pink Jeans':['#e66b9a','#a83d68','#ffd4e3'],
+    'Purple Pants':['#7653b5','#4a317d','#cbb9ef']
+  }[key] || ['#171820','#0b0c10','#666'];
+  const [main,dark,accent]=palettes;
+  function make(side){
+    const front=epicPanel(128,256,main), back=epicPanel(128,256,main);
+    const F=front.ctx,B=back.ctx;
+    epicGradient(F,main,dark,128,256,true);epicGradient(B,dark,main,128,256,true);
+    F.fillStyle=dark;F.fillRect(0,0,128,24);B.fillStyle=dark;B.fillRect(0,0,128,24);
+    F.fillStyle='rgba(255,255,255,.08)';F.fillRect(8,24,12,208);F.fillRect(108,24,12,208);
+    B.fillStyle='rgba(0,0,0,.12)';B.fillRect(8,24,12,208);B.fillRect(108,24,12,208);
+    F.strokeStyle=accent;F.lineWidth=3;F.beginPath();F.moveTo(64,24);F.lineTo(64,232);F.stroke();
+    B.strokeStyle='rgba(255,255,255,.16)';B.lineWidth=2;B.beginPath();B.moveTo(64,24);B.lineTo(64,232);B.stroke();
+    if(key==='Classic Jeans'){
+      epicRound(F,10,70,38,42,5,'#315b8c',accent,2);epicRound(F,80,70,38,42,5,'#315b8c',accent,2);
+      F.fillStyle=accent;F.fillRect(10,70,38,7);F.fillRect(80,70,38,7);
+      F.strokeStyle=accent;F.lineWidth=2;F.beginPath();F.moveTo(18,132);F.lineTo(52,132);F.moveTo(76,132);F.lineTo(110,132);F.stroke();
+    } else if(key==='Dark Cargo Pants'){
+      epicRound(F,8,58,44,54,6,'#2d353d','#12161a',3);epicRound(F,76,58,44,54,6,'#2d353d','#12161a',3);
+      epicRound(F,12,132,38,50,6,'#313b43','#12161a',3);epicRound(F,78,132,38,50,6,'#313b43','#12161a',3);
+      F.fillStyle=accent;F.fillRect(14,66,32,5);F.fillRect(82,66,32,5);
+    } else if(key==='Black Jeans'){
+      epicRound(F,10,74,36,44,5,'#1d1f29','#555867',2);epicRound(F,82,74,36,44,5,'#1d1f29','#555867',2);
+      F.strokeStyle='#6f7280';F.lineWidth=2;F.beginPath();F.moveTo(20,132);F.lineTo(52,132);F.moveTo(76,132);F.lineTo(108,132);F.stroke();
+    } else if(key==='White Pants'){
+      epicRound(F,9,72,40,46,6,'#e5e5ec','#bdbdc9',2);epicRound(F,79,72,40,46,6,'#e5e5ec','#bdbdc9',2);
+      F.fillStyle=accent;F.fillRect(58,42,12,4);
+    } else if(key==='Pink Jeans'){
+      epicRound(F,9,70,40,46,6,'#c9517c','#9b3159',2);epicRound(F,79,70,40,46,6,'#c9517c','#9b3159',2);
+      F.fillStyle=accent;F.fillRect(14,78,30,5);F.fillRect(84,78,30,5);
+    } else if(key==='Purple Pants'){
+      epicRound(F,9,70,40,46,6,'#5c4190','#3b2863',2);epicRound(F,79,70,40,46,6,'#5c4190','#3b2863',2);
+      F.fillStyle=accent;F.fillRect(14,78,30,5);F.fillRect(84,78,30,5);
     }
-
-    // Pretina / cinturón
-    ctx.fillStyle = '#1a237e';
-    ctx.fillRect(0, 0, 256, 28);
-    ctx.fillStyle = 'rgba(255,255,255,0.1)';
-    ctx.fillRect(0, 0, 256, 6);
-    // Hebilla
-    ctx.fillStyle = '#c0c0c0';
-    ctx.fillRect(112, 6, 32, 16);
-    ctx.fillStyle = '#1a237e';
-    ctx.fillRect(118, 10, 20, 8);
-
-    // Costura central (entrepierna)
-    ctx.strokeStyle = '#e8eaf6';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(128, 28); ctx.lineTo(128, 256);
-    ctx.stroke();
-    ctx.strokeStyle = 'rgba(232,234,246,0.5)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(122, 28); ctx.lineTo(122, 256);
-    ctx.moveTo(134, 28); ctx.lineTo(134, 256);
-    ctx.stroke();
-
-    // Bolsillos delanteros
-    ctx.strokeStyle = '#e8eaf6';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.moveTo(20, 40); ctx.lineTo(20, 95); ctx.lineTo(70, 95); ctx.lineTo(70, 55);
-    ctx.quadraticCurveTo(70, 40, 50, 40); ctx.closePath();
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(236, 40); ctx.lineTo(236, 95); ctx.lineTo(186, 95); ctx.lineTo(186, 55);
-    ctx.quadraticCurveTo(186, 40, 206, 40); ctx.closePath();
-    ctx.stroke();
-
-    // Costuras laterales
-    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(8, 28); ctx.lineTo(8, 256);
-    ctx.moveTo(248, 28); ctx.lineTo(248, 256);
-    ctx.stroke();
-
-  } else if(pantsName === 'Dark Cargo Pants') {
-    // Base oscura
-    const grad = ctx.createLinearGradient(0, 0, 0, 256);
-    grad.addColorStop(0, '#546e7a');
-    grad.addColorStop(0.4, '#37474f');
-    grad.addColorStop(1, '#263238');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 256, 256);
-
-    // Pretina
-    ctx.fillStyle = '#1c2529';
-    ctx.fillRect(0, 0, 256, 26);
-    ctx.fillStyle = 'rgba(255,255,255,0.06)';
-    ctx.fillRect(0, 0, 256, 5);
-    // Botones de pretina
-    ctx.fillStyle = '#90a4ae';
-    for(let x of [40, 80, 176, 216]) {
-      ctx.beginPath(); ctx.arc(x, 13, 4, 0, Math.PI*2); ctx.fill();
-    }
-
-    // Costura central
-    ctx.strokeStyle = '#78909c';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(128, 26); ctx.lineTo(128, 256);
-    ctx.stroke();
-
-    // Bolsillos cargo
-    function drawCargoPocket(x, y, w, h) {
-      ctx.fillStyle = '#455a64';
-      ctx.beginPath();
-      roundRectPath(ctx, x, y, w, h, 4);
-      ctx.fill();
-      ctx.strokeStyle = '#1c2529';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      roundRectPath(ctx, x, y, w, h, 4);
-      ctx.stroke();
-      // Solapa
-      ctx.fillStyle = '#37474f';
-      ctx.beginPath();
-      roundRectPath(ctx, x, y, w, 14, 3);
-      ctx.fill();
-      ctx.beginPath();
-      roundRectPath(ctx, x, y, w, 14, 3);
-      ctx.stroke();
-      // Botón
-      ctx.fillStyle = '#90a4ae';
-      ctx.beginPath();
-      ctx.arc(x + w/2, y + 7, 3.5, 0, Math.PI*2);
-      ctx.fill();
-    }
-    drawCargoPocket(12, 70, 48, 70);
-    drawCargoPocket(196, 70, 48, 70);
-    drawCargoPocket(12, 160, 48, 55);
-    drawCargoPocket(196, 160, 48, 55);
-
-    // Costuras laterales
-    ctx.strokeStyle = 'rgba(144,164,174,0.35)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(6, 26); ctx.lineTo(6, 256);
-    ctx.moveTo(250, 26); ctx.lineTo(250, 256);
-    ctx.stroke();
+    F.fillStyle=dark;F.fillRect(0,232,128,24);B.fillStyle=dark;B.fillRect(0,232,128,24);
+    epicEB(B,64,118,18,'rgba(255,255,255,.45)');
+    return {front:epicTex(front.canvas),back:epicTex(back.canvas)};
   }
-
-  else if (pantsName === 'Black Jeans') {
-    ctx.fillStyle='#202124'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#111'; ctx.fillRect(0,0,256,28);
-    ctx.strokeStyle='#555'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(128,28); ctx.lineTo(128,256); ctx.stroke();
-  } else if (pantsName === 'White Pants') {
-    ctx.fillStyle='#f4f4f4'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#d5d5d5'; ctx.fillRect(0,0,256,25);
-    ctx.strokeStyle='#bbb'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(128,25); ctx.lineTo(128,256); ctx.stroke();
-  } else if (pantsName === 'Pink Jeans') {
-    ctx.fillStyle='#ec6f9e'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#c94f7c'; ctx.fillRect(0,0,256,28);
-    ctx.strokeStyle='#f8bbd0'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(128,28); ctx.lineTo(128,256); ctx.stroke();
-  } else if (pantsName === 'Purple Pants') {
-    ctx.fillStyle='#673ab7'; ctx.fillRect(0,0,256,256); ctx.fillStyle='#512da8'; ctx.fillRect(0,0,256,27);
-    ctx.strokeStyle='#b39ddb'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(128,27); ctx.lineTo(128,256); ctx.stroke();
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
+  const out={left:make('left'),right:make('right')};_epicBuiltInClothingCache[cacheKey]=out;return out;
+}
+function createBuiltInPantsParts(legsColor,pantsName){ return pantsName ? epicPantsStyle(pantsName) : null; }
+function createPantsTexture(legsColor,pantsName){
+  const p=createBuiltInPantsParts(legsColor,pantsName); return p ? p.left.front : null;
 }
 
 // Creación de accesorios 3D
@@ -2024,12 +2008,34 @@ function customShirtMaterials(item){
 function customExtrudedClothingMaterials(parts,baseColor){
   const base=new THREE.MeshLambertMaterial({color:baseColor||'#1477b9'});
   if(!parts) return base;
-  // ExtrudeGeometry groups are: front (+Z), back (-Z), sides. Never put the
-  // complete clothing template on a side face; that is what creates the
-  // stretched/glitched strips visible on the character.
-  const front=clothingMaterial(parts.front,baseColor);
-  const back=clothingMaterial(parts.back,baseColor);
-  return [front,back,base];
+
+  // The official shirts are drawn onto CanvasTexture panels and then applied
+  // to ExtrudeGeometry. In r128, lighting a canvas-textured extruded face can
+  // make the clothing appear almost completely black when the generated
+  // normals point away from the scene light. Use an unlit material for the
+  // actual clothing artwork so its colors are preserved exactly as designed.
+  // The body itself remains Lambert-lit.
+  const makeVisible = tex => tex
+    ? new THREE.MeshBasicMaterial({
+        map:tex,
+        color:0xffffff,
+        side:THREE.DoubleSide,
+        transparent:true,
+        depthWrite:true
+      })
+    : new THREE.MeshBasicMaterial({color:baseColor||'#1477b9',side:THREE.DoubleSide});
+
+  const front=makeVisible(parts.front);
+  const back=makeVisible(parts.back);
+  // Keep the side faces unlit too. The Catalog preview is rendered in its own
+  // WebGL scene and can make Lambert-lit side faces look black depending on
+  // the camera/light direction. The clothing artwork must keep its exact
+  // designed colors in the preview.
+  const side=new THREE.MeshBasicMaterial({
+    color:baseColor||'#1477b9',
+    side:THREE.DoubleSide
+  });
+  return [front,back,side];
 }
 
 function customPantsMaterials(item){
@@ -2146,42 +2152,31 @@ function buildAvatar3DModel(userData) {
     else if(cat === 'pants') { activePants = acc; customPants = (item && item.custom) ? item : null; }
   });
 
-  // Materiales con texturas 2D estilo Roblox (incluye ropa creada por la comunidad)
+  // Built-in EpicBlox clothing uses dedicated panels for the new model.
+  // Community clothing keeps the custom renderer/data untouched.
   const customShirtTex = customShirt ? customShirtMaterials(customShirt) : null;
-  const torsoTexture = customShirt ? null : createShirtTexture(torsoCol, activeShirt);
+  const builtInShirt = (!customShirt && activeShirt) ? createBuiltInShirtParts(torsoCol, activeShirt) : null;
   const torsoMat = customShirtTex
     ? customExtrudedClothingMaterials(customShirtTex.torso,torsoCol)
-    : bodyClothingMaterials(torsoTexture, torsoCol, true);
+    : (builtInShirt ? customExtrudedClothingMaterials(builtInShirt.torso,torsoCol) : new THREE.MeshLambertMaterial({color:torsoCol}));
 
   const customPantsMats = customPants ? customPantsMaterials(customPants) : null;
+  const builtInPants = (!customPants && activePants) ? createBuiltInPantsParts(legCol, activePants) : null;
+  const avatarPantsBox = (parts,baseColor) => parts ? gameBoxClothingMaterials(parts.front,parts.back,baseColor) : new THREE.MeshLambertMaterial({color:baseColor});
   const leftLegMat = customPantsMats
-    ? [
-        clothingMaterial(customPantsMats.left.right,legCol),
-        clothingMaterial(customPantsMats.left.left,legCol),
-        clothingMaterial(customPantsMats.left.top,legCol),
-        clothingMaterial(customPantsMats.left.bottom,legCol),
-        clothingMaterial(customPantsMats.left.front,legCol),
-        clothingMaterial(customPantsMats.left.back,legCol)
-      ]
-    : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
+    ? [clothingMaterial(customPantsMats.left.right,legCol),clothingMaterial(customPantsMats.left.left,legCol),clothingMaterial(customPantsMats.left.top,legCol),clothingMaterial(customPantsMats.left.bottom,legCol),clothingMaterial(customPantsMats.left.front,legCol),clothingMaterial(customPantsMats.left.back,legCol)]
+    : avatarPantsBox(builtInPants && builtInPants.left,legCol);
   const rightLegMat = customPantsMats
-    ? [
-        clothingMaterial(customPantsMats.right.right,legCol),
-        clothingMaterial(customPantsMats.right.left,legCol),
-        clothingMaterial(customPantsMats.right.top,legCol),
-        clothingMaterial(customPantsMats.right.bottom,legCol),
-        clothingMaterial(customPantsMats.right.front,legCol),
-        clothingMaterial(customPantsMats.right.back,legCol)
-      ]
-    : bodyClothingMaterials(createPantsTexture(legCol, activePants), legCol);
+    ? [clothingMaterial(customPantsMats.right.right,legCol),clothingMaterial(customPantsMats.right.left,legCol),clothingMaterial(customPantsMats.right.top,legCol),clothingMaterial(customPantsMats.right.bottom,legCol),clothingMaterial(customPantsMats.right.front,legCol),clothingMaterial(customPantsMats.right.back,legCol)]
+    : avatarPantsBox(builtInPants && builtInPants.right,legCol);
 
   const armMat = new THREE.MeshLambertMaterial({color: armCol});
   const shirtLeftArmMat = customShirtTex
     ? customExtrudedClothingMaterials(customShirtTex.leftArm,armCol)
-    : armMat;
+    : (builtInShirt ? gameBoxClothingMaterials(builtInShirt.leftArm.front,builtInShirt.leftArm.back,armCol) : armMat);
   const shirtRightArmMat = customShirtTex
     ? customExtrudedClothingMaterials(customShirtTex.rightArm,armCol)
-    : armMat;
+    : (builtInShirt ? gameBoxClothingMaterials(builtInShirt.rightArm.front,builtInShirt.rightArm.back,armCol) : armMat);
 
   const sideHeadMat = new THREE.MeshLambertMaterial({color: headCol});
   const faceItem = catalogItemById(activeFace);
@@ -2396,47 +2391,34 @@ function buildGamePlayerModel(userData) {
   });
 
   const customShirtTex = customShirt ? customShirtMaterials(customShirt) : null;
+  const builtInShirt = (!customShirt && activeShirt) ? createBuiltInShirtParts(torsoCol, activeShirt) : null;
   const customPantsMats = customPants ? customPantsMaterials(customPants) : null;
+  const builtInPants = (!customPants && activePants) ? createBuiltInPantsParts(legCol, activePants) : null;
 
-  // Custom classic clothing is a UV template, not one texture for the whole
-  // cube. Build the six BoxGeometry materials from the six panels so every
-  // face of the new in-game rig receives the correct part of the template.
-  function classicBoxMaterials(parts, baseColor) {
-    if (!parts) return null;
-    const fallback = new THREE.MeshLambertMaterial({color:baseColor});
-    const mat = (tex) => tex ? clothingMaterial(tex,baseColor) : fallback;
-    return [
-      mat(parts.right), mat(parts.left), mat(parts.top), mat(parts.bottom),
-      mat(parts.front), mat(parts.back)
-    ];
-  }
-
-  const torsoTexture = createShirtTexture(torsoCol, activeShirt);
+  // Built-in EpicBlox clothes are designed specifically for this R6 body.
+  // Community clothing still uses its own classic-template renderer.
   const torsoMat = customShirtTex
-    ? classicBoxMaterials(customShirtTex.torso, torsoCol)
-    : gameBoxClothingMaterials(torsoTexture, torsoTexture, torsoCol);
+    ? customExtrudedClothingMaterials(customShirtTex.torso, torsoCol)
+    : (builtInShirt ? customExtrudedClothingMaterials(builtInShirt.torso, torsoCol) : new THREE.MeshLambertMaterial({color:torsoCol}));
 
-  // The built-in pants texture contains BOTH legs in one 256px canvas. The
-  // previous renderer placed that complete canvas on every face of BOTH legs,
-  // which can show the other leg or stretched seams on the sides. Split the
-  // canvas once per leg and use it only on front/back; sides stay clean.
-  const pantsTexture = createPantsTexture(legCol, activePants);
-  const leftPantsTexture = splitLegTexture(pantsTexture, 'left');
-  const rightPantsTexture = splitLegTexture(pantsTexture, 'right');
+  function pantsBoxMaterials(parts, baseColor){
+    if(!parts) return new THREE.MeshLambertMaterial({color:baseColor});
+    return gameBoxClothingMaterials(parts.front,parts.back,baseColor);
+  }
   const leftLegMat = customPantsMats
-    ? classicBoxMaterials(customPantsMats.left, legCol)
-    : gameBoxClothingMaterials(leftPantsTexture, leftPantsTexture, legCol);
+    ? [clothingMaterial(customPantsMats.left.right,legCol),clothingMaterial(customPantsMats.left.left,legCol),clothingMaterial(customPantsMats.left.top,legCol),clothingMaterial(customPantsMats.left.bottom,legCol),clothingMaterial(customPantsMats.left.front,legCol),clothingMaterial(customPantsMats.left.back,legCol)]
+    : pantsBoxMaterials(builtInPants && builtInPants.left, legCol);
   const rightLegMat = customPantsMats
-    ? classicBoxMaterials(customPantsMats.right, legCol)
-    : gameBoxClothingMaterials(rightPantsTexture, rightPantsTexture, legCol);
+    ? [clothingMaterial(customPantsMats.right.right,legCol),clothingMaterial(customPantsMats.right.left,legCol),clothingMaterial(customPantsMats.right.top,legCol),clothingMaterial(customPantsMats.right.bottom,legCol),clothingMaterial(customPantsMats.right.front,legCol),clothingMaterial(customPantsMats.right.back,legCol)]
+    : pantsBoxMaterials(builtInPants && builtInPants.right, legCol);
 
   const armMat = new THREE.MeshLambertMaterial({ color: armCol });
   const shirtLeftArmMat = customShirtTex
-    ? classicBoxMaterials(customShirtTex.leftArm, armCol)
-    : armMat;
+    ? customExtrudedClothingMaterials(customShirtTex.leftArm, armCol)
+    : (builtInShirt ? customExtrudedClothingMaterials(builtInShirt.leftArm, armCol) : armMat);
   const shirtRightArmMat = customShirtTex
-    ? classicBoxMaterials(customShirtTex.rightArm, armCol)
-    : armMat;
+    ? customExtrudedClothingMaterials(customShirtTex.rightArm, armCol)
+    : (builtInShirt ? customExtrudedClothingMaterials(builtInShirt.rightArm, armCol) : armMat);
   const sideHeadMat = new THREE.MeshLambertMaterial({ color: headCol });
   const faceItem = catalogItemById(activeFace);
   const faceTexture = (faceItem && faceItem.image)
@@ -3139,6 +3121,12 @@ let raceFinished = false;
 let raceStartTime = 0;
 let obbyBestCheckpoint = 0;
 let obbyCheckpointSpawns = [];
+let zombieEnemies = [];
+let treasureChests = [];
+let lavaSurface = null;
+let lavaRiseStart = 0;
+let lavaLastWarning = 0;
+let gameEnhancementState = {};
 
 // ===== SpawnPoints fijos =====
 // Se mantienen separados de las colisiones para reutilizarlos en futuras mejoras
@@ -3153,7 +3141,7 @@ const GAME_SPAWN_POINTS = Object.freeze({
   'Zombie Survival': Object.freeze([{ x: 0, y: 0.02, z: 12 }]),
   'Treasure Island': Object.freeze([{ x: 0, y: 0.02, z: -24 }]),
   'Neon City': Object.freeze([{ x: 0, y: 0.02, z: 0 }]),
-  'Lava Escape': Object.freeze([{ x: 0, y: 0.02, z: 30 }]),
+  'Lava Escape': Object.freeze([{ x: 0, y: 1.22, z: 30 }]),
   'Paintball Plaza': Object.freeze([{ x: 0, y: 0.02, z: 0 }]),
   'Castle Defense': Object.freeze([{ x: 0, y: 0.02, z: 20 }])
 });
@@ -3217,6 +3205,7 @@ function clearGameExtras(){
   const all = [...gameDecorations, ...petFollowers, ...fightTargets, ...raceCheckpoints];
   for(const obj of all){ try{ gameScene.remove(obj); }catch(e){} }
   gameDecorations=[]; petFollowers=[]; fightTargets=[]; raceCheckpoints=[]; activeCheckpoint=0;
+  zombieEnemies=[]; treasureChests=[]; lavaSurface=null; lavaRiseStart=0; lavaLastWarning=0; gameEnhancementState={};
   for (const sp of spawnPointObjects) { try { gameScene.remove(sp); } catch(e) {} }
   spawnPointObjects=[]; activeSpawnPoints=[];
   obbyCheckpointSpawns=[];
@@ -3564,6 +3553,9 @@ function buildGameSpecificWorld(gameName){
     for(let i=0;i<12;i++) addCoinAt(((i*17)%70)-35,0.7,((i*23)%70)-35);
   } else if(n==='Lava Escape'){
     // Lava Escape: lava subiendo, plataformas de roca, puentes y zona segura.
+    // Plataforma inicial segura: el spawn queda por encima de la lava desde el primer frame.
+    addBox(0,0.9,30,12,0.64,8,0x665044,{solid:true});
+    addBox(0,1.24,30,12,0.08,8,0x8a6a50,{solid:false});
     addBox(0,-0.6,0,86,1,86,0x7c241f,{solid:false});
     addBox(0,-0.05,0,80,0.12,80,0xd43a2f,{solid:false});
     // Canales de lava con pequeñas islas para saltar.
@@ -3639,6 +3631,126 @@ function buildGameSpecificWorld(gameName){
     addBox(-10,-1,-6,8,0.8,3,0xa47c48,{solid:true}); addBox(10,-1,6,8,0.8,3,0xa47c48,{solid:true}); addBox(0,-2,10,3,0.8,10,0xa47c48,{solid:true});
     for(const [x,z] of [[-5,-5],[-20,-12],[20,-6],[8,18],[0,0]]) addTree(x,z,0.8);
     for(let i=0;i<16;i++) addCoinAt((i%4-1.5)*5,2+Math.floor(i/4)*1.1,-(i*7)%30);
+  }
+}
+
+function initGameEnhancements(gameName){
+  const n=String(gameName||'').trim();
+  gameEnhancementState={name:n, lastDamageAt:0, wave:1, waveStarted:performance.now(), coreHp:100, coreMaxHp:100};
+  zombieEnemies=[]; treasureChests=[]; lavaSurface=null;
+
+  // Zombie Survival: enemigos móviles sencillos + oleadas progresivas.
+  if(n==='Zombie Survival'){
+    const spots=[[-25,25],[25,25],[-30,5],[30,-5],[-18,-18],[18,-18]];
+    spots.forEach((pos,i)=>{
+      const g=new THREE.Group();
+      const body=new THREE.Mesh(new THREE.BoxGeometry(.78,1.35,.55),new THREE.MeshLambertMaterial({color:0x5f7f4d}));
+      body.position.y=.72; g.add(body);
+      const head=new THREE.Mesh(new THREE.BoxGeometry(.68,.68,.68),new THREE.MeshLambertMaterial({color:0x8eaa6e}));
+      head.position.y=1.72; g.add(head);
+      g.position.set(pos[0],0,pos[1]);
+      g.userData={hp:3,maxHp:3,damageCooldown:0,deadUntil:0,speed:1.15+(i%3)*.12,baseX:pos[0],baseZ:pos[1]};
+      gameScene.add(g); gameDecorations.push(g); zombieEnemies.push(g);
+    });
+    const sign=new THREE.Mesh(new THREE.BoxGeometry(10,.25,.2),new THREE.MeshLambertMaterial({color:0xb91c1c,emissive:0x2b0000}));
+    sign.position.set(0,4.8,-20.8); gameScene.add(sign); gameDecorations.push(sign);
+  }
+
+  // Treasure Island: los cofres se pueden abrir con E y dan recompensas distintas.
+  if(n==='Treasure Island'){
+    const spots=[[-20,-8],[19,-12],[-22,23],[21,22],[0,25]];
+    spots.forEach((pos,i)=>{
+      const chest=new THREE.Group();
+      const base=new THREE.Mesh(new THREE.BoxGeometry(2.3,1.0,1.35),new THREE.MeshLambertMaterial({color:0x7a4a20})); base.position.y=.5; chest.add(base);
+      const lid=new THREE.Mesh(new THREE.BoxGeometry(2.35,.22,1.4),new THREE.MeshLambertMaterial({color:0xd9a441})); lid.position.set(0,1.05,0); chest.add(lid);
+      const lock=new THREE.Mesh(new THREE.BoxGeometry(.28,.36,.12),new THREE.MeshLambertMaterial({color:0xf4d35e})); lock.position.set(0,.72,-.72); chest.add(lock);
+      chest.position.set(pos[0],0,pos[1]); chest.userData={opened:false,reward:12+i*6};
+      gameScene.add(chest); gameDecorations.push(chest); treasureChests.push(chest);
+    });
+  }
+
+  // Lava Escape: la lava empieza baja y sube lentamente, dando tiempo a avanzar.
+  if(n==='Lava Escape'){
+    lavaRiseStart=performance.now();
+    lavaLastWarning=0;
+    lavaSurface=new THREE.Mesh(new THREE.BoxGeometry(78,.22,78),new THREE.MeshLambertMaterial({color:0xff4d1a,emissive:0x4a0900,emissiveIntensity:.75}));
+    lavaSurface.position.set(0,.15,0); gameScene.add(lavaSurface); gameDecorations.push(lavaSurface);
+    // Mantiene una pequeña separación respecto a la plataforma inicial.
+    gameEnhancementState.lavaBase=.10;
+    gameEnhancementState.lavaMax=5.5;
+    gameEnhancementState.lavaDuration=120000;
+  }
+}
+
+function updateGameEnhancements(dt, now, playerPos){
+  const n=currentGameType.trim();
+  if(n==='Zombie Survival'){
+    let alive=0;
+    for(const z of zombieEnemies){
+      if(!z || !z.visible) continue;
+      alive++;
+      const dx=playerPos.x-z.position.x, dz=playerPos.z-z.position.z;
+      const dist=Math.hypot(dx,dz);
+      if(dist<26 && dist>1.25){
+        const step=Math.min(z.userData.speed*dt, dist-1.25);
+        z.position.x += dx/dist*step;
+        z.position.z += dz/dist*step;
+        z.rotation.y=Math.atan2(dx,dz);
+      }
+      z.userData.damageCooldown=Math.max(0,(z.userData.damageCooldown||0)-dt);
+      if(dist<1.45 && z.userData.damageCooldown<=0){
+        z.userData.damageCooldown=1.1;
+        // No quitamos vida real: mostramos el golpe y un pequeño retroceso para que el juego siga siendo jugable.
+        playerPos.x += dx/(dist||1)*.35; playerPos.z += dz/(dist||1)*.35;
+        const hint=document.getElementById('gameHint'); if(hint) hint.textContent='🧟 ¡Un zombie te alcanzó!';
+      }
+    }
+    if(alive===0 || now-gameEnhancementState.waveStarted>30000){
+      gameEnhancementState.wave++;
+      gameEnhancementState.waveStarted=now;
+      const count=Math.min(12,4+gameEnhancementState.wave);
+      for(let i=zombieEnemies.length;i<count;i++){
+        const angle=Math.random()*Math.PI*2, r=20+Math.random()*10;
+        const g=new THREE.Group();
+        const body=new THREE.Mesh(new THREE.BoxGeometry(.78,1.35,.55),new THREE.MeshLambertMaterial({color:0x5f7f4d})); body.position.y=.72; g.add(body);
+        const head=new THREE.Mesh(new THREE.BoxGeometry(.68,.68,.68),new THREE.MeshLambertMaterial({color:0x8eaa6e})); head.position.y=1.72; g.add(head);
+        g.position.set(playerPos.x+Math.cos(angle)*r,0,playerPos.z+Math.sin(angle)*r);
+        g.userData={hp:3,maxHp:3,damageCooldown:0,deadUntil:0,speed:1.1+gameEnhancementState.wave*.08,baseX:g.position.x,baseZ:g.position.z};
+        gameScene.add(g); gameDecorations.push(g); zombieEnemies.push(g);
+      }
+      const hint=document.getElementById('gameHint'); if(hint) hint.textContent=`🧟 Oleada ${gameEnhancementState.wave}`;
+    }
+  }
+
+  if(n==='Treasure Island' && keysPressed['KeyE']){
+    for(const chest of treasureChests){
+      if(!chest || chest.userData.opened) continue;
+      const dx=chest.position.x-playerPos.x, dz=chest.position.z-playerPos.z;
+      if(Math.hypot(dx,dz)<3.0){
+        chest.userData.opened=true;
+        chest.children.forEach((part,idx)=>{ if(idx===1) part.rotation.x=-.65; });
+        const reward=chest.userData.reward||15;
+        addSunnys(reward); gameSessionEarnings+=reward;
+        const earnLbl=document.getElementById('clientEarnings'); if(earnLbl) earnLbl.textContent=gameSessionEarnings;
+        const hint=document.getElementById('gameHint'); if(hint) hint.textContent=`💰 ¡Tesoro encontrado! +${reward} ☀️`;
+        break;
+      }
+    }
+  }
+
+  if(n==='Lava Escape' && lavaSurface){
+    const elapsed=Math.max(0,now-lavaRiseStart);
+    const progress=Math.min(1,elapsed/(gameEnhancementState.lavaDuration||120000));
+    const y=(gameEnhancementState.lavaBase||.15)+progress*(gameEnhancementState.lavaMax||5.5);
+    lavaSurface.position.y=y;
+    if(progress<1 && now-lavaLastWarning>10000){
+      lavaLastWarning=now;
+      const hint=document.getElementById('gameHint'); if(hint) hint.textContent=`🌋 La lava está subiendo · ${Math.round((1-progress)*120)}s`;
+    }
+    if(playerPos.y < y+.45){
+      showVoidDeath(()=>{placePlayerAtSpawn(playerPos,currentGameType);});
+      const hint=document.getElementById('gameHint'); if(hint) hint.textContent='🌋 ¡La lava te alcanzó!';
+    }
   }
 }
 
@@ -3724,6 +3836,7 @@ function initGameWebGL(gameName) {
   clearGameExtras();
   buildUniqueGameWorld(gameName);
   buildGameSpecificWorld(gameName);
+  initGameEnhancements(gameName);
   registerSpawnPoints(gameName);
   configureGameShadows(gameScene);
 
@@ -3731,6 +3844,8 @@ function initGameWebGL(gameName) {
   clearAllRemotePlayers();
   playerMeshGroup = buildGamePlayerModel(c ? c.user : null);
   playerMeshGroup.position.set(0, 0, 0);
+  const idleTorso = playerMeshGroup.getObjectByName('torso');
+  if(idleTorso) idleTorso.userData.idleBaseY = idleTorso.position.y;
   gameScene.add(playerMeshGroup);
   if(gameName.trim() === "Battle Arena") addSwordToPlayer();
 }
@@ -3822,13 +3937,18 @@ function respawnAfterVoid() {
 }
 
 // ==================== EMOTES / BAILES (/e dance) ====================
-const EMOTE_DANCES = ['dance1','dance2','dance3','dance4','dance5'];
+const EMOTE_DANCES = ['dance1','dance2','dance3','dance4','dance5','dance6','dance7','dance8','dance9','dance10'];
 const EMOTE_LABELS = {
   dance1: 'baila el clasico',
   dance2: 'hace el baile saltarin',
   dance3: 'hace el floss',
   dance4: 'hace breakdance',
-  dance5: 'baila robot'
+  dance5: 'baila robot',
+  dance6: 'hace moonwalk',
+  dance7: 'hace el dab',
+  dance8: 'hace un baile de fiesta',
+  dance9: 'hace el running man',
+  dance10: 'hace un baile de victoria'
 };
 const EMOTE_DURATION = 6000;
 let localEmote = null;
@@ -3839,7 +3959,7 @@ function isLocalEmoteActive(){
 
 function resetLimbs(group){
   if(!group) return;
-  ['leftArm','rightArm','leftLeg','rightLeg'].forEach(name => {
+  ['leftArm','rightArm','leftLeg','rightLeg','head','torso'].forEach(name => {
     const part = group.getObjectByName(name);
     if(part) part.rotation.set(0,0,0);
   });
@@ -3865,52 +3985,193 @@ function applyEmoteAnimation(group, name, t){
   const rightArm = group.getObjectByName("rightArm");
   const leftLeg = group.getObjectByName("leftLeg");
   const rightLeg = group.getObjectByName("rightLeg");
+  const head = group.getObjectByName("head");
+  const torso = group.getObjectByName("torso");
   let bob = 0;
 
+  // Todos los bailes parten de una pose limpia para que una animación no deje
+  // partes del cuerpo de la anterior.
+  [leftArm,rightArm,leftLeg,rightLeg,head,torso].forEach(part => {
+    if(part) part.rotation.set(0,0,0);
+  });
+
   if(name === 'dance2'){
-    const a = Math.abs(Math.sin(t * 9));
-    if(leftArm){ leftArm.rotation.z = 2.4 * a; leftArm.rotation.x = 0; }
-    if(rightArm){ rightArm.rotation.z = -2.4 * a; rightArm.rotation.x = 0; }
-    if(leftLeg) leftLeg.rotation.z = 0.4 * a;
-    if(rightLeg) rightLeg.rotation.z = -0.4 * a;
-    group.rotation.z = 0;
-    bob = a * 0.35;
+    // Baile saltarín: saltos cortos + brazos alternados.
+    const beat = Math.abs(Math.sin(t * 7));
+    const alt = Math.sin(t * 7);
+    if(leftArm){ leftArm.rotation.x = -1.15 + alt * 0.55; leftArm.rotation.z = 0.35; }
+    if(rightArm){ rightArm.rotation.x = -1.15 - alt * 0.55; rightArm.rotation.z = -0.35; }
+    if(leftLeg) leftLeg.rotation.x = -alt * 0.55;
+    if(rightLeg) rightLeg.rotation.x = alt * 0.55;
+    bob = beat * 0.30;
   } else if(name === 'dance3'){
-    const sw = Math.sin(t * 7);
-    if(leftArm){ leftArm.rotation.x = sw * 1.5; leftArm.rotation.z = 0.5; }
-    if(rightArm){ rightArm.rotation.x = -sw * 1.5; rightArm.rotation.z = -0.5; }
-    if(leftLeg) leftLeg.rotation.x = -sw * 0.4;
-    if(rightLeg) rightLeg.rotation.x = sw * 0.4;
-    group.rotation.z = sw * 0.16;
-    bob = 0.05;
+    // FLOSS: brazos cruzan de lado a lado por delante/parte trasera del cuerpo.
+    const sw = Math.sin(t * 9);
+    const side = Math.cos(t * 9);
+    if(leftArm){ leftArm.rotation.x = 0.35 + sw * 0.95; leftArm.rotation.z = 0.55; }
+    if(rightArm){ rightArm.rotation.x = 0.35 - sw * 0.95; rightArm.rotation.z = -0.55; }
+    if(leftLeg) leftLeg.rotation.x = -side * 0.22;
+    if(rightLeg) rightLeg.rotation.x = side * 0.22;
+    group.rotation.z = sw * 0.10;
+    bob = 0.03 + Math.abs(sw) * 0.035;
   } else if(name === 'dance4'){
-    group.rotation.y += 0.22;
-    if(leftArm){ leftArm.rotation.z = 1.9; leftArm.rotation.x = 0; }
-    if(rightArm){ rightArm.rotation.z = -1.9; rightArm.rotation.x = 0; }
-    if(leftLeg) leftLeg.rotation.z = 0.7;
-    if(rightLeg) rightLeg.rotation.z = -0.7;
-    group.rotation.z = 0.25;
-    bob = 0.15 + Math.abs(Math.sin(t * 12)) * 0.1;
+    // BREAKDANCE: top-rock + giro de cuerpo, con cambios de piernas y brazos.
+    // Evita dejar al personaje simplemente inclinado hacia un lado.
+    const beat = Math.sin(t * 6);
+    const kick = Math.sin(t * 3);
+    if(leftArm){
+      leftArm.rotation.x = -0.55 + beat * 0.35;
+      leftArm.rotation.z = 0.95 + Math.abs(beat) * 0.25;
+    }
+    if(rightArm){
+      rightArm.rotation.x = -0.55 - beat * 0.35;
+      rightArm.rotation.z = -0.95 - Math.abs(beat) * 0.25;
+    }
+    if(leftLeg){
+      leftLeg.rotation.x = 0.35 + kick * 0.95;
+      leftLeg.rotation.z = 0.20 + Math.abs(kick) * 0.18;
+    }
+    if(rightLeg){
+      rightLeg.rotation.x = -0.15 - kick * 0.85;
+      rightLeg.rotation.z = -0.20 - Math.abs(kick) * 0.18;
+    }
+    group.rotation.z = Math.sin(t * 3) * 0.16;
+    group.rotation.x = Math.sin(t * 3) * 0.08;
+    bob = 0.035 + Math.abs(Math.sin(t * 6)) * 0.035;
   } else if(name === 'dance5'){
+    // ROBOT: poses mecánicas por golpes, sin movimiento suave.
     const step = Math.floor(t * 4) % 4;
-    const poses = [[-1.6,0.2],[0.2,-1.6],[-1.6,-1.6],[0.4,0.4]];
-    if(leftArm){ leftArm.rotation.x = poses[step][0]; leftArm.rotation.z = 0.3; }
-    if(rightArm){ rightArm.rotation.x = poses[step][1]; rightArm.rotation.z = -0.3; }
-    if(leftLeg) leftLeg.rotation.x = step % 2 ? 0.3 : -0.3;
-    if(rightLeg) rightLeg.rotation.x = step % 2 ? -0.3 : 0.3;
-    group.rotation.z = 0;
-    bob = 0.02;
+    const poses = [
+      [-1.55, -0.25, -0.35, 0.35],
+      [-0.25, -1.55, 0.35, -0.35],
+      [-1.45, -1.45, -0.30, 0.30],
+      [ 0.35,  0.35, 0.20, -0.20]
+    ][step];
+    if(leftArm){ leftArm.rotation.x = poses[0]; leftArm.rotation.z = poses[2]; }
+    if(rightArm){ rightArm.rotation.x = poses[1]; rightArm.rotation.z = poses[3]; }
+    if(leftLeg) leftLeg.rotation.x = step % 2 ? 0.30 : -0.20;
+    if(rightLeg) rightLeg.rotation.x = step % 2 ? -0.30 : 0.20;
+    group.rotation.z = step % 2 ? 0.06 : -0.06;
+    bob = 0.015;
+  } else if(name === 'dance6'){
+    // MOONWALK: deslizamiento hacia atrás con el pie que parece quedarse pegado
+    // al suelo. Añadimos la pose característica: brazo derecho junto a la cabeza
+    // y cabeza inclinada hacia el suelo.
+    const phase = t * 5.5;
+    const slide = Math.sin(phase);
+    const switchLeg = Math.sin(phase + Math.PI);
+    const lean = Math.sin(phase * 0.5);
+    if(leftArm){
+      leftArm.rotation.x = -0.48 + slide * 0.10;
+      leftArm.rotation.z = 0.20;
+    }
+    if(rightArm){
+      // Brazo derecho levantado, pegado a la cabeza.
+      rightArm.rotation.x = -1.50 + slide * 0.08;
+      rightArm.rotation.z = -0.16;
+    }
+    if(head){
+      // Mirada hacia abajo.
+      head.rotation.x = 0.55 + lean * 0.08;
+      head.rotation.z = -0.04;
+    }
+    if(torso){
+      torso.rotation.x = 0.12 + lean * 0.035;
+    }
+    if(leftLeg){
+      leftLeg.rotation.x = -0.48 + switchLeg * 0.22;
+      leftLeg.rotation.z = 0.06;
+    }
+    if(rightLeg){
+      rightLeg.rotation.x = 0.48 + slide * 0.22;
+      rightLeg.rotation.z = -0.06;
+    }
+    group.rotation.z = Math.sin(phase * 0.5) * 0.025;
+    bob = 0.018;
+  } else if(name === 'dance7'){
+    // DAB: un brazo arriba cruzado y el otro hacia el lado, cambiando de golpe.
+    const beat = Math.sin(t * 6);
+    if(beat >= 0){
+      if(leftArm) { leftArm.rotation.x = -1.75; leftArm.rotation.z = 0.65; }
+      if(rightArm){ rightArm.rotation.x = 0.15; rightArm.rotation.z = -1.05; }
+    } else {
+      if(rightArm){ rightArm.rotation.x = -1.75; rightArm.rotation.z = -0.65; }
+      if(leftArm) { leftArm.rotation.x = 0.15; leftArm.rotation.z = 1.05; }
+    }
+    if(leftLeg) leftLeg.rotation.x = 0.18 - beat * 0.08;
+    if(rightLeg) rightLeg.rotation.x = -0.18 + beat * 0.08;
+    group.rotation.z = beat * 0.08;
+    bob = 0.025;
+  } else if(name === 'dance8'){
+    // FIESTA: brazos arriba, balanceo de cadera y pequeños rebotes.
+    const a = Math.sin(t * 6);
+    const b = Math.sin(t * 12);
+    if(leftArm){ leftArm.rotation.x = -1.45 + a * 0.45; leftArm.rotation.z = 0.35; }
+    if(rightArm){ rightArm.rotation.x = -1.45 - a * 0.45; rightArm.rotation.z = -0.35; }
+    if(leftLeg) leftLeg.rotation.z = b * 0.22;
+    if(rightLeg) rightLeg.rotation.z = -b * 0.22;
+    group.rotation.z = a * 0.09;
+    bob = 0.10 + Math.abs(b) * 0.06;
+  } else if(name === 'dance9'){
+    // RUNNING MAN: rodillas alternadas + brazos opuestos.
+    const step = Math.sin(t * 8);
+    if(leftArm){ leftArm.rotation.x = -0.25 + step * 0.85; leftArm.rotation.z = 0.15; }
+    if(rightArm){ rightArm.rotation.x = -0.25 - step * 0.85; rightArm.rotation.z = -0.15; }
+    if(leftLeg){ leftLeg.rotation.x = step * 0.95; leftLeg.rotation.z = 0.10; }
+    if(rightLeg){ rightLeg.rotation.x = -step * 0.95; rightLeg.rotation.z = -0.10; }
+    group.rotation.z = step * 0.06;
+    bob = 0.07 + Math.abs(step) * 0.10;
+  } else if(name === 'dance10'){
+    // VICTORIA: celebración con los dos brazos arriba y pequeños saltos.
+    const beat = Math.abs(Math.sin(t * 6));
+    const wave = Math.sin(t * 10);
+    if(leftArm){ leftArm.rotation.x = -1.65 + wave * 0.18; leftArm.rotation.z = 0.35; }
+    if(rightArm){ rightArm.rotation.x = -1.65 - wave * 0.18; rightArm.rotation.z = -0.35; }
+    if(leftLeg) leftLeg.rotation.x = -beat * 0.28;
+    if(rightLeg) rightLeg.rotation.x = beat * 0.28;
+    group.rotation.z = Math.sin(t * 6) * 0.06;
+    bob = beat * 0.22;
   } else {
+    // DANCE1: clásico, con brazos arriba y balanceo de piernas.
     const sw = Math.sin(t * 8);
     if(leftArm){ leftArm.rotation.x = -1.2 + sw * 0.9; leftArm.rotation.z = 0.6; }
     if(rightArm){ rightArm.rotation.x = -1.2 - sw * 0.9; rightArm.rotation.z = -0.6; }
     if(leftLeg) leftLeg.rotation.x = sw * 0.5;
     if(rightLeg) rightLeg.rotation.x = -sw * 0.5;
-    group.rotation.z = sw * 0.1;
+    group.rotation.z = sw * 0.10;
     bob = Math.abs(sw) * 0.14;
   }
   return bob;
 }
+
+// Idle inspirado en el R6 clásico de Roblox: respiración, balanceo mínimo
+// de brazos y pequeños movimientos de cabeza. Se usa cuando el jugador está quieto.
+function applyIdleAnimation(group, t, intensity){
+  if(!group) return;
+  const k = intensity == null ? 1 : intensity;
+  const leftArm = group.getObjectByName("leftArm");
+  const rightArm = group.getObjectByName("rightArm");
+  const leftLeg = group.getObjectByName("leftLeg");
+  const rightLeg = group.getObjectByName("rightLeg");
+  const head = group.getObjectByName("head");
+  const torso = group.getObjectByName("torso");
+  const breathe = Math.sin(t * 2.15) * k;
+  const sway = Math.sin(t * 1.25 + 0.7) * k;
+
+  if(leftArm){ leftArm.rotation.x = breathe * 0.035; leftArm.rotation.z = 0.025 * k; }
+  if(rightArm){ rightArm.rotation.x = breathe * 0.035; rightArm.rotation.z = -0.025 * k; }
+  if(leftLeg) leftLeg.rotation.x = Math.sin(t * 1.1) * 0.012 * k;
+  if(rightLeg) rightLeg.rotation.x = -Math.sin(t * 1.1) * 0.012 * k;
+  if(torso){
+    torso.rotation.z = sway * 0.018;
+    torso.position.y = (torso.userData.idleBaseY == null ? torso.position.y : torso.userData.idleBaseY) + breathe * 0.012;
+  }
+  if(head){
+    head.rotation.z = sway * 0.018;
+    head.rotation.y = Math.sin(t * 0.85) * 0.025 * k;
+  }
+}
+
 
 // Lanza un emote propio y lo envia a la sala para que los demas lo vean.
 function triggerEmote(rawName){
@@ -3960,6 +4221,7 @@ function startGameLoop() {
     }
 
     if(gameActionCooldown > 0) gameActionCooldown -= dt;
+    updateGameEnhancements(dt, now, playerPos);
     // Battle Arena: F = ataque, Q = habilidad especial; también afecta a otros jugadores cercanos
     if(currentGameType.trim() === 'Battle Arena' && !voidDeathActive){
       const px=playerPos.x, pz=playerPos.z;
@@ -4325,24 +4587,8 @@ function startGameLoop() {
         }
 
       } else if (!isLocalEmoteActive()) {
-        const damp = Math.pow(0.04, dt);
-
-        // Idle también fuerza Z=0 para que nunca herede la pose de salto.
-        if(leftArm) {
-          leftArm.rotation.x *= damp;
-          leftArm.rotation.z = 0;
-        }
-        if(rightArm) {
-          rightArm.rotation.x *= damp;
-          rightArm.rotation.z = 0;
-        }
-        if(leftLeg) leftLeg.rotation.x *= damp;
-        if(rightLeg) rightLeg.rotation.x *= damp;
-        if(torso) torso.rotation.z *= damp;
-        if(head) {
-          head.rotation.z *= damp;
-          head.rotation.y *= damp;
-        }
+        // Idle tipo Roblox: no se queda congelado cuando el jugador está quieto.
+        applyIdleAnimation(playerMeshGroup, now * 0.001, 1);
       }
     }
 
@@ -4975,6 +5221,7 @@ function updateRemotePlayers(dt) {
     const rightLeg = group.getObjectByName("rightLeg");
     const head = group.getObjectByName("head");
     const torso = group.getObjectByName("torso");
+    if(torso && torso.userData.idleBaseY == null) torso.userData.idleBaseY = torso.position.y;
 
     if (emoteActive) {
       if (speed > 0.5) {
@@ -5011,11 +5258,8 @@ function updateRemotePlayers(dt) {
       if(leftLeg) leftLeg.rotation.x = -swing;
       if(rightLeg) rightLeg.rotation.x = swing;
     } else {
-      const damp = Math.pow(0.01, dt);
-      if(leftArm) { leftArm.rotation.z = 0; leftArm.rotation.x *= damp; }
-      if(rightArm) { rightArm.rotation.z = 0; rightArm.rotation.x *= damp; }
-      if(leftLeg) leftLeg.rotation.x *= damp;
-      if(rightLeg) rightLeg.rotation.x *= damp;
+      // Idle sincronizado visualmente para jugadores remotos.
+      applyIdleAnimation(group, performance.now() * 0.001, 1);
     }
   });
 }
@@ -5565,47 +5809,86 @@ function refreshSettings(){
   const u=getCachedUser(); if(!u) return;
   const b=document.getElementById("bioEditor"); if(b)b.value=u.bio||"";
   const profileBio=document.getElementById("profileBio"); if(profileBio) profileBio.textContent=u.bio||"Sin descripción disponible.";
-  const emailInput=document.getElementById("emailVerifyInput");
-  const emailStatus=document.getElementById("emailVerifyStatus");
-  const emailButton=document.getElementById("emailVerifyButton");
-  if(emailInput) emailInput.value=u.email||"";
-  if(u.emailVerified){
-    if(emailStatus){emailStatus.textContent="✅ Email verificado.";emailStatus.style.color="#39d98a";}
-    if(emailButton){emailButton.textContent="Verificado";emailButton.disabled=true;}
-  } else if(u.email){
-    if(emailStatus){emailStatus.textContent="📨 Te enviaremos un enlace de verificacion a este email.";emailStatus.style.color="#b9afd4";}
-    if(emailButton){emailButton.textContent="Enviar de nuevo";emailButton.disabled=false;}
-  } else {
-    if(emailStatus){emailStatus.textContent="";}
-    if(emailButton){emailButton.textContent="Enviar verificacion";emailButton.disabled=false;}
-  }
+  refreshDiscordVerificationUI(u);
   applyTheme(u.theme||"light");
 }
 
-async function sendEmailVerification(){
-  const input=document.getElementById("emailVerifyInput");
-  const status=document.getElementById("emailVerifyStatus");
-  const button=document.getElementById("emailVerifyButton");
-  const email=(input?.value||"").trim();
-  if(!email) return msg(status,"Escribe tu email.","error");
-  if(button){button.disabled=true;button.textContent="Enviando...";}
-  try{
-    const data=await api("/api/email/send-verification",{method:"POST",body:JSON.stringify({email})},2);
-    if(data.user){setCachedUser(data.user);updateUI(data.user);refreshSettings();}
-    if(status){status.textContent=data.alreadyVerified?"✅ Tu email ya estaba verificado.":"📨 Correo enviado. Revisa tu bandeja y haz click en Verificar email.";status.style.color="#39d98a";}
-  }catch(e){
-    if(status){status.textContent="❌ "+(e.message||"No se pudo enviar el correo.");status.style.color="#ff6b81";}
-  } finally {
-    if(button && !getCachedUser()?.emailVerified){button.disabled=false;button.textContent="Enviar de nuevo";}
+function refreshDiscordVerificationUI(u){
+  const status=document.getElementById("discordVerifyStatus");
+  const button=document.getElementById("discordVerifyButton");
+  const connected=!!(u&&u.discordConnected);
+  if(connected){
+    if(status){status.textContent="✅ Epic Green Cap recibida.";status.style.color="#39d98a";}
+    if(button){button.textContent="🎁 Epic Green Cap recibida";button.disabled=true;button.style.opacity=".7";}
+  } else {
+    if(status){status.textContent="Recibe la Epic Green Cap con un solo click.";status.style.color="#b9afd4";}
+    if(button){button.textContent="🎮 Unirse al Discord";button.disabled=false;button.style.opacity="1";}
   }
 }
-function showEmailVerifyPopup(){const p=document.getElementById("emailVerifyPopup");if(p)p.style.display="flex";}
-function closeEmailVerifyPopup(){const p=document.getElementById("emailVerifyPopup");if(p)p.style.display="none";}
-function handleEmailVerifyResult(){
+
+function showDiscordRewardPopup(){const p=document.getElementById("discordRewardPopup");if(p)p.style.display="flex";}
+function closeDiscordRewardPopup(){const p=document.getElementById("discordRewardPopup");if(p)p.style.display="none";}
+
+function handleDiscordVerifyResult(){
   const params=new URLSearchParams(location.search);
-  const result=params.get("emailVerified");
-  if(result==="1"){showEmailVerifyPopup();history.replaceState({},"",location.pathname+location.hash);setTimeout(()=>{try{loadCurrentUser();}catch(e){}},100);}
-  else if(result==="0"||result==="expired"){alert(result==="expired"?"El enlace de verificacion ya caduco.":"El enlace de verificacion no es valido.");history.replaceState({},"",location.pathname+location.hash);}
+  const result=params.get("discordVerify");
+  if(!result) return;
+  history.replaceState({},"",location.pathname+location.hash);
+  if(result==="1"){
+    setTimeout(async()=>{
+      try{const data=await api("/api/discord/status",{},2);if(data.user){setCachedUser(data.user);updateUI(data.user);refreshSettings();}}catch(e){}
+      showDiscordRewardPopup();
+    },120);
+  } else if(result==="duplicate") { alert("Ese Discord ya está conectado a otra cuenta de EpicBloxs."); }
+  else if(result==="not-configured") { alert("Discord todavía no está configurado en el servidor de EpicBloxs."); }
+  else { alert("No se pudo verificar tu cuenta de Discord. Inténtalo otra vez."); }
+}
+
+async function startDiscordVerification(){
+  const token=getToken();
+  if(!token) return alert("Inicia sesión primero.");
+  const button=document.getElementById("discordVerifyButton");
+  if(button){button.disabled=true;button.textContent="🎁 Entregando recompensa...";}
+  try{
+    const data=await api("/api/discord/simple-verify",{method:"POST"},2);
+    if(data.user){
+      setCachedUser(data.user);
+      updateUI(data.user);
+      refreshSettings();
+    }
+    // La recompensa se entrega antes de salir al servidor de Discord.
+    window.location.href="https://discord.gg/jcZUVzZJDZ";
+  }catch(e){
+    if(button){button.disabled=false;button.textContent="🎮 Unirse al Discord";}
+    alert(e.message||"No se pudo entregar la Epic Green Cap.");
+  }
+}
+
+async function disconnectDiscord(){
+  if(!confirm("¿Quieres desconectar Discord de tu cuenta?")) return;
+  try{
+    const data=await api("/api/discord/disconnect",{method:"POST"},2);
+    if(data.user){setCachedUser(data.user);updateUI(data.user);refreshSettings();}
+  }catch(e){alert(e.message||"No se pudo desconectar Discord.");}
+}
+
+async function pollDiscordVerification(force){
+  const u=getCachedUser();
+  if(!u || u.discordConnected) return;
+  try{
+    const data=await api("/api/discord/status",{},1);
+    if(data.user){
+      setCachedUser(data.user);
+      updateUI(data.user);
+      refreshDiscordVerificationUI(data.user);
+      if(data.verified && !u.discordConnected){showDiscordRewardPopup();}
+    }
+  }catch(e){}
+}
+
+function sendEmailVerification(){
+  // Compatibilidad con versiones antiguas: el botón de correo ya no se usa.
+  return startDiscordVerification();
 }
 
 
@@ -5757,10 +6040,9 @@ function renderTopAvatarMini(u) {
   if (topAv) topAv.innerHTML = avatarPortraitHTML(userData, 64);
   if (homeAv) homeAv.innerHTML = avatarPortraitHTML(userData, 150);
   if (profAv) {
-    profAv.style.width = '150px';
-    profAv.style.height = '150px';
     profAv.innerHTML = avatarPortraitHTML(userData, 150);
   }
+  renderOwnProfileDetails(u);
 }
 
 
@@ -6081,16 +6363,104 @@ function joinFriendGame(friendId){
   setTimeout(() => launchWebClient(p.gameName), 50);
 }
 
+function profileEquippedItems(userData){
+  const ids = (userData && userData.avatar && Array.isArray(userData.avatar.accessories)) ? userData.avatar.accessories : [];
+  return ids.map(id => catalogItemById(id) || {id:String(id),name:String(id),category:'gear',desc:'Objeto del avatar'});
+}
+function profileWearingHTML(userData){
+  const items = profileEquippedItems(userData);
+  if(!items.length) return '<div class="profile-empty">Nothing equipped yet.</div>';
+  return items.slice(0,12).map(item => `<div class="profile-wearing-item"><div class="wear-icon">${catalogIconSVG(item)}</div><span title="${escapeHTML(item.name||item.id)}">${escapeHTML(item.name||item.id)}</span></div>`).join('');
+}
+function profileCreationsHTML(userData){
+  const uid = String((userData && (userData.id || userData.userId)) || '');
+  const mine = catalogDatabase.filter(item => item.custom && String(item.ownerId || item.creatorId || '') === uid);
+  if(!mine.length) return '<div class="profile-empty">No creations yet.</div>';
+  return mine.map(item => `<div class="profile-creation"><div class="creation-icon">${catalogIconSVG(item)}</div><b style="font-size:11px">${escapeHTML(item.name||item.id)}</b><div style="font-size:10px;color:#888;margin-top:4px">${escapeHTML(item.category||'item')}</div></div>`).join('');
+}
+function renderProfileWearing(prefix,userData){
+  const avatar = document.getElementById(prefix+'WearingAvatar');
+  const items = document.getElementById(prefix+'WearingItems');
+  if(avatar) avatar.innerHTML = avatarPortraitHTML(userData, 320);
+  if(items) items.innerHTML = profileWearingHTML(userData);
+}
+function switchUserProfileTab(tab,btn){
+  const about=document.getElementById('friendProfileAboutTab'), creations=document.getElementById('friendProfileCreationsTab');
+  if(about) about.style.display=tab==='about'?'block':'none';
+  if(creations) creations.style.display=tab==='creations'?'block':'none';
+  document.querySelectorAll('#friendProfile .profile-tab').forEach(x=>x.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+function switchOwnProfileTab(tab,btn){
+  const about=document.getElementById('ownProfileAboutTab'), creations=document.getElementById('ownProfileCreationsTab');
+  if(about) about.style.display=tab==='about'?'block':'none';
+  if(creations) creations.style.display=tab==='creations'?'block':'none';
+  document.querySelectorAll('#profile .profile-tab').forEach(x=>x.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+function renderOwnProfileDetails(u){
+  if(!u) return;
+  const friendsCount = Array.isArray(u.friends) ? u.friends.length : 0;
+  const followersCount = Array.isArray(u.followers) ? u.followers.length : 0;
+  const followingCount = Array.isArray(u.following) ? u.following.length : 0;
+  ['profileFriendsCount'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=friendsCount;});
+  ['profileFollowersCount'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=followersCount;});
+  ['profileFollowingCount'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=followingCount;});
+  renderProfileWearing('profile', {avatar:u.avatar||{}});
+  const c=document.getElementById('profileCreations'); if(c)c.innerHTML=profileCreationsHTML(u);
+}
+function toggleProfileMoreMenu(event){
+  if(event) event.stopPropagation();
+  const menu=document.getElementById('friendProfileMoreMenu') || document.getElementById('profileMoreMenu');
+  if(!menu) return;
+  menu.classList.toggle('open');
+}
+function closeProfileMoreMenus(){
+  document.querySelectorAll('.profile-more-menu.open').forEach(m=>m.classList.remove('open'));
+}
+document.addEventListener('click',function(){ closeProfileMoreMenus(); });
+let openedProfileUserId='';
+function updateFollowButton(friend){
+  const b=document.getElementById('friendProfileFollowBtn');
+  if(!b || !friend) return;
+  const me=getCachedUser();
+  const following=Array.isArray(me && me.following) && me.following.map(String).includes(String(friend.id));
+  b.textContent=following?'Dejar de seguir':'Seguir';
+}
+async function toggleFollowFromProfile(event){
+  if(event) event.stopPropagation();
+  const id=String(openedProfileUserId||'');
+  if(!id) return;
+  try{
+    const data=await api('/api/follow/toggle',{method:'POST',body:{id}});
+    if(data && data.user){ setCachedUser(data.user); }
+    const b=document.getElementById('friendProfileFollowBtn');
+    if(b) b.textContent=data.following?'Dejar de seguir':'Seguir';
+    const count=document.getElementById('friendProfileFollowersCount');
+    if(count && data.target) count.textContent=Array.isArray(data.target.followers)?data.target.followers.length:0;
+  }catch(e){ alert(e.message||'No se pudo cambiar el seguimiento.'); }
+  closeProfileMoreMenus();
+}
+function copyOwnProfileLink(event){
+  if(event) event.stopPropagation();
+  const u=getCachedUser(); const id=u&&u.userId; if(!id)return;
+  const url=location.origin+'/perfil/'+encodeURIComponent(id);
+  if(navigator.clipboard) navigator.clipboard.writeText(url).then(()=>alert('Enlace copiado.'));
+  else alert(url);
+  closeProfileMoreMenus();
+}
+
 function openUserProfile(userId){
   const id=String(userId||"").trim();
   if(!id) return alert("Perfil no válido.");
+  openedProfileUserId=id;
   history.pushState({profileId:id},"","/perfil/"+encodeURIComponent(id));
   api("/api/users/"+encodeURIComponent(id))
     .then(data=>{
       const friend=data.user;
       document.getElementById("friendProfileName").textContent=friend.username+" ✓";
       document.getElementById("friendProfileUsername").textContent="@"+friend.username;
-      const idEl=document.getElementById("friendProfileId"); if(idEl) idEl.textContent="ID #"+friend.userId+" · /perfil/"+friend.userId;
+      const idEl=document.getElementById("friendProfileId"); if(idEl) idEl.textContent="ID #"+friend.userId;
       document.getElementById("friendProfileBio").textContent=friend.bio || "Sin descripción disponible.";
       const cachedFriend=getMyFriends().find(f=>String(f.id)===String(friend.id));
       const presence=friend.presence||(cachedFriend&&cachedFriend.presence)||{online:false,playing:false};
@@ -6098,38 +6468,29 @@ function openUserProfile(userId){
       const joinBtn=document.getElementById("friendProfileJoinBtn");
       if(presenceEl) presenceEl.innerHTML=presenceBadgeHTML(presence);
       const createdEl=document.getElementById("friendProfileCreated");
-      if(createdEl){
-        const created=friend.createdAt?new Date(friend.createdAt):null;
-        createdEl.textContent=(created&&!isNaN(created.getTime())&&created.getFullYear()>1971)?("Miembro desde "+created.toLocaleDateString()):"Cuenta antigua";
-      }
+      if(createdEl){const created=friend.createdAt?new Date(friend.createdAt):null;createdEl.textContent=(created&&!isNaN(created.getTime())&&created.getFullYear()>1971)?("Miembro desde "+created.toLocaleDateString()):"Cuenta antigua";}
       const msgBtn=document.getElementById("friendProfileMsgBtn");
       if(msgBtn) msgBtn.onclick=()=>openDirectChatWith(friend.id, friend.username);
       const actionEl=document.getElementById("friendProfileAction");
-      if(actionEl) actionEl.innerHTML=friendActionHTML({ id:friend.id, relation:friend.relation || data.relation });
+      if(actionEl) actionEl.innerHTML=friendActionHTML({id:friend.id,relation:friend.relation||data.relation});
+      updateFollowButton(friend);
       if(joinBtn){
-        const canJoin = !!presence.playing;
-        joinBtn.disabled = !canJoin;
-        joinBtn.classList.toggle('disabled', !canJoin);
-        if(canJoin){
-          joinBtn.style.background = '';
-          joinBtn.style.cursor = 'pointer';
-          joinBtn.textContent = '▶ Unirse al Juego';
-          joinBtn.onclick = () => joinFriendGame(friend.id);
-        } else {
-          joinBtn.style.background = '#6b7280';
-          joinBtn.style.cursor = 'not-allowed';
-          joinBtn.textContent = presence.online ? 'Unirse al Juego' : 'Unirse al Juego';
-          joinBtn.onclick = null;
-        }
+        const canJoin=!!presence.playing; joinBtn.disabled=!canJoin; joinBtn.classList.toggle('disabled',!canJoin);
+        joinBtn.textContent=canJoin?'▶ Unirse al Juego':'Unirse al Juego'; joinBtn.onclick=canJoin?()=>joinFriendGame(friend.id):null;
       }
-      const avEl=document.getElementById("friendProfileAvatar");
-      if(avEl){avEl.innerHTML=avatarPortraitHTML(friend,260);}
+      const friendsCount=Array.isArray(friend.friends)?friend.friends.length:0;
+      const followersCount=Array.isArray(friend.followers)?friend.followers.length:0;
+      const followingCount=Array.isArray(friend.following)?friend.following.length:0;
+      [['friendProfileFriendsCount',friendsCount],['friendProfileFollowersCount',followersCount],['friendProfileFollowingCount',followingCount]].forEach(([id,val])=>{const e=document.getElementById(id);if(e)e.textContent=val;});
+      const avEl=document.getElementById("friendProfileAvatar"); if(avEl) avEl.innerHTML=avatarPortraitHTML(friend,150);
+      renderProfileWearing('friendProfile',friend);
+      const creations=document.getElementById('friendProfileCreations'); if(creations)creations.innerHTML=profileCreationsHTML(friend);
+      switchUserProfileTab('about',document.getElementById('friendAboutTab'));
       applyProfileBackground(friend);
       showPage("friendProfile");
     })
     .catch(()=>alert("Usuario no encontrado en el servidor global."));
 }
-
 function viewFriendProfile(userId){ openUserProfile(userId); }
 
 window.addEventListener("popstate",()=>{
@@ -6359,40 +6720,76 @@ function catalogCategoryLabel(category){
 function catalogRigPreviewDataURL(item){
   if(!item || (item.category!=='shirts' && item.category!=='pants')) return '';
   try{
-    const cacheKey='catalogRigV4:'+String(item.id)+':'+_catalogPreviewRevision;
+    const cacheKey='catalogRigV17:'+String(item.id)+':'+_catalogPreviewRevision;
     if(_portraitCache[cacheKey]) return _portraitCache[cacheKey];
 
-    const size=220;
-    const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true});
+    // Render at 2x resolution and downsample in the <img>. This makes the
+    // clothing edges much cleaner and avoids the jagged/dirty look from the
+    // old 220px preview.
+    const size=440;
+    const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true,premultipliedAlpha:false});
     renderer.setSize(size,size,false);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-    renderer.setClearColor(0xe8ebef,1);
+    renderer.setPixelRatio(1);
+    renderer.setClearColor(0x120d21,1);
+    if('outputColorSpace' in renderer && THREE.SRGBColorSpace) renderer.outputColorSpace=THREE.SRGBColorSpace;
+    if('toneMapping' in renderer) renderer.toneMapping=THREE.NoToneMapping;
 
     const scene=new THREE.Scene();
-    const camera=new THREE.PerspectiveCamera(30,1,0.1,100);
-    camera.position.set(0,0.72,4.15);
-    camera.lookAt(0,0.78,0);
+    const isPants = item.category === 'pants';
+    const camera=new THREE.PerspectiveCamera(isPants ? 31 : 27,1,0.1,100);
+    // Pants previews deliberately frame the lower body/feet, while shirts keep
+    // the classic full-avatar framing. This prevents the legs from disappearing
+    // behind the card crop.
+    if(isPants){
+      camera.position.set(0,-0.28,3.35);
+      camera.lookAt(0,-0.42,0);
+    } else {
+      camera.position.set(0,0.82,4.35);
+      camera.lookAt(0,0.92,0);
+    }
 
-    scene.add(new THREE.HemisphereLight(0xffffff,0xb7bec8,1.55));
-    const key=new THREE.DirectionalLight(0xffffff,1.15);
-    key.position.set(3.5,5.5,4.5);
+    // Soft studio lighting, but clothing itself is forced to unlit materials
+    // below so the actual artwork can never become black because of a normal.
+    scene.add(new THREE.HemisphereLight(0xffffff,0x171125,1.35));
+    const key=new THREE.DirectionalLight(0xffffff,1.2);
+    key.position.set(3,5,4);
     scene.add(key);
-    const fill=new THREE.DirectionalLight(0xffffff,0.45);
-    fill.position.set(-3,2,-2);
-    scene.add(fill);
+    const rim=new THREE.DirectionalLight(0x9b72ff,0.55);
+    rim.position.set(-3,3,-4);
+    scene.add(rim);
 
-    const floor=new THREE.Mesh(new THREE.CircleGeometry(1.25,48),new THREE.MeshLambertMaterial({color:0xcfd4db}));
+    const floor=new THREE.Mesh(new THREE.CircleGeometry(1.45,64),new THREE.MeshBasicMaterial({color:0x1b1430}));
     floor.rotation.x=-Math.PI/2;
-    floor.position.y=-0.43;
+    floor.position.y=-0.48;
     scene.add(floor);
 
     const avatar={colors:{head:'#f5c928',torso:'#1477b9',arms:'#f5c928',legs:'#171820'},torsoType:'male',accessories:[String(item.id)]};
-    // Catalog previews intentionally use the game model: what users buy is
-    // exactly what they will see on their character in an experience.
     const group=buildGamePlayerModel({avatar});
-    group.rotation.y=-0.18;
-    group.position.set(0,-0.38,0);
-    group.scale.multiplyScalar(1.12);
+    group.rotation.y=isPants ? -0.04 : -0.12;
+    group.position.set(0,isPants ? -0.02 : -0.38,0);
+    group.scale.multiplyScalar(isPants ? 1.28 : 1.10);
+
+    // Preview-only material pass: preserve every texture/color exactly while
+    // removing lighting from the clothing surfaces. The game renderer is not
+    // changed by this; this only affects the Catalog thumbnail.
+    group.traverse(obj=>{
+      if(!obj.isMesh || !obj.material) return;
+      const convert=mat=>{
+        const basic=new THREE.MeshBasicMaterial({
+          map:mat.map || null,
+          color:mat.color ? mat.color.getHex() : 0xffffff,
+          transparent:!!mat.transparent,
+          opacity:mat.opacity==null?1:mat.opacity,
+          side:mat.side==null?THREE.FrontSide:mat.side,
+          depthWrite:mat.depthWrite!==false,
+          alphaTest:mat.alphaTest||0
+        });
+        if(mat.map){ basic.map=mat.map; basic.map.needsUpdate=true; }
+        return basic;
+      };
+      if(Array.isArray(obj.material)) obj.material=obj.material.map(convert);
+      else obj.material=convert(obj.material);
+    });
     scene.add(group);
 
     renderer.render(scene,camera);
@@ -6401,6 +6798,7 @@ function catalogRigPreviewDataURL(item){
     _portraitCache[cacheKey]=url;
     return url;
   }catch(e){
+    console.warn('catalogRigPreviewDataURL failed',e);
     return '';
   }
 }
@@ -6408,7 +6806,8 @@ function renderCatalog(category) {
   const container = document.getElementById('catalogGridContainer');
   if(!container) return;
   const currentCategory = category || 'all';
-  const filtered = currentCategory === 'all' ? catalogDatabase : catalogDatabase.filter(item => item.category === currentCategory);
+  const availableCatalog = catalogDatabase.filter(item => !item.rewardOnly);
+  const filtered = currentCategory === 'all' ? availableCatalog : availableCatalog.filter(item => item.category === currentCategory);
   container.innerHTML = filtered.map((item, index) => {
     const safeId = `catalog-buy-${index}-${item.id.replace(/[^a-zA-Z0-9_-]/g,'_')}`;
     const price = Math.max(0, Math.floor(Number(item.price) || 0));
@@ -7370,7 +7769,7 @@ function init(){
   loadGames();
   loadCustomCatalog().catch(()=>{});
   startTradePolling();
-  handleEmailVerifyResult();
+  handleDiscordVerifyResult();
 }
 init();
 </script>
@@ -7448,12 +7847,12 @@ init();
     </div>
   </div>
 </div>
-<div id="emailVerifyPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:99999;align-items:center;justify-content:center;padding:20px">
-  <div style="width:min(440px,100%);background:#171329;border:1px solid #4b3a76;border-radius:16px;padding:26px;text-align:center;box-shadow:0 20px 70px rgba(0,0,0,.45)">
-    <div style="font-size:48px">🎉</div>
-    <h2 style="margin:8px 0;color:#f4f0ff">¡Email verificado!</h2>
-    <p style="color:#d8d0e8;line-height:1.5">Gracias por verificar tu email! de recompensa te dimos un <strong style="color:#58e878">Epic Green Cap</strong>.</p>
-    <button class="section-button" onclick="closeEmailVerifyPopup()" style="margin-top:10px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff">¡Genial!</button>
+<div id="discordRewardPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.68);z-index:99999;align-items:center;justify-content:center;padding:20px">
+  <div style="width:min(460px,100%);background:#171329;border:1px solid #4b3a76;border-radius:18px;padding:28px;text-align:center;box-shadow:0 20px 70px rgba(0,0,0,.5)">
+    <div style="font-size:54px">🎉</div>
+    <h2 style="margin:8px 0;color:#f4f0ff">¡Gracias por unirte al server!</h2>
+    <p style="color:#d8d0e8;line-height:1.55">¡Gracias por unirte al server! De recompensa te damos este accesorio, <strong style="color:#58e878">Epic Green Cap</strong>. ¡Disfrútalo!</p>
+    <button class="section-button" onclick="closeDiscordRewardPopup()" style="margin-top:10px;background:linear-gradient(135deg,#5865F2,#4752C4);color:#fff">¡Disfrútalo!</button>
   </div>
 </div>
 </body>
