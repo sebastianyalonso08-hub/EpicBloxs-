@@ -2130,49 +2130,56 @@ function createShirtTexture(torsoColor,shirtName){const p=createBuiltInShirtPart
 
 function epicVisibleMaterial(texture,fallback){return clothingMaterial(texture,fallback);}
 const _customFaceTexCache = {};
+const FACE_TEXTURE_SYSTEM_VERSION = 'v38';
 function catalogFaceTexture(item, headColor){
   if(!item || !item.image) return null;
-  if(_customFaceTexCache[item.id]) return _customFaceTexCache[item.id];
+  const faceCacheKey = FACE_TEXTURE_SYSTEM_VERSION + ':' + item.id;
+  if(_customFaceTexCache[faceCacheKey]) return _customFaceTexCache[faceCacheKey];
   const canvas = document.createElement('canvas');
   canvas.width = 256; canvas.height = 256;
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = headColor || '#f5c928';
   ctx.fillRect(0,0,256,256);
   const tex = new THREE.CanvasTexture(canvas);
-  tex.flipY = false;
+  tex.flipY = true;
   if(THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
   const img = new Image();
   img.onload = () => {
     ctx.clearRect(0,0,256,256);
+    // Keep the face artwork transparent outside its shape, but paint the
+    // head skin underneath so the face never becomes a square decal.
     ctx.fillStyle = headColor || '#f5c928'; ctx.fillRect(0,0,256,256);
     ctx.drawImage(img,0,0,256,256);
     tex.needsUpdate = true;
   };
   img.src = item.image;
-  _customFaceTexCache[item.id] = tex;
+  _customFaceTexCache[faceCacheKey] = tex;
   return tex;
 }
 function customFaceTexture(item, headColor){
   if(!item || !item.data || !item.data.imageData) return null;
-  if(_customFaceTexCache[item.id]) return _customFaceTexCache[item.id];
+  const faceCacheKey = FACE_TEXTURE_SYSTEM_VERSION + ':custom:' + item.id;
+  if(_customFaceTexCache[faceCacheKey]) return _customFaceTexCache[faceCacheKey];
   const canvas = document.createElement('canvas');
   canvas.width = 256; canvas.height = 256;
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = headColor || '#f5c928';
   ctx.fillRect(0,0,256,256);
   const tex = new THREE.CanvasTexture(canvas);
-  tex.flipY = false;
+  tex.flipY = true;
   if(THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
   const img = new Image();
   img.onload = () => {
     ctx.clearRect(0,0,256,256);
+    // Keep the face artwork transparent outside its shape, but paint the
+    // head skin underneath so the face never becomes a square decal.
     ctx.fillStyle = headColor || '#f5c928'; ctx.fillRect(0,0,256,256);
     ctx.drawImage(img,0,0,256,256);
     tex.needsUpdate = true;
   };
   img.onerror = () => { tex.needsUpdate = true; };
   img.src = item.data.imageData;
-  _customFaceTexCache[item.id] = tex;
+  _customFaceTexCache[faceCacheKey] = tex;
   return tex;
 }
 
