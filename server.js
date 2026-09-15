@@ -143,14 +143,15 @@ async function initPostgresPersistence() {
     let seedGameStats = false;
     if (rows.has('users')) {
       const dbUsers = rows.get('users');
-      if (dbUsers && typeof dbUsers === 'object' && Object.keys(dbUsers).length) {
-        pgUsersCache = dbUsers;
-      } else if (Object.keys(fileUsers).length) {
-        pgUsersCache = fileUsers;
-        seedUsers = true;
-      } else {
-        pgUsersCache = {};
-      }
+      const safeDbUsers = (dbUsers && typeof dbUsers === 'object' && !Array.isArray(dbUsers)) ? dbUsers : {};
+      // NEVER let an older/partial Postgres snapshot hide accounts that still
+      // exist in the persistent file. Merge both stores by canonical username
+      // key, preferring the DB record when the same account exists in both.
+      // This prevents the classic deploy bug where a stale DB snapshot makes
+      // registered users disappear until they log in again.
+      pgUsersCache = { ...fileUsers, ...safeDbUsers };
+      if (Object.keys(fileUsers).length && JSON.stringify(pgUsersCache) !== JSON.stringify(safeDbUsers)) seedUsers = true;
+      if (!Object.keys(safeDbUsers).length && Object.keys(fileUsers).length) seedUsers = true;
     } else {
       pgUsersCache = fileUsers;
       seedUsers = true;
@@ -908,6 +909,7 @@ function ensureUserIds(users) {
     }
     if (Array.isArray(user.avatarInventory) && user.avatarInventory.length > 100) { user.avatarInventory = user.avatarInventory.slice(0, 100); changed = true; }
     if (!Array.isArray(user.gameInventory)) { user.gameInventory = []; changed = true; }
+    if (!user.gameGearEquipped || typeof user.gameGearEquipped !== "object" || Array.isArray(user.gameGearEquipped)) { user.gameGearEquipped = {}; changed = true; }
     if (Array.isArray(user.gameInventory) && user.gameInventory.length > 20) { user.gameInventory = user.gameInventory.slice(0, 20); changed = true; }
     if (!user.avatar || typeof user.avatar !== "object") {
       user.avatar = { accessories: [], torsoType: "male", colors: { head: "#f5c928", arms: "#f5c928", torso: "#1477b9", legs: "#8cae45" } };
@@ -983,6 +985,7 @@ function defaultUser(username, passwordHash, userId) {
     },
     avatarInventory: [],
     gameInventory: [],
+    gameGearEquipped: {},
     inventory: [],
     loginStreak: 0,
     lastStreakClaim: "",
@@ -1018,6 +1021,7 @@ function publicUser(user, key) {
     avatar: user.avatar || {},
     avatarInventory: (user.avatarInventory || user.inventory || []).slice(0, 100),
     gameInventory: (user.gameInventory || []).slice(0, 20),
+    gameGearEquipped: (user.gameGearEquipped && typeof user.gameGearEquipped === "object") ? user.gameGearEquipped : {},
     inventory: [],
     friends: user.friends || [],
     friendRequests: user.friendRequests || [],
@@ -1225,10 +1229,16 @@ const server = http.createServer(async (req, res) => {
     if (username.length < 3) return json(res, 400, { error: "Usuario minimo 3 caracteres." });
     if (hasBannedTerm(username)) return json(res, 400, { error: "Ese nombre de usuario no esta permitido." });
     if (password.length < 6) return json(res, 400, { error: "Contrasena minimo 6 caracteres." });
-    const key = username.toLowerCase();
+    const key = username.trim().toLowerCase();
     const users = syncUserRegistry();
-    if (users[key]) return json(res, 409, { error: "Ese usuario ya existe." });
-    users[key] = defaultUser(username, hashPassword(password), nextNumericUserId(users));
+    // Reserve usernames globally and case-insensitively. Never create a new
+    // account just because an old account is temporarily offline or its
+    // in-memory presence entry expired.
+    const existingKey = resolveUserKey(users, key);
+    if (existingKey && users[existingKey]) return json(res, 409, { error: "Ese usuario ya existe." });
+    if (pgPool && !pgReady) return json(res, 503, { error: "El registro persistente todavía está iniciando. Inténtalo de nuevo en unos segundos." });
+    if (!pgPool && process.env.DATABASE_URL) return json(res, 503, { error: "La base de datos persistente no está disponible; no se creará una cuenta para evitar duplicados." });
+    users[key] = defaultUser(username.trim(), hashPassword(password), nextNumericUserId(users));
     saveUsersDisk(users);
     const token = makeToken(key);
     registerSession(token, key);
@@ -1668,6 +1678,7 @@ const server = http.createServer(async (req, res) => {
       .filter((id, i, arr) => arr.indexOf(id) === i && (ownedAvatarItems.has(id) || !!findAvatarCatalogItem(id)))
       .slice(0, 100);
     if (Array.isArray(body.gameInventory)) user.gameInventory = body.gameInventory.slice(0, 20);
+    if (body.gameGearEquipped && typeof body.gameGearEquipped === "object" && !Array.isArray(body.gameGearEquipped)) user.gameGearEquipped = { ...body.gameGearEquipped };
     // Compatibilidad con versiones anteriores: nunca vuelve a usarse como inventario de juego.
     user.inventory = [];
     if (typeof body.sunnys === "number") user.sunnys = Math.max(0, Math.min(9999999, body.sunnys));
