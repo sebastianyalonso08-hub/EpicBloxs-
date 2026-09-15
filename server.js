@@ -21,6 +21,59 @@ const tradeByUser = new Map();
 const MAX_TRADE_ITEMS = 20;
 const MAX_TRADE_SUNNYS = 9999999;
 const PRESENCE_TTL_MS = 25000;
+const DISCORD_OAUTH_STATES = new Map();
+const DISCORD_STATE_TTL_MS = 10 * 60 * 1000;
+
+function discordConfig(req) {
+  const base = publicBaseUrl(req);
+  return {
+    clientId: String(process.env.DISCORD_CLIENT_ID || "").trim(),
+    clientSecret: String(process.env.DISCORD_CLIENT_SECRET || "").trim(),
+    botToken: String(process.env.DISCORD_BOT_TOKEN || "").trim(),
+    guildId: String(process.env.DISCORD_GUILD_ID || "").trim(),
+    inviteUrl: String(process.env.DISCORD_INVITE_URL || "").trim(),
+    redirectUri: String(process.env.DISCORD_REDIRECT_URI || (base + "/api/discord/callback")).trim()
+  };
+}
+
+function pruneDiscordStates() {
+  const now = Date.now();
+  for (const [state, data] of DISCORD_OAUTH_STATES) {
+    if (!data || Number(data.expiresAt || 0) < now) DISCORD_OAUTH_STATES.delete(state);
+  }
+}
+
+async function discordFetch(url, options = {}) {
+  const response = await fetch(url, options);
+  let data = null;
+  try { data = await response.json(); } catch {}
+  return { response, data };
+}
+
+async function discordCheckMembership(config, discordUserId) {
+  if (!config.botToken || !config.guildId || !discordUserId) return { configured: false, member: false };
+  const result = await discordFetch(
+    `https://discord.com/api/v10/guilds/${encodeURIComponent(config.guildId)}/members/${encodeURIComponent(discordUserId)}`,
+    { headers: { Authorization: `Bot ${config.botToken}` } }
+  );
+  if (result.response.status === 404) return { configured: true, member: false };
+  if (!result.response.ok) {
+    const message = result.data && (result.data.message || result.data.error);
+    throw new Error(message || `Discord devolvio HTTP ${result.response.status}.`);
+  }
+  return { configured: true, member: true, memberData: result.data };
+}
+
+function grantDiscordVerificationReward(user) {
+  normalizeAvatarData(user);
+  if (!Array.isArray(user.avatarInventory)) user.avatarInventory = [];
+  if (!user.avatarInventory.some(id => sameAvatarItem(id, "Epic Green Cap"))) user.avatarInventory.push("Epic Green Cap");
+  user.avatarInventory = [...new Set(user.avatarInventory.map(canonicalAvatarItemId).filter(Boolean))].slice(0, 100);
+  if (!user.avatar || typeof user.avatar !== "object") user.avatar = {};
+  if (!Array.isArray(user.avatar.accessories)) user.avatar.accessories = [];
+  return user;
+}
+
 
 const publicDir = path.join(__dirname, "public");
 const indexPath = path.join(publicDir, "index.html");
@@ -444,6 +497,10 @@ function finishTrade(trade, users) {
 }
 
 
+const REWARD_ONLY_AVATAR_ITEMS = [
+  ["Epic Green Cap","hats",0],
+];
+
 const BUILTIN_AVATAR_CATALOG = [
   ["Epic Cap","hats",50],["Golden Crown","hats",250],["Black Beanie","hats",90],["Pink Bow","hats",85],["White Fedora","hats",140],
   ["Blue Shirt","shirts",75],["Green Hoodie","shirts",120],["Red Tee","shirts",65],["Black Jacket","shirts",150],["Pink Tee","shirts",70],["Lavender Hoodie","shirts",125],["White Blouse","shirts",110],
@@ -463,7 +520,10 @@ function findAvatarCatalogItem(itemId) {
   // mayúsculas/minúsculas para que un botón o una versión antigua del cliente
   // no rompa la compra. El ID canónico que devolvemos siempre es el oficial.
   const builtin = BUILTIN_AVATAR_CATALOG.find(x => String(x[0]).trim().toLowerCase() === wanted);
-  if (builtin) return { id: String(builtin[0]), category: builtin[1], price: Number(builtin[2]), custom: false };
+  if (builtin) return { id: String(builtin[0]), category: builtin[1], price: Number(builtin[2]), custom: false, rewardOnly: false };
+
+  const rewardOnly = REWARD_ONLY_AVATAR_ITEMS.find(x => String(x[0]).trim().toLowerCase() === wanted);
+  if (rewardOnly) return { id: String(rewardOnly[0]), category: rewardOnly[1], price: 0, custom: false, rewardOnly: true };
 
   const custom = loadCatalog().find(x => {
     const id = String(x && x.id || '').trim().toLowerCase();
@@ -839,7 +899,7 @@ function ensureUserIds(users) {
       user.username = key;
       changed = true;
     }
-    for (const field of ["friends", "friendRequests", "outgoingRequests"]) {
+    for (const field of ["friends", "friendRequests", "outgoingRequests", "followers", "following"]) {
       if (!Array.isArray(user[field])) { user[field] = []; changed = true; }
     }
     if (!Array.isArray(user.avatarInventory)) {
@@ -929,9 +989,12 @@ function defaultUser(username, passwordHash, userId) {
     friends: [],
     friendRequests: [],
     outgoingRequests: [],
+    followers: [],
+    following: [],
     lastDailyLogin: "",
     email: "",
     emailVerification: { verified: false, tokenHash: "", expiresAt: 0, rewardGranted: false },
+    discordVerification: { verified: false, userId: "", username: "", rewardGranted: false },
     banUntil: 0,
     banReason: "",
     createdAt: new Date().toISOString()
@@ -947,6 +1010,8 @@ function publicUser(user, key) {
     username: user.username,
     email: user.email || "",
     emailVerified: !!(user.emailVerification && user.emailVerification.verified),
+    discordConnected: !!(user.discordVerification && user.discordVerification.verified),
+    discordUsername: user.discordVerification && user.discordVerification.username || "",
     bio: user.bio || "",
     theme: user.theme || "light",
     sunnys: user.sunnys || 0,
@@ -1115,6 +1180,7 @@ function grantEmailVerificationReward(user) {
   if (!user.avatarInventory.some(id => sameAvatarItem(id, "Epic Green Cap"))) {
     user.avatarInventory.push("Epic Green Cap");
   }
+  user.avatarInventory = [...new Set(user.avatarInventory.map(canonicalAvatarItemId).filter(Boolean))].slice(0, 100);
   if (!user.avatar || typeof user.avatar !== "object") user.avatar = {};
   if (!Array.isArray(user.avatar.accessories)) user.avatar.accessories = [];
   return user;
@@ -1178,6 +1244,14 @@ const server = http.createServer(async (req, res) => {
     if (!user || user.passwordHash !== hashPassword(password)) {
       return json(res, 401, { error: "Usuario o contrasena incorrectos." });
     }
+    // Si una cuenta ya estaba verificada antes de esta actualización,
+    // entrega también la recompensa nueva sin duplicarla.
+    if (user.emailVerification && user.emailVerification.verified && !user.emailVerification.rewardGranted) {
+      grantEmailVerificationReward(user);
+      user.emailVerification.rewardGranted = true;
+      users[key] = user;
+      saveUsersDisk(users);
+    }
     const today = new Date().toDateString();
     if (user.lastDailyLogin !== today) {
       user.sunnys = (user.sunnys || 0) + 100;
@@ -1190,6 +1264,179 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, authPayload(user, key));
   }
 
+
+  if (urlPath === "/api/discord/simple-verify" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "Inicia sesión primero." });
+    const users = sess.users;
+    const user = users[sess.key];
+    if (!user) return json(res, 404, { error: "Cuenta no encontrada." });
+    normalizeAvatarData(user);
+    if (!user.discordVerification || typeof user.discordVerification !== "object") {
+      user.discordVerification = { verified: false, userId: "", username: "", rewardGranted: false };
+    }
+    const alreadyHadReward = !!user.discordVerification.rewardGranted ||
+      (Array.isArray(user.avatarInventory) && user.avatarInventory.some(id => sameAvatarItem(id, "Epic Green Cap")));
+    grantDiscordVerificationReward(user);
+    user.discordVerification.verified = true;
+    user.discordVerification.rewardGranted = true;
+    users[sess.key] = user;
+    saveUsersDisk(users);
+    return json(res, 200, {
+      ok: true,
+      alreadyHadReward,
+      reward: "Epic Green Cap",
+      user: publicUser(user, sess.key)
+    });
+  }
+
+  if (urlPath === "/api/discord/start" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const config = discordConfig(req);
+    if (!config.clientId || !config.clientSecret || !config.botToken || !config.guildId || !config.inviteUrl) {
+      return json(res, 503, { error: "Discord no esta configurado en Render. Faltan DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_BOT_TOKEN, DISCORD_GUILD_ID o DISCORD_INVITE_URL." });
+    }
+    pruneDiscordStates();
+    const state = crypto.randomBytes(32).toString("hex");
+    DISCORD_OAUTH_STATES.set(state, { key: sess.key, expiresAt: Date.now() + DISCORD_STATE_TTL_MS });
+    const params = new URLSearchParams({
+      client_id: config.clientId,
+      redirect_uri: config.redirectUri,
+      response_type: "code",
+      scope: "identify",
+      state
+    });
+    return json(res, 200, { ok: true, authorizeUrl: `https://discord.com/oauth2/authorize?${params.toString()}` });
+  }
+
+  if (urlPath === "/api/discord/callback" && req.method === "GET") {
+    const parsed = new URL(req.url || "/api/discord/callback", publicBaseUrl(req));
+    const code = String(parsed.searchParams.get("code") || "");
+    const state = String(parsed.searchParams.get("state") || "");
+    if (!code || !state) {
+      res.writeHead(302, { Location: "/?discordVerify=error" });
+      return res.end();
+    }
+    pruneDiscordStates();
+    const stateData = DISCORD_OAUTH_STATES.get(state);
+    DISCORD_OAUTH_STATES.delete(state);
+    if (!stateData || Number(stateData.expiresAt || 0) < Date.now()) {
+      res.writeHead(302, { Location: "/?discordVerify=error" });
+      return res.end();
+    }
+    const config = discordConfig(req);
+    if (!config.clientId || !config.clientSecret || !config.botToken || !config.guildId || !config.inviteUrl) {
+      res.writeHead(302, { Location: "/?discordVerify=not-configured" });
+      return res.end();
+    }
+
+    try {
+      const tokenResult = await discordFetch("https://discord.com/api/v10/oauth2/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          client_id: config.clientId,
+          client_secret: config.clientSecret,
+          grant_type: "authorization_code",
+          code,
+          redirect_uri: config.redirectUri
+        }).toString()
+      });
+      if (!tokenResult.response.ok || !tokenResult.data || !tokenResult.data.access_token) {
+        throw new Error("Discord no pudo autorizar la cuenta.");
+      }
+
+      const me = await discordFetch("https://discord.com/api/v10/users/@me", {
+        headers: { Authorization: `Bearer ${tokenResult.data.access_token}` }
+      });
+      if (!me.response.ok || !me.data || !me.data.id) throw new Error("Discord no devolvio tu usuario.");
+
+      const membership = await discordCheckMembership(config, me.data.id);
+      const users = syncUserRegistry();
+      const user = users[stateData.key];
+      if (!user) throw new Error("La cuenta de EpicBloxs ya no existe.");
+      if (!user.discordVerification || typeof user.discordVerification !== "object") {
+        user.discordVerification = { verified: false, userId: "", username: "", rewardGranted: false };
+      }
+
+      if (!membership.member) {
+        // Guardamos la identidad de Discord antes de mandar al jugador al invite.
+        // Así, al volver al website, el polling puede detectar cuando ya pertenece al server.
+        user.discordVerification.userId = String(me.data.id);
+        user.discordVerification.username = me.data.global_name || me.data.username || "Discord";
+        user.discordVerification.verified = false;
+        users[stateData.key] = user;
+        saveUsersDisk(users);
+        res.writeHead(302, { Location: config.inviteUrl });
+        return res.end();
+      }
+
+      for (const [key, other] of Object.entries(users)) {
+        if (key !== stateData.key && other && other.discordVerification && String(other.discordVerification.userId || "") === String(me.data.id)) {
+          throw new Error("Ese Discord ya esta conectado a otra cuenta de EpicBloxs.");
+        }
+      }
+
+      const displayName = me.data.global_name || me.data.username || "Discord";
+      user.discordVerification = {
+        verified: true,
+        userId: String(me.data.id),
+        username: displayName,
+        rewardGranted: !!(user.discordVerification && user.discordVerification.rewardGranted)
+      };
+      if (!user.discordVerification.rewardGranted) {
+        grantDiscordVerificationReward(user);
+        user.discordVerification.rewardGranted = true;
+      }
+      users[stateData.key] = user;
+      saveUsersDisk(users);
+      res.writeHead(302, { Location: "/?discordVerify=1" });
+      return res.end();
+    } catch (err) {
+      console.error("Discord verification error:", err.message);
+      const target = err.message === "Ese Discord ya esta conectado a otra cuenta de EpicBloxs." ? "duplicate" : "error";
+      res.writeHead(302, { Location: "/?discordVerify=" + target });
+      return res.end();
+    }
+  }
+
+  if (urlPath === "/api/discord/status" && req.method === "GET") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const config = discordConfig(req);
+    const users = sess.users;
+    const user = users[sess.key];
+    const dv = user && user.discordVerification;
+    if (!dv || !dv.userId) return json(res, 200, { connected: false, verified: false, inviteUrl: config.inviteUrl || "" });
+    try {
+      const membership = await discordCheckMembership(config, dv.userId);
+      if (membership.member && !dv.verified) {
+        dv.verified = true;
+        if (!dv.rewardGranted) {
+          grantDiscordVerificationReward(user);
+          dv.rewardGranted = true;
+        }
+        users[sess.key] = user;
+        saveUsersDisk(users);
+      }
+      return json(res, 200, { connected: !!dv.verified, verified: !!dv.verified, member: membership.member, username: dv.username || "", user: publicUser(user, sess.key), inviteUrl: config.inviteUrl || "" });
+    } catch (err) {
+      return json(res, 503, { error: err.message || "No se pudo comprobar Discord." });
+    }
+  }
+
+  if (urlPath === "/api/discord/disconnect" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const users = sess.users;
+    const user = users[sess.key];
+    const previous = user.discordVerification || {};
+    user.discordVerification = { verified: false, userId: "", username: "", rewardGranted: !!previous.rewardGranted };
+    users[sess.key] = user;
+    saveUsersDisk(users);
+    return json(res, 200, { ok: true, user: publicUser(user, sess.key) });
+  }
 
   if (urlPath === "/api/email/send-verification" && req.method === "POST") {
     const sess = getSessionUser(req);
@@ -1724,6 +1971,30 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, { ok: true, user: publicUser(me, sess.key) });
   }
 
+  if (urlPath === "/api/follow/toggle" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "No autenticado." });
+    const body = await readBody(req);
+    const users = ensureUserIds(sess.users);
+    const targetKey = resolveUserKey(users, safeText(body.id || body.username, "", 80));
+    if (!targetKey) return json(res, 404, { error: "Usuario no encontrado." });
+    if (targetKey === sess.key) return json(res, 400, { error: "No puedes seguirte a ti mismo." });
+    const me = users[sess.key];
+    const other = users[targetKey];
+    me.following = Array.isArray(me.following) ? me.following : [];
+    other.followers = Array.isArray(other.followers) ? other.followers : [];
+    const isFollowing = me.following.includes(targetKey);
+    if (isFollowing) {
+      me.following = me.following.filter(k => k !== targetKey);
+      other.followers = other.followers.filter(k => k !== sess.key);
+    } else {
+      me.following.push(targetKey);
+      if (!other.followers.includes(sess.key)) other.followers.push(sess.key);
+    }
+    users[sess.key] = me; users[targetKey] = other; saveUsersDisk(users);
+    return json(res, 200, { ok: true, following: !isFollowing, user: publicUser(me, sess.key), target: publicFriendUser(other, targetKey) });
+  }
+
   if (urlPath === "/api/catalog/buy" && req.method === "POST") {
     const sess = getSessionUser(req);
     if (!sess) return json(res, 401, { error: "No autenticado." });
@@ -1734,6 +2005,7 @@ const server = http.createServer(async (req, res) => {
 
     const item = findAvatarCatalogItem(itemId);
     if (!item) return json(res, 404, { error: "Articulo no encontrado en el catalogo." });
+    if (item.rewardOnly) return json(res, 403, { error: "Este articulo es una recompensa y no se puede comprar." });
     if (item.custom && item.status !== "approved") {
       return json(res, 400, { error: "Este articulo ya no esta disponible en el catalogo." });
     }
