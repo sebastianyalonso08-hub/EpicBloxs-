@@ -502,13 +502,13 @@ const REWARD_ONLY_AVATAR_ITEMS = [
 ];
 
 const BUILTIN_AVATAR_CATALOG = [
-  ["Epic Cap","hats",50],["Golden Crown","hats",250],["Black Beanie","hats",90],["Pink Bow","hats",85],["White Fedora","hats",140],
-  ["Blue Shirt","shirts",75],["Green Hoodie","shirts",120],["Red Tee","shirts",65],["Black Jacket","shirts",150],["Pink Tee","shirts",70],["Lavender Hoodie","shirts",125],["White Blouse","shirts",110],
-  ["Classic Jeans","pants",80],["Dark Cargo Pants","pants",110],["Black Jeans","pants",90],["White Pants","pants",85],["Pink Jeans","pants",95],["Purple Pants","pants",100],
-  ["Classic Smile","faces",40],["Cool Wink","faces",90],["Happy Face","faces",60],["Sleepy Face","faces",75],["Cute Face","faces",95],["Starry Face","faces",120],
+  ["Epic Cap","hats",50],["Golden Crown","hats",250],["Black Beanie","hats",90],["Pink Bow","hats",85],["White Fedora","hats",140],["Red Cap","hats",65],["Purple Beanie","hats",95],["Bucket Hat","hats",100],["Cowboy Hat","hats",130],
+  ["Blue Shirt","shirts",75],["Green Hoodie","shirts",120],["Red Tee","shirts",65],["Black Jacket","shirts",150],["Pink Tee","shirts",70],["Lavender Hoodie","shirts",125],["White Blouse","shirts",110],["White Tee","shirts",55],["Yellow Tee","shirts",60],["Orange Tee","shirts",60],["Black Tee","shirts",60],["Denim Vest","shirts",95],["Sport Jersey","shirts",105],["Striped Tee","shirts",85],["Polo Shirt","shirts",90],
+  ["Classic Jeans","pants",80],["Dark Cargo Pants","pants",110],["Black Jeans","pants",90],["White Pants","pants",85],["Pink Jeans","pants",95],["Purple Pants","pants",100],["Light Jeans","pants",85],["Khaki Chinos","pants",90],["Green Cargo","pants",105],["Navy Joggers","pants",95],["Red Pants","pants",90],
+  ["Classic Smile","faces",40],["Cool Wink","faces",90],["Happy Face","faces",60],["Sleepy Face","faces",75],["Cute Face","faces",95],["Starry Face","faces",120],["Confident Face","faces",85],["Surprised Face","faces",70],["Sleepy Smile","faces",80],["Freckles Face","faces",95],
   ["Funny Smile","faces",80],
-  ["Classic Shades","gear",100],["Cool Backpack","gear",180],["Heart Necklace","gear",90],["Shoulder Bunny","gear",160],["Golden Headphones","gear",200],
-  ["Purple Galaxy","backgrounds",120],["Neon Grid","backgrounds",150],["Sunset","backgrounds",100],["Ocean","backgrounds",110],["Dark Void","backgrounds",180]
+  ["Classic Shades","gear",100],["Cool Backpack","gear",180],["Heart Necklace","gear",90],["Shoulder Bunny","gear",160],["Golden Headphones","gear",200],["Blue Backpack","gear",150],["Classic Watch","gear",75],["Red Scarf","gear",80],["Star Backpack","gear",175],["Silver Chain","gear",110],["Shoulder Cat","gear",170],
+  ["Purple Galaxy","backgrounds",120],["Neon Grid","backgrounds",150],["Sunset","backgrounds",100],["Ocean","backgrounds",110],["Dark Void","backgrounds",180],["Forest","backgrounds",95],["Cloudy Sky","backgrounds",90],["Cherry Sunset","backgrounds",125],["Ocean Night","backgrounds",135]
 ];
 
 function findAvatarCatalogItem(itemId) {
