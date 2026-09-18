@@ -631,9 +631,10 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
         <div class="game-detail-stats">
           <span id="gdPlaying">👥 0 PLAYING</span>
           <span id="gdVisits">👁 0 VISITS</span>
+          <span id="gdLikes">♥ 0 LIKES</span>
         </div>
       </div>
-      <button class="game-detail-play" id="gdPlayBtn">Play</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="game-detail-back" id="gdLikeBtn" type="button">♥ Me gusta</button><button class="game-detail-play" id="gdPlayBtn">Play</button></div>
     </div>
     <div class="game-detail-about">
       <h3>About</h3>
@@ -708,6 +709,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 <section id="create" class="page">
   <h1>Create Clothing</h1>
   <p>Design your shirt or pants by painting on the template or uploading an image, then publish it to the catalog for everyone to use.</p>
+  <button class="section-button" onclick="showPage('createGame')" style="background:#7c3aed">Crear juego</button>
   <div style="margin-bottom:12px" class="moderation-badge">### Moderacion activa: nombres, descripciones y chat filtrados</div>
   <div class="creator-layout">
     <div class="creator-card">
@@ -780,6 +782,22 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
       <div id="creatorViewer" class="creator-viewer"></div>
       <p class="creator-small">Drag to rotate the camera and see how your clothing looks on the character.</p>
     </div>
+  </div>
+</section>
+
+<section id="createGame" class="page">
+  <h1>Crear juego</h1>
+  <p>Publica un mundo Python con un paquete ZIP y el formato JSON de bloques.</p>
+  <div class="creator-card" style="max-width:760px">
+    <h2 style="margin-top:0">Nuevo juego</h2>
+    <form id="publishGameForm" onsubmit="publishGame(event)">
+      <label>Nombre del juego<input id="gamePublishName" maxlength="60" required placeholder="Mi mundo"></label>
+      <label style="display:block;margin-top:10px">Descripcion<textarea id="gamePublishDescription" maxlength="500" rows="4" required placeholder="Describe tu mundo"></textarea></label>
+      <label style="display:block;margin-top:10px">Paquete ZIP<input id="gamePublishZip" type="file" accept=".zip,application/zip" required></label>
+      <p class="creator-small">El ZIP debe contener exactamente en la raiz <strong>icono.png</strong>, <strong>juegar.py</strong> y <strong>mundo_base.json</strong>. El servidor almacena el Python, pero no lo ejecuta dentro de la web.</p>
+      <button class="section-button" type="submit" style="margin-top:12px;background:#1684e8">Publicar juego</button>
+      <div id="gamePublishMessage" class="creator-msg"></div>
+    </form>
   </div>
 </section>
 
@@ -2850,6 +2868,22 @@ function updateGameSunShadowFollow() {
   gameSun.shadow.camera.updateMatrixWorld();
 }
 
+async function loadPublishedWorldIntoScene(gameName){
+  const game=publishedGameByName.get(String(gameName||'').trim());
+  if(!game || !game.id || !gameScene) return;
+  try {
+    const response=await fetch('/api/games/'+encodeURIComponent(game.id)+'/world',{cache:'no-store'});
+    if(!response.ok) return;
+    const data=await response.json();
+    (Array.isArray(data.world)?data.world:[]).forEach(item=>{
+      const size=['sx','sy','sz'].map(key=>Math.max(.05,Math.min(10000,Number(item[key])||1)));
+      const mesh=new THREE.Mesh(new THREE.BoxGeometry(size[0],size[1],size[2]),new THREE.MeshLambertMaterial({color:/^#[0-9a-f]{6}$/i.test(item.color||'')?item.color:'#35c8ff'}));
+      mesh.position.set(Number(item.x)||0,(Number(item.y)||0)+size[1]/2,Number(item.z)||0);
+      mesh.castShadow=true; mesh.receiveShadow=true; gameScene.add(mesh); gameDecorations.push(mesh);
+    });
+  } catch(e) { console.warn('No se pudo cargar el mundo publicado',e); }
+}
+
 async function launchWebClient(gameName) {
   const launchNonce = ++gameLaunchNonce;
   currentGameType = gameName;
@@ -2909,6 +2943,7 @@ async function launchWebClient(gameName) {
     epicServerId = null;
     epicPlayerId = null;
     initGameWebGL(gameName);
+    await loadPublishedWorldIntoScene(gameName);
     connectMultiplayer(gameName);
     sendPresence(true, { gameId: epicGameId, gameName: gameName, roomName: gameName, serverId: epicServerId });
     startGameLoop();
@@ -5099,6 +5134,8 @@ function makeLocalId(prefix) {
 }
 
 function getGameId(gameName) {
+  const published=publishedGameByName.get(String(gameName||'').trim());
+  if(published && published.gameId) return published.gameId;
   // IDs estables por nombre de juego (misma sala para todos los que juegan el mismo mapa)
   const known = {
     "Bloxs City ":"CITY-7F42",
@@ -6139,6 +6176,7 @@ function loadCurrentUser(){
     updateUI(user);
     try { updateAdminFab(user); } catch(e) {}
     loadGames();
+    loadPublishedGames();
     loadInventory();
     loadCustomCatalog().catch(()=>{});
     try { renderFriends(); } catch(e) {}
@@ -6955,7 +6993,7 @@ function showPage(p){
   if(p==="inventory") loadInventory();
   if(p==="streak") updateStreakUI();
   if(p==="avatar") { try { const t=(current()&&current().user.avatar&&current().user.avatar.torsoType)||"male"; const mb=document.getElementById("torsoTypeMale"); const fb=document.getElementById("torsoTypeFemale"); if(mb) mb.style.background=t==="male"?"#1684e8":"#292929"; if(fb) fb.style.background=t==="female"?"#e91e8c":"#292929"; } catch(e){} }
-  if(p==="games") loadGames();
+  if(p==="games") { loadGames(); loadPublishedGames(); }
   if(p==="friends") { refreshFriendsFromServer(); renderFriendsPage(); applyProfileBackground(getCachedUser(), 'own'); }
   if(p==="profile") { applyProfileBackground(getCachedUser(), 'own'); }
   if(p==="trade") { refreshFriendsFromServer(); refreshTradeState(); renderTradeFriends(); renderTradeMyItems(); }
@@ -6987,6 +7025,12 @@ const games=[
   ["Paintball Plaza ","Battle other players in a colorful arena"],
   ["Castle Defense ","Defend the castle from incoming enemies"]
 ];
+let publishedGames=[];
+const publishedGameByName=new Map();
+
+function allGames(){
+  return games.concat(publishedGames.map(game => [game.name, game.description, game]));
+}
 
 const gameIconMap={
   'Epic Obby':'/assets/games/epic-obby.svg',
@@ -7004,7 +7048,8 @@ const gameIconMap={
 };
 
 function getGameIcon(name){
-  return gameIconMap[String(name||'').trim()] || '/assets/games/default-game.svg';
+  const custom=publishedGameByName.get(String(name||'').trim());
+  return custom ? custom.iconUrl : (gameIconMap[String(name||'').trim()] || '/assets/games/default-game.svg');
 }
 
 function getGameVisits(name){
@@ -7019,14 +7064,16 @@ function formatVisits(n){
   return String(n);
 }
 
-function loadGames(list=games){
+function loadGames(list=allGames()){
   const render=(arr)=>arr.map(g=>{
     const gid=getGameId(g[0]);
     const count=Number(_gameStats[gid]||0);
     const name=String(g[0]).trim();
     const safeName=name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const icon=getGameIcon(name);
-    return `<div class="game" onclick="openGameDetail('${safeName}')"><img class="game-icon" src="${icon}" alt="${escapeHTML(name)}" loading="lazy" onerror="this.onerror=null;this.src='/assets/games/default-game.svg'"><div class="game-info"><div class="game-name">${escapeHTML(name)}</div><div class="game-players"><span>👥 ${count} playing</span><span style="margin-left:auto">👁 ${formatVisits(_gameVisits[gid]||0)}</span></div></div></div>`;
+    const custom=publishedGameByName.get(name);
+    const likes=custom ? Number(custom.likes||0) : 0;
+    return `<div class="game" onclick="openGameDetail('${safeName}')"><img class="game-icon" src="${icon}" alt="${escapeHTML(name)}" loading="lazy" onerror="this.onerror=null;this.src='/assets/games/default-game.svg'"><div class="game-info"><div class="game-name">${escapeHTML(name)}</div><div class="game-players"><span>👥 ${count} playing</span><span style="margin-left:auto">👁 ${formatVisits(_gameVisits[gid]||0)}</span></div>${custom ? `<div class="creator-small">♥ ${likes} likes</div>` : ''}</div></div>`;
   }).join("");
   const grid=document.getElementById('gamesGrid');
   const recent=document.getElementById('recentGames');
@@ -7036,7 +7083,7 @@ function loadGames(list=games){
 
 let _currentDetailGame = null;
 function openGameDetail(gameName){
-  const g = games.find(x => String(x[0]).trim() === String(gameName).trim() || x[0] === gameName);
+  const g = allGames().find(x => String(x[0]).trim() === String(gameName).trim() || x[0] === gameName);
   if(!g){ alert('Game not found'); return; }
   _currentDetailGame = g[0];
   const name = String(g[0]).trim();
@@ -7047,13 +7094,65 @@ function openGameDetail(gameName){
   const el = (id) => document.getElementById(id);
   if(el('gdIcon')) el('gdIcon').innerHTML = `<img src="${getGameIcon(name)}" alt="${escapeHTML(name)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">`;
   if(el('gdTitle')) el('gdTitle').textContent = name;
-  if(el('gdCreator')) el('gdCreator').textContent = 'By EpicBloxs Community';
+  if(el('gdCreator')) el('gdCreator').textContent = g[2] ? ('By ' + g[2].creator) : 'By EpicBloxs Community';
   if(el('gdPlaying')) el('gdPlaying').textContent = '👥 ' + playing + ' PLAYING';
-  if(el('gdVisits')) el('gdVisits').textContent = '👁 ' + formatVisits(visits) + ' VISITS';
+  if(el('gdVisits')) el('gdVisits').textContent = '👁 ' + formatVisits(g[2] ? g[2].visits : visits) + ' VISITS';
   if(el('gdDescription')) el('gdDescription').textContent = desc.trim() || 'No description available.';
+  const likes = g[2] ? Number(g[2].likes || 0) : 0;
+  if(el('gdLikes')) el('gdLikes').textContent = '♥ ' + likes + ' LIKES';
+  if(g[2] && el('gdDescription')) el('gdDescription').textContent = desc || 'No description available.';
   const playBtn = el('gdPlayBtn');
   if(playBtn) playBtn.onclick = function(){ launchWebClient(name); };
+  const likeBtn=el('gdLikeBtn');
+  if(likeBtn) {
+    likeBtn.textContent = g[2] ? (g[2].liked ? '♥ Quitar like' : '♥ Me gusta') : '♥ Me gusta';
+    likeBtn.onclick = async function(){
+      if(!g[2]) return;
+      try {
+        const data=await api('/api/games/'+encodeURIComponent(g[2].id)+'/like',{method:'POST'},2);
+        Object.assign(g[2],data.game||{});
+        likeBtn.textContent=g[2].liked?'♥ Quitar like':'♥ Me gusta';
+        if(el('gdLikes')) el('gdLikes').textContent='♥ '+Number(g[2].likes||0)+' LIKES';
+        loadGames();
+      } catch(err) { alert(err.message||'Debes iniciar sesión.'); }
+    };
+  }
   showPage('gameDetail');
+}
+
+async function loadPublishedGames(){
+  try{
+    const data=await api('/api/games',{},1);
+    publishedGames=Array.isArray(data.games)?data.games:[];
+    publishedGameByName.clear();
+    publishedGames.forEach(game=>publishedGameByName.set(String(game.name).trim(),game));
+    loadGames();
+  }catch(e){ publishedGames=[]; }
+}
+
+async function publishGame(event){
+  event.preventDefault();
+  const message=document.getElementById('gamePublishMessage');
+  const file=document.getElementById('gamePublishZip')?.files?.[0];
+  if(!file) { if(message) { message.textContent='Selecciona un archivo ZIP.'; message.className='creator-msg err'; } return; }
+  if(!/\.zip$/i.test(file.name)) { if(message) { message.textContent='El paquete debe ser .zip.'; message.className='creator-msg err'; } return; }
+  const form=new FormData();
+  form.append('name',document.getElementById('gamePublishName').value.trim());
+  form.append('description',document.getElementById('gamePublishDescription').value.trim());
+  form.append('package',file,file.name);
+  if(message){ message.textContent='Publicando...'; message.className='creator-msg'; }
+  try {
+    const headers={}; const token=getToken(); if(token && !String(token).startsWith('pending_')) headers.Authorization='Bearer '+token;
+    const response=await fetch(getApiBase()+'/api/games/publish',{method:'POST',headers,body:form,cache:'no-store'});
+    const data=await response.json();
+    if(!response.ok) throw new Error(data.error||'No se pudo publicar el juego.');
+    if(message){ message.textContent='Juego publicado correctamente.'; message.className='creator-msg ok'; }
+    document.getElementById('publishGameForm').reset();
+    await loadPublishedGames();
+    showPage('games');
+  } catch(err) {
+    if(message){ message.textContent=err.message||'No se pudo publicar el juego.'; message.className='creator-msg err'; }
+  }
 }
 
 async function refreshGameStats(){
@@ -7061,7 +7160,13 @@ async function refreshGameStats(){
     const data=await api('/api/games/stats',{},1);
     _gameStats=(data&&data.stats)||{};
     _gameVisits=(data&&data.visits)||{};
-    loadGames(games);
+    publishedGames.forEach(game=>{
+      if(game && game.gameId){
+        _gameStats[game.gameId]=Number(game.playing||0);
+        _gameVisits[game.gameId]=Number(game.visits||0);
+      }
+    });
+    loadGames();
     const detail = document.getElementById('gameDetail');
     if(detail && detail.classList.contains('active') && _currentDetailGame){
       const gid = getGameId(_currentDetailGame);
@@ -7085,7 +7190,7 @@ function searchGames(t){
   const gamesPage = document.getElementById('games');
   if(!gamesPage.classList.contains('active')) showPage("games");
   const term = t.trim().toLowerCase();
-  loadGames(term ? games.filter(g=>g[0].toLowerCase().includes(term)) : games);
+  loadGames(term ? allGames().filter(g=>g[0].toLowerCase().includes(term)) : allGames());
 }
 
 function filterCatalog(category, btnElement) {
