@@ -7029,7 +7029,7 @@ let publishedGames=[];
 const publishedGameByName=new Map();
 
 function allGames(){
-  return games.concat(publishedGames.map(game => [game.name, game.description, game]));
+  return publishedGames.map(game => [game.name, game.description, game]).concat(games);
 }
 
 const gameIconMap={
