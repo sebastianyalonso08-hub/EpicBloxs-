@@ -1093,8 +1093,25 @@ function setShiftLock(enabled) {
   shiftLockEnabled = !!enabled;
   const b = document.getElementById("shiftLockBtn");
   if (b) { b.classList.toggle("active", shiftLockEnabled); b.setAttribute("aria-pressed", String(shiftLockEnabled)); b.textContent = shiftLockEnabled ? "SHIFT ✓" : "SHIFT"; }
+  // En PC, el Shift Lock real mantiene el cursor centrado y usa deltas relativos.
+  // En móviles Pointer Lock no existe: se conserva el modo de cámara con hombro.
+  const canvas = gameRenderer && gameRenderer.domElement;
+  if (shiftLockEnabled && canvas && !('ontouchstart' in window) && document.pointerLockElement !== canvas) {
+    try { const result = canvas.requestPointerLock(); if (result && result.catch) result.catch(() => {}); } catch (_) {}
+  } else if (!shiftLockEnabled && document.pointerLockElement) {
+    try { document.exitPointerLock(); } catch (_) {}
+  }
 }
 function toggleShiftLock() { setShiftLock(!shiftLockEnabled); }
+// Si el usuario sale del bloqueo con Escape, sincroniza el botón y el estado.
+document.addEventListener('pointerlockchange', () => {
+  const canvas = gameRenderer && gameRenderer.domElement;
+  if (shiftLockEnabled && canvas && document.pointerLockElement !== canvas) {
+    shiftLockEnabled = false;
+    const b = document.getElementById('shiftLockBtn');
+    if (b) { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); b.textContent = 'SHIFT'; }
+  }
+});
 let cameraDistance = 4;
 
 let audioCtx = null;
@@ -1407,20 +1424,39 @@ async function creatorPublish(){
   creatorSync2DTexture();
   const data=type==='3d'?{shapes:creatorCubes.map(mesh=>({type:mesh.userData.type,color:mesh.userData.color,position:mesh.position.toArray(),rotation:[mesh.rotation.x,mesh.rotation.y,mesh.rotation.z],scale:mesh.scale.toArray()}))}:{imageData:document.getElementById('creator2dCanvas').toDataURL('image/png')};
   creatorMessage('Publicando...');
-  try{const published=await api('/api/creator/publish',{method:'POST',body:JSON.stringify({name,description,category,type,price,data})},3);if(published&&published.user){setCachedUser(published.user);updateUI(published.user);}creatorMessage('Publicado en el catalogo. Precio: '+price+' Sunnys. It is now in your inventory.');await loadCustomCatalog(true);renderCatalog('all');if(typeof renderInventory==='function')renderInventory();if(typeof updateAccessoryButtons==='function'&&published&&published.user)updateAccessoryButtons(published.user);}catch(err){creatorMessage(err.message||'Could not connect to the server.',true);}}
+  try{
+    const published=await api('/api/creator/publish',{method:'POST',body:JSON.stringify({name,description,category,type,price,data})},3);
+    if(published&&published.user){setCachedUser(published.user);updateUI(published.user);}
+    // Inserta primero la respuesta confirmada por el servidor: el articulo aparece
+    // al instante aunque la siguiente lectura del catalogo tarde en actualizarse.
+    if(published&&published.item) upsertCustomCatalogItem(published.item);
+    creatorMessage('Publicado en el catalogo. Precio: '+price+' Sunnys. It is now in your inventory.');
+    renderCatalog('all');
+    loadCustomCatalog(true).then(()=>renderCatalog('all'));
+    if(typeof renderInventory==='function')renderInventory();
+    if(typeof updateAccessoryButtons==='function'&&published&&published.user)updateAccessoryButtons(published.user);
+  }catch(err){creatorMessage(err.message||'Could not connect to the server.',true);}}
 let _customCatalogPromise=null;
 let _customCatalogLoadedAt=0;
+function upsertCustomCatalogItem(item){
+  if(!item||item.id==null)return;
+  const normalized={id:String(item.id),name:item.name,category:item.category,price:Number(item.price)||0,desc:item.description||'Community created',custom:true,data:item.data||{},type:item.type,owner:item.owner,ownerId:item.ownerId,status:item.status,image:item.image};
+  const index=catalogDatabase.findIndex(x=>String(x.id)===String(item.id));
+  if(index>=0)Object.assign(catalogDatabase[index],normalized);else catalogDatabase.push(normalized);
+  _catalogPreviewRevision++;
+  _portraitCache={};
+}
 async function loadCustomCatalog(force=false){
   const now=Date.now();
   if(!force && _customCatalogPromise && now-_customCatalogLoadedAt<30000) return _customCatalogPromise;
   _customCatalogLoadedAt=now;
-  _customCatalogPromise=fetch('/api/catalog/custom',{cache:'no-store'}).then(r=>r.json()).then(data=>{
-    const custom=data.items||[];
-    _catalogPreviewRevision++;
-    _portraitCache={};
-    custom.forEach(item=>{const local=catalogDatabase.find(x=>x.id===item.id);const normalized={id:item.id,name:item.name,category:item.category,price:Number(item.price)||0,desc:item.description||'Community created',custom:true,data:item.data,type:item.type,owner:item.owner,ownerId:item.ownerId,status:item.status,image:item.image};if(local)Object.assign(local,normalized);else catalogDatabase.push(normalized);});
+  _customCatalogPromise=fetch('/api/catalog/custom',{cache:'no-store',headers:{'Cache-Control':'no-cache'}}).then(async r=>{
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(data.error||'No se pudo cargar el catalogo.');
+    const custom=Array.isArray(data.items)?data.items:[];
+    custom.forEach(upsertCustomCatalogItem);
     return custom;
-  }).catch(()=>[]);
+  }).catch(err=>{console.warn('No se pudo actualizar el catalogo comunitario:',err);return [];});
   return _customCatalogPromise;
 }
 
@@ -4990,11 +5026,19 @@ function initGameWebGL(gameName) {
       try { container.setPointerCapture(e.pointerId); } catch (_) {}
     });
     container.addEventListener('pointermove', (e) => {
-      if (e.pointerType !== 'mouse' || !cameraDragging || cameraPointerId !== e.pointerId) return;
-      const deltaX = e.clientX - mouseXOnMouseDown;
-      const deltaY = e.clientY - mouseYOnMouseDown;
-      mouseXOnMouseDown = e.clientX;
-      mouseYOnMouseDown = e.clientY;
+      if (e.pointerType !== 'mouse') return;
+      let deltaX = 0, deltaY = 0;
+      if (shiftLockEnabled && document.pointerLockElement === gameRenderer?.domElement) {
+        // Pointer Lock mantiene el cursor en el centro: solo importa el movimiento relativo.
+        deltaX = e.movementX || 0;
+        deltaY = e.movementY || 0;
+      } else {
+        if (!cameraDragging || cameraPointerId !== e.pointerId) return;
+        deltaX = e.clientX - mouseXOnMouseDown;
+        deltaY = e.clientY - mouseYOnMouseDown;
+        mouseXOnMouseDown = e.clientX;
+        mouseYOnMouseDown = e.clientY;
+      }
       cameraAngleX -= deltaX * 0.006;
       cameraAngleY += deltaY * 0.006;
       if (cameraAngleY > 1.35) cameraAngleY = 1.35;
