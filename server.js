@@ -3,7 +3,6 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const WebSocket = require("ws");
-const AdmZip = require("adm-zip");
 let Pool = null;
 try { ({ Pool } = require("pg")); } catch {}
 
@@ -84,8 +83,6 @@ const dataDir = process.env.EPICBLOXS_DATA_DIR
 const usersPath = path.join(dataDir, "users.json");
 const catalogPath = path.join(dataDir, "catalog.json");
 const gameStatsPath = path.join(dataDir, "game-stats.json");
-const gamesPath = path.join(dataDir, "games.json");
-const worldsDir = path.join(dataDir, "worlds");
 const sessionsPath = path.join(dataDir, "sessions.json");
 const dmsPath = path.join(dataDir, "dms.json");
 const groupsPath = path.join(dataDir, "groups.json");
@@ -100,7 +97,6 @@ let pgReady = false;
 let pgUsersCache = null;
 let pgCatalogCache = null;
 let pgGameStatsCache = null;
-let pgGamesCache = null;
 let pgWriteQueue = Promise.resolve();
 
 function queuePgStore(key, value) {
@@ -132,7 +128,7 @@ async function initPostgresPersistence() {
     `);
 
     const result = await pgPool.query(
-      `SELECT key, value FROM epicbloxs_store WHERE key IN ('users','catalog','gameStats','games')`
+      `SELECT key, value FROM epicbloxs_store WHERE key IN ('users','catalog','gameStats')`
     );
     const rows = new Map(result.rows.map(r => [r.key, r.value]));
 
@@ -186,14 +182,6 @@ async function initPostgresPersistence() {
       seedGameStats = true;
     }
 
-    const fileGames = readJsonArray(gamesPath);
-    if (rows.has('games') && Array.isArray(rows.get('games'))) {
-      pgGamesCache = rows.get('games');
-    } else {
-      pgGamesCache = fileGames;
-      queuePgStore('games', pgGamesCache);
-    }
-
     // Permitir que la cola de escrituras funcione durante la migración inicial.
     pgReady = true;
     if (seedUsers) queuePgStore('users', pgUsersCache);
@@ -212,8 +200,6 @@ function ensureDataDir() {
   if (!fs.existsSync(usersPath)) fs.writeFileSync(usersPath, "{}", "utf8");
   if (!fs.existsSync(catalogPath)) fs.writeFileSync(catalogPath, "[]", "utf8");
   if (!fs.existsSync(gameStatsPath)) fs.writeFileSync(gameStatsPath, "{}", "utf8");
-  if (!fs.existsSync(gamesPath)) fs.writeFileSync(gamesPath, "[]", "utf8");
-  if (!fs.existsSync(worldsDir)) fs.mkdirSync(worldsDir, { recursive: true });
   if (!fs.existsSync(adminsPath)) fs.writeFileSync(adminsPath, "[]", "utf8");
 
   // Si usamos /var/data en Render y el disco persistente se acaba de crear,
@@ -264,16 +250,6 @@ function readJsonObject(file) {
     return data && typeof data === "object" && !Array.isArray(data) ? data : {};
   } catch {
     return {};
-  }
-}
-
-function readJsonArray(file) {
-  try {
-    if (!fs.existsSync(file)) return [];
-    const data = JSON.parse(fs.readFileSync(file, "utf8") || "[]");
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
   }
 }
 
@@ -611,108 +587,11 @@ function saveGameStats(stats) {
   fs.writeFileSync(gameStatsPath, JSON.stringify(clean, null, 2), "utf8");
 }
 
-function loadPublishedGames() {
-  if (pgReady && pgGamesCache) return pgGamesCache;
-  return readJsonArray(gamesPath);
-}
-
-function savePublishedGames(games) {
-  const clean = Array.isArray(games) ? games : [];
-  if (pgReady) {
-    pgGamesCache = clean;
-    queuePgStore('games', clean);
-  }
-  ensureDataDir();
-  fs.writeFileSync(gamesPath, JSON.stringify(clean, null, 2), "utf8");
-}
-
-function gameIdForPublished(id) {
-  return "WORLD-" + String(id || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80);
-}
-
-function parseMultipart(req, maxBytes = 25 * 1024 * 1024) {
-  return new Promise((resolve, reject) => {
-    const contentType = String(req.headers["content-type"] || "");
-    const match = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
-    if (!match) return reject(new Error("Falta el boundary multipart."));
-    const boundary = Buffer.from("--" + (match[1] || match[2]).trim());
-    const chunks = [];
-    let total = 0;
-    req.on("data", chunk => {
-      total += chunk.length;
-      if (total > maxBytes) {
-        reject(new Error("El paquete supera el limite de 25 MB."));
-        req.destroy();
-        return;
-      }
-      chunks.push(chunk);
-    });
-    req.on("error", reject);
-    req.on("end", () => {
-      try {
-        const body = Buffer.concat(chunks);
-        const fields = {};
-        const files = {};
-        let cursor = body.indexOf(boundary);
-        while (cursor >= 0) {
-          const partStart = cursor + boundary.length;
-          if (body.slice(partStart, partStart + 2).toString() === "--") break;
-          const headerStart = partStart + (body.slice(partStart, partStart + 2).toString() === "\r\n" ? 2 : 0);
-          const headerEnd = body.indexOf(Buffer.from("\r\n\r\n"), headerStart);
-          if (headerEnd < 0) break;
-          const nextBoundary = body.indexOf(boundary, headerEnd + 4);
-          if (nextBoundary < 0) break;
-          const contentEnd = Math.max(headerEnd + 4, nextBoundary - 2);
-          const headers = body.slice(headerStart, headerEnd).toString("utf8");
-          const disposition = headers.match(/content-disposition:\s*[^\r\n]*/i);
-          if (disposition) {
-            const nameMatch = disposition[0].match(/\bname="([^"]+)"/i);
-            const filenameMatch = disposition[0].match(/\bfilename="([^"]*)"/i);
-            if (!nameMatch) { cursor = nextBoundary; continue; }
-            const name = nameMatch[1];
-            const filename = filenameMatch ? filenameMatch[1] : null;
-            const value = body.slice(headerEnd + 4, contentEnd);
-            if (filename != null) files[name] = { filename, data: value };
-            else fields[name] = value.toString("utf8");
-          }
-          cursor = nextBoundary;
-        }
-        resolve({ fields, files });
-      } catch (err) { reject(err); }
-    });
-  });
-}
-
-function validateWorld(value) {
-  let world;
-  try { world = typeof value === "string" ? JSON.parse(value) : value; } catch { throw new Error("El JSON del mundo no es valido."); }
-  if (!world || !Array.isArray(world.world) || world.world.length > 5000) throw new Error("El JSON debe contener world con hasta 5000 objetos.");
-  const objects = world.world.map((item, index) => {
-    if (!item || item.type !== "cube") throw new Error(`El objeto ${index + 1} debe ser type cube.`);
-    const values = ["sx", "sy", "sz", "x", "y", "z"].map(key => Number(item[key]));
-    if (values.some(n => !Number.isFinite(n) || Math.abs(n) > 10000)) throw new Error(`Las medidas o posiciones del objeto ${index + 1} no son validas.`);
-    if (!/^#[0-9a-f]{6}$/i.test(String(item.color || ""))) throw new Error(`El color del objeto ${index + 1} no es hexadecimal.`);
-    return { name: safeText(item.name, `Objeto ${index + 1}`, 80), sx: Math.max(.05, values[0]), sy: Math.max(.05, values[1]), sz: Math.max(.05, values[2]), x: values[3], y: values[4], z: values[5], color: String(item.color).toLowerCase(), type: "cube" };
-  });
-  return { world: objects };
-}
-
-function publicPublishedGame(game, requestUserKey = "") {
-  const live = [...rooms.values()].filter(room => room.gameId === game.gameId).reduce((count, room) => count + room.players.size, 0);
-  return { id: game.id, gameId: game.gameId, name: game.name, description: game.description, creator: game.creator, creatorId: game.creatorId, iconUrl: `/api/games/${encodeURIComponent(game.id)}/icon`, likes: Number(game.likes || 0), visits: Number(game.visits || 0), playing: live, liked: Array.isArray(game.likedBy) && game.likedBy.includes(requestUserKey), createdAt: game.createdAt };
-}
-
 function recordGameVisit(gameId) {
   const id = safeText(gameId, "GAME-UNKNOWN", 64);
   const stats = loadGameStats();
   stats[id] = Math.max(0, Math.floor(Number(stats[id]) || 0)) + 1;
   saveGameStats(stats);
-  const published = loadPublishedGames();
-  const game = published.find(item => item && item.gameId === id);
-  if (game) {
-    game.visits = Math.max(0, Math.floor(Number(game.visits) || 0)) + 1;
-    savePublishedGames(published);
-  }
   return stats[id];
 }
 
@@ -1142,6 +1021,7 @@ function publicUser(user, key) {
     avatar: user.avatar || {},
     avatarInventory: (user.avatarInventory || user.inventory || []).slice(0, 100),
     gameInventory: (user.gameInventory || []).slice(0, 20),
+    publishedGames: Array.isArray(user.publishedGames) ? user.publishedGames.map(({ zipBase64, ...game }) => game) : [],
     gameGearEquipped: (user.gameGearEquipped && typeof user.gameGearEquipped === "object") ? user.gameGearEquipped : {},
     inventory: [],
     friends: user.friends || [],
@@ -1239,7 +1119,7 @@ function readBody(req) {
     let data = "";
     req.on("data", (chunk) => {
       data += chunk;
-      if (data.length > 1e6) req.destroy();
+      if (data.length > 8e6) req.destroy();
     });
     req.on("end", () => {
       try { resolve(data ? JSON.parse(data) : {}); } catch { resolve({}); }
@@ -2203,6 +2083,19 @@ const server = http.createServer(async (req, res) => {
       if (shapes.some(shape => !shape || !["box", "cylinder", "sphere", "cone", "torus"].includes(shape.type))) return json(res, 400, { error: "Una pieza del sombrero no es valida." });
       body.data = { shapes: shapes.map(shape => ({ type: shape.type, color: /^#[0-9a-f]{6}$/i.test(String(shape.color || "")) ? String(shape.color) : "#1684e8", position: Array.isArray(shape.position) ? shape.position.slice(0, 3).map(n => Math.max(-10, Math.min(10, Number(n) || 0))) : [0, 2.5, 0], rotation: Array.isArray(shape.rotation) ? shape.rotation.slice(0, 3).map(n => Math.max(-10, Math.min(10, Number(n) || 0))) : [0, 0, 0], scale: Array.isArray(shape.scale) ? shape.scale.slice(0, 3).map(n => Math.max(0.05, Math.min(10, Number(n) || 1))) : [1, 1, 1] })) };
     }
+    const users = sess.users;
+    const user = users[sess.key];
+    normalizeAvatarData(user);
+    user.avatarInventory = Array.isArray(user.avatarInventory)
+      ? user.avatarInventory.map(canonicalAvatarItemId).filter(Boolean)
+      : (Array.isArray(user.inventory) ? user.inventory.map(canonicalAvatarItemId).filter(Boolean) : []);
+    // Publicar una prenda tambien concede la propiedad al creador. Asi aparece
+    // inmediatamente en Inventario/Avatar y no obliga al creador a comprarse su
+    // propio articulo del Catalogo.
+    if (user.avatarInventory.length >= 100) {
+      return json(res, 400, { error: "Tu inventario de avatar esta lleno (100 objetos). Libera un espacio antes de publicar." });
+    }
+
     const items = loadCatalog();
     const item = {
       id: "U-" + Date.now() + "-" + Math.random().toString(36).slice(2,7),
@@ -2213,7 +2106,21 @@ const server = http.createServer(async (req, res) => {
     };
     items.push(item);
     saveCatalog(items);
-    return json(res, 200, { ok: true, published: true, item, message: "Publicado en el catalogo correctamente." });
+
+    user.avatarInventory.push(item.id);
+    user.avatarInventory = [...new Set(user.avatarInventory.map(canonicalAvatarItemId).filter(Boolean))].slice(0, 100);
+    user.inventory = [];
+    users[sess.key] = user;
+    saveUsersDisk(users);
+
+    return json(res, 200, {
+      ok: true,
+      published: true,
+      owned: true,
+      item,
+      user: publicUser(user, sess.key),
+      message: "Publicado en el catalogo y añadido a tu inventario correctamente."
+    });
   }
 
 
@@ -2529,86 +2436,48 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, { message: censorText(safeText(body.message, "", 200)) });
   }
 
-  if (urlPath === "/api/games" && req.method === "GET") {
-    const sess = getSessionUser(req);
-    return json(res, 200, { games: loadPublishedGames().map(game => publicPublishedGame(game, sess ? sess.key : "")) });
+  // Community games are stored inside each account record, which is persisted
+  // through PostgreSQL on Render Free rather than the ephemeral service disk.
+  if (urlPath === "/api/games/published" && req.method === "GET") {
+    const users = syncUserRegistry();
+    const games = [];
+    for (const [ownerKey, owner] of Object.entries(users)) {
+      for (const game of (Array.isArray(owner.publishedGames) ? owner.publishedGames : [])) {
+        if (!game || typeof game !== "object") continue;
+        const { zipBase64, ...publicGame } = game;
+        games.push({ ...publicGame, creator: owner.username || ownerKey, creatorId: String(owner.userId || "") });
+      }
+    }
+    games.sort((a,b) => String(b.publishedAt || "").localeCompare(String(a.publishedAt || "")));
+    return json(res, 200, { games });
   }
 
   if (urlPath === "/api/games/publish" && req.method === "POST") {
     const sess = getSessionUser(req);
-    if (!sess) return json(res, 401, { error: "No autenticado." });
-    try {
-      const multipart = await parseMultipart(req);
-      const name = safeText(multipart.fields.name, "", 60);
-      const description = safeText(multipart.fields.description, "", 500);
-      if (name.length < 2) return json(res, 400, { error: "El nombre del juego debe tener al menos 2 caracteres." });
-      if (!description) return json(res, 400, { error: "Escribe una descripcion para el juego." });
-      if (hasBannedTerm(name) || hasBannedTerm(description)) return json(res, 400, { error: "El nombre o la descripcion no estan permitidos." });
-      const packageFile = multipart.files.package;
-      if (!packageFile || !packageFile.data.length) return json(res, 400, { error: "Sube un archivo .zip." });
-      if (!/\.zip$/i.test(packageFile.filename)) return json(res, 400, { error: "El paquete debe tener extension .zip." });
-
-      const zip = new AdmZip(packageFile.data);
-      const entries = zip.getEntries().filter(entry => !entry.isDirectory).map(entry => ({ entry, name: String(entry.entryName || "").replace(/\\/g, "/") }));
-      if (entries.some(item => item.name.includes("..") || item.name.startsWith("/"))) return json(res, 400, { error: "El ZIP contiene una ruta no permitida." });
-      if (entries.length !== 3) return json(res, 400, { error: "El ZIP debe contener solo icono.png, juegar.py y mundo_base.json." });
-      const iconEntry = entries.find(item => item.name === "icono.png");
-      const pythonEntry = entries.find(item => item.name === "juegar.py");
-      const worldEntry = entries.find(item => item.name === "mundo_base.json");
-      if (!iconEntry || !pythonEntry || !worldEntry) return json(res, 400, { error: "El ZIP debe contener icono.png, juegar.py y mundo_base.json en la raiz." });
-      if (iconEntry.entry.header.size > 2 * 1024 * 1024) return json(res, 400, { error: "icono.png supera el limite de 2 MB." });
-      if (pythonEntry.entry.header.size > 5 * 1024 * 1024) return json(res, 400, { error: "juegar.py supera el limite de 5 MB." });
-      const iconData = iconEntry.entry.getData();
-      if (iconData.length < 8 || iconData.slice(0, 8).toString("hex") !== "89504e470d0a1a0a") return json(res, 400, { error: "icono.png no es un PNG valido." });
-      const pythonData = pythonEntry.entry.getData();
-      if (pythonData.includes(0)) return json(res, 400, { error: "juegar.py no contiene texto Python valido." });
-      if (worldEntry.entry.header.size > 2 * 1024 * 1024) return json(res, 400, { error: "mundo_base.json supera el limite de 2 MB." });
-      const world = validateWorld(worldEntry.entry.getData().toString("utf8"));
-
-      const id = "W-" + crypto.randomBytes(8).toString("hex");
-      const gameDir = path.join(worldsDir, id);
-      fs.mkdirSync(gameDir, { recursive: true });
-      fs.writeFileSync(path.join(gameDir, "icono.png"), iconData);
-      fs.writeFileSync(path.join(gameDir, "juegar.py"), pythonData);
-      fs.writeFileSync(path.join(gameDir, "world.json"), JSON.stringify(world, null, 2), "utf8");
-      const game = { id, gameId: gameIdForPublished(id), name, description, creator: sess.user.username, creatorId: Number(sess.user.userId), likes: 0, likedBy: [], visits: 0, createdAt: new Date().toISOString() };
-      const published = loadPublishedGames();
-      published.push(game);
-      savePublishedGames(published);
-      return json(res, 201, { ok: true, game: publicPublishedGame(game, sess.key) });
-    } catch (err) {
-      console.error("Error publicando juego:", err.message);
-      return json(res, 400, { error: err.message || "No se pudo publicar el juego." });
+    if (!sess) return json(res, 401, { error: "Inicia sesión para publicar un juego." });
+    const body = await readBody(req);
+    const name = censorText(safeText(body.name, "", 48)).trim();
+    const description = censorText(safeText(body.description, "", 240)).trim();
+    const zipBase64 = typeof body.zipBase64 === "string" ? body.zipBase64 : "";
+    const zipName = safeText(body.zipName, "mundo.zip", 120);
+    const zipSize = Number(body.zipSize || 0);
+    if (name.length < 3) return json(res, 400, { error: "El nombre del juego debe tener al menos 3 caracteres." });
+    if (hasBannedTerm(name)) return json(res, 400, { error: "Ese nombre no está permitido." });
+    if (!zipName.toLowerCase().endsWith(".zip") || !zipBase64 || !/^UEsDB/.test(zipBase64) || !Number.isFinite(zipSize) || zipSize < 1 || zipSize > 4 * 1024 * 1024 || zipBase64.length > 5.7 * 1024 * 1024) {
+      return json(res, 400, { error: "Sube un paquete ZIP válido de hasta 4 MB." });
     }
-  }
-
-  const gameLikeMatch = urlPath.match(/^\/api\/games\/([^/]+)\/like$/);
-  if (gameLikeMatch && req.method === "POST") {
-    const sess = getSessionUser(req);
-    if (!sess) return json(res, 401, { error: "No autenticado." });
-    const game = loadPublishedGames().find(item => item && item.id === decodeURIComponent(gameLikeMatch[1]));
-    if (!game) return json(res, 404, { error: "Juego no encontrado." });
-    game.likedBy = Array.isArray(game.likedBy) ? game.likedBy : [];
-    const index = game.likedBy.indexOf(sess.key);
-    if (index >= 0) game.likedBy.splice(index, 1);
-    else game.likedBy.push(sess.key);
-    game.likes = game.likedBy.length;
-    savePublishedGames(loadPublishedGames());
-    return json(res, 200, { ok: true, game: publicPublishedGame(game, sess.key) });
-  }
-
-  const gameDataMatch = urlPath.match(/^\/api\/games\/([^/]+)\/(world|icon)$/);
-  if (gameDataMatch && req.method === "GET") {
-    const game = loadPublishedGames().find(item => item && item.id === decodeURIComponent(gameDataMatch[1]));
-    if (!game) return json(res, 404, { error: "Juego no encontrado." });
-    const gameDir = path.join(worldsDir, game.id);
-    if (gameDataMatch[2] === "world") {
-      return json(res, 200, JSON.parse(fs.readFileSync(path.join(gameDir, "world.json"), "utf8")));
-    }
-    const iconPath = path.join(gameDir, "icono.png");
-    if (!fs.existsSync(iconPath)) return json(res, 404, { error: "Icono no encontrado." });
-    res.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "public, max-age=3600" });
-    return fs.createReadStream(iconPath).pipe(res);
+    const users = ensureUserIds(sess.users);
+    const user = users[sess.key];
+    if (!user) return json(res, 401, { error: "La cuenta ya no está disponible. Inicia sesión otra vez." });
+    if (!Array.isArray(user.publishedGames)) user.publishedGames = [];
+    const existing = user.publishedGames.find(g => String(g.name || "").toLowerCase() === name.toLowerCase());
+    const game = existing || { id: "UG-" + crypto.randomBytes(8).toString("hex") };
+    Object.assign(game, { name, description, zipName, zipSize, zipBase64, publishedAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    if (!existing) user.publishedGames.unshift(game);
+    user.publishedGames = user.publishedGames.slice(0, 100);
+    users[sess.key] = user;
+    saveUsersDisk(users);
+    return json(res, 200, { ok: true, game: { ...game, creator: user.username, creatorId: String(user.userId) }, user: publicUser(user, sess.key) });
   }
 
   if (urlPath === "/api/games/stats" && req.method === "GET") {
@@ -2735,7 +2604,12 @@ function publicPlayer(player) {
     username: censorText(player.username), avatar: player.avatar,
     isAdmin: !!player.isAdmin,
     isCreator: !!player.isCreator,
-    x: player.x, y: player.y, z: player.z, rotation: player.rotation
+    x: player.x, y: player.y, z: player.z, rotation: player.rotation,
+    raceSlot: Number.isInteger(player.raceSlot) ? player.raceSlot : null,
+    raceSpeed: Number(player.raceSpeed || 0),
+    raceHeading: Number(player.raceHeading || player.rotation || 0),
+    raceProgress: Number(player.raceProgress || 0),
+    raceBoost: Number(player.raceBoost == null ? 100 : player.raceBoost)
   };
 }
 
@@ -2774,7 +2648,9 @@ wss.on("connection", (ws) => {
   const player = {
     id: makeId(), ws, roomKey: null, roomName: null, gameId: null,
     username: "Player", accountKey: null, isAdmin: false, isCreator: false, adminFly: false,
-    avatar: null, x: 0, y: 0, z: 0, rotation: 0, lastChatAt: 0, lastEmoteAt: 0
+    avatar: null, x: 0, y: 0, z: 0, rotation: 0,
+    raceSlot: null, raceSpeed: 0, raceHeading: 0, raceProgress: 0, raceBoost: 100,
+    lastChatAt: 0, lastEmoteAt: 0
   };
   ws.isAlive = true;
   ws.on("pong", () => { ws.isAlive = true; });
@@ -2798,8 +2674,10 @@ wss.on("connection", (ws) => {
       player.isCreator = isCreatorUser(account.user, account.key);
       player.adminFly = false;
       const room = getOrCreateRoom(roomName, gameId);
-      if (room.players.size >= MAX_PLAYERS_PER_ROOM) {
-        send(ws, { type: "error", message: "Esta sala esta llena." });
+      const isRaceRoom = String(gameId).trim() === "RACE-33D8";
+      const maxRoomPlayers = isRaceRoom ? 8 : MAX_PLAYERS_PER_ROOM;
+      if (room.players.size >= maxRoomPlayers) {
+        send(ws, { type: "error", message: isRaceRoom ? "La carrera ya esta llena (8 jugadores)." : "Esta sala esta llena." });
         return;
       }
       // Visita real: cada entrada aceptada al juego suma 1.
@@ -2808,7 +2686,25 @@ wss.on("connection", (ws) => {
       // no puede suplantar a otro usuario cambiando el username del join.
       player.username = safeText(account.user.username, "Player", 24);
       player.avatar = account.user.avatar || data.avatar || null;
-      player.x = 0; player.y = 0; player.z = 0; player.rotation = 0;
+      player.raceSlot = null;
+      player.raceSpeed = 0;
+      player.raceHeading = 0;
+      player.raceProgress = 0;
+      player.raceBoost = 100;
+      if (isRaceRoom) {
+        const used = new Set([...room.players.values()]
+          .map(p => Number(p.raceSlot))
+          .filter(Number.isInteger));
+        let slot = 0;
+        while (used.has(slot) && slot < 8) slot++;
+        player.raceSlot = slot;
+        const laneX = [-7.5, -2.5, 2.5, 7.5][slot % 4];
+        const rowZ = 45 + Math.floor(slot / 4) * 5;
+        player.x = laneX; player.y = 0.02; player.z = rowZ; player.rotation = Math.PI;
+        player.raceHeading = Math.PI;
+      } else {
+        player.x = 0; player.y = 0; player.z = 0; player.rotation = 0;
+      }
       setPresence(player.username.toLowerCase(), { playing: true, gameId, gameName: roomName, roomName, serverId: SERVER_ID });
 
       // Evitar duplicados: si el mismo username ya esta en alguna sala, echar la sesion vieja
@@ -2843,6 +2739,7 @@ wss.on("connection", (ws) => {
         isAdmin: !!player.isAdmin,
         isCreator: !!player.isCreator,
         count: room.players.size,
+        raceSlot: player.raceSlot,
         players: existingPlayers,
         accounts: Object.keys(loadUsers()).length
       });
@@ -2938,6 +2835,12 @@ wss.on("connection", (ws) => {
       player.y = safeNumber(data.y, player.y);
       player.z = safeNumber(data.z, player.z);
       player.rotation = safeNumber(data.rotation, player.rotation);
+      if (String(player.gameId).trim() === "RACE-33D8") {
+        player.raceSpeed = Math.max(-20, Math.min(45, safeNumber(data.raceSpeed, player.raceSpeed)));
+        player.raceHeading = safeNumber(data.raceHeading, player.raceHeading || player.rotation);
+        player.raceProgress = Math.max(0, Math.min(1, safeNumber(data.raceProgress, player.raceProgress)));
+        player.raceBoost = Math.max(0, Math.min(100, safeNumber(data.raceBoost, player.raceBoost)));
+      }
       broadcast(room, { type: "playerMoved", player: publicPlayer(player) }, ws);
       return;
     }
