@@ -188,6 +188,7 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
 .gear-action-btn{position:absolute;right:26px;bottom:38px;width:78px;height:78px;border-radius:50%;background:#fff;border:3px solid #222;box-shadow:0 3px 0 rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#222;pointer-events:auto;user-select:none;-webkit-user-select:none;touch-action:none}.gear-action-btn:active{transform:scale(.94)}
 .joystick-base { position: absolute; bottom: max(24px, env(safe-area-inset-bottom)); left: max(16px, env(safe-area-inset-left)); width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.25); pointer-events: auto; touch-action: none; }
 .joystick-knob { position: absolute; width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.45); border: 2px solid rgba(255,255,255,0.6); left: 35px; top: 35px; pointer-events: none; transition: none; }
+.shiftlock-btn { position:absolute; right:max(32px,calc(env(safe-area-inset-right) + 12px)); bottom:calc(max(36px, env(safe-area-inset-bottom)) + 82px); width:54px; height:42px; border-radius:12px; background:rgba(25,30,38,.78); border:2px solid rgba(255,255,255,.4); color:#fff; font-size:11px; font-weight:900; letter-spacing:.3px; display:flex; align-items:center; justify-content:center; pointer-events:auto; touch-action:manipulation; user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; } .shiftlock-btn.active { background:#1684e8; border-color:#fff; box-shadow:0 0 0 2px rgba(22,132,232,.25); }
 .jump-btn { position: absolute; bottom: max(36px, env(safe-area-inset-bottom)); right: max(20px, env(safe-area-inset-right)); width: 72px; height: 72px; border-radius: 50%; background: rgba(22,132,232,0.55); border: 2px solid rgba(255,255,255,0.35); color: #fff; font-weight: bold; font-size: 13px; pointer-events: auto; touch-action: none; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; user-select: none; }
 .race-brake-btn{display:none;position:absolute;right:max(108px,calc(20px + 82px));bottom:max(42px,env(safe-area-inset-bottom));width:70px;height:70px;border-radius:50%;background:rgba(239,68,68,.72);border:2px solid rgba(255,255,255,.35);color:#fff;font-weight:900;font-size:11px;pointer-events:auto;touch-action:none;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none}.race-brake-btn:active{transform:scale(.94)}
 @media (pointer:coarse), (max-width:768px){.race-brake-btn.speed-visible{display:flex}}
@@ -588,7 +589,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
         <div class="joystick-base" id="joystickBase">
           <div class="joystick-knob" id="joystickKnob"></div>
         </div>
-        <div class="race-brake-btn" id="raceBrakeBtn">FRENO</div><div class="jump-btn" id="jumpBtn">SALTO</div>
+        <div class="race-brake-btn" id="raceBrakeBtn">FRENO</div><button type="button" class="shiftlock-btn" id="shiftLockBtn" aria-pressed="false" title="Shift Lock">SHIFT</button><div class="jump-btn" id="jumpBtn">SALTO</div>
         <div class="gear-action-btn" id="gearActionBtn" style="display:none">USAR</div>
       </div>
 
@@ -1087,6 +1088,13 @@ let cameraDragging = false;
 let cameraPointerId = null;
 let cameraAngleX = 0;
 let cameraAngleY = 0.4;
+let shiftLockEnabled = false;
+function setShiftLock(enabled) {
+  shiftLockEnabled = !!enabled;
+  const b = document.getElementById("shiftLockBtn");
+  if (b) { b.classList.toggle("active", shiftLockEnabled); b.setAttribute("aria-pressed", String(shiftLockEnabled)); b.textContent = shiftLockEnabled ? "SHIFT ✓" : "SHIFT"; }
+}
+function toggleShiftLock() { setShiftLock(!shiftLockEnabled); }
 let cameraDistance = 4;
 
 let audioCtx = null;
@@ -3010,6 +3018,8 @@ async function launchWebClient(gameName) {
   const raceHud = document.getElementById('speedRaceHud');
   if(raceHud) raceHud.style.display = gameName.trim()==='Speed Race' ? 'block' : 'none';
   const jumpBtn = document.getElementById('jumpBtn');
+  const shiftBtn = document.getElementById('shiftLockBtn');
+  if (shiftBtn && !shiftBtn.dataset.bound) { shiftBtn.dataset.bound = '1'; shiftBtn.addEventListener('click', (e) => { e.preventDefault(); toggleShiftLock(); }); }
   if(jumpBtn) jumpBtn.textContent = gameName.trim()==='Speed Race' ? 'BOOST' : 'SALTO';
   const raceBrake=document.getElementById('raceBrakeBtn'); if(raceBrake) raceBrake.classList.toggle('speed-visible', gameName.trim()==='Speed Race');
   const sub = document.getElementById('gameMenuSubtitle');
@@ -3144,7 +3154,8 @@ window.addEventListener('keydown', (e) => {
       else toggleGameMenu();
       return;
     }
-    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD','Space','ShiftLeft','ShiftRight'].includes(e.code)) {
+    if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') { e.preventDefault(); if (!e.repeat) toggleShiftLock(); return; }
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD','Space'].includes(e.code)) {
       e.preventDefault();
     }
     keysPressed[e.code] = true;
@@ -3252,6 +3263,8 @@ function setupMobileControls() {
   const base = document.getElementById('joystickBase');
   const knob = document.getElementById('joystickKnob');
   const jumpBtn = document.getElementById('jumpBtn');
+  const shiftBtn = document.getElementById('shiftLockBtn');
+  if (shiftBtn && !shiftBtn.dataset.bound) { shiftBtn.dataset.bound = '1'; shiftBtn.addEventListener('click', (e) => { e.preventDefault(); toggleShiftLock(); }); }
   const gearBtn = document.getElementById('gearActionBtn');
   const lookZone = document.getElementById('lookZone');
   if (!base || !knob) return;
@@ -5886,7 +5899,13 @@ function startGameLoop() {
     }
 
     // 5) ORIENTACION Y ANIMACION DE CAMINAR
-    if (isMovingInput && !isSpeedRace) {
+    if (shiftLockEnabled && playerMeshGroup && !isSpeedRace) {
+      const targetAngle = cameraAngleX + Math.PI;
+      let diff = targetAngle - playerMeshGroup.rotation.y;
+      while(diff < -Math.PI) diff += Math.PI * 2;
+      while(diff > Math.PI) diff -= Math.PI * 2;
+      playerMeshGroup.rotation.y += diff * Math.min(1, 14 * dt);
+    } else if (isMovingInput && !isSpeedRace) {
       const targetAngle = Math.atan2(moveDirX, moveDirZ);
       let diff = targetAngle - playerMeshGroup.rotation.y;
       while(diff < -Math.PI) diff += Math.PI * 2;
@@ -6048,11 +6067,14 @@ function startGameLoop() {
       const target = isSpeedRace && window._playerRaceCar ? window._playerRaceCar : playerMeshGroup;
       const dist = isSpeedRace ? 10.5 : cameraDistance;
       const targetY = isSpeedRace ? target.position.y + 0.65 : target.position.y + 0.5;
-      const cx = target.position.x + dist * Math.sin(cameraAngleX) * Math.cos(cameraAngleY);
+      const shoulderOffset = shiftLockEnabled && !isSpeedRace ? 1.15 : 0;
+      const shoulderX = Math.cos(cameraAngleX) * shoulderOffset;
+      const shoulderZ = -Math.sin(cameraAngleX) * shoulderOffset;
+      const cx = target.position.x + dist * Math.sin(cameraAngleX) * Math.cos(cameraAngleY) + shoulderX;
       const cy = target.position.y + (isSpeedRace ? 4.2 : 0.8) + dist * Math.sin(cameraAngleY);
-      const cz = target.position.z + dist * Math.cos(cameraAngleX) * Math.cos(cameraAngleY);
+      const cz = target.position.z + dist * Math.cos(cameraAngleX) * Math.cos(cameraAngleY) + shoulderZ;
       gameCamera.position.set(cx, cy, cz);
-      gameCamera.lookAt(target.position.x, targetY, target.position.z);
+      gameCamera.lookAt(target.position.x + shoulderX, targetY, target.position.z + shoulderZ);
     }
 
     updateSoulParticles(now);
