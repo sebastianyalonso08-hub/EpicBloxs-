@@ -202,6 +202,16 @@ body.in-game #webClient .client-exit-bar, body.in-game #webClient > h1 { display
   .chat-window { right: 8px !important; left: 8px !important; width: auto !important; bottom: 0 !important; height: min(55vh,420px) !important; border-radius: 12px 12px 0 0 !important; z-index: 600 !important; }
   .chat { display: none !important; }
 }
+if(n==='Treasure Island'){
+  for(const relic of (window._treasureRelics||[]))if(relic&&relic.visible)relic.rotation.y+=dt*.8;
+  const hint=document.getElementById('gameHint');
+  if(hint&&now-(gameEnhancementState.treasureHudAt||0)>500){
+    gameEnhancementState.treasureHudAt=now;
+    const found=(window._treasureRelics||[]).filter(relic=>relic&&relic.userData.claimed).length;
+    const opened=treasureChests.filter(chest=>chest&&chest.userData.opened).length;
+    hint.textContent=`🏝️ Relics ${found}/3 · Chests ${opened}/${treasureChests.length} · Press E to collect/open`;
+  }
+}
 
 #authScreen{position:fixed;inset:0;background:#252525;z-index:9999;display:flex;align-items:center;justify-content:center}.auth-box{width:400px;max-width:92%;background:#fff;padding:32px;border-radius:6px;box-shadow:0 5px 25px rgba(0,0,0,0.3)}.auth-logo{text-align:center;font-size:38px;font-weight:900}.auth-logo span{color:#25a9ff}.auth-sub{text-align:center;color:#777;margin:5px 0 22px}.auth-tabs{display:flex;border-radius:4px;overflow:hidden;border:1px solid #ddd}.auth-tab{width:50%;padding:11px;border:0;background:#eee;font-weight:bold;cursor:pointer}.auth-tab.active{background:#1684e8;color:#fff}.auth-form{display:none}.auth-form.active{display:block}.auth-form label{display:block;margin:12px 0 5px;font-size:13px;font-weight:bold}.auth-form input{width:100%;padding:11px;border:1px solid #bbb;border-radius:4px}.auth-button{width:100%;margin-top:20px;padding:12px;border:0;background:#1684e8;color:#fff;font-weight:bold;cursor:pointer;border-radius:4px}.auth-message{text-align:center;min-height:18px;margin-top:12px;font-size:13px}.error{color:#d93025}.success{color:#188038}.auth-info{margin-top:18px;padding:10px;background:#f3f3f3;color:#777;font-size:11px;border-radius:4px}
 
@@ -453,6 +463,20 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 .games-community-grid .game-browser-card-meta{font-size:11px;color:#c8bddf;margin-top:5px}
 .games-community-grid .game-browser-card-bar{display:none}
 @media(max-width:700px){.games-community-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.games-community-grid .game-browser-card img{height:125px}}
+.game-detail-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.game-detail-actions .section-button{margin:0}
+.game-detail-actions .section-button.active{background:linear-gradient(135deg,#8b5cf6,#5b21b6);outline:2px solid #c4b5fd}
+.game-comments form{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px}
+.game-comments textarea{flex:1 1 100%;min-height:72px;padding:10px;border:1px solid #4b3a76;border-radius:8px;background:#111020;color:#f4f0ff;resize:vertical;font:inherit}
+.game-comments #gameCommentStatus{align-self:center;color:#c8bddf;font-size:12px}
+.game-comment{padding:12px 0;border-top:1px solid #4b3a76}
+.game-comment strong{color:#fff}.game-comment time{float:right;color:#b9afd4;font-size:11px}.game-comment p{margin:8px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;color:#e8e2f8}
+.chat-input-row{position:relative}
+.chat-input-row button.emoji-toggle{padding:8px 10px;background:#30284a;font-size:17px}
+.emoji-picker{position:absolute;right:58px;bottom:calc(100% - 3px);z-index:800;display:grid;grid-template-columns:repeat(6,36px);gap:3px;padding:8px;background:#19152a;border:1px solid #58447f;border-radius:10px;box-shadow:0 8px 24px #0008}
+.emoji-picker[hidden]{display:none}
+.emoji-picker button{padding:5px!important;background:#211a36!important;color:#fff!important;font-size:20px!important}
+.emoji-picker button:hover{background:#493579!important}
 
 </style>
 
@@ -492,7 +516,6 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
   <div class="top-link" onclick="showPage('catalog')">Catalog</div>
   <div class="top-link" onclick="showPage('friends')">Friends</div>
   <div class="top-link" onclick="showPage('create')">Create</div>
-  <div class="top-link" onclick="showPage('download')">Download</div>
   <div class="search-container"><input id="searchInput" class="search" placeholder="Search" oninput="searchGames(this.value)"><span class="search-icon">⌕</span></div>
   <div id="topUser" class="top-user">Player</div>
   <div id="topAvatar" class="top-avatar" onclick="showPage('avatar')"></div>
@@ -504,6 +527,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 <aside class="sidebar">
   <div class="sidebar-user"><strong id="sideUsername">Player</strong> <span class="check">✓</span></div>
   <div class="side-item" onclick="showPage('home')"><div class="side-icon">⌂</div><span>Home</span></div>
+  <div class="side-item" onclick="showPage('favorites')"><div class="side-icon">⭐</div><span>Favorites</span></div>
   <div class="side-item" onclick="showPage('profile')"><div class="side-icon">♙</div><span>Profile</span></div>
   <div class="side-item" onclick="showPage('avatar')"><div class="side-icon">👕</div><span>Avatar</span></div>
   <div class="side-item" onclick="showPage('inventory')"><div class="side-icon">🎒</div><span>Inventory</span></div>
@@ -536,6 +560,11 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
   </div>
 </section>
 
+<section id="favorites" class="page">
+  <div class="see-more-header"><h1>⭐ Favorite games</h1><p>Your saved games, ready to play.</p></div>
+  <div id="favoriteGamesPage" class="games-community-grid"></div>
+</section>
+
 <section id="webClient" class="page">
   <div class="client-exit-bar" style="padding:15px 25px 0;">
     <button class="section-button" onclick="exitWebClient()">← Exit Game</button>
@@ -563,17 +592,24 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
       <div id="webGLContainer"></div>
 
       <h2 class="client-title" id="activeGameHeader">World</h2>
-      <div class="client-ui">☀️ <span id="clientEarnings">0</span> &nbsp;|&nbsp; <span id="multiplayerStatusInline">👥 ...</span></div><div id="gameHint" style="margin-left:14px;color:#fff;opacity:.9;font-weight:bold"></div><div id="speedRaceHud" class="speed-race-hud" style="display:none"><div><b>🏁 SPEED RACE</b><span id="speedRacePosition">1/4</span></div><div class="speed-race-stats"><span id="speedRaceSpeed">0 KM/H</span><span id="speedRaceBoost">⚡ 100%</span><span id="speedRaceCheckpoint">CP 0/6</span></div></div>
-      <div class="client-controls-hint">WASD / Arrows move · SPACE jump · Right click + drag camera · T chat</div>
+      <div class="client-ui">☀️ <span id="clientEarnings">0</span> &nbsp;|&nbsp; <span id="multiplayerStatusInline">👥 ...</span></div><div id="gameHint" style="margin-left:14px;color:#fff;opacity:.9;font-weight:bold"></div><div id="gameHealthHud" role="status" aria-label="Player health" style="position:absolute;top:92px;left:14px;z-index:5;background:#101820d9;color:#fff;padding:7px 10px;border:1px solid #ffffff55;border-radius:8px;font-weight:800;min-width:150px">❤️ <span id="gameHealthValue">100</span> / 100<div style="height:6px;margin-top:5px;background:#263238;border-radius:4px;overflow:hidden"><div id="gameHealthFill" style="height:100%;width:100%;background:#35c46a;transition:width .15s"></div></div></div><div id="speedRaceHud" class="speed-race-hud" style="display:none"><div><b>🏁 SPEED RACE</b><span id="speedRacePosition">1/4</span></div><div class="speed-race-stats"><span id="speedRaceSpeed">0 KM/H</span><span id="speedRaceBoost">⚡ 100%</span><span id="speedRaceCheckpoint">CP 0/6</span></div></div>
+      <div class="client-controls-hint">WASD / Arrows move · SHIFT sprint · SPACE jump · Right click + drag camera · T chat</div>
 
       <div class="game-fab-bar">
         <button class="game-fab" id="fabChatBtn" onclick="toggleChat()" title="Chat">💬<span class="fab-badge" id="fabChatBadge">0</span></button>
         <button class="game-fab" id="fabInvBtn" onclick="toggleGameInventory()" title="Inventory">🎒</button>
+        <button class="game-fab" id="zombieShopButton" onclick="toggleZombieShop()" title="Armería" style="display:none">🛒</button>
         <button class="game-fab" id="fabMenuBtn" onclick="toggleGameMenu()" title="Menu">☰</button>
       </div>
       <div id="gameGearHotbar" class="game-gear-hotbar" aria-label="Toolbar"></div>
 
       <div id="ingameChat" class="ingame-chat"></div>
+
+      <div id="zombieShopPanel" role="dialog" aria-label="Zombie weapon shop" style="display:none;position:absolute;right:16px;top:74px;z-index:12;width:min(300px,calc(100vw - 32px));padding:14px;background:#142019f2;color:#fff;border:1px solid #8bc34a;border-radius:12px;box-shadow:0 12px 36px #0009">
+        <div style="display:flex;justify-content:space-between;align-items:center"><b>🧟 Armería</b><button type="button" onclick="toggleZombieShop(false)" aria-label="Cerrar">✕</button></div>
+        <p style="font-size:12px;margin:8px 0;color:#c7d5c4">Compra armas con Sunnys y equípalas desde la mochila.</p>
+        <div id="zombieShopItems" style="display:grid;gap:8px"></div>
+      </div>
 
       <div id="gameInventoryPanel" class="game-inv-panel">
         <div class="game-inv-head">
@@ -595,8 +631,8 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 
       <div class="void-death-overlay" id="voidDeathOverlay">
         <div class="void-death-box">
-          <h2>💀 You fell into the void</h2>
-          <p>The character fell outside the map.</p>
+          <h2 id="voidDeathTitle">💀 You fell into the void</h2>
+          <p id="voidDeathMessage">The character fell outside the map.</p>
           <button class="void-death-btn" onclick="respawnAfterVoid()">↻ Respawn</button>
         </div>
       </div>
@@ -714,7 +750,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 </section>
 
 <section id="games" class="page">
-  <div class="game-filters"><select id="gameSortFilter" class="game-filter" onchange="renderGamesBrowser()"><option>Default</option><option>Popular</option><option>Top Earning</option><option>Top Rated</option></select><select id="gameYearFilter" class="game-filter" onchange="renderGamesBrowser()"><option>All Years</option><option>2026</option><option>2025</option><option>2024</option><option>2021</option><option>2020</option><option>2018</option></select></div>
+  <div class="game-filters"><select id="gameSortFilter" class="game-filter" onchange="renderGamesBrowser()"><option>Default</option><option>Popular</option><option>Top Earning</option></select></div>
   <div id="gamesBrowser" class="game-browser"></div>
 </section>
 
@@ -740,9 +776,23 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
       </div>
       <button class="game-detail-play" id="gdPlayBtn">Play</button>
     </div>
+    <div class="game-detail-actions">
+      <button class="section-button" id="gdLikeBtn" onclick="setGameReaction('like')">👍 Like <span id="gdLikeCount">0</span></button>
+      <button class="section-button" id="gdDislikeBtn" onclick="setGameReaction('dislike')">👎 Dislike <span id="gdDislikeCount">0</span></button>
+      <button class="section-button" id="gdFavoriteBtn" onclick="toggleGameFavorite(_currentDetailGame)">☆ Add to favorites</button>
+    </div>
     <div class="game-detail-about">
       <h3>About</h3>
       <p id="gdDescription">—</p>
+    </div>
+    <div class="game-detail-about game-comments">
+      <h3>Game comments</h3>
+      <form id="gameCommentForm" onsubmit="submitGameComment(event)">
+        <textarea id="gameCommentInput" maxlength="300" rows="3" placeholder="Share your thoughts about this game..."></textarea>
+        <button class="section-button" type="submit">Post comment</button>
+        <span id="gameCommentStatus" role="status"></span>
+      </form>
+      <div id="gameCommentsList"></div>
     </div>
   </div>
 </section>
@@ -828,7 +878,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
   </div>
   <h2>Create Clothing</h2>
   <p>Design your shirt or pants by painting on the template or uploading an image, then publish it to the catalog for everyone to use.</p>
-  <div style="margin-bottom:12px" class="moderation-badge">### Moderacion activa: nombres, descripciones y chat filtrados</div>
+  <div style="margin-bottom:12px" class="moderation-badge">Community content guidelines apply to game and clothing names.</div>
   <div class="creator-layout">
     <div class="creator-card">
       <div class="creator-tools">
@@ -902,8 +952,6 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
     </div>
   </div>
 </section>
-
-<section id="download" class="page"><h1>Download</h1><div class="download-box"><h2>🖥️ EpicBloxs Studio Client</h2><p>Working on it but test the baseplate if u want lol.</p><button class="section-button" onclick="launchWebClient('EpicBloxs Universe')">Launch Client</button></div></section>
 
 <section id="avatar" class="page">
   <h1>Avatar</h1>
@@ -1007,7 +1055,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
 
 <div id="chatWindow" class="chat-window">
   <div class="chat-header">
-    <span>EpicBloxs Chat <span class="moderation-badge" style="margin-left:5px">###</span></span>
+    <span>EpicBloxs Chat</span>
     <span class="chat-status" id="chatConnStatus">Offline</span>
   </div>
   <div class="chat-tabs">
@@ -1022,6 +1070,8 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
     </div>
     <div class="chat-input-row">
       <input id="chatInput" type="text" maxlength="200" placeholder="Write a message..." onkeydown="if(event.key==='Enter')sendChatMessage()">
+      <button type="button" class="emoji-toggle" aria-label="Choose emoji" onclick="toggleEmojiPicker('chatInput',this)">😀</button>
+      <div class="emoji-picker" hidden></div>
       <button onclick="sendChatMessage()">Send</button>
     </div>
   </div>
@@ -1040,6 +1090,8 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
       <div class="chat-body" id="dmThreadBody"></div>
       <div class="chat-input-row">
         <input id="dmInput" type="text" maxlength="300" placeholder="Write a private message..." onkeydown="if(event.key==='Enter')dmSend()">
+        <button type="button" class="emoji-toggle" aria-label="Choose emoji" onclick="toggleEmojiPicker('dmInput',this)">😀</button>
+        <div class="emoji-picker" hidden></div>
         <button onclick="dmSend()">Send</button>
       </div>
     </div>
@@ -1058,7 +1110,7 @@ input,textarea,select{background:#111020!important;color:#f4f0ff!important;borde
       <button class="dm-back" onclick="groupCloseThread()">Back to Groups</button>
       <div class="chat-header" style="background:#3b3b3b;padding:8px 12px;font-size:13px"><span id="groupThreadName">Group</span><span id="groupThreadMembers" class="chat-status"></span></div>
       <div class="chat-body" id="groupThreadBody"></div>
-      <div class="chat-input-row"><input id="groupInput" type="text" maxlength="200" placeholder="Write to the group..." onkeydown="if(event.key==='Enter')groupSend()"><button onclick="groupSend()">Send</button></div>
+      <div class="chat-input-row"><input id="groupInput" type="text" maxlength="200" placeholder="Write to the group..." onkeydown="if(event.key==='Enter')groupSend()"><button type="button" class="emoji-toggle" aria-label="Choose emoji" onclick="toggleEmojiPicker('groupInput',this)">😀</button><div class="emoji-picker" hidden></div><button onclick="groupSend()">Send</button></div>
     </div>
   </div>
 </div>
@@ -1076,10 +1128,14 @@ let gameSun = null;
 let keysPressed = {};
 let playerMeshGroup = null;
 let gameSessionEarnings = 0;
+let gameEarningSessionId = '';
+let _gameEarnings = {};
+let _gameFeedback = null;
 let currentGameType = "Epic Obby";
 let collectibleCoins = [];
 let activePlatforms = [];
 let solidColliders = [];
+let gameEmittedLightCount = 0;
 
 let isRightMouseDown = false;
 let mouseXOnMouseDown = 0;
@@ -1302,11 +1358,12 @@ function creatorAddShape(type='box',first=false){
   if(!first)creatorMessage(creatorShapeName(type)+' added.');
 }
 function creatorAddCube(first=false){creatorAddShape('box',first);}
-function creatorSelectCube(i){creatorSelected=creatorCubes[i]||null; creatorUpdateSelectionVisual(); creatorUpdateTransformPanel(); renderCreatorCubeList(); creatorFocusSelected();}
+function creatorSelectCube(i){creatorSelected=creatorCubes[i]||null;creatorUpdateSelectionVisual(); creatorUpdateTransformPanel(); renderCreatorCubeList(); creatorFocusSelected();}
 function creatorYawUpdate(dx,dy,updateCreatorCamera){creatorOrbit.yaw-=dx*0.012;creatorOrbit.pitch-=dy*0.009;updateCreatorCamera();}
 function creatorHitSelected(e){if(!creatorRaycaster||!creatorCamera||!creatorRenderer||!creatorSelected)return false;const r=creatorRenderer.domElement.getBoundingClientRect();creatorPointer.x=((e.clientX-r.left)/r.width)*2-1;creatorPointer.y=-((e.clientY-r.top)/r.height)*2+1;creatorRaycaster.setFromCamera(creatorPointer,creatorCamera);return creatorRaycaster.intersectObject(creatorSelected,false).length>0;}
 function creatorPickObject(e){if(!creatorRaycaster||!creatorCamera||!creatorRenderer)return; const r=creatorRenderer.domElement.getBoundingClientRect(); creatorPointer.x=((e.clientX-r.left)/r.width)*2-1; creatorPointer.y=-((e.clientY-r.top)/r.height)*2+1; creatorRaycaster.setFromCamera(creatorPointer,creatorCamera); const hits=creatorRaycaster.intersectObjects(creatorCubes,false); if(hits.length){creatorSelected=hits[0].object;creatorUpdateSelectionVisual();creatorUpdateTransformPanel();renderCreatorCubeList();creatorFocusSelected();}}
-function creatorPaintCube(color){if(creatorSelected){creatorSelected.material.color.set(color);creatorSelected.userData.color=color;renderCreatorCubeList();}}
+function creatorPaintCube(color){if(creatorSelected){creatorSelected.material.color.set(color);creatorSelected.userData.color=color;creatorUpdateSelectionVisual();renderCreatorCubeList();}}
+document.getElementById('creatorCubeColor')?.addEventListener('input',event=>creatorPaintCube(event.target.value));
 function creatorRemoveCube(){if(!creatorSelected||!creatorGroup)return;creatorGroup.remove(creatorSelected);creatorCubes=creatorCubes.filter(c=>c!==creatorSelected);creatorSelected=creatorCubes[creatorCubes.length-1]||null;creatorUpdateSelectionVisual();creatorUpdateTransformPanel();renderCreatorCubeList();creatorFocusSelected();}
 function creatorUpdateSelectionVisual(){if(!creatorScene)return; if(creatorSelectionOutline){creatorScene.remove(creatorSelectionOutline);creatorSelectionOutline=null;} if(creatorSelected){const edges=new THREE.EdgesGeometry(creatorSelected.geometry); const mat=new THREE.LineBasicMaterial({color:0x1684e8,depthTest:false}); creatorSelectionOutline=new THREE.LineSegments(edges,mat); creatorSelectionOutline.position.copy(creatorSelected.position); creatorSelectionOutline.rotation.copy(creatorSelected.rotation); creatorSelectionOutline.scale.copy(creatorSelected.scale).multiplyScalar(1.04); creatorSelectionOutline.userData.isSelectionOutline=true; creatorScene.add(creatorSelectionOutline);}}
 function creatorUpdateTransformPanel(){const p=document.getElementById('creatorTransformPanel'); if(!p)return; p.style.display=creatorSelected?'':'none'; if(!creatorSelected)return; const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=Number(val).toFixed(3);}; set('creatorTx',creatorSelected.position.x);set('creatorTy',creatorSelected.position.y);set('creatorTz',creatorSelected.position.z);set('creatorRx',creatorSelected.rotation.x);set('creatorRy',creatorSelected.rotation.y);set('creatorRz',creatorSelected.rotation.z);set('creatorSx',creatorSelected.scale.x);set('creatorSy',creatorSelected.scale.y);set('creatorSz',creatorSelected.scale.z); document.querySelectorAll('#creatorTransformPanel button[id^="creatorTool"]').forEach(b=>b.classList.remove('active')); const btn=document.getElementById('creatorTool'+creatorTransformTool.charAt(0).toUpperCase()+creatorTransformTool.slice(1)); if(btn)btn.classList.add('active');}
@@ -1469,20 +1526,35 @@ function startAmbientMusic(gameName) {
     const name=String(gameName||'').trim();
     // Música procedural: acordes + bajo + melodía con variaciones. No repite una sola nota.
     const presets={
-      'Epic Obby':   {root:261.63,chords:[[0,4,7],[5,9,12],[3,7,10],[7,11,14]],scale:[0,2,4,7,9,12,14,16],tempo:260,wave:'triangle'},
-      'Bloxs City':  {root:196.00,chords:[[0,3,7],[5,8,12],[3,7,10],[7,10,14]],scale:[0,2,3,5,7,10,12,14],tempo:300,wave:'sine'},
-      'Pet World':   {root:261.63,chords:[[0,4,7],[2,5,9],[5,9,12],[7,11,14]],scale:[0,2,4,5,7,9,11,12],tempo:320,wave:'sine'},
-      'Battle Arena':{root:146.83,chords:[[0,3,7],[5,8,12],[3,7,10],[1,5,8]],scale:[0,1,3,5,7,8,10,12],tempo:190,wave:'sawtooth'},
-      'Speed Race':  {root:220.00,chords:[[0,4,7],[7,11,14],[5,9,12],[9,12,16]],scale:[0,2,4,7,9,11,12,14],tempo:170,wave:'square'},
-      'Sky Islands':{root:220.00,chords:[[0,4,7],[9,12,16],[5,9,12],[7,11,14]],scale:[0,2,4,7,9,12,14,16],tempo:360,wave:'sine'},
-      'Zombie Survival':{root:164.81,chords:[[0,3,6],[5,8,12],[3,6,10],[1,4,8]],scale:[0,1,3,6,8,10,12],tempo:230,wave:'sawtooth'},
-      'Treasure Island':{root:220.00,chords:[[0,4,7],[5,9,12],[7,11,14],[2,5,9]],scale:[0,2,4,5,7,9,11,12,14],tempo:300,wave:'triangle'},
-      'Neon City': {root:185.00,chords:[[0,3,7],[8,11,15],[5,9,12],[10,14,17]],scale:[0,3,5,7,10,12,15,17],tempo:210,wave:'sine'},
-      'Lava Escape':{root:130.81,chords:[[0,3,7],[1,5,8],[5,8,12],[3,6,10]],scale:[0,1,3,5,7,8,10,12],tempo:180,wave:'sawtooth'},
-      'Paintball Plaza':{root:233.08,chords:[[0,4,7],[2,5,9],[7,11,14],[5,9,12]],scale:[0,2,4,5,7,9,11,12,14],tempo:220,wave:'triangle'},
-      'Castle Defense':{root:174.61,chords:[[0,3,7],[5,8,12],[7,10,14],[3,7,10]],scale:[0,2,3,5,7,10,12,14],tempo:280,wave:'triangle'}
+      'Epic Obby':   {root:261.63,chords:[[0,4,7],[5,9,12],[3,7,10],[7,11,14]],scale:[0,2,4,7,9,12,14,16],tempo:260,wave:'triangle',style:'bouncy'},
+      'Bloxs City':  {root:196.00,chords:[[0,3,7],[5,8,12],[3,7,10],[7,10,14]],scale:[0,2,3,5,7,10,12,14],tempo:300,wave:'sine',style:'city'},
+      'Pet World':   {root:261.63,chords:[[0,4,7],[2,5,9],[5,9,12],[7,11,14]],scale:[0,2,4,5,7,9,11,12],tempo:320,wave:'sine',style:'playful'},
+      'Battle Arena':{root:146.83,chords:[[0,3,7],[5,8,12],[3,7,10],[1,5,8]],scale:[0,1,3,5,7,8,10,12],tempo:190,wave:'sawtooth',style:'combat'},
+      'Speed Race':  {root:220.00,chords:[[0,4,7],[7,11,14],[5,9,12],[9,12,16]],scale:[0,2,4,7,9,11,12,14],tempo:170,wave:'square',style:'racing'},
+      'Sky Islands':{root:220.00,chords:[[0,4,7],[9,12,16],[5,9,12],[7,11,14]],scale:[0,2,4,7,9,12,14,16],tempo:360,wave:'sine',style:'dreamy'},
+      'Zombie Survival':{root:164.81,chords:[[0,3,6],[5,8,12],[3,6,10],[1,4,8]],scale:[0,1,3,6,8,10,12],tempo:230,wave:'sawtooth',style:'horror'},
+      'Treasure Island':{root:220.00,chords:[[0,4,7],[5,9,12],[7,11,14],[2,5,9]],scale:[0,2,4,5,7,9,11,12,14],tempo:300,wave:'triangle',style:'adventure'},
+      'Neon City': {root:185.00,chords:[[0,3,7],[8,11,15],[5,9,12],[10,14,17]],scale:[0,3,5,7,10,12,15,17],tempo:210,wave:'sine',style:'neon'},
+      'Lava Escape':{root:130.81,chords:[[0,3,7],[1,5,8],[5,8,12],[3,6,10]],scale:[0,1,3,5,7,8,10,12],tempo:180,wave:'sawtooth',style:'volcanic'},
+      'Paintball Plaza':{root:233.08,chords:[[0,4,7],[2,5,9],[7,11,14],[5,9,12]],scale:[0,2,4,5,7,9,11,12,14],tempo:220,wave:'triangle',style:'arcade'},
+      'Castle Defense':{root:174.61,chords:[[0,3,7],[5,8,12],[7,10,14],[3,7,10]],scale:[0,2,3,5,7,10,12,14],tempo:280,wave:'triangle',style:'medieval'}
+    };
+    const musicStyles={
+      bouncy:{chords:[0,8],bass:[0,4,8,12],melody:[0,2,4,7,10,12,14],notes:[0,2,4,3,5,4,2,6],lead:'triangle',bass:'sine',stride:3},
+      city:{chords:[0,8],bass:[0,8],melody:[0,4,8,12],notes:[0,3,5,2,4,6,3,1],lead:'sine',bass:'triangle',stride:5},
+      playful:{chords:[0,10],bass:[0,6,12],melody:[0,3,5,8,11,14],notes:[0,4,2,6,3,7,5,1],lead:'sine',bass:'sine',stride:3},
+      combat:{chords:[0,4,8,12],bass:[0,4,8,12],melody:[0,2,3,6,8,10,12,14],notes:[0,3,1,5,2,6,4,7],lead:'sawtooth',bass:'square',stride:5},
+      racing:{chords:[0,8],bass:[0,2,4,6,8,10,12,14],melody:[0,2,4,6,8,10,12,14],notes:[0,0,3,5,4,6,2,7],lead:'square',bass:'triangle',stride:3},
+      dreamy:{chords:[0,12],bass:[0,8],melody:[0,6,12],notes:[0,4,7,5,2,6,3,1],lead:'sine',bass:'sine',stride:5},
+      horror:{chords:[0,6,12],bass:[0,3,8,11],melody:[0,3,8,11],notes:[0,1,4,2,6,3,5,1],lead:'sawtooth',bass:'sawtooth',stride:5},
+      adventure:{chords:[0,8],bass:[0,6,10,14],melody:[0,4,6,10,14],notes:[0,4,2,6,3,7,5,1],lead:'triangle',bass:'sine',stride:3},
+      neon:{chords:[0,4,10,14],bass:[0,4,8,12],melody:[0,3,5,8,11,13],notes:[0,3,6,4,7,2,5,1],lead:'sine',bass:'square',stride:5},
+      volcanic:{chords:[0,4,12],bass:[0,2,7,9,14],melody:[0,2,7,9,14],notes:[0,1,5,2,6,3,7,4],lead:'sawtooth',bass:'sawtooth',stride:5},
+      arcade:{chords:[0,8],bass:[0,4,7,12],melody:[0,4,7,12],notes:[0,5,2,7,4,1,6,3],lead:'triangle',bass:'square',stride:3},
+      medieval:{chords:[0,8],bass:[0,6,12],melody:[0,6,10,14],notes:[0,3,5,2,6,4,1,7],lead:'triangle',bass:'sine',stride:5}
     };
     const preset=presets[name]||presets['Epic Obby'];
+    const style=musicStyles[preset.style];
     let step=0, bar=0;
     const semitone=n=>preset.root*Math.pow(2,n/12);
     const tone=(freq,dur,type,volume,when,detune=0)=>{
@@ -1498,20 +1570,15 @@ function startAmbientMusic(gameName) {
       const now=audioCtx.currentTime;
       const chord=preset.chords[bar%preset.chords.length];
       const rootNote=chord[0];
-      // Acorde suave en pulsos alternos.
-      if(step%4===0){
-        chord.forEach((n,i)=>tone(semitone(n),.75,preset.wave,.018,now+i*.015));
-        tone(semitone(rootNote-12),.55,'sine',.022,now);
+      if(style.chords.includes(step)){
+        chord.forEach((n,i)=>tone(semitone(n),style===musicStyles.dreamy ? 0.95 : 0.55,preset.wave,style===musicStyles.combat ? 0.012 : 0.015,now+i*.015));
       }
-      // Melodía con pequeñas variaciones y silencios, para que nunca sea un tono fijo.
-      const pattern=[0,2,4,7,5,4,2,9,7,5,4,2,11,9,7,4];
-      const idx=(pattern[(step+bar*3)%pattern.length] + (bar%3===2?2:0))%preset.scale.length;
-      if(step%3!==2 || bar%2===1){
-        const note=preset.scale[idx]+(bar%4===3?12:0);
-        tone(semitone(note),.22,preset.wave,.026,now,Math.random()*4-2);
+      if(style.melody.includes(step)){
+        const noteIndex=style.notes[(step+bar*style.stride)%style.notes.length];
+        const note=preset.scale[noteIndex%preset.scale.length]+(bar%4===3&&style!==musicStyles.horror?12:0);
+        tone(semitone(note),style===musicStyles.dreamy ? 0.62 : 0.16,style.lead,style===musicStyles.horror ? 0.018 : 0.024,now,Math.random()*5-2.5);
       }
-      // Pulso grave cada dos pasos.
-      if(step%2===0) tone(semitone(rootNote-12),.18,'sine',.025,now);
+      if(style.bass.includes(step))tone(semitone(rootNote-12),style===musicStyles.horror ? 0.32 : 0.13,style.bass,style===musicStyles.racing ? 0.035 : 0.022,now);
       step++; if(step>=16){step=0;bar++;}
     };
     if(audioCtx.state==='suspended') audioCtx.resume().catch(()=>{});
@@ -1627,6 +1694,11 @@ function addSunnys(amount) {
   u[c.key] = c.user;
   saveUsers(u);
   updateUI(c.user);
+  if(document.body.classList.contains('in-game') && Number.isFinite(Number(amount)) && Number(amount)>0){
+    gameSessionEarnings += Number(amount);
+    const label=document.getElementById('clientEarnings');
+    if(label)label.textContent=String(gameSessionEarnings);
+  }
 }
 
 // Generación de cara 2D sobre la cabeza
@@ -1859,6 +1931,18 @@ function createPantsTexture(legsColor,pantsName){
 // Creación de accesorios 3D
 function createAccessoryMesh(accessoryName) {
   const group = new THREE.Group();
+  const customItem=catalogItemById(accessoryName);
+  const customShapes=customItem&&customItem.type==='3d'&&customItem.data&&Array.isArray(customItem.data.shapes)?customItem.data.shapes:null;
+  if(customShapes){
+    customShapes.forEach(shape=>{
+      const mesh=new THREE.Mesh(creatorCreateGeometry(shape.type),new THREE.MeshLambertMaterial({color:shape.color||'#1684e8'}));
+      if(Array.isArray(shape.position))mesh.position.fromArray(shape.position);
+      if(Array.isArray(shape.rotation))mesh.rotation.set(shape.rotation[0]||0,shape.rotation[1]||0,shape.rotation[2]||0);
+      if(Array.isArray(shape.scale))mesh.scale.fromArray(shape.scale);
+      group.add(mesh);
+    });
+    return group;
+  }
   if(accessoryName === "Epic Green Cap") {
     const capMat = new THREE.MeshLambertMaterial({color: 0x22b85a});
     const capTop = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.35, 0.86), capMat);
@@ -2852,10 +2936,25 @@ function buildGamePlayerModel(userData) {
   return avatarGroup;
 }
 
+function buildGameNpcModel(colors, name){
+  const actor=new THREE.Group();
+  const model=buildGamePlayerModel({avatar:{colors,accessories:[]}});
+  model.position.y=1.15;
+  const tag=createNameTag(name||'NPC');
+  tag.position.y=3.4;
+  model.add(tag);
+  actor.add(model);
+  return actor;
+}
+
 function initPreviewRenderer() {
   const container = document.getElementById('previewCanvasContainer');
   if(!container) return;
   container.innerHTML = "";
+  gamePlayerHealth=GAME_PLAYER_MAX_HEALTH;updateGameHealthHud();
+  const deathTitle=document.getElementById('voidDeathTitle');if(deathTitle)deathTitle.textContent='💀 You fell into the void';
+  const deathMessage=document.getElementById('voidDeathMessage');if(deathMessage)deathMessage.textContent='The character fell outside the map.';
+  toggleZombieShop(false);
 
   const width = container.clientWidth || 300;
   const height = container.clientHeight || 390;
@@ -3027,6 +3126,7 @@ function updateGameSunShadowFollow() {
 async function launchWebClient(gameName) {
   const launchNonce = ++gameLaunchNonce;
   currentGameType = gameName;
+  gameEarningSessionId=window.crypto?.randomUUID?.()||(`${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`);
   rememberPlayedGame(gameName);
   document.body.classList.add('in-game');
   showPage('webClient');
@@ -3038,17 +3138,17 @@ async function launchWebClient(gameName) {
   if(hint){
     const n=gameName.trim();
     hint.textContent =
-      n==='Battle Arena' ? '⚔️ Equip the sword in Inventory · F or USE button to attack' :
+      n==='Battle Arena' ? '⚔️ Equip the sword · left click, F, or USE to attack' :
       n==='Pet World' ? '🐾 Cute pets follow you · E near an egg to claim Sunnys' :
       n==='Speed Race' ? '🏎️ Multiplayer race · W/↑ accelerate · S/↓ brake · A/D steer · SPACE/SHIFT boost · mouse/touch camera' :
       n==='Epic Obby' ? '🏃 Salta, toca checkpoints, recoge monedas y llega a la meta (+Sunnys)' :
       n==='Sky Islands' ? '☁️ Salta entre islas y recoge monedas' :
       n==='Bloxs City' ? '🏙️ Big city · traffic lights, cars · E at stands to work' :
-      n==='Zombie Survival' ? '🧟 Busca refugio, recoge suministros y sobrevive.' :
-      n==='Treasure Island' ? '🏝️ Explore the island and find treasure chests.' :
+      n==='Zombie Survival' ? '🌙 Oleadas nocturnas · click izquierdo o F dispara · abre 🛒 para comprar armas.' :
+      n==='Treasure Island' ? '🏝️ Encuentra las 3 reliquias y abre los 5 cofres con E.' :
       n==='Neon City' ? '🌃 Explore the neon streets · press E near glowing beacons to hack them.' :
       n==='Lava Escape' ? '🌋 Salta entre plataformas y llega a la zona segura.' :
-      n==='Paintball Plaza' ? '🎨 Equip the Paintball Gun · F or SHOOT button to hit the targets.' :
+      n==='Paintball Plaza' ? '🎨 Equip the Paintball Gun · left click, F, or SHOOT to hit the targets.' :
       n==='Castle Defense' ? '🏰 Defend the core · sword attacks + moving enemy waves.' : '';
   }
   const raceHud = document.getElementById('speedRaceHud');
@@ -3120,6 +3220,13 @@ function disposeGameScene(){
 
 function exitWebClient() {
   gameLaunchNonce++;
+  if(gameSessionEarnings>0 && gameEarningSessionId && getToken()){
+    const gameId=getGameId(currentGameType), sessionId=gameEarningSessionId, amount=Math.floor(gameSessionEarnings);
+    api('/api/games/earnings',{method:'POST',body:JSON.stringify({gameId,sessionId,amount})},1)
+      .then(data=>{_gameEarnings[gameId]=Number(data.earnings)||0;renderGamesBrowser();renderHomeGames();renderSeeMoreGames(document.getElementById('searchInput')?.value||'');})
+      .catch(error=>console.error('Could not save game earnings:',error));
+  }
+  gameEarningSessionId='';
   try { toggleGameInventory(false); } catch(e) {}
   disconnectMultiplayer();
   epicGameId = null;
@@ -3221,7 +3328,7 @@ function createSkybox(scene, gameName) {
   const ctx = canvas.getContext('2d');
 
   let top, mid, bot, sunColor;
-  if (gameName.includes('City')) {
+  if (gameName.includes('City') || gameName==='Zombie Survival') {
     top = '#050816'; mid = '#1a2744'; bot = '#2d3a55'; sunColor = '#a0c4ff';
   } else if (gameName.includes('Battle')) {
     top = '#1a0505'; mid = '#4a1515'; bot = '#6b3030'; sunColor = '#ff6644';
@@ -3253,7 +3360,7 @@ function createSkybox(scene, gameName) {
   ctx.globalAlpha = 1;
 
   // Nubes simples
-  if (!gameName.includes('Battle') && !gameName.includes('City')) {
+  if (!gameName.includes('Battle') && !gameName.includes('City') && gameName!=='Zombie Survival') {
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
     for (let i = 0; i < 8; i++) {
       const cx = 40 + (i * 70) % 480;
@@ -3456,13 +3563,55 @@ let activeGameGearId = null;
 let gameGearSwing = 0;
 let gameProjectiles = [];
 let paintTargets = [];
+let gamePlayerHealth = 100;
+let activeGamePlayerPosition = null;
+let gameAudioContext = null;
+const GAME_PLAYER_MAX_HEALTH = 100;
+function playGameSound(kind){
+  const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+  if(!AudioContextClass)return;
+  gameAudioContext=gameAudioContext||new AudioContextClass();
+  if(gameAudioContext.state==='suspended')gameAudioContext.resume();
+  const now=gameAudioContext.currentTime;
+  const oscillator=gameAudioContext.createOscillator();
+  const gain=gameAudioContext.createGain();
+  const isHit=kind==='hit',isShot=kind==='shot',isZombie=kind==='zombie';
+  oscillator.type=isHit?'triangle':isShot?'square':'sawtooth';
+  oscillator.frequency.setValueAtTime(isZombie?92:isHit?180:isShot?320:125,now);
+  const duration=isZombie ? .3 : .14;
+  const volume=isZombie ? .11 : isShot ? .045 : .075;
+  oscillator.frequency.exponentialRampToValueAtTime(isZombie?38:isHit?75:isShot?110:65,now+(isZombie ? .28 : .12));
+  gain.gain.setValueAtTime(volume,now);
+  gain.gain.exponentialRampToValueAtTime(.001,now+duration);
+  oscillator.connect(gain);gain.connect(gameAudioContext.destination);
+  oscillator.start(now);oscillator.stop(now+duration);
+}
+function updateGameHealthHud(){
+  const value=document.getElementById('gameHealthValue');
+  const fill=document.getElementById('gameHealthFill');
+  if(value)value.textContent=String(Math.max(0,Math.ceil(gamePlayerHealth)));
+  if(fill){const pct=Math.max(0,Math.min(100,gamePlayerHealth));fill.style.width=pct+'%';fill.style.background=pct<=30?'#ef4444':pct<=60?'#f59e0b':'#35c46a';}
+}
+function damageGamePlayer(amount, respawn){
+  if(voidDeathActive||!Number.isFinite(amount)||amount<=0)return;
+  gamePlayerHealth=Math.max(0,gamePlayerHealth-amount);
+  updateGameHealthHud();
+  if(gamePlayerHealth===0){
+    const title=document.getElementById('voidDeathTitle');if(title)title.textContent='💀 Te han derrotado';
+    const message=document.getElementById('voidDeathMessage');if(message)message.textContent='Vuelve a entrar con toda la vida.';
+    showVoidDeath(()=>{if(typeof respawn==='function')respawn();gamePlayerHealth=GAME_PLAYER_MAX_HEALTH;updateGameHealthHud();});
+  }
+}
 const GAME_GEAR_DEFS = {
   "gear:battle_sword": {id:"gear:battle_sword", name:"Classic Sword", game:"Battle Arena", icon:"⚔️", action:"GOLPEAR"},
   "gear:paintgun": {id:"gear:paintgun", name:"Paintball Gun", game:"Paintball Plaza", icon:"🔫", action:"DISPARAR"},
-  "gear:castle_sword": {id:"gear:castle_sword", name:"Castle Sword", game:"Castle Defense", icon:"🗡️", action:"GOLPEAR"}
+  "gear:castle_sword": {id:"gear:castle_sword", name:"Castle Sword", game:"Castle Defense", icon:"🗡️", action:"GOLPEAR"},
+  "gear:zombie_rifle": {id:"gear:zombie_rifle", name:"Service Rifle", game:"Zombie Survival", icon:"🔫", action:"DISPARAR", price:0, damage:1, cooldown:.34},
+  "gear:zombie_shotgun": {id:"gear:zombie_shotgun", name:"Pump Shotgun", game:"Zombie Survival", icon:"💥", action:"DISPARAR", price:180, damage:3, cooldown:.72}
 };
-function gearDefForGame(gameName){ return Object.values(GAME_GEAR_DEFS).find(g=>g.game===String(gameName||'').trim()) || null; }
-function currentGameGear(){ const c=current(); const def=gearDefForGame(currentGameType); if(!c||!def) return null; return activeGameGearId===def.id ? def : null; }
+function gearDefsForGame(gameName){return Object.values(GAME_GEAR_DEFS).filter(g=>g.game===String(gameName||'').trim());}
+function gearDefForGame(gameName){const defs=gearDefsForGame(gameName);return defs.find(g=>g.id===activeGameGearId)||defs[0]||null;}
+function currentGameGear(){const def=GAME_GEAR_DEFS[activeGameGearId];return def&&def.game===String(currentGameType||'').trim()?def:null;}
 
 // ===== SpawnPoints fijos =====
 // Se mantienen separados de las colisiones para reutilizarlos en futuras mejoras
@@ -3473,7 +3622,7 @@ const GAME_SPAWN_POINTS = Object.freeze({
   'Pet World': Object.freeze([{ x: 0, y: 0.02, z: 0 }]),
   'Battle Arena': Object.freeze([{ x: 0, y: 0.5, z: 16 }]),
   'Speed Race': Object.freeze([{ x: 0, y: 0.02, z: 45 }]),
-  'Sky Islands': Object.freeze([{ x: 0, y: 0, z: 0 }]),
+  'Sky Islands': Object.freeze([{ x: 0, y: 0.9, z: 0 }]),
   'Zombie Survival': Object.freeze([{ x: 0, y: 0.02, z: 12 }]),
   'Treasure Island': Object.freeze([{ x: 0, y: 0.02, z: -24 }]),
   'Neon City': Object.freeze([{ x: 0, y: 0.02, z: 0 }]),
@@ -3500,6 +3649,10 @@ function getCurrentRespawnPoint(gameName) {
   if (name === 'Epic Obby' && obbyCheckpointSpawns.length) {
     const point = obbyCheckpointSpawns[Math.max(0, Math.min(obbyBestCheckpoint, obbyCheckpointSpawns.length - 1))];
     return { x: point.x, y: point.y, z: point.z };
+  }
+  if(name==='Sky Islands'&&Array.isArray(window._skyIslandCheckpoints)&&window._skyIslandCheckpoints.length){
+    const point=window._skyIslandCheckpoints[Math.max(0,Math.min(gameEnhancementState.skyCheckpoint||0,window._skyIslandCheckpoints.length-1))];
+    return {x:point.x,y:point.y,z:point.z};
   }
   return getPrimarySpawnPoint(name);
 }
@@ -3541,7 +3694,7 @@ function clearGameExtras(){
   const all = [...gameDecorations, ...petFollowers, ...fightTargets, ...raceCheckpoints];
   for(const obj of all){ try{ gameScene.remove(obj); }catch(e){} }
   gameDecorations=[]; petFollowers=[]; fightTargets=[]; raceCheckpoints=[]; activeCheckpoint=0;
-  zombieEnemies=[]; treasureChests=[]; lavaSurface=null; lavaRiseStart=0; lavaLastWarning=0; gameEnhancementState={}; gameGearMesh=null; activeGameGearId=null; gameGearSwing=0; gameProjectiles=[]; paintTargets=[];
+  zombieEnemies=[]; treasureChests=[]; lavaSurface=null; lavaRiseStart=0; lavaLastWarning=0; gameEnhancementState={};gameEmittedLightCount=0;window._lavaTraps=[]; gameGearMesh=null; activeGameGearId=null; gameGearSwing=0; gameProjectiles=[]; paintTargets=[];activeGamePlayerPosition=null;
   for (const sp of spawnPointObjects) { try { gameScene.remove(sp); } catch(e) {} }
   spawnPointObjects=[]; activeSpawnPoints=[];
   obbyCheckpointSpawns=[];
@@ -3549,8 +3702,16 @@ function clearGameExtras(){
 }
 
 function addBox(x,y,z,w,h,d,color,opts={}){
-  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), new THREE.MeshLambertMaterial({color}));
+  const material=opts.neon
+    ?new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:opts.emissiveIntensity||1.35,roughness:.3,metalness:.08})
+    :new THREE.MeshLambertMaterial({color});
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);
   m.position.set(x,y,z); m.castShadow=opts.castShadow!==false; m.receiveShadow=true; gameScene.add(m);
+  if(opts.neon)m.userData.material='neon';
+  if(opts.emitLight===true&&gameEmittedLightCount<8){
+    const light=new THREE.PointLight(color,Math.max(.2,Math.min(2,Number(opts.lightIntensity)||1)),Math.max(3,Math.min(14,Number(opts.lightDistance)||8)));
+    m.add(light);gameEmittedLightCount++;
+  }
   if(opts.solid!==false) solidColliders.push({x,y,z,width:w,height:h,depth:d});
   if(opts.decorate!==false) gameDecorations.push(m);
   return m;
@@ -3618,58 +3779,118 @@ function removeGameGearMesh(){
 }
 function makeSwordGear(color=0xd7e4ff){
   const g=new THREE.Group(); g.name='gameGearSword';
-  const blade=new THREE.Mesh(new THREE.BoxGeometry(.13,1.28,.07),new THREE.MeshLambertMaterial({color}));
-  blade.position.y=.70;
-  const guard=new THREE.Mesh(new THREE.BoxGeometry(.48,.09,.12),new THREE.MeshLambertMaterial({color:0xe1b94a}));
-  guard.position.y=.05;
-  const handle=new THREE.Mesh(new THREE.BoxGeometry(.16,.34,.14),new THREE.MeshLambertMaterial({color:0x5a321b}));
-  handle.position.y=-.13;
-  g.add(blade,guard,handle); g.position.set(0,-1.25,0.03); g.rotation.z=-0.18; return g;
+  const blade=new THREE.Mesh(new THREE.BoxGeometry(.14,1.24,.1),new THREE.MeshStandardMaterial({color,metalness:.72,roughness:.25}));
+  blade.position.y=.75;
+  const tip=new THREE.Mesh(new THREE.ConeGeometry(.1,.28,4),new THREE.MeshStandardMaterial({color,metalness:.72,roughness:.25}));
+  tip.position.y=1.5;tip.rotation.y=Math.PI/4;
+  const guard=new THREE.Mesh(new THREE.BoxGeometry(.5,.12,.17),new THREE.MeshStandardMaterial({color:0xe1b94a,metalness:.55,roughness:.35}));
+  guard.position.y=.12;
+  const handle=new THREE.Mesh(new THREE.CylinderGeometry(.075,.09,.38,8),new THREE.MeshLambertMaterial({color:0x5a321b}));
+  handle.position.y=-.12;
+  const pommel=new THREE.Mesh(new THREE.SphereGeometry(.1,8,6),new THREE.MeshStandardMaterial({color:0xe1b94a,metalness:.55,roughness:.35}));
+  pommel.position.y=-.35;
+  g.add(blade,tip,guard,handle,pommel);g.position.set(0,-1.08,-.08);g.rotation.x=-Math.PI/2;return g;
 }
 function makePaintGunGear(){
   const g=new THREE.Group(); g.name='gameGearPaintGun';
-  const body=new THREE.Mesh(new THREE.BoxGeometry(.28,.48,.18),new THREE.MeshLambertMaterial({color:0x3f6fae})); body.position.y=-.12;
-  const grip=new THREE.Mesh(new THREE.BoxGeometry(.16,.36,.16),new THREE.MeshLambertMaterial({color:0x252a33})); grip.position.set(0,-.46,0);
-  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.55,10),new THREE.MeshLambertMaterial({color:0x22252a})); barrel.rotation.z=Math.PI/2; barrel.position.set(0,.12,-.30);
-  const tank=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,.25,12),new THREE.MeshLambertMaterial({color:0xe4b93d})); tank.rotation.z=Math.PI/2; tank.position.set(0,.10,.14);
-  g.add(body,grip,barrel,tank); g.position.set(0,-1.05,-.18); g.rotation.x=.08; return g;
+  const body=new THREE.Mesh(new THREE.BoxGeometry(.34,.42,.52),new THREE.MeshLambertMaterial({color:0x3f6fae}));body.position.set(0,.1,0);
+  const grip=new THREE.Mesh(new THREE.BoxGeometry(.16,.32,.19),new THREE.MeshLambertMaterial({color:0x252a33}));grip.position.set(0,-.2,-.06);
+  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,.68,10),new THREE.MeshStandardMaterial({color:0x22252a,metalness:.45,roughness:.45}));barrel.rotation.x=Math.PI/2;barrel.position.set(0,.15,-.52);
+  const tank=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,.25,12),new THREE.MeshLambertMaterial({color:0xe4b93d}));tank.rotation.z=Math.PI/2;tank.position.set(0,.13,-.22);
+  g.add(body,grip,barrel,tank);g.position.set(0,-1.08,-.08);g.rotation.x=-Math.PI/2;return g;
+}
+function makeZombieWeaponGear(itemId){
+  const shotgun=itemId==='gear:zombie_shotgun';
+  const g=new THREE.Group();g.name=shotgun?'zombieShotgun':'zombieRifle';
+  const dark=new THREE.MeshStandardMaterial({color:0x252a2b,metalness:.45,roughness:.55});
+  const stock=new THREE.Mesh(new THREE.BoxGeometry(shotgun ? .24 : .2,.2,.46),new THREE.MeshLambertMaterial({color:0x67452b}));stock.position.z=-.28;
+  const body=new THREE.Mesh(new THREE.BoxGeometry(shotgun ? .35 : .28,.28,.64),dark);body.position.z=-.02;
+  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(shotgun ? .075 : .045,shotgun ? .075 : .045,shotgun ? .95 : .8,10),dark);barrel.rotation.x=Math.PI/2;barrel.position.z=-.58;
+  const grip=new THREE.Mesh(new THREE.BoxGeometry(.17,.3,.17),new THREE.MeshLambertMaterial({color:0x343434}));grip.position.set(0,-.22,.02);
+  g.add(stock,body,barrel,grip);g.position.set(0,-1.08,-.08);g.rotation.x=-Math.PI/2;return g;
 }
 function attachGameGear(def){
   removeGameGearMesh();
   if(!def || !playerMeshGroup) return;
   const hand=playerMeshGroup.getObjectByName('rightArm'); if(!hand) return;
-  gameGearMesh = def.id==='gear:paintgun' ? makePaintGunGear() : makeSwordGear(def.id==='gear:castle_sword'?0xcfd8e6:0xd7e4ff);
+  gameGearMesh = def.id==='gear:paintgun' ? makePaintGunGear() : def.game==='Zombie Survival' ? makeZombieWeaponGear(def.id) : makeSwordGear(def.id==='gear:castle_sword'?0xcfd8e6:0xd7e4ff);
+  gameGearMesh.userData.baseRotationX=gameGearMesh.rotation.x;
   hand.add(gameGearMesh);
 }
 function updateGameGearButton(){
   const btn=document.getElementById('gearActionBtn'); const def=gearDefForGame(currentGameType);
   if(btn){ btn.style.display=def&&activeGameGearId===def.id?'flex':'none'; btn.textContent=def?def.action:'USAR'; }
+  const shopButton=document.getElementById('zombieShopButton');
+  if(shopButton)shopButton.style.display=currentGameType.trim()==='Zombie Survival'?'flex':'none';
   renderGameGearHotbar();
+}
+function toggleZombieShop(force){
+  const panel=document.getElementById('zombieShopPanel');if(!panel)return;
+  const open=typeof force==='boolean'?force:panel.style.display==='none';
+  const inZombieGame=document.body.classList.contains('in-game')&&currentGameType.trim()==='Zombie Survival';
+  panel.style.display=open&&inZombieGame?'block':'none';
+  if(open)renderZombieShop();
+}
+const zombiePurchasePending=new Set();
+function renderZombieShop(){
+  const root=document.getElementById('zombieShopItems');if(!root)return;
+  const c=current();const inventory=c&&Array.isArray(c.user.gameInventory)?c.user.gameInventory:[];
+  root.innerHTML=gearDefsForGame('Zombie Survival').map(def=>{
+    const owned=inventory.includes(def.id);
+    const pending=zombiePurchasePending.has(def.id);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px;background:#ffffff12;border-radius:8px"><span>${def.icon} ${def.name}<small style="display:block;color:#c7d5c4">${owned?'Comprada':`${def.price} Sunnys`}</small></span><button type="button" ${owned||pending?'disabled':''} onclick="purchaseZombieWeapon('${def.id}')">${pending?'Guardando…':owned?'Comprada':'Comprar'}</button></div>`;
+  }).join('');
+}
+async function purchaseZombieWeapon(itemId){
+  const def=GAME_GEAR_DEFS[itemId];const c=current();if(!def||def.game!=='Zombie Survival'||!c)return;
+  if(zombiePurchasePending.has(def.id))return;
+  c.user.gameInventory=Array.isArray(c.user.gameInventory)?c.user.gameInventory:[];
+  if(c.user.gameInventory.includes(def.id))return;
+  const balance=Number(c.user.sunnys)||0;const price=Number(def.price)||0;
+  if(balance<price){const root=document.getElementById('gameHint');if(root)root.textContent='☀️ No tienes suficientes Sunnys.';return;}
+  const nextUser={...c.user,sunnys:balance-price,gameInventory:[...c.user.gameInventory,def.id]};
+  zombiePurchasePending.add(def.id);renderZombieShop();
+  try{
+    const saved=await persistUser(nextUser);
+    if(!saved)throw new Error('The server did not return the updated weapon inventory.');
+    c.user=saved;setCachedUser(saved);updateUI(saved);
+    const hint=document.getElementById('gameHint');if(hint)hint.textContent=`✅ ${def.name} comprada. Equípala desde la mochila.`;
+  }catch(error){
+    setCachedUser(c.user);
+    const hint=document.getElementById('gameHint');if(hint)hint.textContent='⚠️ No se pudo completar la compra. Revisa la conexión e inténtalo de nuevo.';
+    console.error('No se pudo guardar la compra del arma:',error);
+  }finally{
+    zombiePurchasePending.delete(def.id);renderZombieShop();renderGameInventory();renderGameGearHotbar();
+  }
 }
 async function persistGameGearState(){
   const c=current(); if(!c) return;
   c.user.gameGearEquipped = c.user.gameGearEquipped && typeof c.user.gameGearEquipped==='object' ? c.user.gameGearEquipped : {};
-  const def=gearDefForGame(currentGameType); if(def) c.user.gameGearEquipped[def.game] = activeGameGearId===def.id;
+  const def=gearDefForGame(currentGameType); if(def) c.user.gameGearEquipped[def.game] = activeGameGearId||false;
   setCachedUser(c.user);
   try{
     const data=await api('/api/me',{method:'POST',body:JSON.stringify({gameInventory:c.user.gameInventory||[],gameGearEquipped:c.user.gameGearEquipped})},2);
     if(data&&data.user) setCachedUser(data.user);
-  }catch(e){}
+  }catch(error){console.error('No se pudo guardar el equipamiento del juego:',error);}
 }
 async function ensureGameGearForGame(gameName){
   const c=current(); const def=gearDefForGame(gameName); if(!c||!def) { activeGameGearId=null; updateGameGearButton(); return; }
   c.user.gameInventory=Array.isArray(c.user.gameInventory)?c.user.gameInventory:[];
+  let needsSave=false;
   if(!c.user.gameInventory.includes(def.id)){
     c.user.gameInventory.push(def.id);
-    setCachedUser(c.user);
-    try{
-      const data=await api('/api/me',{method:'POST',body:JSON.stringify({gameInventory:c.user.gameInventory,gameGearEquipped:c.user.gameGearEquipped||{}})},2);
-      if(data&&data.user) setCachedUser(data.user);
-    }catch(e){}
+    needsSave=true;
   }
-  const equipped=(c.user.gameGearEquipped&&c.user.gameGearEquipped[def.game])===true;
-  activeGameGearId=equipped?def.id:null;
-  if(activeGameGearId) attachGameGear(def); else removeGameGearMesh();
+  c.user.gameGearEquipped=c.user.gameGearEquipped&&typeof c.user.gameGearEquipped==='object'?c.user.gameGearEquipped:{};
+  const hasPreference=Object.prototype.hasOwnProperty.call(c.user.gameGearEquipped,def.game);
+  const equipped=c.user.gameGearEquipped[def.game];
+  activeGameGearId=typeof equipped==='string'&&gearDefsForGame(gameName).some(item=>item.id===equipped&&c.user.gameInventory.includes(equipped))
+    ?equipped:equipped===true?def.id:null;
+  if(!hasPreference||gameName.trim()!=='Zombie Survival'){
+    activeGameGearId=def.id;c.user.gameGearEquipped[def.game]=def.id;needsSave=true;
+  }
+  if(activeGameGearId) attachGameGear(GAME_GEAR_DEFS[activeGameGearId]); else removeGameGearMesh();
+  if(needsSave){setCachedUser(c.user);persistGameGearState();}
   updateGameGearButton(); renderGameInventory(); renderGameGearHotbar();
 }
 function selectGameGearSlot(slotNumber){
@@ -3686,46 +3907,67 @@ async function toggleGameGear(itemId){
   if(!c.user.gameInventory.includes(def.id)) return;
   activeGameGearId = activeGameGearId===def.id ? null : def.id;
   c.user.gameGearEquipped=c.user.gameGearEquipped&&typeof c.user.gameGearEquipped==='object'?c.user.gameGearEquipped:{};
-  c.user.gameGearEquipped[def.game]=activeGameGearId===def.id;
+  c.user.gameGearEquipped[def.game]=activeGameGearId||false;
   if(activeGameGearId) attachGameGear(def); else removeGameGearMesh();
   updateGameGearButton(); renderGameInventory(); renderGameGearHotbar();
   await persistGameGearState();
 }
 function gameGearAction(){
   const def=currentGameGear(); if(!def||gameActionCooldown>0) return;
-  gameActionCooldown=def.id==='gear:paintgun'?.18:.45; gameGearSwing=0.32;
-  if(def.id==='gear:paintgun') firePaintball(); else meleeGameGear();
+  if(playerMeshGroup&&currentGameType.trim()!=='Speed Race')playerMeshGroup.rotation.y=cameraAngleX+Math.PI;
+  gameActionCooldown=def.cooldown||(def.id==='gear:paintgun' ? .18 : .45); gameGearSwing=0.32;
+  playGameSound(def.action==='DISPARAR'?'shot':'swing');
+  if(def.action==='DISPARAR') firePaintball(def); else meleeGameGear();
 }
 function meleeGameGear(){
-  const px=playerPos.x,pz=playerPos.z; let hits=0;
+  const playerPosition=activeGamePlayerPosition||playerMeshGroup?.position;
+  if(!playerPosition)return;
+  const px=playerPosition.x,pz=playerPosition.z;
+  const facing=playerMeshGroup?.rotation.y??(cameraAngleX+Math.PI);
+  const forwardX=Math.sin(facing),forwardZ=Math.cos(facing);
+  let targetHit=null,bestDistance=Infinity;
   for(const target of fightTargets){
     if(!target||!target.visible) continue;
     const dx=target.position.x-px,dz=target.position.z-pz;
-    if(Math.hypot(dx,dz)<4.6){ target.userData.hp=Math.max(0,(target.userData.hp||3)-1); hits++; if(target.userData.hp<=0){target.visible=false;target.userData.respawnAt=performance.now()+1800;try{addSunnys(4)}catch(e){}} }
+    const distance=Math.hypot(dx,dz);
+    if(distance<3.5&&distance>0&&((dx*forwardX+dz*forwardZ)/distance)>.15&&distance<bestDistance){targetHit=target;bestDistance=distance;}
   }
+  let hits=0;
+  if(targetHit){
+    targetHit.userData.hp=Math.max(0,(targetHit.userData.hp||3)-1);hits=1;
+    if(targetHit.userData.hp<=0){targetHit.visible=false;if(targetHit.userData.deadUntil!==undefined)targetHit.userData.deadUntil=performance.now()+1800;else targetHit.userData.respawnAt=performance.now()+1800;try{addSunnys(4)}catch(e){}}
+  }
+  if(hits)playGameSound('hit');
   if(currentGameType.trim()==='Battle Arena'){
     if(hits>0){
       const now=performance.now();
       gameEnhancementState.combo = now < (gameEnhancementState.comboUntil||0) ? (gameEnhancementState.combo||0)+hits : hits;
       gameEnhancementState.comboUntil = now + 1800;
       const comboReward=Math.min(12,gameEnhancementState.combo*2);
-      if(comboReward>0 && hits>0){ addSunnys(Math.min(3, hits)); gameSessionEarnings+=Math.min(3,hits); }
+      if(comboReward>0 && hits>0){ addSunnys(Math.min(3, hits)); }
     }
   }
   const hint=document.getElementById('gameHint'); if(hint) hint.textContent=hits?(currentGameType.trim()==='Battle Arena'?`⚔️ ${gameEnhancementState.combo} HIT COMBO!`:'⚔️ Hit confirmed!'):'⚔️ Swing!';
 }
-function firePaintball(){
-  if(!gameScene||!gameCamera) return;
-  const dir=new THREE.Vector3(0,0,-1).applyQuaternion(gameCamera.quaternion).normalize();
-  const start=gameCamera.position.clone().add(dir.clone().multiplyScalar(1.1));
-  const ball=new THREE.Mesh(new THREE.SphereGeometry(.12,10,8),new THREE.MeshLambertMaterial({color:0xf04e5e}));
-  ball.position.copy(start); gameScene.add(ball); gameProjectiles.push({mesh:ball,dir:dir.clone(),life:1.7});
+function firePaintball(def=currentGameGear()){
+  if(!gameScene||!playerMeshGroup||!def)return;
+  const facing=cameraAngleX+Math.PI;
+  playerMeshGroup.rotation.y=facing;
+  const shots=def.id==='gear:zombie_shotgun'?5:1;
+  for(let i=0;i<shots;i++){
+    const spread=shots===1?0:(i-(shots-1)/2)*.075;
+    const dir=new THREE.Vector3(Math.sin(facing+spread),0,Math.cos(facing+spread)).normalize();
+    const ball=new THREE.Mesh(new THREE.SphereGeometry(def.id==='gear:paintgun' ? .14 : .11,10,8),new THREE.MeshLambertMaterial({color:def.id==='gear:paintgun'?0xf04e5e:0xffc857,emissive:def.id==='gear:paintgun'?0x4a1018:0x4a3210}));
+    ball.position.set(playerMeshGroup.position.x+dir.x*.7,playerMeshGroup.position.y+.72,playerMeshGroup.position.z+dir.z*.7);
+    gameScene.add(ball);gameProjectiles.push({mesh:ball,dir,life:1.8,damage:def.damage||1});
+  }
 }
 function updateGameProjectiles(dt){
   for(let i=gameProjectiles.length-1;i>=0;i--){ const p=gameProjectiles[i]; if(!p||!p.mesh){gameProjectiles.splice(i,1);continue;} p.mesh.position.addScaledVector(p.dir,28*dt); p.life-=dt;
     let hit=false;
-    for(const t of paintTargets){ if(!t||!t.visible) continue; if(p.mesh.position.distanceTo(t.position)<1.25){ t.visible=false;t.userData.hit=true;addSunnys(2);gameSessionEarnings+=2;hit=true;break; } }
-    if(!hit){ for(const t of fightTargets){ if(!t||!t.visible) continue; if(p.mesh.position.distanceTo(t.position)<1.2){ t.userData.hp=Math.max(0,(t.userData.hp||2)-1); if(t.userData.hp<=0)t.visible=false; hit=true;break; } } }
+    for(const t of paintTargets){ if(!t||!t.visible) continue; if(p.mesh.position.distanceTo(t.position)<1.25){ t.visible=false;t.userData.hit=true;gameEnhancementState.paintHits=(gameEnhancementState.paintHits||0)+1;addSunnys(2);playGameSound('hit');hit=true;break; } }
+    if(!hit){ for(const t of fightTargets){ if(!t||!t.visible) continue; const targetCenter=t.position.clone();targetCenter.y+=0.65;if(p.mesh.position.distanceTo(targetCenter)<1.35){ t.userData.hp=Math.max(0,(t.userData.hp||2)-(p.damage||1)); if(t.userData.hp<=0){t.visible=false;if(t.userData.deadUntil!==undefined)t.userData.deadUntil=performance.now()+1800;else t.userData.respawnAt=performance.now()+1800;if(currentGameType.trim()==='Zombie Survival')addSunnys(5);}playGameSound('hit');hit=true;break; } } }
+    if(!hit&&solidColliders.some(s=>Math.abs(p.mesh.position.x-s.x)<=s.width/2&&Math.abs(p.mesh.position.y-s.y)<=s.height/2&&Math.abs(p.mesh.position.z-s.z)<=s.depth/2))hit=true;
     if(hit||p.life<=0||Math.abs(p.mesh.position.x)>120||Math.abs(p.mesh.position.z)>120){try{gameScene.remove(p.mesh)}catch(e){} gameProjectiles.splice(i,1);}
   }
 }
@@ -3756,33 +3998,34 @@ function buildGameSpecificWorld(gameName){
     addBox(0,0.54+22*0.54,finishZ,20,0.7,1.8,0x22c55e,{solid:true});
     addBox(-8,4.0+22*0.54,finishZ,1,6.5,1,0xf1c40f); addBox(8,4.0+22*0.54,finishZ,1,6.5,1,0xf1c40f); addBox(0,7.3+22*0.54,finishZ,17,1,1,0xf1c40f);
   } else if(n==='Bloxs City'){
-    // Mapa más grande (~140x140) con calles, semáforos, autos y puestos de trabajo.
-    for(let z=-66;z<=66;z+=14) addBox(0,0.03,z,140,0.06,6,0x2a2f38,{solid:true});
-    for(let x=-66;x<=66;x+=14) addBox(x,0.04,0,6,0.06,140,0x2a2f38,{solid:true});
-    // Acera / bloques de manzana
-    for(let x=-60;x<=60;x+=14) for(let z=-60;z<=60;z+=14){
+    // Distrito ampliado con avenidas en cuadrícula, barrios y nuevos puntos de interés.
+    for(let z=-80;z<=80;z+=20) addBox(0,0.03,z,180,0.06,6,0x2a2f38,{solid:true});
+    for(let x=-80;x<=80;x+=20) addBox(x,0.04,0,6,0.06,180,0x2a2f38,{solid:true});
+    const blockCoords=[-70,-50,-30,-10,10,30,50,70];
+    for(const x of blockCoords) for(const z of blockCoords){
       if(Math.abs(x)<=20&&Math.abs(z)<=20) continue;
-      addBox(x,0.07,z,8.5,0.14,8.5,0x8a8f98,{solid:false});
+      addBox(x,0.07,z,13,0.14,13,0x8a8f98,{solid:false});
     }
     const colors=[0x6baed6,0x9ecae1,0xfd8d3c,0x74c476,0xbc80bd,0xffd92f,0x90caf9,0xef9a9a,0x5c6bc0,0x26a69a];
-    for(let bx=-5;bx<=5;bx+=2) for(let bz=-5;bz<=5;bz+=2){
-      if(Math.abs(bx)+Math.abs(bz)<3) continue;
-      const h=6+((Math.abs(bx*3+bz*2)+2)%8), x=bx*9, z=bz*9;
-      addBox(x,h/2-0.5,z,6.0,h,6.0,colors[(Math.abs(bx+bz)+20)%colors.length],{solid:true});
+    for(let bx=0;bx<blockCoords.length;bx++) for(let bz=0;bz<blockCoords.length;bz++){
+      const x=blockCoords[bx],z=blockCoords[bz];
+      if(Math.abs(x)<=10&&Math.abs(z)<=10)continue;
+      const h=7+((bx*3+bz*2+20)%10);
+      addBox(x,h/2-0.5,z,10,h,10,colors[(bx+bz+20)%colors.length],{solid:true});
       const windowMat = new THREE.MeshLambertMaterial({ color: 0x6fc8ff, emissive: 0x18384a, emissiveIntensity: 0.35 });
-      const floors = Math.max(1, Math.floor((h - 0.7) / 1.35));
+      const floors = Math.max(1, Math.floor((h - 0.7) / 2.1));
       for(let f=0; f<floors; f++){
-        const wy = 0.65 + f * 1.35;
+        const wy = 0.65 + f * 2.1;
         if(wy > h - 0.45) continue;
-        for(const wx of [x-1.6, x+1.6]){
-          for(const wz of [z-3.05, z+3.05]){
-            const win = new THREE.Mesh(new THREE.BoxGeometry(0.72,0.78,0.08), windowMat);
+        for(const wx of [x-2.6, x+2.6]){
+          for(const wz of [z-5.05, z+5.05]){
+            const win = new THREE.Mesh(new THREE.BoxGeometry(1.1,1.0,0.08), windowMat);
             win.position.set(wx, wy, wz); win.castShadow = true; gameScene.add(win); gameDecorations.push(win);
           }
         }
-        const sideZ = f % 2 === 0 ? z-1.5 : z+1.5;
-        for(const sx of [x-3.05, x+3.05]){
-          const win = new THREE.Mesh(new THREE.BoxGeometry(0.08,0.78,0.72), windowMat);
+        const sideZ = f % 2 === 0 ? z-2.5 : z+2.5;
+        for(const sx of [x-5.05, x+5.05]){
+          const win = new THREE.Mesh(new THREE.BoxGeometry(0.08,1.0,1.1), windowMat);
           win.position.set(sx, wy, sideZ); win.castShadow = true; gameScene.add(win); gameDecorations.push(win);
         }
       }
@@ -3791,12 +4034,12 @@ function buildGameSpecificWorld(gameName){
     addBox(0,-0.09,0,28,0.2,28,0x55b879,{solid:true});
     for(const p of [[-10,-10],[10,-10],[-10,10],[10,10],[0,-10],[0,10],[-10,0],[10,0]]) addTree(p[0],p[1],0.95);
     // Río y puente
-    addBox(0,0.02,36,30,0.16,16,0x4aa8ff,{solid:false});
-    addBox(0,0.15,28,12,0.3,14,0xb58b52,{solid:false});
+    addBox(0,0.02,78,100,0.16,16,0x4aa8ff,{solid:false});
+    addBox(0,0.15,68,18,0.3,14,0xb58b52,{solid:false});
     // Tiendas / edificios especiales
-    addBox(-36,2.5,-22,10,5,8,0xef5350); addBox(36,2.5,22,10,5,8,0x42a5f5);
-    addBox(-36,2.5,22,10,5,8,0x8e44ad); addBox(36,2.5,-22,10,5,8,0x26a69a);
-    for(const [x,z] of [[-36,-22],[36,-22],[-36,22],[36,22]]) addLamp(x,z);
+    addBox(-70,2.5,30,12,5,10,0xef5350); addBox(70,2.5,-30,12,5,10,0x42a5f5);
+    addBox(-70,2.5,-30,12,5,10,0x8e44ad); addBox(70,2.5,30,12,5,10,0x26a69a);
+    for(const [x,z] of [[-70,-30],[70,-30],[-70,30],[70,30]]) addLamp(x,z);
 
     // Semáforos en cruces principales
     function addTrafficLight(x,z){
@@ -3808,7 +4051,7 @@ function buildGameSpecificWorld(gameName){
         lamp.position.set(x,3.3+oy,z-0.15); gameScene.add(lamp); gameDecorations.push(lamp);
       });
     }
-    for(const [x,z] of [[14,14],[-14,14],[14,-14],[-14,-14],[28,0],[-28,0],[0,28],[0,-28]]) addTrafficLight(x,z);
+    for(const [x,z] of [[20,20],[-20,20],[20,-20],[-20,-20],[40,0],[-40,0],[0,40],[0,-40]]) addTrafficLight(x,z);
 
     // Autos estacionados en las calles
     function addParkedCar(x,z,rotY,col){
@@ -3824,7 +4067,7 @@ function buildGameSpecificWorld(gameName){
     }
     const carCols=[0xe53935,0x1e88e5,0x43a047,0xfdd835,0x8e24aa,0xffffff,0x37474f];
     let ci=0;
-    for(const [x,z,ry] of [[6,20,0],[-6,-24,0],[20,6,Math.PI/2],[-24,-6,Math.PI/2],[34,8,0],[-34,-10,0],[8,48,0],[-10,-48,0],[48,12,Math.PI/2],[-48,-8,Math.PI/2]]){
+    for(const [x,z,ry] of [[6,20,0],[-6,-24,0],[20,6,Math.PI/2],[-24,-6,Math.PI/2],[34,8,0],[-34,-10,0],[8,48,0],[-10,-48,0],[48,12,Math.PI/2],[-48,-8,Math.PI/2],[70,10,Math.PI/2],[-70,-10,Math.PI/2],[10,70,0],[-10,-70,0]]){
       addParkedCar(x,z,ry,carCols[(ci++)%carCols.length]);
     }
 
@@ -3926,9 +4169,7 @@ function buildGameSpecificWorld(gameName){
     for(let i=0;i<18;i++) addCoinAt(((i*13)%50)-25,0.75,((i*19)%50)-18);
     // Siluetas de zombis decorativas.
     for(const [x,z] of [[-20,-12],[20,-12],[-34,4],[34,4],[-16,25],[16,25]]){
-      const g=new THREE.Group();
-      const body=new THREE.Mesh(new THREE.BoxGeometry(0.8,1.5,0.55),new THREE.MeshLambertMaterial({color:0x6b8e5a})); body.position.y=0.75; g.add(body);
-      const head=new THREE.Mesh(new THREE.BoxGeometry(0.7,0.7,0.7),new THREE.MeshLambertMaterial({color:0x8cab70})); head.position.y=1.85; g.add(head);
+      const g=buildGameNpcModel({head:'#8cab70',torso:'#6b8e5a',arms:'#6b8e5a',legs:'#343a32'},'Zombie');
       g.position.set(x,0,z); gameScene.add(g); gameDecorations.push(g);
     }
   } else if(n==='Treasure Island'){
@@ -4061,9 +4302,7 @@ function buildGameSpecificWorld(gameName){
     for(const [x,z,h] of [[-11,-11,3],[11,-11,3],[-11,11,3],[11,11,3],[0,0,4],[0,-10,2],[0,10,2]]) addBox(x,h/2,z,4,h,4,0x8d5a3c,{solid:true});
     for(const [x,z] of [[-15,0],[15,0],[0,-15],[0,15]]) addBox(x,1.1,z,3,2.2,3,0xd39c43,{solid:true});
     for(const [x,z] of [[-8,0],[8,0],[0,-8],[0,8],[-8,8],[8,-8]]){
-      const g=new THREE.Group();
-      const body=new THREE.Mesh(new THREE.BoxGeometry(0.9,1.6,0.5),new THREE.MeshLambertMaterial({color:0xf0a05a})); body.position.y=0.8; g.add(body);
-      const head=new THREE.Mesh(new THREE.SphereGeometry(0.4,12,12),new THREE.MeshLambertMaterial({color:0xffd39a})); head.position.y=1.9; g.add(head);
+      const g=buildGameNpcModel({head:'#ffd39a',torso:'#c83f46',arms:'#f0a05a',legs:'#342b31'},'Arena bot');
       g.position.set(x,0,z); g.userData.hp=3; g.userData.respawnAt=0; gameScene.add(g); fightTargets.push(g);
     }
   } else if(n==='Speed Race'){
@@ -4122,9 +4361,7 @@ function buildGameSpecificWorld(gameName){
     for(let i=0;i<18;i++) addCoinAt(((i*13)%50)-25,0.75,((i*19)%50)-18);
     // Siluetas de zombis decorativas.
     for(const [x,z] of [[-20,-12],[20,-12],[-34,4],[34,4],[-16,25],[16,25]]){
-      const g=new THREE.Group();
-      const body=new THREE.Mesh(new THREE.BoxGeometry(0.8,1.5,0.55),new THREE.MeshLambertMaterial({color:0x6b8e5a})); body.position.y=0.75; g.add(body);
-      const head=new THREE.Mesh(new THREE.BoxGeometry(0.7,0.7,0.7),new THREE.MeshLambertMaterial({color:0x8cab70})); head.position.y=1.85; g.add(head);
+      const g=buildGameNpcModel({head:'#8cab70',torso:'#6b8e5a',arms:'#6b8e5a',legs:'#343a32'},'Zombie');
       g.position.set(x,0,z); gameScene.add(g); gameDecorations.push(g);
     }
   } else if(n==='Treasure Island'){
@@ -4259,26 +4496,85 @@ function buildGameSpecificWorld(gameName){
   }
 }
 
+function gameNpcGroundY(x,z,currentY=0){
+  let groundY=currentY;
+  for(const s of solidColliders){
+    if(!s||!Number.isFinite(s.x)||!Number.isFinite(s.y))continue;
+    if(Math.abs(x-s.x)>s.width/2-.18||Math.abs(z-s.z)>s.depth/2-.18)continue;
+    const top=s.y+s.height/2;
+    if(top<=currentY+1.05&&top>=currentY-1.8)groundY=Math.max(groundY,top);
+  }
+  return groundY;
+}
+function gameNpcCanOccupy(x,y,z,radius=.34){
+  return !solidColliders.some(s=>{
+    const top=s.y+s.height/2,bottom=s.y-s.height/2;
+    return y<top-.002&&y+1.8>bottom+.002&&Math.abs(x-s.x)<s.width/2+radius&&Math.abs(z-s.z)<s.depth/2+radius;
+  });
+}
+function moveGameNpcToward(npc,targetX,targetZ,dt,speed){
+  const dx=targetX-npc.position.x,dz=targetZ-npc.position.z,dist=Math.hypot(dx,dz);
+  if(dist<.001)return false;
+  const step=Math.min(speed*dt,dist);
+  const moves=[
+    [{x:dx/dist*step,z:0},{x:0,z:dz/dist*step}],
+    [{x:0,z:dz/dist*step},{x:dx/dist*step,z:0}]
+  ];
+  let best=null,bestDistance=dist;
+  for(const order of moves){
+    let x=npc.position.x,z=npc.position.z,y=npc.position.y;
+    for(const move of order){
+      const nextX=x+move.x,nextZ=z+move.z;
+      const nextY=gameNpcGroundY(nextX,nextZ,y);
+      if(nextY<=y+1.05&&nextY>=y-1.8&&gameNpcCanOccupy(nextX,nextY,nextZ)){x=nextX;z=nextZ;y=nextY;}
+    }
+    const remaining=Math.hypot(targetX-x,targetZ-z);
+    if(remaining<bestDistance){best={x,y,z};bestDistance=remaining;}
+  }
+  if(!best)return false;
+  npc.position.set(best.x,best.y,best.z);
+  npc.rotation.y=Math.atan2(dx,dz);
+  return true;
+}
+function animateGameNpc(npc,now,moving){
+  const phase=now*.008*(npc.userData.speed||1);
+  const stride=moving?Math.sin(phase)*.62:Math.sin(now*.0015)*.025;
+  const leftLeg=npc.getObjectByName('leftLeg'),rightLeg=npc.getObjectByName('rightLeg');
+  const leftArm=npc.getObjectByName('leftArm'),rightArm=npc.getObjectByName('rightArm');
+  if(leftLeg)leftLeg.rotation.x=stride;
+  if(rightLeg)rightLeg.rotation.x=-stride;
+  if(leftArm)leftArm.rotation.x=-stride*.55;
+  if(rightArm)rightArm.rotation.x=stride*.55;
+}
 function initGameEnhancements(gameName){
   const n=String(gameName||'').trim();
-  gameEnhancementState={name:n, lastDamageAt:0, wave:1, waveStarted:performance.now(), coreHp:100, coreMaxHp:100, score:0, combo:0, comboUntil:0, neonLast:0, obbyStart:performance.now(), obbyLast:0};
-  zombieEnemies=[]; treasureChests=[]; lavaSurface=null;
+  gameEnhancementState={name:n, lastDamageAt:0, wave:1, waveStarted:performance.now(), waveSpawned:false, coreHp:100, coreMaxHp:100, score:0, combo:0, comboUntil:0, neonLast:0, obbyStart:performance.now(), obbyLast:0,paintHits:0,paintRound:1,paintLastReset:0};
+  if(n==='Sky Islands')gameEnhancementState.skyCheckpoint=0;
+  zombieEnemies=[]; lavaSurface=null;
+  gameEnhancementState.relicsFound=0;
+  gameEnhancementState.lavaTraps=window._lavaTraps||[];
 
   // Zombie Survival: enemigos móviles sencillos + oleadas progresivas.
   if(n==='Zombie Survival'){
     const spots=[[-25,25],[25,25],[-30,5],[30,-5],[-18,-18],[18,-18]];
     spots.forEach((pos,i)=>{
-      const g=new THREE.Group();
-      const body=new THREE.Mesh(new THREE.BoxGeometry(.78,1.35,.55),new THREE.MeshLambertMaterial({color:0x5f7f4d}));
-      body.position.y=.72; g.add(body);
-      const head=new THREE.Mesh(new THREE.BoxGeometry(.68,.68,.68),new THREE.MeshLambertMaterial({color:0x8eaa6e}));
-      head.position.y=1.72; g.add(head);
+      const g=buildGameNpcModel({head:'#8eaa6e',torso:'#5f7f4d',arms:'#5f7f4d',legs:'#343a32'},'Zombie');
       g.position.set(pos[0],0,pos[1]);
       g.userData={hp:3,maxHp:3,damageCooldown:0,deadUntil:0,speed:1.15+(i%3)*.12,baseX:pos[0],baseZ:pos[1]};
-      gameScene.add(g); gameDecorations.push(g); zombieEnemies.push(g);
+      gameScene.add(g); gameDecorations.push(g); zombieEnemies.push(g);fightTargets.push(g);
     });
     const sign=new THREE.Mesh(new THREE.BoxGeometry(10,.25,.2),new THREE.MeshLambertMaterial({color:0xb91c1c,emissive:0x2b0000}));
     sign.position.set(0,4.8,-20.8); gameScene.add(sign); gameDecorations.push(sign);
+  }
+
+  if(n==='Battle Arena'){
+    const spots=[[-30,-25],[30,-25],[-30,25],[30,25],[-18,-4],[18,4]];
+    spots.forEach((pos,i)=>{
+      const bot=buildGameNpcModel({head:'#ffd39a',torso:'#c83f46',arms:'#f0a05a',legs:'#342b31'},'Arena bot');
+      bot.position.set(pos[0],gameNpcGroundY(pos[0],pos[1],0),pos[1]);
+      bot.userData={hp:3,maxHp:3,respawnAt:0,damageCooldown:0,speed:1.25+(i%3)*.12};
+      gameScene.add(bot);gameDecorations.push(bot);fightTargets.push(bot);
+    });
   }
 
   if(n==='Paintball Plaza'){
@@ -4298,21 +4594,6 @@ function initGameEnhancements(gameName){
   }
   if(n==='Castle Defense'){
     fightTargets=[];
-    const spots=[[-24,24],[24,24],[-18,16],[18,16],[0,24]];
-    spots.forEach((pos,i)=>{ const g=new THREE.Group(); const body=new THREE.Mesh(new THREE.BoxGeometry(.75,1.35,.55),new THREE.MeshLambertMaterial({color:0x7d3f3f})); body.position.y=.7; g.add(body); const head=new THREE.Mesh(new THREE.BoxGeometry(.65,.65,.65),new THREE.MeshLambertMaterial({color:0xc99b6b})); head.position.y=1.7; g.add(head); g.position.set(pos[0],0,pos[1]); g.userData={hp:3,maxHp:3,respawnAt:0}; gameScene.add(g); gameDecorations.push(g); fightTargets.push(g); });
-  }
-
-  // Treasure Island: los cofres se pueden abrir con E y dan rewards distintas.
-  if(n==='Treasure Island'){
-    const spots=[[-20,-8],[19,-12],[-22,23],[21,22],[0,25]];
-    spots.forEach((pos,i)=>{
-      const chest=new THREE.Group();
-      const base=new THREE.Mesh(new THREE.BoxGeometry(2.3,1.0,1.35),new THREE.MeshLambertMaterial({color:0x7a4a20})); base.position.y=.5; chest.add(base);
-      const lid=new THREE.Mesh(new THREE.BoxGeometry(2.35,.22,1.4),new THREE.MeshLambertMaterial({color:0xd9a441})); lid.position.set(0,1.05,0); chest.add(lid);
-      const lock=new THREE.Mesh(new THREE.BoxGeometry(.28,.36,.12),new THREE.MeshLambertMaterial({color:0xf4d35e})); lock.position.set(0,.72,-.72); chest.add(lock);
-      chest.position.set(pos[0],0,pos[1]); chest.userData={opened:false,reward:12+i*6};
-      gameScene.add(chest); gameDecorations.push(chest); treasureChests.push(chest);
-    });
   }
 
   // Lava Escape: la lava empieza baja y sube lentamente, dando tiempo a avanzar.
@@ -4328,55 +4609,105 @@ function initGameEnhancements(gameName){
   }
 }
 
-function updateGameEnhancements(dt, now, playerPos){
+function updateGameEnhancements(dt, now, playerPos, respawnPlayer){
   const n=currentGameType.trim();
+  if(n==='Sky Islands'&&Array.isArray(window._skyIslandCheckpoints)){
+    let checkpoint=gameEnhancementState.skyCheckpoint||0;
+    for(let i=checkpoint+1;i<window._skyIslandCheckpoints.length;i++){
+      const point=window._skyIslandCheckpoints[i];
+      if(Math.hypot(point.x-playerPos.x,point.z-playerPos.z)<4&&Math.abs(point.y-playerPos.y)<2.5){
+        checkpoint=i;gameEnhancementState.skyCheckpoint=i;addSunnys(5);playGameSound('hit');
+        gameSoulState.progress=i+1;gameSoulState.status=`Isla ${i+1}/9`;updateGameSoul();
+        const hint=document.getElementById('gameHint');
+        if(hint)hint.textContent=i===window._skyIslandCheckpoints.length-1?'☁️ ¡Llegaste a la isla cumbre! +5 ☀️':`☁️ Isla ${i+1}/9 · progreso guardado`;
+        break;
+      }
+    }
+    if(checkpoint===0){
+      const hint=document.getElementById('gameHint');
+      if(hint&&now-(gameEnhancementState.skyHintAt||0)>1200){gameEnhancementState.skyHintAt=now;hint.textContent='☁️ Sigue los puentes de madera · aterriza en cada isla para guardar progreso';}
+    }
+  }
+  if(n==='Battle Arena'){
+    for(const bot of fightTargets){
+      if(!bot)continue;
+      if(!bot.visible&&bot.userData.respawnAt&&now>=bot.userData.respawnAt){
+        bot.visible=true;bot.userData.hp=bot.userData.maxHp||3;bot.userData.respawnAt=0;
+      }
+      if(!bot.visible)continue;
+      bot.position.y=gameNpcGroundY(bot.position.x,bot.position.z,bot.position.y);
+      const dx=playerPos.x-bot.position.x,dz=playerPos.z-bot.position.z,dist=Math.hypot(dx,dz);
+      const moving=dist<30&&dist>1.45?moveGameNpcToward(bot,playerPos.x-dx/dist*1.1,playerPos.z-dz/dist*1.1,dt,bot.userData.speed||1.25):false;
+      bot.userData.damageCooldown=Math.max(0,(bot.userData.damageCooldown||0)-dt);
+      if(dist<1.8&&bot.userData.damageCooldown===0){
+        bot.userData.damageCooldown=1.25;damageGamePlayer(10,respawnPlayer);playGameSound('hit');
+        const hint=document.getElementById('gameHint');if(hint)hint.textContent='🥊 ¡Un rival te ha golpeado!';
+      }
+      animateGameNpc(bot,now,moving);
+    }
+  }
   if(n==='Zombie Survival'){
     let alive=0;
-    for(const z of zombieEnemies){
+    for(let i=zombieEnemies.length-1;i>=0;i--){
+      const z=zombieEnemies[i];
+      if(z&&!z.visible&&z.userData.deadUntil&&now>=z.userData.deadUntil){
+        gameScene.remove(z);gameDecorations=gameDecorations.filter(obj=>obj!==z);fightTargets=fightTargets.filter(obj=>obj!==z);zombieEnemies.splice(i,1);continue;
+      }
       if(!z || !z.visible) continue;
       alive++;
       const dx=playerPos.x-z.position.x, dz=playerPos.z-z.position.z;
       const dist=Math.hypot(dx,dz);
+      z.position.y=gameNpcGroundY(z.position.x,z.position.z,z.position.y);
+      let moving=false;
       if(dist<26 && dist>1.25){
-        const step=Math.min(z.userData.speed*dt, dist-1.25);
-        z.position.x += dx/dist*step;
-        z.position.z += dz/dist*step;
-        z.rotation.y=Math.atan2(dx,dz);
+        moving=moveGameNpcToward(z,playerPos.x-dx/dist*1.2,playerPos.z-dz/dist*1.2,dt,z.userData.speed);
       }
       z.userData.damageCooldown=Math.max(0,(z.userData.damageCooldown||0)-dt);
       if(dist<1.45 && z.userData.damageCooldown<=0){
         z.userData.damageCooldown=1.1;
-        // No quitamos vida real: mostramos el golpe y un pequeño retroceso para que el juego siga siendo jugable.
         playerPos.x += dx/(dist||1)*.35; playerPos.z += dz/(dist||1)*.35;
-        const hint=document.getElementById('gameHint'); if(hint) hint.textContent='🧟 A zombie caught you!';
+        damageGamePlayer(16,respawnPlayer);playGameSound('zombie');
+        const hint=document.getElementById('gameHint'); if(hint) hint.textContent='🧟 ¡Un zombi te ha golpeado!';
       }
+      animateGameNpc(z,now,moving);
     }
     if(alive===0 || now-gameEnhancementState.waveStarted>30000){
       gameEnhancementState.wave++;
       gameEnhancementState.waveStarted=now;
-      const count=Math.min(12,4+gameEnhancementState.wave);
-      for(let i=zombieEnemies.length;i<count;i++){
-        const angle=Math.random()*Math.PI*2, r=20+Math.random()*10;
-        const g=new THREE.Group();
-        const body=new THREE.Mesh(new THREE.BoxGeometry(.78,1.35,.55),new THREE.MeshLambertMaterial({color:0x5f7f4d})); body.position.y=.72; g.add(body);
-        const head=new THREE.Mesh(new THREE.BoxGeometry(.68,.68,.68),new THREE.MeshLambertMaterial({color:0x8eaa6e})); head.position.y=1.72; g.add(head);
-        g.position.set(playerPos.x+Math.cos(angle)*r,0,playerPos.z+Math.sin(angle)*r);
+      const count=Math.min(14,4+gameEnhancementState.wave*2);
+      for(let i=0;i<count;i++){
+        const angle=Math.random()*Math.PI*2, r=22+Math.random()*8;
+        const g=buildGameNpcModel({head:'#8eaa6e',torso:'#5f7f4d',arms:'#5f7f4d',legs:'#343a32'},'Zombie');
+        let x=playerPos.x+Math.cos(angle)*r,z=playerPos.z+Math.sin(angle)*r;
+        for(let attempt=0;attempt<8&&!gameNpcCanOccupy(x,0,z);attempt++){
+          const a=Math.random()*Math.PI*2,radius=22+Math.random()*8;x=playerPos.x+Math.cos(a)*radius;z=playerPos.z+Math.sin(a)*radius;
+        }
+        g.position.set(x,gameNpcGroundY(x,z,0),z);
         g.userData={hp:3,maxHp:3,damageCooldown:0,deadUntil:0,speed:1.1+gameEnhancementState.wave*.08,baseX:g.position.x,baseZ:g.position.z};
-        gameScene.add(g); gameDecorations.push(g); zombieEnemies.push(g);
+        gameScene.add(g); gameDecorations.push(g); zombieEnemies.push(g);fightTargets.push(g);
       }
-      const hint=document.getElementById('gameHint'); if(hint) hint.textContent=`🧟 Oleada ${gameEnhancementState.wave}`;
+      const hint=document.getElementById('gameHint'); if(hint) hint.textContent=`🌙 Oleada ${gameEnhancementState.wave} · ${count} zombis`;
     }
   }
 
   if(n==='Treasure Island' && keysPressed['KeyE']){
+    for(const relic of (window._treasureRelics||[])){
+      if(!relic||relic.userData.claimed)continue;
+      if(Math.hypot(relic.position.x-playerPos.x,relic.position.z-playerPos.z)<3){
+        relic.userData.claimed=true;relic.visible=false;gameEnhancementState.relicsFound++;
+        addSunnys(18);playGameSound('hit');
+        const hint=document.getElementById('gameHint');if(hint)hint.textContent=`✨ Ancient relic ${gameEnhancementState.relicsFound}/3 · +18 ☀️`;
+        break;
+      }
+    }
     for(const chest of treasureChests){
       if(!chest || chest.userData.opened) continue;
       const dx=chest.position.x-playerPos.x, dz=chest.position.z-playerPos.z;
       if(Math.hypot(dx,dz)<3.0){
         chest.userData.opened=true;
         chest.children.forEach((part,idx)=>{ if(idx===1) part.rotation.x=-.65; });
-        const reward=chest.userData.reward||15;
-        addSunnys(reward); gameSessionEarnings+=reward;
+        const reward=(chest.userData.reward||15)+(gameEnhancementState.relicsFound===3?12:0);
+        addSunnys(reward);
         const earnLbl=document.getElementById('clientEarnings'); if(earnLbl) earnLbl.textContent=gameSessionEarnings;
         const hint=document.getElementById('gameHint'); if(hint) hint.textContent=`💰 Treasure found! +${reward} ☀️`;
         break;
@@ -4393,7 +4724,7 @@ function updateGameEnhancements(dt, now, playerPos){
       if(Math.hypot(dx,dz)<3.0 && keysPressed['KeyE']){
         beacon.userData.claimed=true; beacon.visible=false;
         const reward=8+((beacon.userData.id||0)%4)*3;
-        addSunnys(reward); gameSessionEarnings+=reward;
+        addSunnys(reward);
         const earnLbl=document.getElementById('clientEarnings'); if(earnLbl) earnLbl.textContent=gameSessionEarnings;
         const hint=document.getElementById('gameHint'); if(hint) hint.textContent=`🌃 Beacon hacked! +${reward} ☀️`;
         break;
@@ -4401,33 +4732,62 @@ function updateGameEnhancements(dt, now, playerPos){
     }
   }
 
+  if(n==='Paintball Plaza'){
+    const aliveTargets=paintTargets.filter(target=>target&&target.visible).length;
+    const hint=document.getElementById('gameHint');
+    if(hint&&now-(gameEnhancementState.paintHudAt||0)>350){
+      gameEnhancementState.paintHudAt=now;
+      hint.textContent=`🎯 Ronda ${gameEnhancementState.paintRound} · Blancos ${paintTargets.length-aliveTargets}/${paintTargets.length} · Usa F o el botón para disparar`;
+    }
+    if(aliveTargets===0&&!gameEnhancementState.paintLastReset){
+      gameEnhancementState.paintLastReset=now+3500;gameEnhancementState.paintRound++;
+      addSunnys(20);playGameSound('hit');
+      if(hint)hint.textContent='🏆 ¡Ronda completada! +20 ☀️';
+    }else if(gameEnhancementState.paintLastReset&&now>=gameEnhancementState.paintLastReset){
+      paintTargets.forEach(target=>{target.visible=true;target.userData.hit=false;});
+      gameEnhancementState.paintLastReset=0;gameEnhancementState.paintHits=0;
+    }
+  }
+
   if(n==='Castle Defense'){
+    for(let i=fightTargets.length-1;i>=0;i--){
+      const enemy=fightTargets[i];
+      if(enemy&&!enemy.visible&&enemy.userData.respawnAt&&now>=enemy.userData.respawnAt){
+        gameScene.remove(enemy);gameDecorations=gameDecorations.filter(obj=>obj!==enemy);fightTargets.splice(i,1);
+      }
+    }
     const coreX=0, coreZ=0;
     let alive=0;
     for(const enemy of fightTargets){
       if(!enemy || !enemy.visible) continue;
       alive++;
       const dx=coreX-enemy.position.x,dz=coreZ-enemy.position.z,dist=Math.hypot(dx,dz);
-      if(dist>3){ enemy.position.x += dx/dist*dt*(0.8+gameEnhancementState.wave*.08); enemy.position.z += dz/dist*dt*(0.8+gameEnhancementState.wave*.08); enemy.rotation.y=Math.atan2(dx,dz); }
-      if(dist<3 && now-(enemy.userData.lastCoreHit||0)>1.0){
+      enemy.position.y=gameNpcGroundY(enemy.position.x,enemy.position.z,enemy.position.y);
+      const moving=dist>11&&moveGameNpcToward(enemy,coreX,coreZ,dt,.85+gameEnhancementState.wave*.08);
+      animateGameNpc(enemy,now,moving);
+      if(dist<12 && now-(enemy.userData.lastCoreHit||0)>1000){
         enemy.userData.lastCoreHit=now; gameEnhancementState.coreHp=Math.max(0,gameEnhancementState.coreHp-5);
         const hint=document.getElementById('gameHint'); if(hint) hint.textContent=`🏰 Castle HP: ${gameEnhancementState.coreHp}%`;
       }
+      enemy.userData.lastPlayerHit=Math.max(0,(enemy.userData.lastPlayerHit||0)-dt);
+      if(Math.hypot(playerPos.x-enemy.position.x,playerPos.z-enemy.position.z)<1.6&&enemy.userData.lastPlayerHit<=0){
+        enemy.userData.lastPlayerHit=1.1;damageGamePlayer(12,respawnPlayer);playGameSound('hit');
+      }
     }
-    if(alive===0 || now-gameEnhancementState.waveStarted>25000){
-      gameEnhancementState.wave++; gameEnhancementState.waveStarted=now;
+    if(alive===0 || now-gameEnhancementState.waveStarted>35000){
+      if(gameEnhancementState.waveSpawned)gameEnhancementState.wave++;
+      gameEnhancementState.waveSpawned=true;gameEnhancementState.waveStarted=now;
       const count=Math.min(10,4+gameEnhancementState.wave);
       for(let i=0;i<count;i++){
-        const a=(i/count)*Math.PI*2, r=25;
-        const g=new THREE.Group();
-        const body=new THREE.Mesh(new THREE.BoxGeometry(.75,1.35,.55),new THREE.MeshLambertMaterial({color:0x7d3f3f})); body.position.y=.7; g.add(body);
-        const head=new THREE.Mesh(new THREE.BoxGeometry(.65,.65,.65),new THREE.MeshLambertMaterial({color:0xc99b6b})); head.position.y=1.7; g.add(head);
-        g.position.set(Math.cos(a)*r,0,Math.sin(a)*r); g.userData={hp:3,maxHp:3,respawnAt:0,lastCoreHit:0}; gameScene.add(g); gameDecorations.push(g); fightTargets.push(g);
+        const a=(i/count)*Math.PI*2, r=28;
+        const g=buildGameNpcModel({head:'#c99b6b',torso:'#7d3f3f',arms:'#b37a56',legs:'#342b31'},'Raider');
+        const x=Math.cos(a)*r,z=Math.sin(a)*r;
+        g.position.set(x,gameNpcGroundY(x,z,0),z); g.userData={hp:3,maxHp:3,respawnAt:0,lastCoreHit:0,lastPlayerHit:0,speed:.85+gameEnhancementState.wave*.08}; gameScene.add(g); gameDecorations.push(g); fightTargets.push(g);
       }
       const hint=document.getElementById('gameHint'); if(hint) hint.textContent=`🏰 Oleada ${gameEnhancementState.wave} · Defiende el castillo`;
     }
     if(gameEnhancementState.coreHp<=0){
-      gameEnhancementState.coreHp=100; gameEnhancementState.wave=1; gameEnhancementState.waveStarted=now;
+      gameEnhancementState.coreHp=100; gameEnhancementState.wave=1; gameEnhancementState.waveStarted=now;gameEnhancementState.waveSpawned=false;
       const hint=document.getElementById('gameHint'); if(hint) hint.textContent='💥 Castle damaged! Rebuilding defenses...';
     }
   }
@@ -4439,10 +4799,22 @@ function updateGameEnhancements(dt, now, playerPos){
     lavaSurface.position.y=y;
     if(progress<1 && now-lavaLastWarning>10000){
       lavaLastWarning=now;
-      const hint=document.getElementById('gameHint'); if(hint) hint.textContent=`🌋 The lava is rising · ${Math.round((1-progress)*120)}s`;
+      const hint=document.getElementById('gameHint'); if(hint) hint.textContent=`🌋 Lava rising · ${Math.ceil((1-progress)*(gameEnhancementState.lavaDuration||115000)/1000)}s · dodge the spinning bars`;
+    }
+    for(const trap of (gameEnhancementState.lavaTraps||[])){
+      trap.rotation.y+=dt*1.7;
+      const dx=playerPos.x-trap.position.x,dz=playerPos.z-trap.position.z;
+      const localX=dx*Math.cos(trap.rotation.y)-dz*Math.sin(trap.rotation.y);
+      const localZ=dx*Math.sin(trap.rotation.y)+dz*Math.cos(trap.rotation.y);
+      const cooldown=Math.max(0,(trap.userData.hitCooldown||0)-dt);trap.userData.hitCooldown=cooldown;
+      if(Math.abs(localX)<2.8&&Math.abs(localZ)<.65&&Math.abs(playerPos.y-trap.position.y)<1.45&&cooldown===0){
+        trap.userData.hitCooldown=.8;damageGamePlayer(14,respawnPlayer);playGameSound('hit');
+        playerPos.x+=Math.cos(trap.rotation.y)*.5;playerPos.z-=Math.sin(trap.rotation.y)*.5;
+      }
     }
     if(playerPos.y < y+.45){
-      showVoidDeath(()=>{placePlayerAtSpawn(playerPos,currentGameType);});
+      damageGamePlayer(30,respawnPlayer);
+      if(gamePlayerHealth>0)showVoidDeath(()=>{if(respawnPlayer)respawnPlayer();});
       const hint=document.getElementById('gameHint'); if(hint) hint.textContent='🌋 The lava caught you!';
     }
   }
@@ -4467,7 +4839,8 @@ function buildClassicWorldV50(gameName){
   // "polish" que añadía adornos genéricos encima de mapas pequeños.
   const n=String(gameName||'').trim();
   collectibleCoins=[]; solidColliders=[]; activePlatforms=[]; obbyCheckpointSpawns=[];
-  window._cityJobs=[]; window._petEggs=[]; window._neonBeacons=[];
+  window._cityJobs=[]; window._petEggs=[]; window._neonBeacons=[];window._treasureRelics=[];
+  window._skyIslandCheckpoints=[];
   zombieEnemies=[]; treasureChests=[]; paintTargets=[]; fightTargets=[];
   lavaSurface=null;
 
@@ -4647,36 +5020,35 @@ function buildClassicWorldV50(gameName){
     sign('CORE CLASH',0,7,-39,0x202734);
 
   } else if(n==='Sky Islands'){
-    platform(0,0,0,18,16,0x65a653);
     // "Cloudbound": nueve islas con tamaños distintos, puentes estrechos y
     // alturas crecientes. El jugador siempre ve la siguiente isla.
-    const islands=[
-      {x:0,y:1,z:4,w:18,d:16},{x:17,y:2.5,z:-5,w:12,d:10},
-      {x:2,y:4,z:-15,w:15,d:12},{x:-18,y:5.8,z:-25,w:11,d:10},
-      {x:-4,y:7.5,z:-36,w:14,d:11},{x:17,y:9,z:-47,w:12,d:10},
-      {x:1,y:11,z:-59,w:15,d:12},{x:-20,y:13,z:-70,w:12,d:10},
-      {x:4,y:15,z:-82,w:19,d:15}
-    ];
+    const islands=Array.from({length:9},(_,i)=>({
+      x:i===0||i===8?0:(i%2?5:-5),
+      y:.45+i*.27,
+      z:-i*15,
+      w:i===0||i===8?19:16,
+      d:i===0||i===8?17:14
+    }));
+    window._skyIslandCheckpoints=islands.map(p=>({x:p.x,y:p.y+.9,z:p.z}));
     islands.forEach((p,i)=>{
-      box(p.x,p.y,p.z,p.w,.9,p.d,i%2?0x70b85c:0x65a653,true);
-      const rock=new THREE.Mesh(new THREE.ConeGeometry(Math.max(3,p.w*.34),5.5,7),new THREE.MeshLambertMaterial({color:0x766452}));
-      rock.position.set(p.x,p.y-3,p.z); gameScene.add(rock); gameDecorations.push(rock);
-      tree(p.x-2,p.z+1,.65); if(i%2===0) tree(p.x+2,p.z-2,.5);
-      coin(p.x,p.y+1.25,p.z);
-      if(i<islands.length-1){
-        const q=islands[i+1], dx=q.x-p.x,dz=q.z-p.z,dist=Math.hypot(dx,dz),ang=Math.atan2(dx,dz);
-        const bridge=new THREE.Mesh(new THREE.BoxGeometry(2.6,.3,dist),new THREE.MeshLambertMaterial({color:0x9a7047}));
-        bridge.position.set((p.x+q.x)/2,Math.min(p.y,q.y)+.48,(p.z+q.z)/2); bridge.rotation.y=ang;
-        gameScene.add(bridge); gameDecorations.push(bridge);
-        // Collider conservador para que el puente sea atravesable aunque sea rotado.
-        box((p.x+q.x)/2,Math.min(p.y,q.y)+.48,(p.z+q.z)/2,3.2,.34,dist,0x9a7047,true);
-      }
-      if(i%2===0) arch(p.x,p.z-4,0xd8efff);
+     box(p.x,p.y,p.z,p.w,.9,p.d,i%2?0x70b85c:0x65a653,true);
+     const rock=new THREE.Mesh(new THREE.ConeGeometry(Math.max(3,p.w*.34),4.5,7),new THREE.MeshLambertMaterial({color:0x766452}));
+     rock.position.set(p.x,p.y-2.55,p.z);gameScene.add(rock);gameDecorations.push(rock);
+     if(i%2===0)tree(p.x+(i%4===0?-5:5),p.z+2,.48);
+     coin(p.x,p.y+1.35,p.z);
+     if(i<islands.length-1){
+       const q=islands[i+1],dx=q.x-p.x,dz=q.z-p.z,dist=Math.hypot(dx,dz),steps=Math.ceil(dist/2.1);
+       for(let step=1;step<steps;step++){
+         const t=step/steps,x=p.x+dx*t,z=p.z+dz*t,y=p.y+.45+(q.y-p.y)*t;
+         box(x,y,z,3.2,.48,3.2,step%2?0x9a7047:0xb48755,true);
+       }
+     }
+     if(i===0||i===islands.length-1){
+       const ring=new THREE.Mesh(new THREE.TorusGeometry(2.2,.12,8,24),new THREE.MeshStandardMaterial({color:0xd8efff,emissive:0x618bc0,emissiveIntensity:.8}));
+       ring.position.set(p.x,p.y+2.1,p.z-5);ring.rotation.x=Math.PI/2;gameScene.add(ring);gameDecorations.push(ring);
+     }
     });
-    // Coleccionables extra: obligan a desviarse un poco del camino.
-    [[9,3,-2],[-8,6,-28],[9,12,-58],[-12,14,-70]].forEach(p=>coin(p[0],p[1],p[2]));
-    truss(-7,3.8,-1,7,'z',0x8798a7);
-    sign('CLOUDBOUND',0,8,0,0x4778a8);
+    sign('CLOUDBOUND',0,5,4,0x4778a8);
 
   } else if(n==='Pet World'){
     // "Pet Park": plaza central, laguna, jardín de huevos, carrera circular y
@@ -4706,8 +5078,8 @@ function buildClassicWorldV50(gameName){
     sign('PET PARK',0,8,0,0xc24d86);
 
   } else if(n==='Zombie Survival'){
-    // "Last Stand": un pequeño barrio con calles, gasolinera, refugio y
-    // edificios bloqueando rutas. Las oleadas existentes reutilizan este layout.
+    // "Last Stand": barrio nocturno con calles, refugio iluminado y edificios
+    // que los enemigos deben rodear para alcanzar al jugador.
     floor(0x455348,116);
     box(0,.02,0,14,.12,108,0x30383a,false); box(0,.025,0,108,.12,14,0x30383a,false);
     box(0,.08,0,4,.14,108,0xe2d9a6,false); box(0,.085,0,108,.14,4,0xe2d9a6,false);
@@ -4722,6 +5094,11 @@ function buildClassicWorldV50(gameName){
     for(let i=0;i<24;i++){const x=((i*19)%100)-50,z=((i*31)%100)-50;if(Math.abs(x)<18&&Math.abs(z)<20)continue;tree(x,z,.45+(i%3)*.12);}
     for(let i=0;i<10;i++) coin((i%2?1:-1)*(9+i*.7),1.1,-12+(i%5)*6);
     sign('LAST STAND',0,7,-20,0x2c3b31);
+    for(const [x,z] of [[-18,-12],[18,-12],[-18,12],[18,12],[0,-30],[0,30]]){
+      pillar(x,2.8,z,.16,5.6,0x3d4448);
+      addVisualLight(x,5.3,z,0xffd27a,1.4,13);
+      addVisualCylinder(x,5.55,z,.28,.18,0xffe3a0);
+    }
 
   } else if(n==='Treasure Island'){
     // "Lost Lagoon": playa, selva, ruinas y templo final. Los cinco cofres
@@ -4748,20 +5125,32 @@ function buildClassicWorldV50(gameName){
       chest.position.set(pos[0],0,pos[1]);chest.userData={opened:false,reward:15+i*7};gameScene.add(chest);gameDecorations.push(chest);treasureChests.push(chest);
     });
     for(const p of [[-24,-12],[24,-10],[-28,25],[27,23],[0,-30]]) coin(p[0],1.7,p[1]);
+    window._treasureRelics=[];
+    for(const [i,x,z] of [[0,-42,18],[1,42,18],[2,0,-44]]){
+      box(x,.35,z,2,.7,2,0x78634f,true);
+      const relic=new THREE.Mesh(new THREE.OctahedronGeometry(.62,1),new THREE.MeshStandardMaterial({color:0xffd45b,emissive:0xb86b12,emissiveIntensity:1.3,metalness:.45,roughness:.28}));
+      relic.position.set(x,1.35,z);relic.userData={claimed:false,index:i};gameScene.add(relic);gameDecorations.push(relic);window._treasureRelics.push(relic);
+      addVisualLight(x,2,z,0xffc857,1.25,8);
+    }
     sign('LOST LAGOON',0,9,-34,0x695541);
 
   } else if(n==='Neon City'){
-    // "Afterdark": ciudad nocturna de escala media, con avenidas, callejones,
-    // rooftops y seis terminales hackeables. Sin exceso de luces ni saturación.
-    floor(0x30363c,126);
+    // "Afterdark": un distrito nocturno más amplio con avenidas, callejones,
+    // fachadas de neón, rooftops y terminales hackeables.
+    floor(0x30363c,164);
     box(0,.02,0,18,.12,110,0x22272b,false); box(0,.025,0,110,.12,18,0x22272b,false);
     const cols=[0x46566b,0x5c5267,0x47675e,0x665b50,0x42536a];
     let idx=0;
-    for(let x=-42;x<=42;x+=14) for(let z=-42;z<=42;z+=14){
+    for(let x=-48;x<=48;x+=16) for(let z=-48;z<=48;z+=16){
       if(Math.abs(x)<10&&Math.abs(z)<10)continue;
-      const h=5+(idx%4)*2; box(x,h/2,z,9,h,9,cols[idx%cols.length],true);
-      // ventanas discretas
-      for(const side of [-1,1]) for(let f=0;f<Math.min(4,Math.floor(h/1.5));f++) box(x+side*4.56,.9+f*1.35,z,1.2,.6,.12,0x9bb7c8,false);
+      const h=7+(idx%5)*2; box(x,h/2,z,9,h,9,cols[idx%cols.length],true);
+      for(let f=0;f<Math.floor((h-1)/3);f++){
+        const wy=1.1+f*3,windowColor=idx%2?0x43d9ff:0xe86bff;
+        for(const face of [-1,1]){
+          addBox(x+face*2.35,wy,z+face*4.56,2.1,.72,.1,windowColor,{solid:false,neon:true,emitLight:f===0&&face===1});
+          addBox(x+face*4.56,wy,z-face*2.35,.1,.72,2.1,windowColor,{solid:false,neon:true,emitLight:f===0&&face===1});
+        }
+      }
       idx++;
     }
     // plaza y pasarelas
@@ -4790,9 +5179,22 @@ function buildClassicWorldV50(gameName){
       path.push({x:side,y,z}); platform(side,y,z,w,d,[0x765e50,0x8a6549,0x69574f,0x9a5535][i%4]); coin(side,y+1,z);
       if(i%4===1) box(side+(side? -side*.22:2),y+.8,z,.7,1.6,1.6,0x553f37,true);
     }
+    window._lavaTraps=[];
+    for(let i=2;i<23;i+=4){
+      const side=i%3===0?0:(i%2?8:-8),z=42-i*4.4,y=.65+i*.32;
+      const trap=new THREE.Group();trap.position.set(side,y+.95,z);
+      const blade=new THREE.Mesh(new THREE.BoxGeometry(5.2,.22,.48),new THREE.MeshStandardMaterial({color:0xd64a24,emissive:0x681c0b,emissiveIntensity:.6,metalness:.25}));
+      trap.add(blade);gameScene.add(trap);gameDecorations.push(trap);window._lavaTraps.push(trap);
+    }
     box(0,8.9,-66,20,.9,12,0x4da862,true); arch(0,-68,0xf1c94c);
     // El sistema de lava existente se encarga de subir y matar al jugador.
     lavaRiseStart=performance.now(); lavaLastWarning=0;
+    for(let i=0;i<4;i++){
+      const z=29-i*23;
+      for(const x of [-18,18]){
+        addBox(x,1.1,z,.34,2.2,.34,0xff642b,{solid:false,neon:true,emitLight:true,lightIntensity:.65,lightDistance:9});
+      }
+    }
     lavaSurface=new THREE.Mesh(new THREE.BoxGeometry(88,.24,108),new THREE.MeshLambertMaterial({color:0xd34a23,emissive:0x350800,emissiveIntensity:.45}));
     lavaSurface.position.set(0,.10,-8);gameScene.add(lavaSurface);gameDecorations.push(lavaSurface);
     gameEnhancementState.lavaBase=.10;gameEnhancementState.lavaMax=9.0;gameEnhancementState.lavaDuration=115000;
@@ -4814,14 +5216,22 @@ function buildClassicWorldV50(gameName){
     sign('COLOR WARS',0,7,-38,0x3e4851);
 
   } else if(n==='Castle Defense'){
-    // "Kingdom Hold": un patio amurallado con cuatro rutas de entrada. Los
-    // enemigos de initGameEnhancements aparecen alrededor del perímetro y buscan el núcleo.
+    // "Kingdom Hold": un patio amurallado con cuatro rutas de entrada y una
+    // torre central sólida que los asaltantes deben destruir.
     floor(0x62735e,116);
     wall(0,-38,82,3,8,0x777d83);wall(0,38,82,3,8,0x777d83);wall(-41,0,3,76,8,0x777d83);wall(41,0,3,76,8,0x777d83);
     [[-37,-34],[37,-34],[-37,34],[37,34]].forEach(p=>{box(p[0],5,p[1],9,10,9,0x69727a,true);box(p[0],10.2,p[1],10,.8,10,0x5b6269,true);});
     // Gatehouse y cuatro carriles hacia el núcleo.
     box(0,2,-34,18,4,6,0x765a42,true);box(0,4.4,-34,20,.7,7,0x654c39,true);
-    box(0,1,0,14,2,14,0x8b4d4d,true);box(0,2.25,0,8,.45,8,0xd7a83d,false);
+    box(0,1,0,14,2,14,0x8b4d4d,true);
+    box(0,3.05,0,10,2.3,10,0x895451,true);
+    box(0,5.25,0,6.5,2.1,6.5,0x996357,true);
+    for(const [x,z] of [[-3.7,-3.7],[3.7,-3.7],[-3.7,3.7],[3.7,3.7]])box(x,6.6,z,1.25,2.2,1.25,0xb09274,true);
+    box(0,6.45,0,8,1,8,0xd7a83d,false);
+    box(0,7.1,0,5,.85,5,0x9f5548,true);
+    const towerRoof=new THREE.Mesh(new THREE.ConeGeometry(4.1,3.2,4),new THREE.MeshLambertMaterial({color:0x493a38}));
+    towerRoof.position.set(0,9.05,0);towerRoof.rotation.y=Math.PI/4;gameScene.add(towerRoof);gameDecorations.push(towerRoof);
+    sign('KEEP',0,4.5,-7.3,0x493a38,0xffe08a);
     for(const x of [-22,-11,11,22]){box(x,1,16,6,2,4,0x6f6d6b,true);box(x,2.25,16,4,.35,3,0xa58f63,false);}
     // barricades laterales
     for(const z of [-10,10]){box(-25,1,z,6,2,4,0x806447,true);box(25,1,z,6,2,4,0x806447,true);}
@@ -4945,7 +5355,7 @@ function gameSoulConfig(n){
     'Epic Obby':{accent:0xff4fd8,title:'EPIC OBBY',objective:'Llega a la meta atravesando los sectores y guarda tus checkpoints.',status:'Checkpoint 0 / 22'},
     'Bloxs City':{accent:0x42a5ff,title:'BLOXS CITY',objective:'Explora la ciudad, encuentra trabajos y gana Sunnys.',status:'Exploración libre'},
     'Battle Arena':{accent:0xff5b5b,title:'BATTLE ARENA',objective:'Derrota objetivos, encadena golpes y domina la arena.',status:'Combo x0'},
-    'Sky Islands':{accent:0x8b7cff,title:'SKY ISLANDS',objective:'Salta entre islas y recoge los cristales del cielo.',status:'Cristales 0 / 7'},
+    'Sky Islands':{accent:0x8b7cff,title:'SKY ISLANDS',objective:'Sigue el puente de bloques hasta la isla cumbre. Las islas guardan tu progreso.',status:'Isla 1 / 9'},
     'Pet World':{accent:0xff77b7,title:'PET WORLD',objective:'Busca huevos, consigue recompensas y reúne mascotas.',status:'Huevos 0'},
     'Zombie Survival':{accent:0x8cff65,title:'ZOMBIE SURVIVAL',objective:'Sobrevive a las oleadas y mantente con vida.',status:'Oleada 1'},
     'Treasure Island':{accent:0xffd35b,title:'TREASURE ISLAND',objective:'Explora la isla y abre todos los cofres escondidos.',status:'Cofres 0 / 5'},
@@ -4959,6 +5369,7 @@ function gameSoulToast(text){ const el=document.getElementById('gameToast'); if(
 function setupGameSoul(n){
   gameSoulState={name:n,objective:'',progress:0,max:1,status:'',accent:'#7dd3fc',introTimer:null,toastTimer:null};
   const c=gameSoulConfig(n); gameSoulState.objective=c.objective; gameSoulState.max=(n==='Epic Obby'?22:n==='Sky Islands'?7:n==='Treasure Island'?5:n==='Neon City'?6:n==='Paintball Plaza'?8:1); gameSoulState.status=c.status; gameSoulState.accent=hexColor(c.accent);
+  if(n==='Sky Islands'){gameSoulState.max=9;gameSoulState.progress=1;gameSoulState.status='Isla 1/9';}
   let panel=document.getElementById('gameMissionPanel'); if(!panel){panel=document.createElement('div');panel.id='gameMissionPanel';const root=document.getElementById('webGLContainer'); if(root&&root.parentElement) root.parentElement.appendChild(panel);}
   let toast=document.getElementById('gameToast'); if(!toast){toast=document.createElement('div');toast.id='gameToast';const root=document.getElementById('webGLContainer');if(root&&root.parentElement)root.parentElement.appendChild(toast);}
   panel.innerHTML=`<div class="gm-eyebrow">MISSION</div><div class="gm-title" style="color:${gameSoulState.accent}">${c.title}</div><div class="gm-objective">${c.objective}</div><div class="gm-progress"><div class="gm-fill" style="background:${gameSoulState.accent}"></div></div><div class="gm-status"></div>`;
@@ -4979,7 +5390,6 @@ function buildSoulfulWorld(n){
   if(n==='Epic Obby'){addSoulArch(0,-8,col);for(let i=0;i<5;i++)addVisualLight((i-2)*9,3,-20-i*14,col,1.5,14);}
   if(n==='Bloxs City'){for(const p of [[-42,-42],[42,-42],[-42,42],[42,42]]){addSoulArch(p[0],p[1],col);addVisualLight(p[0],5,p[1],col,2,20);}}
   if(n==='Battle Arena'){addSoulArch(0,-27,col);addSoulArch(0,27,col);for(let i=0;i<12;i++)addVisualLight(Math.cos(i*Math.PI/6)*20,2,Math.sin(i*Math.PI/6)*20,col,1.0,10);}
-  if(n==='Sky Islands'){for(let i=0;i<7;i++)addSoulParticle((i-3)*7,5+(i%3),-12-i*10,0xffffff,.12);}
   if(n==='Pet World'){for(let i=0;i<8;i++)addVisualLight((i%4-1.5)*12,2,12-Math.floor(i/4)*24,col,1.1,11);}
   if(n==='Zombie Survival'){addSoulArch(0,-24,0x8cff65);for(let i=0;i<8;i++)addVisualLight((i%4-1.5)*12,3,-10+Math.floor(i/4)*22,0x8cff65,.9,10);}
   if(n==='Treasure Island'){addSoulArch(0,30,0xffd35b);for(let i=0;i<8;i++)addVisualLight((i%4-1.5)*14,2,20-Math.floor(i/4)*26,0xffd35b,.8,11);}
@@ -5018,6 +5428,9 @@ function initGameWebGL(gameName) {
     container.addEventListener('pointerdown', (e) => {
       // La cámara solo se controla con el botón derecho; el click izquierdo
       // queda libre para UI/acciones del juego.
+      if(e.button===0&&e.target===gameRenderer.domElement&&!voidDeathActive&&currentGameGear()&&gameActionCooldown<=0){
+        gameGearAction();
+      }
       if (e.pointerType !== 'mouse' || e.button !== 2) return;
       cameraDragging = true;
       cameraPointerId = e.pointerId;
@@ -5048,10 +5461,11 @@ function initGameWebGL(gameName) {
     container.addEventListener('pointercancel', (e) => { cameraDragging = false; cameraPointerId = null; });
   }
 
-  const ambient = new THREE.AmbientLight(0xffffff, 0.45);
+  const isZombieNight=String(gameName||'').trim()==='Zombie Survival';
+  const ambient = new THREE.AmbientLight(isZombieNight?0x91a4ce:0xffffff, isZombieNight ? .18 : .45);
   gameScene.add(ambient);
 
-  const sun = new THREE.DirectionalLight(0xfff5e6, 1.0);
+  const sun = new THREE.DirectionalLight(isZombieNight?0x8294c4:0xfff5e6, isZombieNight ? .18 : 1.0);
   sun.position.set(28, 45, 24);
   sun.castShadow = true;
   sun.shadow.mapSize.width = 2048;
@@ -5073,6 +5487,10 @@ function initGameWebGL(gameName) {
   const fill = new THREE.DirectionalLight(0xa0d8ff, 0.3);
   fill.position.set(-8, 10, -6);
   gameScene.add(fill);
+  if(isZombieNight){
+    const flashlight=new THREE.PointLight(0xffd7a1,1.9,23);gameScene.add(flashlight);
+    window._zombieFlashlight=flashlight;
+  }else window._zombieFlashlight=null;
 
   clearGameExtras();
   // V50: conservar el Bloxs City clásico y reemplazar los demás mapas por mundos
@@ -5113,7 +5531,7 @@ function buildUniqueGameWorld(gameName) {
   solidColliders = [];
 
   const isCity = gameName.includes("City");
-  const floorSize = isCity ? 160 : 100;
+  const floorSize = isCity ? 200 : 100;
   const floorGeo = new THREE.BoxGeometry(floorSize, 1, floorSize);
   let floorMat = new THREE.MeshLambertMaterial({color: 0x4caf50});
   
@@ -5191,6 +5609,8 @@ function respawnAfterVoid() {
   voidRespawnFn = null;
   const overlay = document.getElementById('voidDeathOverlay');
   if(overlay) overlay.classList.remove('open');
+  const title=document.getElementById('voidDeathTitle');if(title)title.textContent='💀 You fell into the void';
+  const message=document.getElementById('voidDeathMessage');if(message)message.textContent='The character fell outside the map.';
 }
 
 // ==================== EMOTES / BAILES (/e dance) ====================
@@ -5453,6 +5873,7 @@ function startGameLoop() {
 
   const initialSpawn = getPrimarySpawnPoint(currentGameType);
   let playerPos = { x: initialSpawn.x, y: initialSpawn.y, z: initialSpawn.z };
+  activeGamePlayerPosition=playerPos;
   if (currentGameType.trim() === 'Speed Race') {
     const laneX = [-7.5, -2.5, 2.5, 7.5][raceSpawnSlot % 4];
     const rowZ = 45 + Math.floor(raceSpawnSlot / 4) * 5;
@@ -5462,13 +5883,13 @@ function startGameLoop() {
   let velocityX = 0, velocityZ = 0;
   // Character controller: Roblox-inspired acceleration, ground friction, air steering,
   // jump buffering and coyote time. Scene units are smaller than Roblox studs.
-  const gravity = 25.5;
-  const jumpForce = 11.5;
-  const moveSpeed = 8.6;
-  const groundAcceleration = 48;
-  const airAcceleration = 9.5;
-  const groundFriction = 30;
-  const airDrag = 0.32;
+  const gravity = 24.5;
+  const jumpForce = 12;
+  const moveSpeed = 9.2;
+  const groundAcceleration = 54;
+  const airAcceleration = 12.5;
+  const groundFriction = 26;
+  const airDrag = 0.4;
   const jumpBufferDuration = 0.14;
   const coyoteDuration = 0.10;
   let jumpBuffer = 0;
@@ -5503,17 +5924,13 @@ function startGameLoop() {
     }
 
     if(gameActionCooldown > 0) gameActionCooldown -= dt;
-    updateGameEnhancements(dt, now, playerPos);
+    const respawnPlayer=()=>{
+      placePlayerAtSpawn(playerPos,currentGameType);velocityY=0;velocityX=0;velocityZ=0;
+      jumpBuffer=0;coyoteTimer=0;isGrounded=true;lastTime=performance.now();
+    };
+    updateGameEnhancements(dt, now, playerPos, respawnPlayer);
     updateGameProjectiles(dt);
-    if(gameGearSwing>0 && gameGearMesh){
-      gameGearSwing=Math.max(0,gameGearSwing-dt);
-      const t=1-(gameGearSwing/.32);
-      const ra=playerMeshGroup && playerMeshGroup.getObjectByName('rightArm');
-      const swing=t<.5 ? (t*2) : (2-(t*2));
-      if(ra && !isLocalEmoteActive()){ ra.rotation.x = -0.45 - swing*1.35; ra.rotation.z = -0.18 - swing*0.30; }
-      gameGearMesh.rotation.z = -0.18 - swing*1.10;
-      if(gameGearSwing<=0){ gameGearMesh.rotation.z=-0.18; if(ra && !isLocalEmoteActive()){ ra.rotation.x=0; ra.rotation.z=0; } }
-    }
+    if(gameGearSwing>0)gameGearSwing=Math.max(0,gameGearSwing-dt);
     // Battle Arena: F = ataque, Q = habilidad especial; también afecta a otros jugadores cercanos
     if(currentGameType.trim() === 'Battle Arena' && !voidDeathActive){
       const px=playerPos.x, pz=playerPos.z;
@@ -5559,7 +5976,7 @@ function startGameLoop() {
       }
     }
 
-    if(currentGameType.trim() === 'Paintball Plaza' && keysPressed['KeyF'] && gameActionCooldown <= 0){ gameGearAction(); }
+    if(['Paintball Plaza','Zombie Survival'].includes(currentGameType.trim()) && keysPressed['KeyF'] && gameActionCooldown <= 0){ gameGearAction(); }
     if(currentGameType.trim() === 'Castle Defense' && keysPressed['KeyF'] && gameActionCooldown <= 0){ gameGearAction(); }
 
     if(currentGameType.trim() === 'Pet World' && petFollowers.length){
@@ -5577,7 +5994,6 @@ function startGameLoop() {
             egg.userData.claimed=true; egg.visible=false;
             const reward=egg.userData.reward||10;
             addSunnys(reward);
-            gameSessionEarnings += reward;
             const earnLbl=document.getElementById('clientEarnings');
             if(earnLbl) earnLbl.textContent=gameSessionEarnings;
             const hint=document.getElementById('gameHint');
@@ -5605,7 +6021,6 @@ function startGameLoop() {
           job.userData.cooldownUntil=performance.now()+8000;
           const pay=job.userData.pay||10;
           addSunnys(pay);
-          gameSessionEarnings += pay;
           const earnLbl=document.getElementById('clientEarnings');
           if(earnLbl) earnLbl.textContent=gameSessionEarnings;
           const hint=document.getElementById('gameHint');
@@ -5830,8 +6245,9 @@ function startGameLoop() {
     if (!isSpeedRace && !(adminIsEnabled && adminFlyEnabled)) {
       // Accelerate toward the desired walk velocity instead of teleport-like
       // fixed-speed movement. Air steering is intentionally less powerful.
-      const targetVX = moveDirX * moveSpeed;
-      const targetVZ = moveDirZ * moveSpeed;
+      const sprintMultiplier=(keysPressed['ShiftLeft']||keysPressed['ShiftRight'])?1.35:1;
+      const targetVX = moveDirX * moveSpeed * sprintMultiplier;
+      const targetVZ = moveDirZ * moveSpeed * sprintMultiplier;
       if (isMovingInput) {
         const accel = isGrounded ? groundAcceleration : airAcceleration;
         velocityX += Math.max(-accel * dt, Math.min(accel * dt, targetVX - velocityX));
@@ -5933,6 +6349,15 @@ function startGameLoop() {
     isGrounded = isSpeedRace ? true : foundGround;
 
     if (!adminFlyEnabled && !foundGround && playerPos.y < -10 && !voidDeathActive) {
+      damageGamePlayer(25,()=>{
+        placePlayerAtSpawn(playerPos,currentGameType);velocityY=0;velocityX=0;velocityZ=0;
+        jumpBuffer=0;coyoteTimer=0;isGrounded=true;lastTime=performance.now();
+      });
+      if(gamePlayerHealth===0) {
+        // The health-depleted callback already owns the respawn overlay.
+      } else {
+        const title=document.getElementById('voidDeathTitle');if(title)title.textContent='💀 You fell into the void';
+        const message=document.getElementById('voidDeathMessage');if(message)message.textContent='The character fell outside the map.';
       showVoidDeath(() => {
         placePlayerAtSpawn(playerPos, currentGameType);
         velocityY = 0;
@@ -5940,6 +6365,7 @@ function startGameLoop() {
         isGrounded = true;
         lastTime = performance.now();
       });
+      }
     }
 
     // 5) ORIENTACION Y ANIMACION DE CAMINAR
@@ -6018,6 +6444,19 @@ function startGameLoop() {
       }
     }
 
+    if(gameGearMesh&&!isLocalEmoteActive()){
+      const t=Math.max(0,Math.min(1,1-gameGearSwing/.32));
+      const swing=t<.5?t*2:2-t*2;
+      const rightArm=playerMeshGroup&&playerMeshGroup.getObjectByName('rightArm');
+      const shooting=currentGameGear()?.action==='DISPARAR';
+      if(rightArm){
+        if(shooting){rightArm.rotation.x=Math.PI/2+(gameGearSwing>0?swing*.12:0);rightArm.rotation.z=-.08;}
+        else if(gameGearSwing>0){rightArm.rotation.x=.2+swing*.85;rightArm.rotation.z=-.12-swing*.22;}
+      }
+      gameGearMesh.rotation.z=gameGearSwing>0&&!shooting?-swing*1.1:0;
+      gameGearMesh.rotation.x=(gameGearMesh.userData.baseRotationX||0)+(shooting&&gameGearSwing>0?-.08:0);
+    }
+
     if(currentGameType.trim()==='Epic Obby'){
       const elapsed=Math.max(0,(performance.now()-(gameEnhancementState.obbyStart||performance.now()))/1000);
       if(performance.now()-(gameEnhancementState.obbyLast||0)>250){
@@ -6046,7 +6485,6 @@ function startGameLoop() {
           const elapsed=Math.max(1,(performance.now()-(gameEnhancementState.obbyStart||performance.now()))/1000);
           const bonus=Math.max(5,Math.min(40,Math.round(45-elapsed)));
           addSunnys(25+bonus);
-          gameSessionEarnings += 25+bonus;
           const earnLbl=document.getElementById('clientEarnings');
           if(earnLbl) earnLbl.textContent=gameSessionEarnings;
           if(hint) hint.textContent=`🏆 Obby completed in ${elapsed.toFixed(1)}s! +${25+bonus} ☀️`;
@@ -6070,7 +6508,7 @@ function startGameLoop() {
         raceFinished=true;
         const seconds=((performance.now()-raceStartTime)/1000).toFixed(2);
         const reward=Math.max(20,Math.round(70-Number(seconds)));
-        addSunnys(reward); gameSessionEarnings+=reward;
+        addSunnys(reward);
         const earnLbl=document.getElementById('clientEarnings'); if(earnLbl) earnLbl.textContent=gameSessionEarnings;
         const hint=document.getElementById('gameHint'); if(hint) hint.textContent=`🏆 Race finished in ${seconds}s! +${reward} ☀️`;
       }
@@ -6078,7 +6516,8 @@ function startGameLoop() {
 
     // (La pose de salto R6 ya se aplica arriba; no sobrescribir brazos aquí.)
 
-    if(playerMeshGroup) playerMeshGroup.position.set(playerPos.x, playerPos.y + 0.4, playerPos.z);
+    if(playerMeshGroup) playerMeshGroup.position.set(playerPos.x, playerPos.y + 0.575, playerPos.z);
+    if(window._zombieFlashlight)window._zombieFlashlight.position.set(playerPos.x,playerPos.y+3,playerPos.z);
     updateGameSunShadowFollow();
 
     // EMOTES: baile del jugador local (se corta si se mueve o salta).
@@ -6099,7 +6538,6 @@ function startGameLoop() {
         const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
         if(dist < 1.2) {
           coin.visible = false;
-          gameSessionEarnings += 1;
           addSunnys(1);
           const earnLbl = document.getElementById('clientEarnings');
           if(earnLbl) earnLbl.textContent = gameSessionEarnings;
@@ -6510,9 +6948,9 @@ function addOrUpdateRemotePlayer(p) {
     group.name = "remotePlayer_" + p.id;
     group.userData.username = uname;
     group.userData.playerId = p.id;
-    group.add(createNameTag(uname));
+    const remoteTag=createNameTag(uname);remoteTag.position.set(0,1.75,0);group.add(remoteTag);
     if (typeof p.x === "number") group.position.x = p.x;
-    if (typeof p.y === "number") group.position.y = p.y + 0.4;
+    if (typeof p.y === "number") group.position.y = p.y + 0.575;
     if (typeof p.z === "number") group.position.z = p.z;
     if (typeof p.rotation === "number") group.rotation.y = p.rotation;
     gameScene.add(group);
@@ -6530,7 +6968,7 @@ function addOrUpdateRemotePlayer(p) {
       group.name = "remotePlayer_" + p.id;
       group.position.copy(pos);
       group.rotation.y = rot;
-      group.add(createNameTag(uname));
+      const remoteTag=createNameTag(uname);remoteTag.position.set(0,1.75,0);group.add(remoteTag);
       gameScene.add(group);
       remotePlayers[p.id] = group;
     }
@@ -6545,7 +6983,7 @@ function addOrUpdateRemotePlayer(p) {
   }
 
   if (typeof p.x === "number") group.userData.targetX = p.x;
-  if (typeof p.y === "number") group.userData.targetY = p.y + 0.4;
+  if (typeof p.y === "number") group.userData.targetY = p.y + 0.575;
   if (typeof p.z === "number") group.userData.targetZ = p.z;
   if (typeof p.rotation === "number") group.userData.targetRotation = p.rotation;
   if (currentGameType.trim() === 'Speed Race') {
@@ -8068,6 +8506,7 @@ function showPage(p){
     target.classList.add("active");
   }
   if(p==="home") { loadGames(); renderHomeGames(); }
+  if(p==="favorites") renderFavoriteGamesPage();
   if(p==="inventory") loadInventory();
   if(p==="streak") updateStreakUI();
   if(p==="avatar") { try { const t=(current()&&current().user.avatar&&current().user.avatar.torsoType)||"male"; const mb=document.getElementById("torsoTypeMale"); const fb=document.getElementById("torsoTypeFemale"); if(mb) mb.style.background=t==="male"?"#1684e8":"#292929"; if(fb) fb.style.background=t==="female"?"#e91e8c":"#292929"; } catch(e){} }
@@ -8141,7 +8580,7 @@ function formatVisits(n){
 function getLocalGameList(key){
   try{return JSON.parse(localStorage.getItem(key)||'[]').filter(Boolean);}catch(e){return [];}
 }
-function saveLocalGameList(key,list){try{localStorage.setItem(key,JSON.stringify(list.slice(0,12)));}catch(e){}}
+function saveLocalGameList(key,list){try{localStorage.setItem(key,JSON.stringify(list.slice(0,key==='epicbloxs_favorite_games'?100:12)));}catch(e){}}
 function rememberPlayedGame(name){
   const n=String(name||'').trim(); if(!n) return;
   const list=getLocalGameList('epicbloxs_recent_games').filter(x=>x!==n);
@@ -8151,9 +8590,9 @@ function getGamesByNames(names){
   return names.map(n=>games.find(g=>String(g[0]).trim()===n)).filter(Boolean);
 }
 function renderBrowserCard(g){
-  const name=String(g[0]).trim(), gid=getGameId(name), count=Number(_gameStats[gid]||0), visits=Number(_gameVisits[gid]||0);
+  const name=String(g[0]).trim(), gid=getGameId(name), count=Number(_gameStats[gid]||0), visits=Number(_gameVisits[gid]||0), earnings=Number(_gameEarnings[gid]||0);
   const safe=name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  return `<div class="game-browser-card" onclick="openGameDetail('${safe}')"><img src="${getGameIcon(name)}" alt="${escapeHTML(name)}" loading="lazy" onerror="this.onerror=null;this.src='/assets/games/default-game.svg'"><div class="game-browser-card-info"><div class="game-browser-card-name">${escapeHTML(name)}</div><div class="game-browser-card-meta">${count} Playing · ${formatVisits(visits)} Visits</div><div class="game-browser-card-bar"><span style="width:${Math.max(18,Math.min(100,(count*18)+35))}%"></span></div></div></div>`;
+  return `<div class="game-browser-card" onclick="openGameDetail('${safe}')"><img src="${getGameIcon(name)}" alt="${escapeHTML(name)}" loading="lazy" onerror="this.onerror=null;this.src='/assets/games/default-game.svg'"><div class="game-browser-card-info"><div class="game-browser-card-name">${escapeHTML(name)}</div><div class="game-browser-card-meta">${count} Playing · ${formatVisits(visits)} Visits · ☀️ ${formatVisits(earnings)} earned</div><div class="game-browser-card-bar"><span style="width:${Math.max(18,Math.min(100,(count*18)+35))}%"></span></div></div></div>`;
 }
 function renderBrowserRow(title,list){
   if(!list.length) return `<section class="game-browser-row"><h2 class="game-browser-title">${escapeHTML(title)}</h2><div class="empty-game-row">No games to show yet.</div></section>`;
@@ -8162,12 +8601,11 @@ function renderBrowserRow(title,list){
 function renderGamesBrowser(){
   const sort=document.getElementById('gameSortFilter')?.value||'Default';
   let pool=(Array.isArray(games)?games:[]).slice();
-  if(sort==='Popular') pool.sort((a,b)=>getGameVisits(b[0])-getGameVisits(a[0]));
-  else if(sort==='Top Earning') pool.sort((a,b)=>getGameVisits(b[0])-getGameVisits(a[0]));
-  else if(sort==='Top Rated') pool.sort((a,b)=>String(a[0]).localeCompare(String(b[0])));
+  if(sort==='Popular') pool.sort((a,b)=>getGameVisits(b[0])-getGameVisits(a[0]) || String(a[0]).localeCompare(String(b[0])));
+  else if(sort==='Top Earning') pool.sort((a,b)=>(Number(_gameEarnings[getGameId(b[0])]||0)-Number(_gameEarnings[getGameId(a[0])]||0)) || String(a[0]).localeCompare(String(b[0])));
   const container=document.getElementById('gamesBrowser'); if(!container)return;
-  const popular=pool.slice(0,8), earning=pool.slice().reverse().slice(0,8), rated=pool.slice().sort((a,b)=>String(a[0]).localeCompare(String(b[0]))).slice(0,8);
-  container.innerHTML=renderBrowserRow('Popular',popular)+renderBrowserRow('Top Earning',earning)+renderBrowserRow('Top Rated',rated);
+  const title=sort==='Popular'?'Popular games':sort==='Top Earning'?'Top earning games':'All games';
+  container.innerHTML=renderCommunityGamesGrid(pool,title);
 }
 function renderSeeMoreGames(term=''){
   const container=document.getElementById('seeMoreGamesBrowser'); if(!container)return;
@@ -8186,6 +8624,26 @@ function renderHomeGames(){
   if(recentEl) recentEl.innerHTML=recent.length ? recent.slice(0,6).map(renderBrowserCard).join('') : '<div class="empty-game-row" style="width:100%">You have not played any games yet.</div>';
   if(favEl) favEl.innerHTML=fav.length ? fav.slice(0,6).map(renderBrowserCard).join('') : '<div class="empty-game-row" style="width:100%">Favorite games will appear here.</div>';
   if(act) act.innerHTML='<div class="empty-game-row" style="width:100%">Your friends’ recent game activity will appear here.</div>';
+  renderFavoriteGamesPage();
+}
+function isGameFavorite(name){return getLocalGameList('epicbloxs_favorite_games').includes(String(name||'').trim());}
+function toggleGameFavorite(name){
+  const gameName=String(name||'').trim(); if(!gameName)return;
+  const favorites=getLocalGameList('epicbloxs_favorite_games');
+  const next=favorites.includes(gameName)?favorites.filter(item=>item!==gameName):[gameName,...favorites];
+  saveLocalGameList('epicbloxs_favorite_games',next);
+  updateGameFavoriteButton(gameName);
+  renderHomeGames();
+}
+function updateGameFavoriteButton(name){
+  const button=document.getElementById('gdFavoriteBtn');
+  if(button) button.textContent=isGameFavorite(name)?'★ Remove from favorites':'☆ Add to favorites';
+}
+function renderFavoriteGamesPage(){
+  const container=document.getElementById('favoriteGamesPage');
+  if(!container)return;
+  const favorites=getGamesByNames(getLocalGameList('epicbloxs_favorite_games'));
+  container.innerHTML=favorites.length?favorites.map(renderBrowserCard).join(''):'<div class="empty-game-row">You have not saved any favorite games yet.</div>';
 }
 async function loadPublishedCommunityGames(){
   try {
@@ -8230,8 +8688,8 @@ let _currentDetailGame = null;
 function openGameDetail(gameName){
   const g = games.find(x => String(x[0]).trim() === String(gameName).trim() || x[0] === gameName);
   if(!g){ alert('Game not found'); return; }
-  _currentDetailGame = g[0];
   const name = String(g[0]).trim();
+  _currentDetailGame = name;
   const desc = g[1] || '';
   const gid = getGameId(name);
   const playing = Number(_gameStats[gid]||0);
@@ -8245,7 +8703,60 @@ function openGameDetail(gameName){
   if(el('gdDescription')) el('gdDescription').textContent = desc.trim() || 'No description available.';
   const playBtn = el('gdPlayBtn');
   if(playBtn) playBtn.onclick = function(){ launchWebClient(name); };
+  updateGameFavoriteButton(name);
+  _gameFeedback={likes:0,dislikes:0,myReaction:null,comments:[]};
+  renderGameFeedback(_gameFeedback);
+  if(el('gameCommentStatus'))el('gameCommentStatus').textContent='';
+  loadGameFeedback(name);
   showPage('gameDetail');
+}
+
+function renderGameFeedback(data){
+  _gameFeedback=data||{likes:0,dislikes:0,myReaction:null,comments:[]};
+  const likes=document.getElementById('gdLikeCount'), dislikes=document.getElementById('gdDislikeCount');
+  const likeBtn=document.getElementById('gdLikeBtn'), dislikeBtn=document.getElementById('gdDislikeBtn');
+  if(likes) likes.textContent=String(Number(_gameFeedback.likes)||0);
+  if(dislikes) dislikes.textContent=String(Number(_gameFeedback.dislikes)||0);
+  if(likeBtn) likeBtn.classList.toggle('active',_gameFeedback.myReaction==='like');
+  if(dislikeBtn) dislikeBtn.classList.toggle('active',_gameFeedback.myReaction==='dislike');
+  const list=document.getElementById('gameCommentsList');
+  if(list){
+    const comments=Array.isArray(_gameFeedback.comments)?_gameFeedback.comments:[];
+    list.innerHTML=comments.length?comments.map(comment=>`<article class="game-comment"><strong>${escapeHTML(comment.username||'Player')}</strong><time>${new Date(Number(comment.ts)||Date.now()).toLocaleString()}</time><p>${escapeHTML(comment.text||'')}</p></article>`).join(''):'<p class="empty-game-row">No comments yet. Start the conversation!</p>';
+  }
+}
+async function loadGameFeedback(gameName=_currentDetailGame){
+  if(!gameName)return;
+  try{
+    const data=await api('/api/games/feedback?gameId='+encodeURIComponent(getGameId(gameName)),{},1);
+    if(_currentDetailGame===gameName) renderGameFeedback(data);
+  }catch(error){
+    const status=document.getElementById('gameCommentStatus');
+    if(status)status.textContent=error.message||'Could not load game feedback.';
+  }
+}
+async function setGameReaction(reaction){
+  if(!_currentDetailGame)return;
+  const gameName=_currentDetailGame;
+  if(!getToken()){const status=document.getElementById('gameCommentStatus');if(status)status.textContent='Sign in to rate this game.';return;}
+  const next=_gameFeedback&&_gameFeedback.myReaction===reaction?null:reaction;
+  try{
+    const data=await api('/api/games/feedback',{method:'POST',body:JSON.stringify({gameId:getGameId(gameName),reaction:next})},1);
+    if(_currentDetailGame===gameName)renderGameFeedback(data);
+  }catch(error){if(_currentDetailGame===gameName){const status=document.getElementById('gameCommentStatus');if(status)status.textContent=error.message||'Could not save your rating.';}}
+}
+async function submitGameComment(event){
+  event.preventDefault();
+  const input=document.getElementById('gameCommentInput'), status=document.getElementById('gameCommentStatus');
+  const text=input?.value.trim();
+  if(!text||!_currentDetailGame)return;
+  const gameName=_currentDetailGame;
+  if(!getToken()){if(status)status.textContent='Sign in to comment on this game.';return;}
+  if(status)status.textContent='Posting…';
+  try{
+    const data=await api('/api/games/feedback',{method:'POST',body:JSON.stringify({gameId:getGameId(gameName),comment:text})},1);
+    if(_currentDetailGame===gameName){if(input)input.value='';if(status)status.textContent='';renderGameFeedback(data);}
+  }catch(error){if(_currentDetailGame===gameName&&status)status.textContent=error.message||'Could not post your comment.';}
 }
 
 async function refreshGameStats(){
@@ -8253,6 +8764,7 @@ async function refreshGameStats(){
     const data=await api('/api/games/stats',{},1);
     _gameStats=(data&&data.stats)||{};
     _gameVisits=(data&&data.visits)||{};
+    _gameEarnings=(data&&data.earnings)||{};
     loadGames(games);
     const detail = document.getElementById('gameDetail');
     if(detail && detail.classList.contains('active') && _currentDetailGame){
@@ -8727,8 +9239,9 @@ function loadInventory(){
 }
 
 
-const colors=["#f5c928","#ff0000","#00aaff","#00cc66","#ffffff","#222222","#ff8c42","#9b59b6","#ff69b4"];
-function makeColorButtons(id,part){document.getElementById(id).innerHTML=colors.map(c=>`<button class="color-button" style="background:${c}" onclick="setBodyColor('${part}','${c}')"></button>`).join("")}
+const skinTones=["#fff1e3","#fce1c4","#f5d0a9","#edc08b","#e3ad78","#d89a65","#c88652","#b87345","#a9653c","#965533","#82472c","#703b25","#5b3020","#46251a","#321b14","#24140f"];
+const colors=["#f5c928","#ff0000","#00aaff","#00cc66","#ffffff","#222222","#ff8c42","#9b59b6","#ff69b4","#8b5cf6","#14b8a6","#facc15","#64748b","#f97316"];
+function makeColorButtons(id,part){const palette=(part==='head'||part==='arms')?[...skinTones,...colors]:colors;document.getElementById(id).innerHTML=palette.map(c=>`<button class="color-button" title="${c}" aria-label="Color ${c}" style="background:${c}" onclick="setBodyColor('${part}','${c}')"></button>`).join("")}
 
 function setTorsoType(type){
   const c=current(); if(!c) return;
@@ -8846,6 +9359,25 @@ async function toggleAccessory(a){
 
 let chatUnread = 0;
 let chatOpen = false;
+function toggleEmojiPicker(inputId, button){
+  const picker=button?.nextElementSibling;
+  if(!picker)return;
+  if(!picker.dataset.ready){
+    picker.innerHTML=['😀','😂','🥹','😍','😎','🤔','😭','😡','👍','👎','❤️','🔥','🎉','✨','🙏','💀','🐱','🎮']
+      .map(emoji=>`<button type="button" aria-label="${emoji}" onclick="insertChatEmoji('${inputId}','${emoji}')">${emoji}</button>`).join('');
+    picker.dataset.ready='1';
+  }
+  picker.hidden=!picker.hidden;
+}
+function insertChatEmoji(inputId, emoji){
+  const input=document.getElementById(inputId), picker=input?.parentElement.querySelector('.emoji-picker');
+  if(input){
+    const start=input.selectionStart??input.value.length, end=input.selectionEnd??start;
+    input.setRangeText(emoji,start,end,'end');
+    input.focus();
+  }
+  if(picker)picker.hidden=true;
+}
 
 // ==================== CHAT DIRECTO (mensajes privados) ====================
 let chatTab = 'room';
@@ -9080,66 +9612,6 @@ function setChatConnStatus(online) {
   }
 }
 
-const CHAT_MODERATION_TERMS = [
-  // Español
-  "puta","puto","putas","putos","mierda","joder","coño","cojones","cabron","cabrona","pendejo","pendeja","gilipollas","imbecil","imbécil","idiota","estupido","estúpido","estupida","estúpida","maricon","maricón","marica","zorra","culero","verga","polla","chingar","chingada","malparido","perra","bastardo",
-  // English
-  "fuck","fucking","fucked","shit","bullshit","bitch","asshole","dick","dickhead","pussy","cunt","bastard","motherfucker","damn","crap","slut","whore","idiot","stupid",
-  // Português
-  "merda","porra","caralho","cacete","viado","veado","bicha","babaca","otario","otária","foder","fodase","fodasse","desgraçado","desgracado","vagabunda","vagabundo",
-  // Français / Italiano / Deutsch / Nederlands / Polski / Русский translit.
-  "merde","putain","connard","connasse","encule","enculé","salope","pute","nique","cazzo","puttana","stronzo","stronza","vaffanculo","coglione","troia","scheisse","scheiße","arschloch","fotze","hurensohn","hure","wichser","klootzak","kut","hoer","tering","tyfus","godverdomme","kurwa","cholera","dupa","skurwysyn","suka","cipa","jebac","jebać","pierdol","debil","kurva","hovno","kokot","blyad","blyat","bljad","pizda","khuy","hui","xuy","yob","ebat","mudak","durak","gavno","govno",
-  // Referencias sexuales / NSFW
-  "porn","porno","pornografia","pornography","xxx","nsfw","sexcam","sexting","nudes","nudez","desnudo","desnuda","sexo","sexual","genitales","genitals","masturb","masturbacion","masturbación","ereccion","erección","semen","cumshot","blowjob","handjob","anal","hentai","fetish","fetiche","prostituta","prostitucion","prostitución",
-  // Autolesión / violencia extrema en chat
-  "suicide","suicidio","kys","selfharm","self harm","autolesion","autolesión","matarte","muerete","muérete","kill yourself",
-  // Slurs comunes
-  "nigger","nigga","faggot","fag","dyke","retard","retarded","tranny","spic","kike","chink","coon","wetback","gook","cracker"
-];
-function clientModerationNormalize(text){
-  return String(text||'').toLowerCase().normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g,'')
-    .replace(/[\u200B-\u200D\uFEFF]/g,'')
-    .replace(/[4@]/g,'a').replace(/[3€]/g,'e').replace(/[1!|]/g,'i')
-    .replace(/[0]/g,'o').replace(/[$5]/g,'s').replace(/[7]/g,'t').replace(/[9]/g,'g')
-    .replace(/[аa]/g,'a').replace(/[еe]/g,'e').replace(/[іi]/g,'i')
-    .replace(/[оo]/g,'o').replace(/[рp]/g,'p').replace(/[сc]/g,'c')
-    .replace(/[хx]/g,'x').replace(/[уy]/g,'y').replace(/[кk]/g,'k')
-    .replace(/[^\p{L}\p{N}]+/gu,'');
-}
-function clientModerationVariants(term){
-  const compact=clientModerationNormalize(term); if(!compact) return [];
-  const collapsed=compact.replace(/([a-z])\1+/g,'$1');
-  return [...new Set([compact,collapsed])];
-}
-function clientIsWordChar(ch){ return /[\p{L}\p{N}_]/u.test(ch||''); }
-function censorChatClient(text){
-  const source=String(text||''); if(!source) return source;
-  const chars=Array.from(source);
-  const normChars=chars.map((ch,idx)=>({idx,n:clientModerationNormalize(ch)}));
-  for(const term of CHAT_MODERATION_TERMS){
-    for(const v of clientModerationVariants(term)){
-      if(!v) continue;
-      for(let pos=0; pos<normChars.length; ){
-        let built='', j=pos, idxs=[];
-        while(j<normChars.length && built.length<v.length){
-          if(normChars[j].n){ built+=normChars[j].n; idxs.push(normChars[j].idx); }
-          j++;
-        }
-        if(built!==v || !idxs.length){ pos++; continue; }
-        const first=idxs[0], last=idxs[idxs.length-1];
-        const before=first>0?chars[first-1]:'';
-        const after=last<chars.length-1?chars[last+1]:'';
-        if(!clientIsWordChar(before) && !clientIsWordChar(after)){
-          for(let k=first;k<=last;k++) chars[k]='#';
-        }
-        pos=Math.max(j,pos+1);
-      }
-    }
-  }
-  return chars.join('');
-}
-
 let _lastChatKey = '';
 function appendChatMessage(username, message, isSystem, ts) {
 
@@ -9157,8 +9629,8 @@ function appendChatMessage(username, message, isSystem, ts) {
 
   const div = document.createElement('div');
   div.className = 'chat-msg' + (isSystem ? ' system' : '');
-  const safeUsername = censorChatClient(username);
-  const safeMessage = censorChatClient(message);
+  const safeUsername = username;
+  const safeMessage = message;
   div.innerHTML = `<span class="chat-time">${hh}:${mm}</span><span class="chat-user">${escapeHtml(safeUsername)}:</span> ${escapeHtml(safeMessage)}`;
   body.appendChild(div);
   // Limitar historial
@@ -9216,7 +9688,7 @@ function sendChatMessage() {
     return;
   }
 
-  const text = censorChatClient(raw);
+  const text = raw;
   if(!text) return;
   input.value = '';
 
@@ -9604,7 +10076,7 @@ init();
   const LANG_KEY='epicbloxs_language';
   const translations={
     'es':{
-      'Games':'Juegos','Catalog':'Catálogo','Friends':'Amigos','Create':'Crear','Download':'Descargar','Home':'Inicio','Profile':'Perfil','Avatar':'Avatar','Inventory':'Inventario','Racha':'Racha','Settings':'Configuración','Trade':'Intercambio','See All':'Ver todo','Show More':'Mostrar más',
+      'Games':'Juegos','Catalog':'Catálogo','Friends':'Amigos','Create':'Crear','Home':'Inicio','Favorites':'Favoritos','Favorite games':'Juegos favoritos','Your saved games, ready to play.':'Tus juegos guardados, listos para jugar.','Game comments':'Comentarios del juego','Share your thoughts about this game...':'Comparte tu opinión sobre este juego...','Post comment':'Publicar comentario','Popular':'Populares','Top Earning':'Mayores ganancias','Default':'Todos','All games':'Todos los juegos','Popular games':'Juegos populares','Top earning games':'Juegos con más ganancias','☆ Add to favorites':'☆ Añadir a favoritos','★ Remove from favorites':'★ Quitar de favoritos','No comments yet. Start the conversation!':'Todavía no hay comentarios. ¡Empieza la conversación!','Profile':'Perfil','Avatar':'Avatar','Inventory':'Inventario','Racha':'Racha','Settings':'Configuración','Trade':'Intercambio','See All':'Ver todo','Show More':'Mostrar más',
       'Recently Played':'Jugados recientemente','Discover unique games created by the community.':'Descubre juegos únicos creados por la comunidad.','Edit Avatar':'Editar avatar','Account':'Cuenta','Language':'Idioma','Sunnys':'Sunnys','Themes':'Temas','Light':'Claro','Dark':'Oscuro','Blue':'Azul','Purple':'Morado','Description':'Descripción','Save Description':'Guardar descripción','Reset local data':'Restablecer datos locales','Reset':'Restablecer','Edit':'Editar',
       'Settings':'Configuración','Avatar Preview.':'Vista previa del avatar.','Avatar Prewiew.':'Vista previa del avatar.','Personalization Accesories and Clothing':'Personalización, accesorios y ropa','Equip or unequip accesories that you own! [W.I.P]:':'¡Equipa o desequipa los accesorios que tienes! [EN PROGRESO]','Remove all':'Quitar todo','Quitar todo':'Quitar todo','Torso Type':'Tipo de torso','Tipo de Torso':'Tipo de torso','Male (Default)':'Hombre (predeterminado)','♂ Hombre (Default)':'♂ Hombre (predeterminado)','Female':'Mujer','♀ Mujer':'♀ Mujer','Head Color':'Color de cabeza','Arms Color':'Color de brazos','Torso Color':'Color de torso','Legs Color':'Color de piernas',
       'Here are your clothing, accessories, faces and other avatar items.':'Aquí están tu ropa, accesorios, caras y otros artículos del avatar.','Los objetos de una partida aparecen solo dentro del juego y no se mezclan con este inventario.':'Los objetos de una partida aparecen solo dentro del juego y no se mezclan con este inventario.',

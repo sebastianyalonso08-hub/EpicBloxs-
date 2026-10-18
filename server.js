@@ -589,10 +589,23 @@ function saveGameStats(stats) {
 
 function recordGameVisit(gameId) {
   const id = safeText(gameId, "GAME-UNKNOWN", 64);
+  if (id.startsWith("__")) return 0;
   const stats = loadGameStats();
   stats[id] = Math.max(0, Math.floor(Number(stats[id]) || 0)) + 1;
   saveGameStats(stats);
   return stats[id];
+}
+
+function summarizeGameFeedback(stats, gameId, userId) {
+  const record = stats.__feedback && stats.__feedback[gameId] || {};
+  const reactions = record.reactions && typeof record.reactions === "object" ? record.reactions : {};
+  const comments = Array.isArray(record.comments) ? record.comments.slice(-50).reverse() : [];
+  return {
+    likes: Object.values(reactions).filter(value => value === "like").length,
+    dislikes: Object.values(reactions).filter(value => value === "dislike").length,
+    myReaction: userId ? reactions[String(userId)] || null : null,
+    comments: comments.map(({ id, username, text, ts }) => ({ id, username, text, ts }))
+  };
 }
 
 function loadAccessConfig() {
@@ -869,6 +882,10 @@ function makeId() {
 function safeText(value, fallback, max) {
   const text = String(value ?? fallback).replace(/[<>]/g, "").trim().slice(0, max);
   return text || fallback;
+}
+
+function safeChatText(value, max) {
+  return String(value ?? "").trim().slice(0, max);
 }
 
 function safeNumber(value, fallback) {
@@ -2325,7 +2342,7 @@ const server = http.createServer(async (req, res) => {
     const groups = loadGroups();
     const group = groups[groupId];
     if (!group || !Array.isArray(group.memberKeys) || !group.memberKeys.includes(sess.key)) return json(res, 404, { error: "Grupo no encontrado." });
-    const text = censorText(safeText(body.text, "", MAX_CHAT_LEN));
+    const text = safeChatText(body.text, MAX_CHAT_LEN);
     if (!text) return json(res, 400, { error: "Escribe un mensaje." });
     group.messages = Array.isArray(group.messages) ? group.messages : [];
     const now = Date.now();
@@ -2402,7 +2419,7 @@ const server = http.createServer(async (req, res) => {
     const otherKey = resolveUserKey(sess.users, safeText(body.id, "", 40));
     if (!otherKey) return json(res, 404, { error: "No se pudo enviar el mensaje: ese usuario ya no existe en EpicBloxs." });
     if (otherKey === sess.key) return json(res, 400, { error: "No puedes enviarte mensajes a ti mismo." });
-    const text = censorText(safeText(body.text, "", 300)).trim();
+    const text = safeChatText(body.text, 300);
     if (!text) return json(res, 400, { error: "Escribe un mensaje." });
     const conv = dmConvKey(sess.key, otherKey);
     const dms = loadDMs();
@@ -2433,7 +2450,7 @@ const server = http.createServer(async (req, res) => {
 
   if (urlPath === "/api/chat/moderate" && req.method === "POST") {
     const body = await readBody(req);
-    return json(res, 200, { message: censorText(safeText(body.message, "", 200)) });
+    return json(res, 200, { message: safeChatText(body.message, 200) });
   }
 
   // Community games are stored inside each account record, which is persisted
@@ -2480,13 +2497,84 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, { ok: true, game: { ...game, creator: user.username, creatorId: String(user.userId) }, user: publicUser(user, sess.key) });
   }
 
+  if (urlPath === "/api/games/feedback" && req.method === "GET") {
+    const gameId = safeText(new URL(req.url, "http://x").searchParams.get("gameId"), "", 64);
+    if (!gameId) return json(res, 400, { error: "Selecciona un juego." });
+    const sess = getSessionUser(req);
+    const stats = loadGameStats();
+    return json(res, 200, summarizeGameFeedback(stats, gameId, sess && sess.user.userId));
+  }
+
+  if (urlPath === "/api/games/feedback" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "Inicia sesión para valorar o comentar." });
+    const body = await readBody(req);
+    const gameId = safeText(body.gameId, "", 64);
+    if (!gameId) return json(res, 400, { error: "Selecciona un juego." });
+    const stats = loadGameStats();
+    stats.__feedback = stats.__feedback && typeof stats.__feedback === "object" ? stats.__feedback : {};
+    const record = stats.__feedback[gameId] && typeof stats.__feedback[gameId] === "object"
+      ? stats.__feedback[gameId]
+      : { reactions: {}, comments: [], lastCommentAt: {} };
+    record.reactions = record.reactions && typeof record.reactions === "object" ? record.reactions : {};
+    record.comments = Array.isArray(record.comments) ? record.comments : [];
+    record.lastCommentAt = record.lastCommentAt && typeof record.lastCommentAt === "object" ? record.lastCommentAt : {};
+    const userId = String(sess.user.userId || sess.key);
+    if (Object.prototype.hasOwnProperty.call(body, "reaction")) {
+      if (![null, "like", "dislike"].includes(body.reaction)) return json(res, 400, { error: "La valoración no es válida." });
+      if (body.reaction === null) delete record.reactions[userId];
+      else record.reactions[userId] = body.reaction;
+    }
+    if (Object.prototype.hasOwnProperty.call(body, "comment")) {
+      const text = safeText(body.comment, "", 300).trim();
+      if (!text) return json(res, 400, { error: "Escribe un comentario." });
+      const now = Date.now();
+      if (now - Number(record.lastCommentAt[userId] || 0) < 10000) {
+        return json(res, 429, { error: "Espera unos segundos antes de publicar otro comentario." });
+      }
+      record.comments.push({ id: makeId(), userId, username: sess.user.username, text, ts: now });
+      if (record.comments.length > 100) record.comments = record.comments.slice(-100);
+      record.lastCommentAt[userId] = now;
+    }
+    stats.__feedback[gameId] = record;
+    saveGameStats(stats);
+    return json(res, 200, summarizeGameFeedback(stats, gameId, userId));
+  }
+
+  if (urlPath === "/api/games/earnings" && req.method === "POST") {
+    const sess = getSessionUser(req);
+    if (!sess) return json(res, 401, { error: "Inicia sesión para guardar las ganancias." });
+    const body = await readBody(req);
+    const gameId = safeText(body.gameId, "", 64);
+    const sessionId = safeText(body.sessionId, "", 80);
+    const amount = Math.floor(Number(body.amount));
+    if (!gameId || !/^[a-zA-Z0-9_-]{20,80}$/.test(sessionId) || !Number.isFinite(amount) || amount < 0 || amount > 100000) {
+      return json(res, 400, { error: "Los datos de ganancias no son válidos." });
+    }
+    const stats = loadGameStats();
+    stats.__earnings = stats.__earnings && typeof stats.__earnings === "object" ? stats.__earnings : {};
+    stats.__earningSessions = stats.__earningSessions && typeof stats.__earningSessions === "object" ? stats.__earningSessions : {};
+    const dedupeKey = `${gameId}:${sess.user.userId || sess.key}:${sessionId}`;
+    if (!stats.__earningSessions[dedupeKey]) {
+      stats.__earnings[gameId] = Math.max(0, Math.floor(Number(stats.__earnings[gameId]) || 0)) + amount;
+      stats.__earningSessions[dedupeKey] = Date.now();
+      const keys = Object.keys(stats.__earningSessions);
+      if (keys.length > 2000) keys.slice(0, keys.length - 2000).forEach(key => delete stats.__earningSessions[key]);
+      saveGameStats(stats);
+    }
+    return json(res, 200, { ok: true, earnings: stats.__earnings[gameId] || 0 });
+  }
+
   if (urlPath === "/api/games/stats" && req.method === "GET") {
     const stats = {};
     for (const room of rooms.values()) {
       const id = room.gameId || "GAME-UNKNOWN";
       stats[id] = (stats[id] || 0) + room.players.size;
     }
-    return json(res, 200, { stats, visits: loadGameStats(), updatedAt: Date.now() });
+    const stored = loadGameStats();
+    const visits = Object.fromEntries(Object.entries(stored).filter(([, value]) => Number.isFinite(Number(value))));
+    const earnings = stored.__earnings && typeof stored.__earnings === "object" ? stored.__earnings : {};
+    return json(res, 200, { stats, visits, earnings, updatedAt: Date.now() });
   }
 
   if (urlPath === "/api/friends/list" && req.method === "GET") {
@@ -2865,7 +2953,7 @@ wss.on("connection", (ws) => {
       const now = Date.now();
       if (now - player.lastChatAt < 300) return;
       player.lastChatAt = now;
-      const message = censorText(safeText(data.message, "", MAX_CHAT_LEN));
+      const message = safeChatText(data.message, MAX_CHAT_LEN);
       if (!message) return;
       const payload = { type: "chat", id: player.id, username: player.username, message, system: false, ts: now };
       for (const p of room.players.values()) send(p.ws, payload);
